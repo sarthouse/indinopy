@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>Orden de Producción - Indino</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 210mm; /* A4 width */
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 30px;
+            background-color: #fff;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .title h1 {
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+        .op-meta {
+            margin-top: 10px;
+        }
+        .badge {
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge.original {
+            background-color: #e74c3c; /* Red for internal classified */
+        }
+        .badge.duplicado {
+            background-color: #3498db; /* Blue for workshop */
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 25px 0 10px 0;
+            background-color: #f8f9fa;
+            padding: 5px 10px;
+            border-left: 4px solid #333;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .table-costs th, .table-costs td {
+            background-color: #fff3cd; /* Highlight costs */
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #e9ecef;
+        }
+        .signature-box {
+            border: 1px dashed #999;
+            height: 40px;
+            width: 150px;
+            display: inline-block;
+        }
+        .tracking-row td {
+            vertical-align: middle;
+        }
+        .print-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            width: 150px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        @media print {
+            .print-btn { display: none; }
+            .container { border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="title">
+                <h1>INDINO</h1>
+                <h2>Orden de Producción</h2>
+                <div class="op-meta">
+                    <strong>OP N°:</strong> {{ op.numero_op }}<br>
+                    <strong>Fecha Emisión:</strong> {{ op.fecha_emision }}<br>
+                    <strong>Fecha Est. Entrega:</strong> {{ op.fecha_entrega }}
+                </div>
+            </div>
+            <div>
+                <!-- Logic to switch between Original (with costs) and Duplicado (no costs) -->
+                {% if mostrar_costos %}
+                    <div class="badge original">ORIGINAL - USO INTERNO (CON COSTOS)</div>
+                {% else %}
+                    <div class="badge duplicado">DUPLICADO - TALLER (SIN COSTOS)</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- INFO DEL LOTE -->
+        <div class="section-title">1. Información del Lote a Confeccionar</div>
+        <div class="info-grid">
+            <div>
+                <strong>Producto / Modelo:</strong> {{ op.producto.nombre }}<br>
+                <strong>Cliente (Distribuidor):</strong> {{ op.cliente.nombre | default('Stock Propio') }}<br>
+                <strong>Cantidad Total de Piezas:</strong> {{ op.cantidad_total }}
+            </div>
+            <div>
+                <strong>Fabricante Asignado:</strong> {{ op.fabricante_principal }}<br>
+                <strong>Herramientas (Hormas):</strong> Modelo N° {{ op.herramientas.numero_horma }}
+            </div>
+        </div>
+
+        <!-- VARIACIONES (CURVA DE TALLES) -->
+        <div class="section-title">2. Curva de Talles y Variaciones</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Color / Variante</th>
+                    <th>Talle</th>
+                    <th>Cantidad a Confeccionar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in op.variaciones %}
+                <tr>
+                    <td>{{ item.color }}</td>
+                    <td>{{ item.talle }}</td>
+                    <td>{{ item.cantidad }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- INSUMOS Y MATERIALES -->
+        <div class="section-title">3. Detalle de Insumos (Lista de Materiales)</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Insumo (Cuero, Suela, Pegamento...)</th>
+                    <th>Unidad</th>
+                    <th>Cantidad Requerida</th>
+                    {% if mostrar_costos %}
+                    <th class="table-costs">Costo Unitario</th>
+                    <th class="table-costs">Costo Total Material</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for insumo in op.insumos %}
+                <tr>
+                    <td>{{ insumo.codigo }}</td>
+                    <td>{{ insumo.nombre }}</td>
+                    <td>{{ insumo.unidad_medida }}</td>
+                    <td>{{ insumo.cantidad_requerida }}</td>
+                    {% if mostrar_costos %}
+                    <td class="table-costs">$ {{ insumo.costo_unitario }}</td>
+                    <td class="table-costs">$ {{ insumo.costo_total }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if mostrar_costos %}
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="5" style="text-align: right;">Total Presupuesto Insumos:</td>
+                    <td class="table-costs">$ {{ op.total_costo_insumos }}</td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+
+        <!-- TRACKING DE ETAPAS EXTERNAS / INTERNAS -->
+        <div class="section-title">4. Etapas del Proceso y Talleristas</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Etapa (Proceso)</th>
+                    <th>Tallerista Asignado</th>
+                    <th>Estado</th>
+                    <th>Conforme (Firma)</th>
+                    {% if mostrar_costos %}
+                    <th class="table-costs">Costo del Proceso (Liquidación)</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody class="tracking-row">
+                {% for etapa in op.etapas %}
+                <tr>
+                    <td><strong>{{ etapa.nombre }}</strong> (Ej. Corte, Rebajado, Aparado)</td>
+                    <td>{{ etapa.tallerista_nombre }}</td>
+                    <td>{{ etapa.estado }}</td>
+                    <td><div class="signature-box"></div></td>
+                    {% if mostrar_costos %}
+                    <td class="table-costs">$ {{ etapa.costo_servicio }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if mostrar_costos %}
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="4" style="text-align: right;">Total Liquidación Servicios:</td>
+                    <td class="table-costs">$ {{ op.total_costo_servicios }}</td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+
+        <!-- COSTO FINAL DEL LOTE (SÓLO ORIGINAL) -->
+        {% if mostrar_costos %}
+        <div class="section-title" style="background-color: #f8d7da; border-color: #dc3545;">5. Resumen de Costos del Lote (Información Clasificada)</div>
+        <table style="width: 50%; border: 2px solid #dc3545;">
+            <tbody>
+                <tr>
+                    <td>Total Materiales e Insumos:</td>
+                    <td>$ {{ op.total_costo_insumos }}</td>
+                </tr>
+                <tr>
+                    <td>Total Procesos y Talleristas:</td>
+                    <td>$ {{ op.total_costo_servicios }}</td>
+                </tr>
+                <tr class="total-row" style="font-size: 16px;">
+                    <td>COSTO TOTAL DE LA ORDEN:</td>
+                    <td>$ {{ op.total_costo_insumos + op.total_costo_servicios }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Costo Unitario por Pieza ({{ op.cantidad_total }} unid.):</td>
+                    <td>$ {{ (op.total_costo_insumos + op.total_costo_servicios) / op.cantidad_total }}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% endif %}
+
+        <div style="margin-top: 50px; text-align: center; font-size: 12px; color: #777;">
+            Documento generado por el sistema administrativo Indino. 
+            {% if not mostrar_costos %}
+            Este comprobante es para uso exclusivo del fabricante/taller y acompaña a la mercadería.
+            {% endif %}
+        </div>
+    </div>
+    
+    <a href="#" class="print-btn" onclick="window.print(); return false;">Imprimir OP</a>
+</body>
+</html>
+
