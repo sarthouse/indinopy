@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explicación Técnica & Solución Indinopy - Canvas RIGI Conurbano</title>
+    
+    <style>
+        :root {
+            --bg-body: #0a0e17;
+            --bg-card: #111827;
+            --bg-card-alt: #162032;
+            --border-color: #1f2937;
+            --border-light: #2d3748;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .doc-container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 36px 44px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .doc-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--primary-hover);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            font-size: 26px;
+            color: #60a5fa;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        h2 {
+            font-size: 19px;
+            color: #93c5fd;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 8px;
+            margin-top: 32px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 {
+            font-size: 15.5px;
+            color: #bfdbfe;
+            margin-top: 22px;
+            margin-bottom: 8px;
+        }
+
+        p, ul, ol {
+            margin-top: 0.5em;
+            margin-bottom: 0.8em;
+            color: #cbd5e1;
+        }
+
+        li {
+            margin-bottom: 0.4em;
+        }
+
+        /* GRID CARDS */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background-color: var(--bg-card-alt);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 18px 20px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .highlight-box {
+            border-left: 4px solid var(--primary);
+            background-color: rgba(59, 130, 246, 0.08);
+            padding: 14px 18px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .highlight-box strong {
+            color: #93c5fd;
+        }
+
+        /* TABLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 22px 0;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #93c5fd;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .tag-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .tag-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        code {
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12.5px;
+            color: #f1f5f9;
+        }
+
+        .module-badge {
+            background-color: #1e3a8a;
+            color: #93c5fd;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="doc-container">
+        <div class="doc-header-badge">
+            <span>🎯</span> Visión, Diagnóstico & Arquitectura de Software
+        </div>
+
+        <h1>Explicación Técnica del Proyecto: Cómo Indinopy Resuelve la Crisis Productiva</h1>
+
+        <div class="highlight-box">
+            <strong>Tesis Central:</strong> El problema del calzado y la manufactura en el Conurbano no es la falta de capacidad técnica ni de demanda de mano de obra. Es una <strong>falla estructural de arquitectura institucional y financiera</strong>: la banca tradicional solo presta contra inmuebles, el fisco ahoga al que produce con costos fijos, y las marcas financian su capital de trabajo postergando los pagos de los talleres más débiles. <strong>Indinopy</strong> es el sistema de gestión libre (ERP/MES) que formaliza, colateraliza y gobierna la cadena en el territorio.
+        </div>
+
+        <!-- SECCIÓN 1: QUÉ BUSCAMOS -->
+        <h2>1. ¿Qué Buscamos? (Los 5 Objetivos Estratégicos)</h2>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-title">💵 1. Transformar el Trabajo en Dinero Líquido</div>
+                <div class="card-desc">
+                    Superar la "trampa de Stiglitz". Un aparador o costurero no tiene una casa para hipotecar. La <strong>e-OP (Orden de Producción Electrónica)</strong> se transforma en un título de crédito fiduciario negociable ante el Banco Provincia y el Fideicomiso FDI, dando liquidez sin pedir garantías patrimoniales.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚡ 2. El Hito Cero: Nadie Enciende un Motor sin Cobrar</div>
+                <div class="card-desc">
+                    Erradicar la práctica de entregar materiales y esperar 60 o 90 días para cobrar la confección. Al firmarse la e-OP y despacharse el cuero, el sistema libera un <strong>anticipo automático del 30% al 40% (o 50% con Sello de Buen Diseño)</strong> para solventar costos operativos inmediatos.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🛡️ 3. Blindaje Legal de Insumos (Inembargabilidad)</div>
+                <div class="card-desc">
+                    Bajo el régimen de Maquila y Locación de Obra (Arts. 1251 y 1356 CCCN), se formaliza la disociación patrimonial: el cuero es de la marca y el taller es depositario. Los insumos son <strong>estrictamente inembargables</strong> ante quiebras o litigios particulares de cualquiera de las partes.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⏱️ 4. Silencio Administrativo Positivo (48 Horas)</div>
+                <div class="card-desc">
+                    Neutralizar la parálisis burocrática y política. Si la Comisión de Crédito de la Mesa de Enlace (MES) no emite una objeción técnica fundada en 48 horas hábiles, el contrato inteligente gatilla automáticamente la convalidación por omisión y libera los fondos.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔍 5. Transparencia Radical ante el Consumidor</div>
+                <div class="card-desc">
+                    Mediante un código QR inviolable en la lengüeta del calzado, el consumidor final escanea y ve con exactitud matemática el desglose de cada peso: cuánto cobró el taller de barrio, cuánto costaron los insumos nacionales, cuánto retuvo el fisco y cuánto la marca.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🛑 6. Suspensión Activa de Oficio (Cero Deuda Fija)</div>
+                <div class="card-desc">
+                    Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su estado a "Suspensión Activa". Su carga impositiva cae automáticamente a $0 y no devenga deuda previsional ni intereses retroactivos por parálisis fabril involuntaria.
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: COMPARATIVA DE MODELOS -->
+        <h2>2. Cuadro Comparativo: Sistema Tradicional vs. Protocolo Indinopy</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Dimensión</th>
+                    <th>Sistema Tradicional / Banca Comercial</th>
+                    <th>Protocolo Indinopy ERP/MES + RIGI Conurbano</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Garantía Exigida</strong></td>
+                    <td><span class="tag-danger">Patrimonial</span> (Inmuebles, rodados, avales de terceros)</td>
+                    <td><span class="tag-success">Flujo Productivo</span> (e-OP colateralizada con insumos en custodia)</td>
+                </tr>
+                <tr>
+                    <td><strong>Plazo de Cobro Taller</strong></td>
+                    <td><span class="tag-danger">60 a 90 días</span> (Diferido arbitrario por la marca)</td>
+                    <td><span class="tag-success">Inmediato</span> (Hito 0 al 30-40% + Avances contra pares certificados)</td>
+                </tr>
+                <tr>
+                    <td><strong>Riesgo de Parálisis</strong></td>
+                    <td><span class="tag-danger">Burocracia discrecional</span> (Cajoneo de expedientes)</td>
+                    <td><span class="tag-success">Timelock 48h</span> (Silencio Administrativo Positivo por sistema)</td>
+                </tr>
+                <tr>
+                    <td><strong>Seguridad Jurídica</strong></td>
+                    <td><span class="tag-danger">Embargos cruzados</span> (Juicios laborales o comerciales traban stock)</td>
+                    <td><span class="tag-success">Inembargabilidad CCCN</span> (Activo de afectación productiva territorial)</td>
+                </tr>
+                <tr>
+                    <td><strong>Régimen Fiscal</strong></td>
+                    <td><span class="tag-danger">Cuota fija destructiva</span> (Monotributo acumula deuda sin producir)</td>
+                    <td><span class="tag-success">Suspensión Activa</span> (Si no hay máquina en marcha, el impuesto es $0)</td>
+                </tr>
+                <tr>
+                    <td><strong>Fijación de Precios</strong></td>
+                    <td><span class="tag-danger">Dumping y precarización</span> (La marca impone precios de miseria)</td>
+                    <td><span class="tag-success">Pisos Éticos Paritarios</span> (Alertas automáticas por debajo de convenio)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECCIÓN 3: CÓMO INDINOPY LO RESUELVE TÉCNICAMENTE -->
+        <h2>3. ¿Cómo lo Resuelve Indinopy Técnicamente? (Módulos de Software)</h2>
+
+        <p>
+            <strong>Indinopy</strong> no es una empresa de calzado ni una marca comercial: es una <strong>suite ERP/MES de código abierto</strong> desarrollada en Python y Django, diseñada para operar en el territorio fabril. Cada problema del diagnóstico está mapeado a un módulo de ingeniería de software concreto:
+        </p>
+
+        <h3>A. Módulo Producción <span class="module-badge">apps.produccion</span></h3>
+        <ul>
+            <li><strong>Tupla e-OP Inmutable:</strong> Modela la Orden de Producción como un activo financiero completo: <code>OP = &lt;UUID, ClaveComitente, ClaveTaller, MerkleBOM, CurvaTalles, VectorCostos, Hitos, RegimenLegal, Multifirma&gt;</code>.</li>
+            <li><strong>Receta Técnica y Tolerancias INTI:</strong> Árbol de Merkle determinista que fija las cantidades teóricas de cuero, suela y adhesivo con hasta un 10% de tolerancia técnica de merma auditada por el INTI.</li>
+            <li><strong>Partes de Producción:</strong> Registro en tiempo real de lotes y pares terminados en cada etapa física (corte, rebajado, aparado, armado) que disparan los pagos en tesorería.</li>
+        </ul>
+
+        <h3>B. Módulo Tesorería y Escrow Digital <span class="module-badge">apps.tesoreria</span></h3>
+        <ul>
+            <li><strong>Máquina de Estados Finita:</strong> Los fondos depositados por el comitente quedan bloqueados en una cuenta de custodia (*Escrow*) del Fideicomiso de Desarrollo Industrial (FDI) y se desbloquean paso a paso:
+                <br><code>BORRADOR &rarr; COLATERALIZADA (2% FDI) &rarr; HITO0_UNLOCKED (30-40%) &rarr; EN_PROCESO &rarr; LIQUIDADA</code>.</li>
+            <li><strong>Algoritmo de Timelock:</strong> Temporizador regresivo que monitorea las 48 horas hábiles. Si la Comisión de Crédito de la MES no carga un dictamen formal de rechazo, el sistema emite automáticamente la firma de liberación.</li>
+            <li><strong>Partición Factorial de Pagos:</strong> Al liquidar una etapa, el sistema fragmenta automáticamente la transferencia en cuentas separadas: mano de obra directa para el taller, aportes sindicales y reserva de garantía FDI (2%).</li>
+        </ul>
+
+        <h3>C. Módulo Contactos y Bolsa de Trabajo <span class="module-badge">apps.contactos</span></h3>
+        <ul>
+            <li><strong>Perfil Tallerista y Capacidad Instalada:</strong> Registra la dotación de operarios, máquinas disponibles y capacidad teórica semanal en pares de calzado.</li>
+            <li><strong>Prevención de Cuellos de Botella:</strong> Si al asignarle una nueva OP a un tallerista su ocupación supera el 100% para la fecha de entrega, el sistema alerta y sugiere fragmentar el lote en un taller secundario de la Bolsa Distrital.</li>
+            <li><strong>Auditoría Algorética de Tarifas:</strong> Compara el valor pactado por par con la tabla oficial de precios mínimos paritarios de la MES; si está por debajo del piso de convenio, bloquea la homologación automática.</li>
+        </ul>
+
+        <h3>D. Módulo Inventario y Partida Doble <span class="module-badge">apps.inventario</span></h3>
+        <ul>
+            <li><strong>Disociación de Dominio:</strong> Sistema de inventario por partida doble que diferencia con precisión jurídica entre <em>Propietario</em> (Comitente) y <em>Custodio</em> (Tallerista).</li>
+            <li><strong>Remitos de Traslado de Maquila:</strong> Emisión de comprobantes digitales de movimiento de cuero y avíos con código QR y leyenda legal expresa de los Arts. 1251 y 1356 del Código Civil y Comercial de la Nación.</li>
+        </ul>
+
+        <h3>E. Vista Pública de Trazabilidad Socioproductiva <span class="module-badge">/t/&lt;uuid&gt;/</span></h3>
+        <ul>
+            <li><strong>Endpoint Público sin Login:</strong> Interfaz móvil ultra-liviana a la que accede el consumidor final al escanear la etiqueta del calzado.</li>
+            <li><strong>Gráfico Dinámico de Participación:</strong> Desglosa el 100% del precio de góndola en: mano de obra territorial del Conurbano, cuero y materias primas nacionales, carga fiscal neta y margen comercial.</li>
+        </ul>
+
+        <!-- SECCIÓN 4: LOS 5 DISPOSITIVOS DE TRINCHERA -->
+        <h2>4. Los 5 Dispositivos de Trinchera del RIGI del Conurbano</h2>
+
+        <p>
+            Más allá de la emisión de la e-OP, el proyecto institucionaliza cinco dispositivos operativos de base territorial diseñados para extirpar la informalidad forzosa, desarmar la extorsión burocrática y garantizar la soberanía tecnológica de la manufactura:
+        </p>
+
+        <!-- 4.1 PUENTE DE TRANSICIÓN -->
+        <h3>4.1. El Puente de Transición y la Cuenta de IVA Sectorial Diferida</h3>
+        <div class="card" style="margin-bottom: 14px;">
+            <div class="card-title">🌉 De la Identidad Prestada a la Sociedad por Acciones Simplificada (SAS)</div>
+            <div class="card-desc">
+                <p><strong>El Diagnóstico del Purgatorio Fiscal:</strong> Ante la imposibilidad de asumir los costos fijos y la complejidad del régimen general, el tallerista o diseñador recurre al préstamo de CUITs de familiares o empleados. Esto destruye su patrimonio personal ante contingencias y priva a la marca de computar costos reales en Ganancias e IVA.</p>
+                <p><strong>El Puente SAS de Neutralización Patrimonial:</strong> El sistema crea un circuito de reconversión gratuita y de oficio en la Ventanilla Única Municipal. La SAS escinde de forma inmediata las herramientas y el hogar del trabajador de los pasivos fiscales de la unidad productiva.</p>
+                <ul>
+                    <li><strong>Doble Escala Anti-Fraude:</strong> Para los <em>Prestadores Eventuales Individuales</em> (aparadores a destajo), el Monotributo Productivo de oficio tiene tope en la Categoría A. Para <em>Unidades Productivas Consolidadas (SAS)</em> de hasta 30 operarios, rige el límite de la Ley MiPyME para absorber nóminas formales.</li>
+                    <li><strong>Cuenta de IVA Sectorial Diferida:</strong> El IVA de la e-OP no se devenga mensualmente en abstracto: se retiene y liquida automáticamente por API en el milisegundo en que la Cuenta Custodia del FDI hace el clearing efectivo. Si la marca comitente no paga la orden, el tallerista jamás devenga la obligación fiscal.</li>
+                    <li><strong>Crédito Fiscal Presunto del 25%:</strong> Las SAS pueden computar una deducción presunta de hasta el 25% del valor de la e-OP en Ganancias e IVA en concepto de mano de obra en transición territorial, corrigiendo de raíz la pérdida histórica de crédito fiscal.</li>
+                    <li><strong>Asesoría Contable y Administrativa Gratuita en CIFO:</strong> Para que el tallerista no afronte costos de gestores ni contadores privados ($60.000-$100.000/mes), el CIFO de su distrito asume gratis el patrocinio contable y la carga de oficio, vinculando las e-OP y liquidando el IVA diferido.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4.2 TUTELAJE ADMINISTRATIVO -->
+        <h3>4.2. Tutelaje Administrativo, Inmunidad de 180 Días y Canal Tuitivo de Denuncias</h3>
+        <div class="card" style="margin-bottom: 14px;">
+            <div class="card-title">🛡️ Blindaje Territorial frente a la Extorsión Burocrática y Comercial</div>
+            <div class="card-desc">
+                <p>El tallerista de barrio no confía en un folleto estatal; teme que registrarse sea la puerta de entrada a la coima o la inspección extorsiva. El régimen implementa un blindaje tuitivo de trinchera:</p>
+                <ul>
+                    <li><strong>Ventanilla Única Municipal en 48 Horas:</strong> Al registrarse la primera e-OP, el Municipio emite de oficio la Habilitación Simplificada del taller y la Exención de Tasas Locales (Seguridad e Higiene, Abasto) por 10 años.</li>
+                    <li><strong>El Promotor Territorial (PTF) como Tutor:</strong> Un par del propio oficio con 12 meses en el régimen y honorario equivalente a 2 SMVM financiado por el FDI guía al tallerista, labra el <em>Dictamen de Transición Asistida</em> y lo tutela en sus primeras 3 e-OP.</li>
+                    <li><strong>Canal de Denuncias Criptográfico y Buzón Lacrado:</strong> Terminales descentralizadas e independientes de la Agencia de Recaudación (ARCA) para denunciar aprietes, coimas o imposición de precios de miseria.</li>
+                    <li><strong>Inmunidad Fiscal Temporaria de 180 Días:</strong> La radicación formal de una denuncia suspende de pleno derecho toda inspección presencial o ejecución fiscal sobre el taller por 180 días hábiles prorrogables.</li>
+                    <li><strong>Orden de Restricción Administrativa ("Perimetral al Inspector"):</strong> Si un funcionario público pide dádivas, el sistema suspende preventivamente su usuario informático y la justicia le prohíbe el ingreso al cuadrante productivo del taller denunciante.</li>
+                    <li><strong>Solidaridad de Distrito:</strong> Si una seccional fiscal acumula más de 3 denuncias firmes en un año, se congelan los fondos de incentivo salarial ("cuenta de jerarquización") de toda esa delegación.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4.3 REDES CIFO Y BANCO DE MAQUINARIAS -->
+        <h3>4.3. Red de Centros CIFO y Banco Comunitario de Maquinarias</h3>
+        <div class="card" style="margin-bottom: 14px;">
+            <div class="card-title">⚙️ Capital Físico Comunitario y Rescate de Bienes de Capital Fuera de Circuito</div>
+            <div class="card-desc">
+                <p><strong>Red CIFO (Centros de Innovación y Formación de Oficios):</strong> Espacios de formación técnica y seguridad ciudadana preventiva financiados con una asignación específica del <strong>3% de los recursos del FDI local</strong>:</p>
+                <ul>
+                    <li><strong>Acceso Popular sin Prerrequisitos:</strong> Queda prohibida la exigencia del título secundario. El único requisito de ingreso es la voluntad de trabajo productivo.</li>
+                    <li><strong>Trípode Institucional:</strong> Conducción paritaria entre el Gremio (maestros de oficio), las Cámaras/Diseñadores (demanda real de trabajo) y el INTI/Municipio (certificación oficial y comodato edilicio).</li>
+                    <li><strong>Beca Productiva y Reparto de Renta:</strong> Los estudiantes perciben una beca mensual y se distribuyen el <strong>50% de la renta neta de los Lotes Escuela</strong> terminados con Sello de Buen Diseño (SBD). Egresan con alta de oficio y Prioridad 1 en la Bolsa de Trabajo.</li>
+                    <li><strong>Área de Asesoría Contable, Fiscal y Administrativa Comunitaria:</strong> Cada CIFO aloja una ventanilla técnica contable gratuita financiada por el FDI que gestiona la constitución de la SAS en 48h, emite facturas electrónicas vía API de ARCA, administra la Cuenta de IVA Diferida, arma el legajo para computar la deducción especial presunta del 35% por costos no documentados y liquida haberes bajo CCT con el subsidio del 27% patronal del fondo fiduciario.</li>
+                </ul>
+                <p><strong>Banco Comunitario de Maquinarias y Bienes de Capital:</strong> Moviliza activos ociosos en galpones cerrados:</p>
+                <ul>
+                    <li><strong>Condonación de Pasivos Preexistentes de ARCA:</strong> Los titulares de maquinaria pesada parada que la cedan en comodato por 36 meses a la Red CIFO o talleres SAS acceden a la extinción total de sus deudas tributarias anteriores.</li>
+                    <li><strong>Puesta a Punto por Alumnos Avanzados e INTI:</strong> Las máquinas son calibradas en las aulas del CIFO como práctica profesional.</li>
+                    <li><strong>Asignación con Opción a Transferencia Definitiva:</strong> Se entregan en comodato productivo a los egresados Prioridad 1 o talleres con 3 e-OP cumplidas, erradicando el scoring patrimonial bancario.</li>
+                    <li><strong>Muletto Técnico en 24 Horas y Seguro de Parálisis:</strong> Ante la rotura imprevista de una máquina crítica, el Banco provee un reemplazo en 24h y el FDI liquida una compensación diaria por lucro cesante a los costureros.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4.4 IA ALGORÉTICA -->
+        <h3>4.4. IA Algorética y Conducción Tecnológica Soberana</h3>
+        <div class="card" style="margin-bottom: 14px;">
+            <div class="card-title">🤖 La Técnica Subordinada al Hombre (Doctrina Magnifica Humanitas)</div>
+            <div class="card-desc">
+                <p>Recogiendo los principios de la <strong>Encíclica Magnifica Humanitas</strong> y el magisterio social de S.S. Francisco, la Inteligencia Artificial se incorpora al protocolo no como un mecanismo de reemplazo o descarte humano, sino como una herramienta de <strong>Planificación Algorética para la Justicia Distributiva</strong>:</p>
+                <ul>
+                    <li><strong>Monitoreo de Precios Justos y Auditoría Predictiva:</strong> El algoritmo analiza las e-OP cargadas y cruza en tiempo real los costos de insumos indexados con los pisos paritarios de rama. Si una marca pretende pagar mano de obra por debajo de convenio, el sistema emite una alerta automática al Sindicato y frena la homologación express.</li>
+                    <li><strong>Asistente en Lenguaje Natural para el PTF:</strong> Aplicación móvil con IA que dialoga por voz con el tallerista informal en el lenguaje llano de su taller, guiándolo paso a paso para formalizarse y calcular sus costos reales sin lidiar con jerga contable.</li>
+                    <li><strong>Detección de Talleres Espejo (Anti-Colusión):</strong> Auditoría continua de metadatos de georreferenciación satelital, direcciones IP y tiempos de producción para detectar patrones donde una gran fábrica se fragmenta artificialmente en prestadores individuales ficticios para eludir el convenio colectivo.</li>
+                    <li><strong>Supremacía de la Conducción Humana:</strong> Queda prohibido por ley que una IA dicte sanciones, exclusiones o bajas automáticas. La IA es puramente consultiva; la soberanía reside de forma indelegable en los representantes humanos de la MES.</li>
+                    <li><strong>Soberanía Tecnológica y Código Abierto:</strong> Plataforma desarrollada con Universidades Públicas del Conurbano y pymes de software bajo licencias de código abierto (Open Source), alojada en servidores y centros de cómputo nacionales.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4.5 ARANCEL CERO Y TECNOLOGÍA CONVENIENTE -->
+        <h3>4.5. Arancel Cero para Bienes de Capital y Régimen de Tecnología Conveniente</h3>
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-title">🏭 Actualización Tecnológica sin Destruir la Industria Metalúrgica Local</div>
+            <div class="card-desc">
+                <p>El Artículo 22 de la Ley de Salvataje Nacional consagra el <strong>arancel cero, IVA aduanero 0% y tasas portuarias 0%</strong> para la importación de maquinaria industrial moderna, pero subordinado al principio de <strong>Tecnología Conveniente</strong> tutelado por el INTI:</p>
+                <ul>
+                    <li><strong>Principio de No Competencia:</strong> El beneficio aplica exclusivamente a bienes de capital que no posean sustituto nacional de fabricación local.</li>
+                    <li><strong>Los 3 Criterios Objetivos de Exclusión (INTI):</strong> La importación con arancel cero solo procede si la oferta nacional incumple al menos una de estas condiciones:
+                        <br>1. <em>Plazo de Entrega:</em> El fabricante local no entrega en $\le 90$ días corridos.
+                        <br>2. <em>Garantía Técnica:</em> El proveedor local no ofrece cobertura mínima de 12 meses.
+                        <br>3. <em>Precio:</em> El bien nacional supera en más del 30% el valor CIF del bien importado puesto en planta.</li>
+                    <li><strong>Silencio Administrativo Positivo Aduanero en 15 Días:</strong> El perito del INTI tiene un plazo improrrogable de 15 días hábiles para dictaminar. Vencido el plazo sin pronunciamiento, el certificado aduanero de liberación se emite de forma automática.</li>
+                    <li><strong>Encadenamiento Forzoso con Pymes Metalúrgicas Locales:</strong> Las marcas extranjeras deben licenciar el servicio técnico, transferir planos de despiece y proveer repuestos a talleres electromecánicos y centros CIFO del territorio, dinamizando el empleo calificado local.</li>
+                    <li><strong>Inmovilización Patrimonial de 5 Años:</strong> La maquinaria importada no puede ser revendida ni transferida por un lustro, asegurando su afectación exclusiva a la producción real de los talleres del régimen.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 5: RESUMEN POLÍTICO-INDUSTRIAL -->
+        <h2>5. Síntesis de Impacto Territorial</h2>
+        
+        <p>
+            El RIGI del gran capital ofrece estabilidad fiscal a 30 años a multinacionales extractivas que exportan riqueza en bruto sin agregar valor. El <strong>RIGI del Conurbano</strong> y el software <strong>Indinopy</strong> construyen exactamente lo opuesto:
+        </p>
+        <ul>
+            <li>Rescatan la <strong>capacidad manufacturera instalada</strong> en los barrios industriales de San Martín, La Matanza, Lanús y Tres de Febrero.</li>
+            <li>Permiten que las pymes de diseño produzcan en el país con costos transparentes y entregas a tiempo.</li>
+            <li>Devuelven la <strong>dignidad salarial al tallerista</strong>, erradicando el trabajo precarizado mediante crédito al trabajo vivo y no a la especulación.</li>
+        </ul>
+
+        <div style="margin-top: 30px; text-align: center; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 16px;">
+            Documento de Especificación Estratégica · Sistema de Gestión <strong>Indinopy ERP/MES</strong> para la Mesa de Enlace Sectorial (MES).
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Industrial RIGI Conurbano 2026 - Indinopy ERP/MES</title>
+    <style>
+        :root {
+            --bg-body: #0a0e17;
+            --bg-sidebar: #0f172a;
+            --bg-header: #0d1322;
+            --bg-content: #1e293b;
+            --border-ui: #1e293b;
+            --border-light: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --accent: #f59e0b;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* TOPBAR */
+        .topbar {
+            height: 56px;
+            background-color: var(--bg-header);
+            border-bottom: 1px solid var(--border-ui);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .brand-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-title small {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background-color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #1e293b;
+        }
+
+        .top-stats {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-tag {
+            font-size: 11.5px;
+            background-color: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: #cbd5e1;
+        }
+
+        .stat-tag strong {
+            color: #60a5fa;
+        }
+
+        .btn-top-pdf {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #ffffff !important;
+            border: 1px solid #3b82f6;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-top-pdf:hover {
+            background: #1e40af;
+            border-color: #60a5fa;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.5);
+            transform: translateY(-1px);
+        }
+
+        /* APP LAYOUT */
+        .app-layout {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 56px);
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-ui);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-ui);
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-item.active {
+            background-color: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.35);
+        }
+
+        .nav-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .nav-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .nav-item.active .nav-title-group {
+            color: #60a5fa;
+        }
+
+        .nav-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background-color: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .nav-item.active .nav-badge {
+            background-color: rgba(59, 130, 246, 0.25);
+            color: #93c5fd;
+        }
+
+        .nav-desc {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            line-height: 1.35;
+            padding-left: 24px;
+        }
+
+        .sidebar-footer {
+            padding: 14px 18px;
+            border-top: 1px solid var(--border-ui);
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.4;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-footer strong {
+            color: #94a3b8;
+        }
+
+        /* MAIN CONTENT AREA */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0b0f19;
+        }
+
+        /* TOOLBAR */
+        .content-bar {
+            height: 50px;
+            background-color: #0f172a;
+            border-bottom: 1px solid var(--border-ui);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .doc-info-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .doc-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .doc-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-light);
+            color: #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .action-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .action-btn.btn-primary {
+            background-color: var(--primary-dark);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .action-btn.btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* VIEWER PANE (IFRAME) */
+        .viewer-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: #1e293b;
+            overflow: hidden;
+        }
+
+        .viewer-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="brand-group">
+            <span class="brand-badge">INDINOPY</span>
+            <div class="brand-title">
+                Canvas Industrial RIGI Conurbano 2026
+                <small>Gobernanza MES & Protocolo e-OP</small>
+            </div>
+        </div>
+        <div class="top-stats">
+            <div class="stat-tag">🏛️ MES: <strong>7 Sillas Paritarias</strong></div>
+            <div class="stat-tag">⏱️ Timelock: <strong>48h Silencio Positivo</strong></div>
+            <div class="stat-tag">🛡️ Resguardo: <strong>Inembargable CCCN</strong></div>
+            <div class="stat-tag">🏦 Clearing: <strong>BAPRO / FDI</strong></div>
+            <a href="mockup_orden_produccion.pdf" target="_blank" class="btn-top-pdf">
+                <span>📄</span> Abrir PDF Oficial
+            </a>
+        </div>
+    </header>
+
+    <!-- APP LAYOUT -->
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>Colección Documental</span>
+                <span style="font-size: 10px; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px;">8 Piezas</span>
+            </div>
+            <ul class="nav-list" id="navList">
+                <li class="nav-item active" data-id="mockup" onclick="switchDoc('mockup')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>🗎</span>
+                            <span>Mockup e-OP</span>
+                        </div>
+                        <span class="nav-badge">Título de Crédito</span>
+                    </div>
+                    <div class="nav-desc">Instrumento legal-financiero homologado por la MES, con partes, escrow y desglose factorial ítem por ítem.</div>
+                </li>
+
+                <li class="nav-item" data-id="glosario" onclick="switchDoc('glosario')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>📖</span>
+                            <span>Glosario de Conceptos</span>
+                        </div>
+                        <span class="nav-badge">Glosario</span>
+                    </div>
+                    <div class="nav-desc">Guía taxonómica completa: UBO, Merkle Root, CCCN 1251/1356, Silencio 48h, PTF, mermas INTI y Escrow.</div>
+                </li>
+
+                <li class="nav-item" data-id="paper" onclick="switchDoc('paper')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>📄</span>
+                            <span>Paper: Protocolo e-OP</span>
+                        </div>
+                        <span class="nav-badge">Académico</span>
+                    </div>
+                    <div class="nav-desc">Artículo científico formal: PoPW, Timelock 48h, Nash, Puente SAS, Redes CIFO y Algorética de Trinchera.</div>
+                </li>
+
+                <li class="nav-item" data-id="arquitectura" onclick="switchDoc('arquitectura')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>🏛️</span>
+                            <span>Arquitectura MES</span>
+                        </div>
+                        <span class="nav-badge">Gobernanza</span>
+                    </div>
+                    <div class="nav-desc">Estructura institucional: 7 sillas, comisiones, Banco de Maquinaria CIFO, arbitraje 72h y perimetral a inspectores.</div>
+                </li>
+
+                <li class="nav-item" data-id="analisis" onclick="switchDoc('analisis')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>⚙️</span>
+                            <span>Análisis RIGI & Django</span>
+                        </div>
+                        <span class="nav-badge">Especificación</span>
+                    </div>
+                    <div class="nav-desc">Relevamiento de los 5 pilares, adaptación a apps Indinopy (producción, tesorería, contactos) y roadmap.</div>
+                </li>
+
+                <li class="nav-item" data-id="flujos" onclick="switchDoc('flujos')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>🔄</span>
+                            <span>Flujos Documentales</span>
+                        </div>
+                        <span class="nav-badge">Workflow</span>
+                    </div>
+                    <div class="nav-desc">Máquinas de estado y ciclo de comprobantes: Pedidos, OP, Partes, Liquidaciones Façón y Remitos.</div>
+                </li>
+
+                <li class="nav-item" data-id="dossier" onclick="switchDoc('dossier')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>📚</span>
+                            <span>Dossier RIGI Conurbano</span>
+                        </div>
+                        <span class="nav-badge">Matriz</span>
+                    </div>
+                    <div class="nav-desc">El documento político-industrial matriz: 1300+ líneas con articulado de ley y régimen de fomento PyME.</div>
+                </li>
+
+                <li class="nav-item" data-id="tecnica" onclick="switchDoc('tecnica')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>💡</span>
+                            <span>Explicación Técnica</span>
+                        </div>
+                        <span class="nav-badge">Visión & Solución</span>
+                    </div>
+                    <div class="nav-desc">Diagnóstico, módulos Django y los 5 dispositivos: Puente SAS, CIFO, Algorética, Tutela e Inmunidad, y Arancel Cero.</div>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <strong>Indinopy ERP/MES Suite</strong><br>
+                Software Soberano para la Reconstrucción Industrial.
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="content-area">
+            <!-- CONTENT TOOLBAR -->
+            <div class="content-bar">
+                <div class="doc-info-header">
+                    <span id="currentIcon" style="font-size: 18px;">🗎</span>
+                    <span class="doc-title" id="currentTitle">Mockup e-OP (Título de Crédito)</span>
+                    <span class="nav-badge" id="currentBadge">Título de Crédito</span>
+                </div>
+                <div class="doc-actions">
+                    <a id="btnToolbarPdf" href="mockup_orden_produccion.pdf" target="_blank" class="action-btn btn-primary">
+                        <span>📄</span> Abrir PDF Oficial
+                    </a>
+                    <a id="btnDirectLink" href="mockup_orden_produccion.html" target="_blank" class="action-btn">
+                        <span>↗</span> Abrir en Nueva Ventana
+                    </a>
+                </div>
+            </div>
+
+            <!-- VIEWER PANE -->
+            <div class="viewer-container">
+                <iframe id="viewerFrame" class="viewer-iframe" src="mockup_orden_produccion.html" frameborder="0"></iframe>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPT DE NAVEGACIÓN INSTANTÁNEA -->
+    <script>
+        const DOCS = {
+            mockup: {
+                title: "Mockup e-OP (Título de Crédito)",
+                file: "mockup_orden_produccion.html",
+                icon: "🗎",
+                badge: "Título de Crédito",
+                isMockup: true
+            },
+            glosario: {
+                title: "Glosario de Conceptos e-OP",
+                file: "glosario_conceptos_mockup.html",
+                icon: "📖",
+                badge: "Glosario",
+                isMockup: false
+            },
+            paper: {
+                title: "Paper: Protocolo e-OP & PoPW",
+                file: "paper_protocolo_eop_gobernanza_industrial.html",
+                icon: "📄",
+                badge: "Académico",
+                isMockup: false
+            },
+            arquitectura: {
+                title: "Arquitectura Institucional MES",
+                file: "arquitectura_mes_gobernanza.html",
+                icon: "🏛️",
+                badge: "Gobernanza",
+                isMockup: false
+            },
+            analisis: {
+                title: "Análisis RIGI & Modelos Django",
+                file: "analisis_rigi_conurbano_implementacion.html",
+                icon: "⚙️",
+                badge: "Especificación",
+                isMockup: false
+            },
+            flujos: {
+                title: "Flujos Documentales Indinopy",
+                file: "flujos_documentales_indino.html",
+                icon: "🔄",
+                badge: "Workflow",
+                isMockup: false
+            },
+            dossier: {
+                title: "Dossier RIGI Conurbano 2026",
+                file: "dossier_rigi_conurbano_2026.html",
+                icon: "📚",
+                badge: "Matriz",
+                isMockup: false
+            },
+            tecnica: {
+                title: "Explicación Técnica & Solución Indinopy",
+                file: "explicacion_tecnica_proyecto.html",
+                icon: "💡",
+                badge: "Visión & Solución",
+                isMockup: false
+            }
+        };
+
+        function switchDoc(id) {
+            const item = DOCS[id];
+            if (!item) return;
+
+            // Actualizar iframe
+            const frame = document.getElementById('viewerFrame');
+            frame.src = item.file;
+
+            // Actualizar toolbar
+            document.getElementById('currentIcon').textContent = item.icon;
+            document.getElementById('currentTitle').textContent = item.title;
+            document.getElementById('currentBadge').textContent = item.badge;
+            document.getElementById('btnDirectLink').href = item.file;
+
+            // Mostrar botón PDF siempre visible o destacado
+            const btnPdf = document.getElementById('btnToolbarPdf');
+            if (btnPdf) {
+                btnPdf.style.display = item.isMockup ? 'inline-flex' : 'none';
+            }
+
+            // Actualizar estado activo en navegación
+            document.querySelectorAll('.nav-item').forEach(el => {
+                if (el.getAttribute('data-id') === id) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

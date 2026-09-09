@@ -1,5 +1,11 @@
 from django.apps import AppConfig
+from django.utils.translation import gettext_lazy as _
 
 
 class ComprasConfig(AppConfig):
-    name = 'apps.compras'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.compras"
+    verbose_name = _("Compras y Abastecimiento")
+
+    def ready(self):
+        import apps.compras.signals  # noqa

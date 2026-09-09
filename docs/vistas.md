@@ -26,9 +26,11 @@ class OrdenProduccionDetailView(DetailView):
 
 En el Template (`orden_produccion.html`), el condicional `{% if mostrar_costos %}` ocultará:
 - El badge de "ORIGINAL".
-- Las columnas de costo unitario y total.
-- La liquidación de los talleristas.
+- Las columnas de costo unitario y total de insumos requeridos.
+- Las tarifas estimadas y liquidadas de las etapas de talleristas.
 
-## 3. Interfaces de Trabajo Diario
-- **Frontend interno**: Utilizaremos un framework CSS (como Bootstrap 5 o Tailwind CSS) integrado en `base.html` para un desarrollo rápido y responsivo del ERP.
-- Formularios manejados por **Django Forms**, aprovechando la validación del backend directamente en la interfaz.
+## 3. Interfaces de Trabajo Diario y Componentes Reutilizables
+- **Control de Estados (`DocumentoBase`)**: Badges de estado dinámicos (`borrador` gris, `confirmado` azul, `finalizado` verde, `cancelado`/`anulado` rojo).
+- **Gestor de Archivos Adjuntos**: Componente reutilizable en plantillas para listar y subir archivos vinculados a cualquier documento (`{% for adjunto in documento.adjuntos.all %}`).
+- **Curva de Talles y Variantes**: Tablas interactivas que agrupan los productos por template y desglosan cantidades por talle y color.
+- **Frontend interno**: Framework CSS responsivo integrado en `base.html` con formularios validados por **Django Forms**.

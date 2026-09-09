@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manifiesto de Manufactura Soberana - Indinopy ERP/MES</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #0a0e17;
+            --bg-card: #111827;
+            --border-color: #1f2937;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --accent: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .doc-container {
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 36px 44px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .doc-header-badge {
+            display: inline-block;
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--primary-hover);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #f8fafc;
+            margin-top: 1.4em;
+            margin-bottom: 0.6em;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 26px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: #60a5fa;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 6px;
+            color: #93c5fd;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #bfdbfe;
+        }
+
+        p, ul, ol {
+            margin-top: 0.6em;
+            margin-bottom: 0.8em;
+            color: #cbd5e1;
+        }
+
+        li {
+            margin-bottom: 0.3em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #93c5fd;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        blockquote {
+            border-left: 4px solid var(--primary);
+            background-color: rgba(59, 130, 246, 0.08);
+            padding: 10px 16px;
+            margin: 16px 0;
+            border-radius: 0 6px 6px 0;
+            color: #cbd5e0;
+        }
+
+        code {
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12.5px;
+            color: #f1f5f9;
+        }
+
+        pre {
+            background-color: #030712;
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        /* MERMAID INTERACTIVE WRAPPER */
+        .mermaid-wrapper {
+            background-color: #030712;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            margin: 24px 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.2s;
+        }
+
+        .mermaid-wrapper:hover {
+            border-color: #374151;
+        }
+
+        .mermaid-header {
+            background-color: #0f172a;
+            border-bottom: 1px solid #1f2937;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .mermaid-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .mermaid-title:hover {
+            color: #60a5fa;
+        }
+
+        .mermaid-toggle-icon {
+            font-size: 10px;
+            transition: transform 0.2s ease;
+            display: inline-block;
+            color: #60a5fa;
+        }
+
+        .mermaid-wrapper.is-collapsed .mermaid-toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        .mermaid-wrapper.is-collapsed .mermaid-viewport {
+            display: none;
+        }
+
+        .mermaid-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .m-btn {
+            background-color: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .m-btn:hover {
+            background-color: #2563eb;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .mermaid-viewport {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .mermaid-viewport:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-svg-container {
+            transition: transform 0.05s ease-out;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mermaid-svg-container svg {
+            max-width: 95% !important;
+            max-height: 95% !important;
+            height: auto !important;
+            user-select: none;
+        }
+
+        /* FULLSCREEN MODAL */
+        .mermaid-wrapper.is-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 999999 !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            background-color: #030712 !important;
+        }
+
+        .mermaid-wrapper.is-fullscreen .mermaid-viewport {
+            height: calc(100vh - 45px) !important;
+            max-height: none !important;
+            flex: 1;
+        }
+
+        .katex-display {
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 8px 0;
+            max-width: 100%;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 28px 0;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="doc-container">
+        <span class="doc-header-badge">🚩 Doctrina</span>
+        <h1>Manifiesto de la Manufactura Soberana y la Comunidad Organizada</h1>
+<h2>Proclama del Trabajo Vivo, la Orden de Producción Descentralizada y la Tecnología de Trinchera</h2>
+<blockquote>
+<p><strong>Lugar de emisión:</strong> Conurbano Bonaerense, República Argentina<br />
+<strong>Fecha:</strong> Septiembre de 2026<br />
+<strong>Destino:</strong> A los talleristas, diseñadores, programadores de código abierto, sindicatos y fuerzas productivas de la Nación<br />
+<strong>Marco doctrinario:</strong> <a href="dossier_rigi_conurbano_2026.html">Dossier RIGI Conurbano 2026</a><br />
+<strong>Implementación de software:</strong> <strong>Indinopy</strong> (ERP &amp; MES de Soberanía Industrial)  </p>
+</blockquote>
+<hr />
+<h2>🤖 Guía de Contexto para Agentes de IA y Lectores Técnicos</h2>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>Definición de propósito:</strong> Este documento es el <strong>Manifiesto Político-Tecnológico y Operativo</strong> que fundamenta la arquitectura del sistema <strong>Indinopy</strong> y el régimen de la <strong>Mesa de Enlace Sectorial (MES)</strong>. Sintetiza la filosofía de la <em>Comunidad Organizada</em> aplicada a la producción del siglo XXI: la unión indisoluble entre el software libre de código abierto, la ingeniería financiera sin intermediación bancaria parasitaria y la dignidad del trabajo manual manufacturero.</p>
+</blockquote>
+<hr />
+<h2>I. Preámbulo: La Rebelión del Taller frente a la Muerte Industrial</h2>
+<p>Treinta talleres cierran por día en la Argentina. No cierran por falta de oficio, ni por falta de vocación, ni porque la sociedad haya dejado de necesitar calzado o abrigo. Cierran porque sobre sus espaldas pesa un régimen perverso: una macroeconomía que subsidia la timba financiera y abre las compuertas a la importación desleal, mientras una estructura fiscal arcaica trata al tallerista de tres máquinas con el mismo rigor punitivo que a un conglomerado multinacional.</p>
+<p>El eslabón más noble y sacrificado de la cadena —el aparador de barrio, la costurera a destajo, el cortador que aprendió el oficio de su padre— sobrevive hoy en la informalidad no como delito, sino como <strong>legítima autodefensa</strong>. Trabaja en la penumbra no para evadir, sino para que una boleta de luz confiscatoria o un embargo de cuenta no le quiten el pan a sus hijos. Para que ese taller trabaje, un diseñador o un pequeño industrial debe prestar su CUIT personal, arriesgando su casa y su familia en un "purgatorio fiscal" que tributa Ganancias sobre costos reales de mano de obra que el Estado se niega a reconocer porque no tienen factura formal.</p>
+<p>Mientras tanto, los bancos comerciales —alimentados por la renta de la deuda pública— le niegan un adelanto de $300.000 a quien tiene los cueros sobre la mesa y los pedidos listos para cortar, exigiéndole balances auditados y escrituras propietarias que jamás tendrá.</p>
+<p><strong>Decimos basta.</strong> No venimos a mendigar subsidios de supervivencia que perpetúan la miseria. No venimos a pedir dádivas a los escritorios de la burocracia centralizada. </p>
+<p>Venimos a proclamar que <strong>el trabajo real vale más que cualquier balance bancario</strong> y que, organizados en nuestras comunidades, poseemos la fuerza moral, la capacidad técnica y las herramientas de software para fundar un <strong>nuevo orden productivo soberano</strong>.</p>
+<hr />
+<h2>II. Nuestra Declaración de Valores: Qué Defendemos y Qué Descartamos</h2>
+<p>A través de la experiencia forjada en las mesas de corte y en las terminales de código, establecemos los siguientes principios irrenunciables:</p>
+<pre><code class="language-text">    EL TRABAJO VIVO Y VERIFICADO  por sobre  EL SCORING PATRIMONIAL BANCARIO
+ LA ORDEN DE PRODUCCIÓN SOBERANA  por sobre  LA INTERMEDIACIÓN FINANCIERA
+LA TECNOLOGÍA CONVENIENTE Y ABIERTA  por sobre  LA PATENTE CORPORATIVA CERRADA
+   LA RED DE TALLERES FEDERADOS  por sobre  LA BUROCRACIA CENTRALIZADA
+   LA TRANSPARENCIA ANTE EL PUEBLO  por sobre  LA RENTA PARÁSITA DE MARCA
+</code></pre>
+<ol>
+<li><strong>El trabajo vivo por sobre el scoring bancario:</strong> El valor del crédito no nace de cuánto capital acumulaste en el pasado, sino de tu capacidad real de transformar cuero en calzado hoy. La garantía del crédito es la producción en marcha.</li>
+<li><strong>La Orden de Producción por sobre la intermediación:</strong> La orden de trabajo no es un papel descartable; es un título legítimo de valor. El dinero debe seguir al trabajo, no el trabajo arrodillarse ante el dinero.</li>
+<li><strong>La tecnología conveniente por sobre la patente cerrada:</strong> Rechazamos la maquinaria con bloqueos de software corporativo y repuestos dolarizados inaccesibles. Abrazamos la tecnología que puede ser reparada, despiezada y mantenida por los torneros y metalúrgicos de nuestros propios distritos.</li>
+<li><strong>La red federada por sobre la burocracia:</strong> La planificación no desciende de funcionarios iluminados; emerge de la <em>Mesa de Enlace Sectorial</em>, donde quien corta, quien diseña y quien cose se sientan en paridad de condiciones con el Estado como árbitro.</li>
+<li><strong>La verdad radical de costos ante el consumidor:</strong> El pueblo tiene derecho a saber qué compra. Defendemos el precio justo: que el comprador sepa cuánto del calzado pagó el trabajo del tallerista, cuánto los materiales, cuánto los impuestos y cuánto la ganancia comercial.</li>
+</ol>
+<hr />
+<h2>III. El Decálogo de Trinchera: Las 10 Cláusulas de la Comunidad Organizada</h2>
+<p>Para gobernar nuestra producción sin patrones usureros ni inspectores extorsionadores, declaramos las siguientes diez reglas operativas:</p>
+<h3>1. La Orden de Producción es nuestro dinero y nuestro título de dignidad</h3>
+<p>La <strong>e-OP digital</strong> es un contrato inviolable y un título crediticio de descuento automático. Quien tiene una e-OP registrada ante la Mesa de Enlace tiene un activo de valor preferente ante cualquier entidad financiera o fiduciaria del país.</p>
+<h3>2. El Hito Cero es sagrado: nadie enciende un motor sin anticipo</h3>
+<p>Se terminó la costumbre patronal de entregar materiales y esperar 60 días para cobrar. Al firmarse la e-OP y despacharse los insumos, el <strong>Fideicomiso de Desarrollo Industrial (FDI)</strong> libera de forma automática entre el 30% y el 40% del valor del servicio (o 50% con Sello de Buen Diseño) a la cuenta del tallerista. El trabajo se arranca con capital en el bolsillo.</p>
+<h3>3. El cuero es del comitente; las manos son del taller (Doctrina de Maquila)</h3>
+<p>La mercadería que viaja y reposa en el taller de barrio está blindada por el régimen de Maquila y Locación de Obra (Arts. 1251 y 1356 CCCN). Es <strong>estrictamente inembargable</strong>. Si la marca quiebra o el taller tiene litigios, los cueros, suelas y cortes no se tocan: son activos de afectación productiva territorial.</p>
+<h3>4. El Estado tiene 48 horas: si calla, la producción avanza (Silencio Positivo)</h3>
+<p>La burocracia no tiene derecho a frenar la rueda. Si la Mesa de Crédito no objeta formalmente una e-OP en 48 horas hábiles, el sistema informático activa el <strong>Silencio Administrativo Positivo</strong> y libera los fondos. Ninguna interna partidaria ni desidia administrativa congelará la comida de una familia trabajadora.</p>
+<h3>5. Si la máquina se detiene, el impuesto es cero (Suspensión Activa de Oficio)</h3>
+<p>El impuesto debe seguir a la producción física, no al calendario del burócrata. Si transcurren 15 días sin que un tallerista reciba un nuevo lote de trabajo, el sistema muta su estado a <strong>Suspensión Activa</strong>: su carga fiscal cae a cero pesos ($0) y no se devenga un solo centavo de deuda previsional o intereses retroactivos.</p>
+<h3>6. Filtro de Tecnología Conveniente: no importamos chatarra ni cerrojos</h3>
+<p>Ningún bien de capital importado con arancel cero entrará al país si tiene producción nacional sustituta. Y si no la tiene, la marca extranjera está obligada a liberar planos de despiece, diagramas electrónicos y software libre, licenciando el servicio técnico a las pymes metalúrgicas y escuelas de oficios locales.</p>
+<h3>7. Tutela Sindical de Urgencia: auditar para elevar, nunca para trabar</h3>
+<p>El sindicato no es un inspector de aduana previa: es el guardián de la dignidad obrera. Ejerce su rol mediante <strong>auditoría ex-post</strong>. Si constata precios de miseria o precarización, congela el tramo final en Escrow por 48 horas para exigir la readecuación salarial, pero la mercadería no se pudre en el taller si la empresa presenta fianza líquida de resguardo.</p>
+<h3>8. Desacople Energético y Tarifa Plana Industrial</h3>
+<p>Las máquinas de nuestros talleres no pueden pagar la energía al precio especulativo de Wall Street. Instituimos la <strong>Tarifa Plana Manufacturera</strong>, calculada en pesos argentinos sobre los costos reales de generación local más un margen justo, subsidiada por la renta de los recursos naturales que exporta la Patria.</p>
+<h3>9. El Sello QR de Trazabilidad Socioproductiva</h3>
+<p>Cada par de borcegos, cada zapato y cada prenda terminada llevará en su lengüeta o etiqueta un código QR inviolable. Al escanearlo, el consumidor verá la verdad desglosada:
+* Cuánto cobró el tallerista por su mano de obra.
+* Cuánto costaron los cueros y suelas nacionales.
+* Cuánto se pagó en impuestos y aportes sociales.
+* Cuánto retuvo la marca por su diseño, logística y comercialización.</p>
+<h3>10. Perimetral Administrativa ante la Extorsión</h3>
+<p>Quien pida coima a un tallerista de trinchera no es un inspector: es un saboteador de la industria nacional. Ante la denuncia fundada en la MES, el taller adquiere <strong>180 días de inmunidad fiscal total</strong> y el funcionario queda inhabilitado con perimetral informática y territorial de inmediato.</p>
+<hr />
+<h2>IV. El Código como Trinchera: Por qué el Software Libre es Soberanía</h2>
+<p>Rechazamos los sistemas de gestión enlatados de corporaciones extranjeras que cobran licencias en dólares y tratan a la producción como una planilla de cálculo fría. </p>
+<p><strong>Indinopy</strong> nace desde las entrañas del Conurbano y se publica bajo licencias de código abierto porque entendemos que <strong>el software es infraestructura soberana</strong>:</p>
+<pre><code class="language-text">       EL CÓDIGO ABIERTO ES A NUESTROS SISTEMAS
+                    LO QUE 
+       EL PLANO DE DESPIECE ES A NUESTRAS MÁQUINAS:
+LA GARANTÍA DE QUE NUNCA DEPENDEREMOS DE UN AMO EXTERNO.
+</code></pre>
+<ul>
+<li>Programamos con partida doble en inventario para que el stock de cuero no mienta.</li>
+<li>Programamos algoritmos de asignación solidaria para que el trabajo se distribuya equitativamente y no se concentre en monopolios de amigos.</li>
+<li>Programamos máquinas de estados con timelocks automáticos para que ningún burócrata pueda cajonear la aprobación de una orden de producción.</li>
+</ul>
+<p>Nuestras bases de datos residen en servidores nacionales. Nuestros algoritmos de precios justos son públicos y auditables. El código fuente es patrimonio común de la industria nacional.</p>
+<hr />
+<h2>V. Convocatoria a las Fuerzas Vivas de la Patria</h2>
+<p>Llamamos a sellar una alianza histórica entre todos los eslabones que transforman la materia y generan riqueza real:</p>
+<ul>
+<li><strong>Al Tallerista de Barrio y al Aparador Artesanal:</strong> Tu oficio no es cosa del pasado. Tus manos son la columna vertebral de la soberanía industrial. No te escondas más: la Mesa de Enlace y el Monotributo Productivo son tu trinchera y tu escudo.</li>
+<li><strong>Al Diseñador, Modelista y Pyme de Calzado:</strong> Dejá de poner la cara y tu patrimonio en soledad contra un sistema que te devora. El Puente SAS y la e-OP te liberan del riesgo de identidad prestada y te devuelven la rentabilidad que la usura bancaria te confiscaba.</li>
+<li><strong>Al Programador, Hacker e Ingeniero de Software:</strong> Dejá de vender tu talento por horas para enriquecer aplicaciones de timba financiera o delivery precarizado en el extranjero. Vení a programar el sistema operativo de nuestras fábricas, las pasarelas de pago de nuestro pueblo y las redes de distribución de nuestra industria.</li>
+<li><strong>Al Obrero Metalúrgico, Matricero y Tornero:</strong> Las máquinas que cosen y pegan el calzado necesitan tus matrices, tus bujes y tus engranajes. El Banco Comunitario de Maquinarias te necesita como maestro de mantenimiento soberano.</li>
+<li><strong>Al Joven de la Escuela Técnica y de los CIFO:</strong> En el calzado y la marroquinería hay un arte milenario y un futuro de trabajo calificado esperándote. No hay dignidad en el subsidio pasivo; la dignidad está en el orgullo de ver un par de borcegos terminado y saber que fue hecho por tus manos.</li>
+</ul>
+<hr />
+<h2>VI. Rúbrica Final</h2>
+<p>No aceptamos el destino de ser una colonia importadora de calzado descartable. Reivindicamos el derecho de nuestro pueblo a calzarse con trabajo argentino, con cuero argentino y con tecnología argentina.</p>
+<p>Frente a la desolación de la especulación, levantamos la bandera de la <strong>Comunidad Organizada</strong>.</p>
+<p><strong>Escribir código. Coser zapatos. Defender la industria. Construir la Patria.</strong></p>
+<hr />
+<p><em>Dado en el territorio fabril del Conurbano Bonaerense, a los 9 días del mes de septiembre de 2026.</em><br />
+<em>Por la Mesa de Enlace Sectorial, los Talleres Federados y el Colectivo de Desarrollo Indinopy.</em></p>
+    </div>
+
+    <script>
+        // Initialize KaTeX
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ],
+                throwOnError: false,
+                ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+            });
+        });
+
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            fontFamily: 'inherit',
+            flowchart: { useMaxWidth: false, htmlLabels: true },
+            sequence: { useMaxWidth: false },
+            gantt: { useMaxWidth: false }
+        });
+
+        // Controller for interactive pan & zoom
+        function setupMermaidInteractive(wrapper) {
+            const title = wrapper.querySelector('.mermaid-title');
+            const viewport = wrapper.querySelector('.mermaid-viewport');
+            const svgContainer = wrapper.querySelector('.mermaid-svg-container');
+            const btnIn = wrapper.querySelector('[data-action="zoom-in"]');
+            const btnOut = wrapper.querySelector('[data-action="zoom-out"]');
+            const btnReset = wrapper.querySelector('[data-action="reset"]');
+            const btnFull = wrapper.querySelector('[data-action="fullscreen"]');
+
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+
+            function updateTransform() {
+                svgContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+
+            // Toggle collapse
+            title.addEventListener('click', () => {
+                wrapper.classList.toggle('is-collapsed');
+            });
+
+            // Zoom In / Out / Reset
+            btnIn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = Math.min(5, scale * 1.25);
+                updateTransform();
+            });
+
+            btnOut.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = Math.max(0.2, scale / 1.25);
+                updateTransform();
+            });
+
+            btnReset.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            });
+
+            // Fullscreen
+            btnFull.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isFull = wrapper.classList.toggle('is-fullscreen');
+                btnFull.innerHTML = isFull ? '<span>✕</span> Cerrar' : '<span>⤢</span> Pantalla Completa';
+                document.body.style.overflow = isFull ? 'hidden' : '';
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && wrapper.classList.contains('is-fullscreen')) {
+                    wrapper.classList.remove('is-fullscreen');
+                    btnFull.innerHTML = '<span>⤢</span> Pantalla Completa';
+                    document.body.style.overflow = '';
+                    scale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform();
+                }
+            });
+
+            // Pan Dragging
+            viewport.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.m-btn')) return;
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // Wheel Zoom
+            viewport.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const factor = e.deltaY < 0 ? 1.15 : 0.87;
+                scale = Math.min(Math.max(0.2, scale * factor), 5);
+                updateTransform();
+            }, { passive: false });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
+            mermaidBlocks.forEach(function(block, idx) {
+                const pre = block.parentElement;
+                const code = block.textContent;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'mermaid-wrapper';
+                wrapper.innerHTML = `
+                    <div class="mermaid-header">
+                        <div class="mermaid-title" title="Click para contraer o expandir">
+                            <span class="mermaid-toggle-icon">▼</span>
+                            <span>Diagrama ${idx + 1}</span>
+                            <small style="color: #64748b; font-size: 10px; font-weight: normal; margin-left: 6px;">(Arrastrar para mover · Rueda para zoom)</small>
+                        </div>
+                        <div class="mermaid-toolbar">
+                            <button class="m-btn" data-action="zoom-in" title="Acercar">＋ Zoom</button>
+                            <button class="m-btn" data-action="zoom-out" title="Alejar">－</button>
+                            <button class="m-btn" data-action="reset" title="Centrar">⟲ Centrar</button>
+                            <button class="m-btn" data-action="fullscreen" title="Pantalla completa">⤢ Pantalla Completa</button>
+                        </div>
+                    </div>
+                    <div class="mermaid-viewport">
+                        <div class="mermaid-svg-container">
+                            <div class="mermaid">${code}</div>
+                        </div>
+                    </div>
+                `;
+
+                pre.replaceWith(wrapper);
+                setupMermaidInteractive(wrapper);
+            });
+
+            if (mermaidBlocks.length > 0) {
+                try {
+                    mermaid.run();
+                } catch(e) {
+                    console.warn("Mermaid error:", e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

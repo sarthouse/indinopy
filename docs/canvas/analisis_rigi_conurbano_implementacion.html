@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis RIGI & Modelos Django - Indinopy ERP/MES</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #0a0e17;
+            --bg-card: #111827;
+            --border-color: #1f2937;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --accent: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .doc-container {
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 36px 44px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .doc-header-badge {
+            display: inline-block;
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--primary-hover);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #f8fafc;
+            margin-top: 1.4em;
+            margin-bottom: 0.6em;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 26px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: #60a5fa;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 6px;
+            color: #93c5fd;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #bfdbfe;
+        }
+
+        p, ul, ol {
+            margin-top: 0.6em;
+            margin-bottom: 0.8em;
+            color: #cbd5e1;
+        }
+
+        li {
+            margin-bottom: 0.3em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #93c5fd;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        blockquote {
+            border-left: 4px solid var(--primary);
+            background-color: rgba(59, 130, 246, 0.08);
+            padding: 10px 16px;
+            margin: 16px 0;
+            border-radius: 0 6px 6px 0;
+            color: #cbd5e0;
+        }
+
+        code {
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12.5px;
+            color: #f1f5f9;
+        }
+
+        pre {
+            background-color: #030712;
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        /* MERMAID INTERACTIVE WRAPPER */
+        .mermaid-wrapper {
+            background-color: #030712;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            margin: 24px 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.2s;
+        }
+
+        .mermaid-wrapper:hover {
+            border-color: #374151;
+        }
+
+        .mermaid-header {
+            background-color: #0f172a;
+            border-bottom: 1px solid #1f2937;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .mermaid-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .mermaid-title:hover {
+            color: #60a5fa;
+        }
+
+        .mermaid-toggle-icon {
+            font-size: 10px;
+            transition: transform 0.2s ease;
+            display: inline-block;
+            color: #60a5fa;
+        }
+
+        .mermaid-wrapper.is-collapsed .mermaid-toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        .mermaid-wrapper.is-collapsed .mermaid-viewport {
+            display: none;
+        }
+
+        .mermaid-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .m-btn {
+            background-color: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .m-btn:hover {
+            background-color: #2563eb;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .mermaid-viewport {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .mermaid-viewport:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-svg-container {
+            transition: transform 0.05s ease-out;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mermaid-svg-container svg {
+            max-width: 95% !important;
+            max-height: 95% !important;
+            height: auto !important;
+            user-select: none;
+        }
+
+        /* FULLSCREEN MODAL */
+        .mermaid-wrapper.is-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 999999 !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            background-color: #030712 !important;
+        }
+
+        .mermaid-wrapper.is-fullscreen .mermaid-viewport {
+            height: calc(100vh - 45px) !important;
+            max-height: none !important;
+            flex: 1;
+        }
+
+        .katex-display {
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 8px 0;
+            max-width: 100%;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 28px 0;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="doc-container">
+        <span class="doc-header-badge">⚙️ Especificación Técnica</span>
+        <h1>Análisis del Dossier "RIGI Conurbano 2026" e Integración Arquitectónica en Indinopy</h1>
+<blockquote>
+<p><strong>Referencia base:</strong> <a href="dossier_rigi_conurbano_2026.html">Dossier RIGI Conurbano 2026</a><br />
+<strong>Sistema destino:</strong> <strong>Indinopy</strong> — ERP &amp; MES Industrial para Manufactura de Calzado, Cuero e Indumentaria<br />
+<strong>Fecha:</strong> Septiembre de 2026<br />
+<strong>Estado:</strong> Especificación Técnica y Plan de Implementación  </p>
+</blockquote>
+<hr />
+<h2>🤖 Guía de Contexto para Agentes de IA y Desarrolladores</h2>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>Instrucción de lectura para agentes:</strong> Este documento no es un ensayo teórico aislado; es una <strong>especificación técnica de ingeniería de software</strong> que traduce un proyecto de política industrial y marco normativo real argentino a modelos de datos, servicios y reglas de negocio para el código fuente de <strong>Indinopy</strong>.</p>
+</blockquote>
+<h3>¿De qué estamos hablando? (Resumen Ejecutivo de Contexto)</h3>
+<ol>
+<li><strong>El Problema Real:</strong> En Argentina, la manufactura de calzado e indumentaria opera con un alto grado de tercerización en talleres periféricos familiares (aparadores, costureros, armadores a destajo). Históricamente, estos talleres viven en la informalidad o en el "purgatorio fiscal" (cobran en efectivo o usan CUITs prestados de familiares para no ahogarse en impuestos y ejecuciones bancarias). Al no haber facturas, la empresa formal (Indino) no puede deducir sus costos reales de mano de obra en Ganancias ni computar el crédito fiscal de IVA, tributando sobre utilidades ficticias.</li>
+<li><strong>El Documento Fuente (<code>Dossier RIGI Conurbano 2026.md</code>):</strong> Es un proyecto de Ley de Salvataje Nacional y Régimen de Incentivo (RIGI del Conurbano) para micro y pequeñas fábricas (hasta 30 operarios). Plantea que en lugar de ahogar al taller con inspecciones o dejarlo a merced de la usura bancaria tradicional, se cree un <strong>ecosistema de soberanía productiva</strong>:</li>
+<li><strong>Mesa de Enlace Sectorial (MES):</strong> Órgano tripartito (Estado/INTI, Sindicatos, Cámaras, Talleristas) que gobierna la cadena.</li>
+<li><strong>Fideicomiso de Desarrollo Industrial (FDI):</strong> Fondo de ahorro comunitario que reemplaza a los bancos comerciales.</li>
+<li><strong>La Orden de Producción como Título de Crédito (e-OP):</strong> El banco o billetera no pide balances pasados al tallerista; financia el trabajo en curso tomando la OP registrada como garantía real de producción.</li>
+<li><strong>Hito Cero &amp; Escrow Digital:</strong> Anticipo automático de arranque (30% al 40%) al entregar los insumos al tallerista, y pagos posteriores liberados en custodia (<em>Escrow</em>) contra la certificación de hitos físicos cumplidos.</li>
+<li><strong>Régimen de Maquila y Façón (Propuesta de Reforma Ley 25.113 vs. CCCN Actual):</strong> Actualmente en Argentina la <strong>Ley 25.113 rige con exclusividad para el sector agroindustrial</strong> (productores agropecuarios entregando materia prima con pago en especie y no sujeción tributaria). En el sector del calzado y la indumentaria rige la figura del <strong>façón</strong> (servicio de confección remunerado en dinero), la cual carece de ley propia y se apoya en la <em>Locación de Obra</em> (Arts. 1251 y ss. del CCCN) y <em>Depósito</em> (Arts. 1356 y ss. CCCN), lo que genera vulnerabilidad laboral (Art. 30 LCT) y riesgo de embargo sobre los insumos ante problemas del tallerista. El Dossier RIGI propone <strong>reformar la Ley 25.113 para extender la figura a la "Maquila Industrial"</strong>. Indinopy debe blindar documentalmente la propiedad inembargable de los insumos bajo el CCCN actual y dejar la arquitectura preparada para la eventual ampliación de la Ley 25.113.</li>
+<li><strong>Monotributo Productivo Automatizado:</strong> Alta simplificada con la primera e-OP, retención de 1-2% por cobro efectivo, y "Suspensión Activa de Oficio" (carga fiscal $0 si no hay órdenes activas, sin acumular deudas cíclicas).</li>
+<li><strong>Sello QR de Trazabilidad Socioproductiva:</strong> Código escaneable en el calzado para que el consumidor final vea el desglose ético real: cuánto va al tallerista, cuánto a materiales, cuánto a impuestos y cuánto a la marca.</li>
+<li><strong>El Rol de Indinopy:</strong> Indinopy es el ERP/MES de calzado de este repositorio. Ya cuenta con inventario por partida doble estilo Odoo (<code>apps/inventario</code>), fichas técnicas dinámicas BOM (<code>apps/produccion</code>), y seguimiento de etapas a fasón (<code>OPEtapaTracking</code>). <strong>Este documento detalla exactamente qué clases, campos y migraciones deben agregarse en Django</strong> para implementar los puntos del Dossier.</li>
+</ol>
+<hr />
+<h2>1. Introducción y Encuadre Doctrinario-Técnico</h2>
+<p>El <strong>Dossier de Reconstrucción Industrial "RIGI del Conurbano 2026"</strong> y el proyecto de <strong>Ley de Salvataje para la Cadena de Valor del Calzado</strong> sintetizan la realidad de un entramado productivo bajo severo estrés macroeconómico. Frente a la apertura importadora, la caída del consumo interno y la asfixia por costos fijos y presión fiscal, el documento propone una salida basada en la <strong>Comunidad Organizada</strong>: articular al Estado, los sindicatos, las marcas comitentes, los diseñadores y los talleristas periféricos bajo una gobernanza común (la <strong>Mesa de Enlace Sectorial - MES</strong>) y un fondo financiero desintermediado (el <strong>Fideicomiso de Desarrollo Industrial - FDI</strong>).</p>
+<p><strong>Indinopy</strong> no es un ERP administrativo abstracto; fue concebido para resolver la operación real, física y dual de las fábricas de calzado en Argentina. Su motor de inventario por partida doble, su desglose de fichas técnicas dinámicas (BOM) y su módulo de tracking de etapas a fasón lo posicionan como la <strong>plataforma tecnológica natural</strong> para digitalizar, transparentar e implementar los principios del RIGI del Conurbano.</p>
+<p>El presente documento analiza cada eje del Dossier y define las especificaciones de ingeniería de software requeridas para transformar las directivas de política industrial en <strong>modelos de datos, servicios, validaciones y flujos operativos concretos</strong> dentro de Indinopy.</p>
+<hr />
+<h2>2. Los 5 Pilares del Dossier: Diagnóstico e Impacto en Sistemas</h2>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph BLOQUE_A[&quot;EJE 1: URGENCIA Y FINANCIAMIENTO&quot;]
+        direction TB
+        subgraph P1[&quot;1. Escudo de Resistencia (Salvataje)&quot;]
+            A1[&quot;Alivio Tarifario y Energético 50%&quot;]
+            A2[&quot;Amnistía Fiscal y Cuenta Tributaria Única&quot;]
+            A3[&quot;Suspensión Embargos s/ Maquinaria&quot;]
+        end
+        subgraph P2[&quot;2. Financiamiento Soberano (FDI)&quot;]
+            B1[&quot;La OP como Colateral Crediticio&quot;]
+            B2[&quot;Hito Cero: Anticipo 30-40% sin Historial&quot;]
+            B3[&quot;Escrow Digital y Pagos contra Hitos&quot;]
+        end
+    end
+
+    subgraph BLOQUE_B[&quot;EJE 2: RÉGIMEN ESTRUCTURAL Y LEGAL&quot;]
+        direction TB
+        subgraph P3[&quot;3. RIGI Conurbano &amp; Tecnología&quot;]
+            C1[&quot;Estabilidad Fiscal por 10 Años&quot;]
+            C2[&quot;Filtro de Tecnología Conveniente (INTI)&quot;]
+            C3[&quot;Aportes Patronales Financiados&quot;]
+        end
+        subgraph P4[&quot;4. Protección Identidad Fiscal&quot;]
+            D1[&quot;Puente SAS vs. Purgatorio Fiscal&quot;]
+            D2[&quot;Monotributo Productivo Automatizado&quot;]
+            D3[&quot;Suspensión Activa de Oficio&quot;]
+        end
+        subgraph P5[&quot;5. Régimen de Maquila y Soberanía&quot;]
+            E1[&quot;Titularidad Separada de Insumos&quot;]
+            E2[&quot;Inmunidad de Stock ante Quiebras&quot;]
+            E3[&quot;Tolerancia Técnica de Mermas (INTI)&quot;]
+        end
+    end
+
+    BLOQUE_A ==&gt; INDINO[&quot;Plataforma Central Indinopy&lt;br/&gt;(ERP + MES de Trinchera)&quot;]
+    BLOQUE_B ==&gt; INDINO
+</code></pre>
+<h3>2.1. El Nudo de la Informalidad y el "Purgatorio Fiscal"</h3>
+<ul>
+<li><strong>Diagnóstico:</strong> El aparador o costurero cobra en efectivo porque el salto al régimen general o las cuotas fijas de monotributo devengan deudas impositivas incluso en períodos de parálisis fabril. Al no facturar, la pyme o diseñador formal pierde la deducción de mano de obra en el Impuesto a las Ganancias (30% a 50% del costo) y no puede computar crédito fiscal de IVA, tributando sobre utilidades ficticias.</li>
+<li><strong>Respuesta en el Sistema:</strong> Indinopy debe admitir la convivencia entre proveedores formales y en proceso de regularización, calcular la <strong>Brecha Fiscal de Costos</strong> y preparar las estructuras para la deducción presunta transitoria (hasta 35%) prevista en el proyecto de ley.</li>
+</ul>
+<h3>2.2. La Orden de Producción como Activo Financiero y Colateral</h3>
+<ul>
+<li><strong>Diagnóstico:</strong> Los bancos comerciales rechazan a los talleristas por falta de balances o garantías propietarias. La solución del FDI es tomar la <strong>Orden de Producción (e-OP)</strong> como colateral ejecutable por flujo.</li>
+<li><strong>Respuesta en el Sistema:</strong> La OP de Indinopy debe transicionar de una entidad interna a un <strong>instrumento legal y financiero interoperable</strong>, con hash criptográfico, hitos de avance verificables y liquidación desacoplada en custodia (<em>Escrow</em>).</li>
+</ul>
+<h3>2.3. Contrato de Maquila e Inembargabilidad de Activos (Situación Legal y Estrategia)</h3>
+<ul>
+<li><strong>El Marco Legal Vigente (Ley 25.113 - Ámbito Agropecuario):</strong></li>
+<li>La <strong>Ley 25.113 de Maquila rige actualmente de forma exclusiva para insumos y productos agroindustriales</strong> (caña de azúcar, vitivinicultura, leche, granos, carne, etc.). Su estructura está diseñada para que un productor agropecuario entregue materia prima y cobre en especie (con una parte del producto elaborado), estableciendo por ley que el productor mantiene la propiedad en todo momento, que el traspaso no constituye hecho imponible y que el stock no puede ser embargado ante quiebra del industrial.</li>
+<li><strong>El Vacío Legal en la Manufactura (Calzado e Indumentaria - El "Façón"):</strong></li>
+<li>La tercerización de etapas fabriles en calzado (corte, rebajado, aparado, armado) se conoce operativamente como <strong>façón</strong>, pero <strong>carece de una ley específica propia</strong>.</li>
+<li>En la práctica jurídica argentina actual, se encuadra genéricamente en el Código Civil y Comercial de la Nación (CCCN) como <strong>Locación de Obra con provisión de materiales por el comitente (Arts. 1251 y 1262 inc. b CCCN)</strong> y <strong>Depósito Regular en Custodia (Arts. 1356 y ss. CCCN)</strong>.</li>
+<li>A diferencia de la maquila agropecuaria, el façón se remunera en dinero (tarifa por par/servicio) y está plenamente gravado por IVA e Ingresos Brutos. Esto expone a las empresas a dos contingencias críticas:<ol>
+<li><em>Solidaridad Laboral (Art. 30 LCT):</em> Riesgo de que la justicia laboral presuma relación de dependencia o fraude laboral si el tallerista es informal.</li>
+<li><em>Embargos Judiciales sobre Materia Prima:</em> Si el tallerista es embargado por deudas particulares o fiscales, los oficiales de justicia suelen secuestrar el cuero, suelas y cortes hallados en el taller bajo la presunción de que pertenecen a quien tiene la tenencia física.</li>
+</ol>
+</li>
+<li><strong>La Propuesta del Dossier RIGI:</strong></li>
+<li>Plantea la <strong>reforma de la Ley 25.113</strong> para extender su alcance a la manufactura no agropecuaria ("Maquila Industrial"), otorgándole rango de ley a la inembargabilidad de los insumos y desarticulando la presunción de dependencia laboral cuando medie una e-OP registrada ante la MES.</li>
+<li><strong>Respuesta en el Sistema (Cómo opera Indinopy hoy):</strong></li>
+<li>Mientras dicha reforma legislativa sea un proyecto, Indinopy debe blindar a la empresa bajo las herramientas más sólidas del CCCN actual:<ul>
+<li>Toda orden y remito de traslado emitido por Indinopy (<code>TRA-...</code>) debe instrumentar documentalmente la <strong>Locación de Obra (Art. 1251 CCCN)</strong> junto con el <strong>Depósito en Custodia (Art. 1356 CCCN)</strong>, dejando constancia de que la propiedad de los insumos permanece inalterable en el comitente.</li>
+<li>El modelo de datos de <code>OrdenProduccion</code> queda parametrizado para admitir el régimen de façón bajo CCCN actual y la eventual adopción de la figura de Maquila Industrial ampliada.</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2>3. Matriz de Correspondencia: Dossier RIGI vs. Módulos Indinopy</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Eje del Dossier RIGI</th>
+<th style="text-align: left;">Concepto Operativo</th>
+<th style="text-align: left;">Aplicación / Módulo Indinopy</th>
+<th style="text-align: left;">Estado Actual</th>
+<th style="text-align: left;">Requerimiento de Desarrollo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Sección II / Anexo II</strong></td>
+<td style="text-align: left;">Orden de Producción como activo (e-OP)</td>
+<td style="text-align: left;"><code>apps.produccion</code></td>
+<td style="text-align: left;">Implementado como OP fabril interna</td>
+<td style="text-align: left;">Incorporar hash único, UUID, metadata legal de façón/maquila y esquema multitaller.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sección II.B / Anexo II.C</strong></td>
+<td style="text-align: left;">Hito Cero (Anticipo) y Escrow Digital</td>
+<td style="text-align: left;"><code>apps.tesoreria</code></td>
+<td style="text-align: left;">Modelos pendientes de diseño</td>
+<td style="text-align: left;">Crear modelos <code>HitoPago</code>, <code>LiquidacionServicioFason</code> y lógica de anticipos por hito.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sección VIII.B</strong></td>
+<td style="text-align: left;">Bolsa Sectorial y Perfil de Capacidades</td>
+<td style="text-align: left;"><code>apps.contactos</code></td>
+<td style="text-align: left;">Contacto unificado con CUIT/IVA</td>
+<td style="text-align: left;">Extender modelo para registrar capacidad semanal (pares/sem), especialidades y scoring.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sección V / Plazos Aduana</strong></td>
+<td style="text-align: left;">Tolerancia de Mermas (INTI) e Importación</td>
+<td style="text-align: left;"><code>apps.produccion</code> / <code>apps.inventario</code></td>
+<td style="text-align: left;">Mermas calculadas solo post-cierre</td>
+<td style="text-align: left;">Parámetros de tolerancia porcentual en <code>RecetaInsumo</code> y tracking de permanencia aduanera.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sección VIII.M</strong></td>
+<td style="text-align: left;">Sello QR de Trazabilidad Socioproductiva</td>
+<td style="text-align: left;"><code>apps.ventas</code> / <code>apps.produccion</code></td>
+<td style="text-align: left;">Sin vista pública</td>
+<td style="text-align: left;">Endpoint público <code>/trazabilidad/&lt;lote&gt;/</code> con desglose ético de costos y visualización QR.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sección VIII.K</strong></td>
+<td style="text-align: left;">IA Algorética y Pisos de Precios Justos</td>
+<td style="text-align: left;"><code>produccion.services</code></td>
+<td style="text-align: left;">No implementado</td>
+<td style="text-align: left;">Tabla de precios de referencia de mano de obra y alertas de subpago a talleristas.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>4. Especificación Técnica y Modelado de Datos</h2>
+<p>A continuación se detalla la ingeniería de software a implementar en cada módulo.</p>
+<h3>4.1. Módulo Producción: La "e-OP" y el Régimen de Maquila</h3>
+<h4>4.1.1. Atributos Legales y Criptográficos en <code>OrdenProduccion</code></h4>
+<p>En <code>apps/produccion/models.py</code>, enriquecer el modelo <code>OrdenProduccion</code>:</p>
+<pre><code class="language-python">import uuid
+
+class OrdenProduccion(DocumentoBase):
+    # Campos existentes heredados...
+
+    # --- Extensión RIGI / Maquila ---
+    uuid_identificador = models.UUIDField(
+        default=uuid.uuid4, 
+        editable=False, 
+        unique=True,
+        verbose_name=_(&quot;Identificador Único e-OP&quot;)
+    )
+    regimen_juridico = models.CharField(
+        max_length=40,
+        choices=[
+            (&quot;fason_locacion_obra&quot;, _(&quot;Façón / Locación de Obra (Arts. 1251 CCCN - Insumos Propios)&quot;)),
+            (&quot;maquila_industrial&quot;, _(&quot;Maquila Industrial (Proyecto Reforma Ley 25.113)&quot;)),
+            (&quot;produccion_propia&quot;, _(&quot;Producción Integrada en Planta&quot;)),
+        ],
+        default=&quot;fason_locacion_obra&quot;,
+        verbose_name=_(&quot;Régimen Jurídico&quot;)
+    )
+    clausula_inembargabilidad = models.BooleanField(
+        default=True,
+        verbose_name=_(&quot;Amparado bajo Inembargabilidad de Stock&quot;),
+        help_text=_(&quot;Declara las materias primas y semielaborados como activos intangibles de afectación productiva territorial.&quot;)
+    )
+    es_sello_buen_diseno = models.BooleanField(
+        default=False,
+        verbose_name=_(&quot;Distinción Sello Buen Diseño (SBD)&quot;),
+        help_text=_(&quot;Habilita anticipo preferencial de Hito Cero hasta el 50%.&quot;)
+    )
+</code></pre>
+<h4>4.1.2. Protocolo de Resguardo Jurídico en Remitos de Traslado</h4>
+<p>En los remitos generados mediante <code>OPEtapaTracking.generar_remito_traslado_taller()</code>:
+* Se debe inyectar automáticamente en el pie del documento impreso y digital el texto legal según el marco del CCCN vigente y preparado para la Maquila Industrial:</p>
+<blockquote>
+<p><em>"Los insumos y materias primas detallados se remiten exclusivamente para su transformación bajo contrato de Locación de Obra (Arts. 1251 y ss. CCCN) y Depósito Regular en Custodia (Arts. 1356 y ss. CCCN) [o Régimen de Maquila Industrial bajo eventual reforma de la Ley 25.113]. Las materias primas e insumos son propiedad inembargable y exclusiva del comitente emisor. El receptor actúa únicamente como custodio y transformador del material, sin adquirir titularidad ni derecho de disposición sobre el stock."</em></p>
+</blockquote>
+<h4>4.1.3. Esquema de e-OP Multitaller (Consorcio Productivo)</h4>
+<p>Para lotes de gran escala que requieran fraccionar tareas:
+* Cada etapa en <code>OPEtapaTracking</code> opera de forma <strong>desacoplada</strong>.
+* El cumplimiento de la etapa de corte (Taller A) gatilla su propia liquidación y genera de inmediato el remito de traslado del semielaborado hacia el aparador (Taller B), sin bloquear los fondos ni la gestión del Taller A si el Taller B presenta demoras.</p>
+<hr />
+<h3>4.2. Módulo Tesorería: Hitos Productivos y Escrow Digital</h3>
+<p>Actualmente <code>apps/tesoreria/models.py</code> requiere estructuración. Se implementa la arquitectura de liquidación por hitos.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    autonumber
+    actor Adm as Fábrica / Comitente
+    participant OP as Indinopy (MES/OP)
+    participant Tes as Módulo Tesorería
+    actor Tal as Tallerista (Aparador)
+    participant Inv as Inventario (Quants)
+
+    Adm-&gt;&gt;OP: Confirma asignación de etapa a Tallerista
+    OP-&gt;&gt;Tes: Genera Liquidación en estado &quot;Borrador&quot;
+    OP-&gt;&gt;Inv: Emite Remito Traslado (Insumos a Taller)
+    Note over Tes: Disparo Hito Cero (30-40%)
+    Tes-&gt;&gt;Tal: Libera Anticipo de Arranque (Hito Cero)
+    Tal-&gt;&gt;OP: Declara Entrega Parcial (OPParteProduccion)
+    OP-&gt;&gt;Inv: Registra ingreso de pares a Planta (Control Calidad)
+    Note over Tes: Disparo Hitos de Avance
+    Tes-&gt;&gt;Tal: Libera Pago Proporcional contra Pares Certificados
+    Tal-&gt;&gt;OP: Entrega final de Lote + Retorno de sobrantes
+    Note over Tes: Disparo Hito Cierre
+    Tes-&gt;&gt;Tal: Liquidación de Saldo Final (Ajustado por Scrap)
+</code></pre>
+<h4>4.2.1. Modelos a Implementar en <code>apps/tesoreria/models.py</code></h4>
+<pre><code class="language-python">from decimal import Decimal
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+from apps.base.models import TimeStampedModel, DocumentoBase
+
+class CuentaTesoreria(TimeStampedModel):
+    &quot;&quot;&quot;Cajas físicas, cuentas bancarias de clearing o billeteras virtuales.&quot;&quot;&quot;
+    TIPO_CUENTA = [
+        (&quot;banco&quot;, _(&quot;Cuenta Bancaria / Clearing Oficial&quot;)),
+        (&quot;billetera&quot;, _(&quot;Billetera Digital / CVU&quot;)),
+        (&quot;caja_planta&quot;, _(&quot;Caja Operativa de Planta&quot;)),
+        (&quot;fdi_escrow&quot;, _(&quot;Subcuenta de Custodia FDI / Escrow&quot;)),
+    ]
+    nombre = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=20, choices=TIPO_CUENTA, default=&quot;banco&quot;)
+    cbu_cvu = models.CharField(max_length=22, blank=True, null=True)
+    alias = models.CharField(max_length=100, blank=True, null=True)
+    saldo = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal(&quot;0.00&quot;))
+    activa = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f&quot;{self.nombre} ({self.get_tipo_display()})&quot;
+
+
+class LiquidacionFason(DocumentoBase):
+    &quot;&quot;&quot;Documento paraguas de liquidación de mano de obra para un tallerista en una OP.&quot;&quot;&quot;
+    etapa_tracking = models.OneToOneField(
+        &quot;produccion.OPEtapaTracking&quot;,
+        on_delete=models.CASCADE,
+        related_name=&quot;liquidacion&quot;,
+        verbose_name=_(&quot;Etapa de Producción&quot;)
+    )
+    tallerista = models.ForeignKey(
+        &quot;contactos.Contacto&quot;,
+        on_delete=models.RESTRICT,
+        related_name=&quot;liquidaciones_fason&quot;
+    )
+    monto_total_pactado = models.DecimalField(max_digits=15, decimal_places=2)
+    porcentaje_hito_cero = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal(&quot;35.00&quot;),
+        help_text=_(&quot;Porcentaje de anticipo inicial (ej: 35% o 50% con SBD)&quot;)
+    )
+    saldo_pendiente = models.DecimalField(max_digits=15, decimal_places=2)
+
+    def __str__(self):
+        return f&quot;LIQ-{self.numero} - {self.tallerista.nombre} ($ {self.monto_total_pactado})&quot;
+
+
+class HitoLiquidacion(TimeStampedModel):
+    &quot;&quot;&quot;Tramos individuales de pago liberados contra eventos físicos.&quot;&quot;&quot;
+    TIPO_HITO = [
+        (&quot;hito_cero&quot;, _(&quot;Hito Cero: Anticipo de Arranque&quot;)),
+        (&quot;avance_parcial&quot;, _(&quot;Hito de Avance: Entrega Parcial&quot;)),
+        (&quot;cierre_final&quot;, _(&quot;Hito Final: Conformidad de Lote&quot;)),
+    ]
+    ESTADO_HITO = [
+        (&quot;retenido&quot;, _(&quot;En Custodia / Pendiente de Certificación&quot;)),
+        (&quot;autorizado&quot;, _(&quot;Autorizado para Pago&quot;)),
+        (&quot;liquidado&quot;, _(&quot;Pagado / Transferido&quot;)),
+        (&quot;cancelado&quot;, _(&quot;Cancelado&quot;)),
+    ]
+    liquidacion = models.ForeignKey(
+        LiquidacionFason, on_delete=models.CASCADE, related_name=&quot;hitos&quot;
+    )
+    tipo = models.CharField(max_length=20, choices=TIPO_HITO)
+    monto = models.DecimalField(max_digits=15, decimal_places=2)
+    estado = models.CharField(max_length=20, choices=ESTADO_HITO, default=&quot;retenido&quot;)
+    parte_produccion = models.ForeignKey(
+        &quot;produccion.OPParteProduccion&quot;,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text=_(&quot;Parte físico que certifica el cumplimiento del hito&quot;)
+    )
+    fecha_liberacion = models.DateTimeField(blank=True, null=True)
+    comprobante_transferencia = models.CharField(max_length=100, blank=True, null=True)
+</code></pre>
+<hr />
+<h3>4.3. Módulo Contactos: Perfil Productivo y Bolsa Sectorial</h3>
+<p>Enriquecer <code>apps/contactos/models.py</code> para transformar la libreta de direcciones en un <strong>directorio de capacidades productivas auditables</strong>.</p>
+<h4>4.3.1. Extensión del Modelo <code>Contacto</code> o Modelo Satélite <code>PerfilTallerista</code></h4>
+<pre><code class="language-python">class PerfilTallerista(TimeStampedModel):
+    &quot;&quot;&quot;Metadatos industriales y socioproductivos para prestadores de fasón.&quot;&quot;&quot;
+    contacto = models.OneToOneField(
+        &quot;contactos.Contacto&quot;, 
+        on_delete=models.CASCADE, 
+        related_name=&quot;perfil_taller&quot;
+    )
+    # Clasificación jurídica del RIGI
+    figura_tributaria = models.CharField(
+        max_length=30,
+        choices=[
+            (&quot;monotributo_productivo&quot;, _(&quot;Monotributo Productivo Automatizado&quot;)),
+            (&quot;puente_sas&quot;, _(&quot;Sociedad por Acciones Simplificada (SAS)&quot;)),
+            (&quot;responsable_inscripto&quot;, _(&quot;Responsable Inscripto Humano&quot;)),
+            (&quot;cooperativa&quot;, _(&quot;Cooperativa de Trabajo&quot;)),
+        ],
+        default=&quot;monotributo_productivo&quot;
+    )
+    estado_fiscal_dinamico = models.CharField(
+        max_length=20,
+        choices=[
+            (&quot;activo&quot;, _(&quot;Activo en Producción&quot;)),
+            (&quot;suspension_activa&quot;, _(&quot;Suspensión Activa de Oficio (Carga Cero)&quot;)),
+            (&quot;irregular&quot;, _(&quot;Requiere Tutoría PTF&quot;)),
+        ],
+        default=&quot;activo&quot;
+    )
+
+    # Capacidad operativa auditada
+    capacidad_semanal_pares = models.PositiveIntegerField(
+        verbose_name=_(&quot;Capacidad Nominal (Pares/Semana)&quot;),
+        help_text=_(&quot;Capacidad física reportada para evitar cuellos de botella&quot;)
+    )
+    especialidades = models.ManyToManyField(
+        &quot;inventario.ProductoTemplate&quot;,
+        limit_choices_to={&quot;tipo_producto&quot;: &quot;servicio&quot;},
+        related_name=&quot;talleres_especializados&quot;,
+        verbose_name=_(&quot;Servicios que realiza (Corte, Aparado, etc.)&quot;)
+    )
+
+    # Métricas de confiabilidad comunitaria
+    score_cumplimiento = models.DecimalField(
+        max_digits=4, decimal_places=2, default=Decimal(&quot;5.00&quot;),
+        verbose_name=_(&quot;Calificación Comunitaria (1 a 5)&quot;)
+    )
+    total_ops_cumplidas = models.PositiveIntegerField(default=0)
+    dias_promedio_desvio = models.DecimalField(
+        max_digits=5, decimal_places=1, default=Decimal(&quot;0.0&quot;),
+        verbose_name=_(&quot;Desvío de Entrega (Días Promedio)&quot;)
+    )
+
+    # Tutoría y Territorio
+    municipio = models.CharField(max_length=100, blank=True)
+    promotor_territorial_asignado = models.CharField(
+        max_length=150, blank=True, null=True,
+        verbose_name=_(&quot;Promotor Territorial (PTF) de Enlace&quot;)
+    )
+
+    @property
+    def carga_activa_pares(self):
+        &quot;&quot;&quot;Calcula la cantidad de pares actualmente en proceso en el taller.&quot;&quot;&quot;
+        from apps.produccion.models import OPEtapaTracking
+        return OPEtapaTracking.objects.filter(
+            tallerista_asignado=self.contacto,
+            estado__in=[&quot;en_curso&quot;, &quot;pendiente&quot;]
+        ).aggregate(
+            total=models.Sum(&quot;op__cantidad_total&quot;)
+        )[&quot;total&quot;] or 0
+
+    @property
+    def porcentaje_ocupacion(self):
+        if self.capacidad_semanal_pares &gt; 0:
+            return round((Decimal(self.carga_activa_pares) / Decimal(self.capacidad_semanal_pares)) * Decimal(&quot;100.0&quot;), 1)
+        return Decimal(&quot;0.0&quot;)
+</code></pre>
+<hr />
+<h3>4.4. Módulo Inventario: Mermas INTI y Control Aduanero</h3>
+<h4>4.4.1. Tolerancia de Mermas en Ficha Técnica (<code>RecetaInsumo</code>)</h4>
+<p>En <code>apps/produccion/models.py</code>:
+* Incorporar el campo:
+  <code>python
+  porcentaje_merma_tolerada = models.DecimalField(
+      max_digits=5, decimal_places=2, default=Decimal("10.00"),
+      verbose_name=_("Merma técnica tolerable (%)"),
+      help_text=_("Estándar INTI de descarte tolerable en corte y matricería (hasta 10% sin sanción).")
+  )</code>
+* <strong>Lógica de Validación:</strong> Al registrar mermas reales en <code>OPInsumoRequerido.cantidad_consumida_real</code> o scrap en <code>OPParteProduccionLinea.cantidad_descarte</code>:
+  * Si la merma real supera la <code>cantidad_teorica * (1 + porcentaje_merma_tolerada / 100)</code>, el sistema emite una <strong>Alerta de Desvío de Materia Prima</strong>, notificando al supervisor de planta para auditar si hubo falla en la moldería, corte defectuoso o pérdida de insumo en el taller.</p>
+<h4>4.4.2. Control de Permanencia para Importación Temporaria</h4>
+<p>En <code>apps/inventario/models.py</code>, en el modelo <code>Lote</code>:
+* Incorporar campos para materias primas importadas bajo régimen temporario:
+  <code>python
+  es_importacion_temporaria = models.BooleanField(default=False)
+  despacho_aduanero = models.CharField(max_length=50, blank=True, null=True)
+  fecha_ingreso_pais = models.DateField(blank=True, null=True)
+  fecha_vencimiento_permanencia = models.DateField(
+      blank=True, null=True,
+      help_text=_("Plazo duro de 360 días corridos para su transformación y re-expedición.")
+  )</code>
+* Se programará una tarea periódica en Celery (<code>verificar_vencimientos_temporarios</code>) que notifique a Compras y Producción con 60 y 30 días de antelación si un lote de cuero o avíos importados corre riesgo de vencimiento aduanero.</p>
+<hr />
+<h3>4.5. Módulo Ventas y Consumo: Sello QR de Trazabilidad Socioproductiva</h3>
+<p>El Dossier (Sección VIII.M) establece que la dignidad de la cadena no se defiende mediante controles de precios en góndola, sino informando con <strong>transparencia radical</strong> al consumidor sobre quién se queda con el dinero.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A[&quot;Par de Calzado en Góndola&quot;] --&gt;|Escaneo QR en Lengüeta o Caja| B[&quot;Vista Web Pública Indinopy&lt;br/&gt;&lt;code&gt;/trazabilidad/&amp;lt;lote&amp;gt;/&lt;/code&gt;&quot;]
+    B --&gt; C[&quot;1. Mano de Obra Territorial&lt;br/&gt;(% Costo Taller de Confección)&quot;]
+    B --&gt; D[&quot;2. Materias Primas Nacionales&lt;br/&gt;(% Cueros, Suelas y Avíos)&quot;]
+    B --&gt; E[&quot;3. Carga Tributaria Neta&lt;br/&gt;(% Impuestos y Aportes)&quot;]
+    B --&gt; F[&quot;4. Margen Comercial y Logístico&lt;br/&gt;(% Marca y Comercialización)&quot;]
+</code></pre>
+<h4>4.5.1. Cálculo de la Matriz de Transparencia</h4>
+<p>En la clase <code>OrdenProduccion</code>, se agrega un método que calcula la descomposición porcentual sobre el precio sugerido de venta:</p>
+<p>$$\% \text{Mano de Obra} = \frac{\text{Costo Total Fasón}}{\text{Precio Venta Total}} \times 100$$
+$$\% \text{Materiales} = \frac{\text{Costo Total Insumos}}{\text{Precio Venta Total}} \times 100$$
+$$\% \text{Impuestos} = \frac{\text{Carga Impositiva Estimada}}{\text{Precio Venta Total}} \times 100$$
+$$\% \text{Marca y Comercialización} = 100\% - (\% \text{MO} + \% \text{Mat} + \% \text{Imp})$$</p>
+<h4>4.5.2. Interfaz Pública de Consulta</h4>
+<p>Se creará una vista pública optimizada para dispositivos móviles (HTML limpio, sin login requerido):
+* Muestra el modelo del calzado, fecha de fabricación y municipio donde fue producido.
+* Gráfico de barras visual con la participación del trabajo territorial.
+* Certificaciones de calidad y sello de la Mesa de Enlace Sectorial.</p>
+<hr />
+<h3>4.6. Módulo de Reglas de Negocio: Auditoría Algorética y Pisos Éticos</h3>
+<p>En <code>apps/produccion/services.py</code>, se incorporan los algoritmos de validación preventiva:</p>
+<ol>
+<li><strong>Alerta de Subpago / Dumping Laboral:</strong></li>
+<li>Al presupuestar una etapa de aparado o corte en <code>OPEtapaTracking</code>, el sistema consulta la tabla de tarifas mínimas de convenio.</li>
+<li>Si <code>costo_servicio_total / cantidad_piezas &lt; tarifa_minima_vigente</code>:<ul>
+<li>Se marca la etapa con la advertencia: <code>Tarifa inferior al piso ético de convenio ($X). Riesgo de conflicto o precarización laboral.</code></li>
+</ul>
+</li>
+<li><strong>Alerta de Capacidad y Cuello de Botella:</strong></li>
+<li>Si al asignar una nueva OP a un tallerista, su <code>porcentaje_ocupacion</code> supera el 100% de su capacidad semanal para la fecha de entrega comprometida, el sistema sugiere reasignar o fragmentar el lote en un taller secundario registrado en la Bolsa.</li>
+</ol>
+<hr />
+<h2>5. Plan de Implementación por Fases (Roadmap)</h2>
+<pre><code class="language-mermaid">gantt
+    title Plan de Implementación RIGI Conurbano en Indinopy
+    dateFormat  YYYY-MM-DD
+    section Fase 1: Fundaciones Legales
+    Leyendas de Maquila en Remitos          :a1, 2026-09-15, 7d
+    UUID y Hash criptográfico en OP         :a2, after a1, 5d
+    Tolerancias de Merma INTI en Receta     :a3, after a2, 5d
+    section Fase 2: Tesorería e Hitos
+    Modelado de apps/tesoreria              :b1, 2026-10-01, 10d
+    Lógica de Hito Cero y Avances           :b2, after b1, 8d
+    Integración con Partes de Producción    :b3, after b2, 6d
+    section Fase 3: Perfil y Bolsa
+    PerfilTallerista y Capacidad Semanal    :c1, 2026-10-25, 8d
+    Métricas de Cumplimiento y Ocupación    :c2, after c1, 7d
+    section Fase 4: Transparencia y Algorética
+    Página Pública de Trazabilidad QR       :d1, 2026-11-10, 8d
+    Alertas de Tarifas Mínimas y Pisos      :d2, after d1, 6d
+</code></pre>
+<h3>Fase 1: Fundaciones Legales y Operativas (Inmediata)</h3>
+<ul>
+<li><strong>Objetivo:</strong> Blindar la mercadería en tránsito y auditar descartes físicos.</li>
+<li><strong>Entregables:</strong></li>
+<li>Modificación de templates de remitos de traslado con cláusulas de Locación de Obra (Arts. 1251 CCCN) y Depósito en Custodia (Arts. 1356 CCCN), con soporte para Maquila Industrial.</li>
+<li>Incorporación de <code>porcentaje_merma_tolerada</code> en <code>RecetaInsumo</code>.</li>
+<li>Generación de UUID único para cada OP.</li>
+</ul>
+<h3>Fase 2: Motor de Tesorería e Hitos (Prioridad Alta)</h3>
+<ul>
+<li><strong>Objetivo:</strong> Desintermediar el pago al tallerista y habilitar el financiamiento por flujo.</li>
+<li><strong>Entregables:</strong></li>
+<li>Creación de migraciones y modelos en <code>apps/tesoreria</code>.</li>
+<li>Automatización del Hito Cero (orden de anticipo del 35% al emitir el remito de corte).</li>
+<li>Enlace entre <code>OPParteProduccion</code> y la autorización de hitos intermedios.</li>
+</ul>
+<h3>Fase 3: Bolsa de Capacidades y Optimización de Talleres (Medio Plazo)</h3>
+<ul>
+<li><strong>Objetivo:</strong> Monitorear la capacidad real del territorio y evitar la sobrecarga.</li>
+<li><strong>Entregables:</strong></li>
+<li>Creación del modelo <code>PerfilTallerista</code> en <code>apps.contactos</code>.</li>
+<li>Dashboard de ocupación semanal (Pares asignados vs. Pares nominales).</li>
+<li>Reporte de puntualidad y calidad por taller.</li>
+</ul>
+<h3>Fase 4: Transparencia al Consumidor y Reglas Algoréticas (Diferenciador)</h3>
+<ul>
+<li><strong>Objetivo:</strong> Conectar el calzado físico con la trazabilidad ética.</li>
+<li><strong>Entregables:</strong></li>
+<li>Endpoint y template responsive para escaneo de QR (<code>/trazabilidad/&lt;lote&gt;/</code>).</li>
+<li>Tabla de referencia de precios éticos y validación en carga de liquidaciones.</li>
+</ul>
+<hr />
+<h2>6. Conclusión y Valor Estratégico</h2>
+<p>La incorporación de estos módulos transforma a <strong>Indinopy</strong> de un sistema ERP/MES tradicional en un <strong>instrumento de política industrial aplicada</strong>. </p>
+<p>Al dotar a la Orden de Producción de valor contractual y crediticio, automatizar los anticipos de arranque (Hito Cero), proteger los insumos mediante el régimen de Maquila y transparentar los costos ante el consumidor, Indinopy demuestra que la tecnología de software libre no debe estar al servicio de la especulación o la exclusión, sino de la <strong>organización comunitaria del trabajo y la defensa de la industria nacional</strong>.</p>
+    </div>
+
+    <script>
+        // Initialize KaTeX
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ],
+                throwOnError: false,
+                ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+            });
+        });
+
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            fontFamily: 'inherit',
+            flowchart: { useMaxWidth: false, htmlLabels: true },
+            sequence: { useMaxWidth: false },
+            gantt: { useMaxWidth: false }
+        });
+
+        // Controller for interactive pan & zoom
+        function setupMermaidInteractive(wrapper) {
+            const title = wrapper.querySelector('.mermaid-title');
+            const viewport = wrapper.querySelector('.mermaid-viewport');
+            const svgContainer = wrapper.querySelector('.mermaid-svg-container');
+            const btnIn = wrapper.querySelector('[data-action="zoom-in"]');
+            const btnOut = wrapper.querySelector('[data-action="zoom-out"]');
+            const btnReset = wrapper.querySelector('[data-action="reset"]');
+            const btnFull = wrapper.querySelector('[data-action="fullscreen"]');
+
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+
+            function updateTransform() {
+                svgContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+
+            // Toggle collapse
+            title.addEventListener('click', () => {
+                wrapper.classList.toggle('is-collapsed');
+            });
+
+            // Zoom In / Out / Reset
+            btnIn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = Math.min(5, scale * 1.25);
+                updateTransform();
+            });
+
+            btnOut.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = Math.max(0.2, scale / 1.25);
+                updateTransform();
+            });
+
+            btnReset.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            });
+
+            // Fullscreen
+            btnFull.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isFull = wrapper.classList.toggle('is-fullscreen');
+                btnFull.innerHTML = isFull ? '<span>✕</span> Cerrar' : '<span>⤢</span> Pantalla Completa';
+                document.body.style.overflow = isFull ? 'hidden' : '';
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && wrapper.classList.contains('is-fullscreen')) {
+                    wrapper.classList.remove('is-fullscreen');
+                    btnFull.innerHTML = '<span>⤢</span> Pantalla Completa';
+                    document.body.style.overflow = '';
+                    scale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform();
+                }
+            });
+
+            // Pan Dragging
+            viewport.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.m-btn')) return;
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // Wheel Zoom
+            viewport.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const factor = e.deltaY < 0 ? 1.15 : 0.87;
+                scale = Math.min(Math.max(0.2, scale * factor), 5);
+                updateTransform();
+            }, { passive: false });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
+            mermaidBlocks.forEach(function(block, idx) {
+                const pre = block.parentElement;
+                const code = block.textContent;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'mermaid-wrapper';
+                wrapper.innerHTML = `
+                    <div class="mermaid-header">
+                        <div class="mermaid-title" title="Click para contraer o expandir">
+                            <span class="mermaid-toggle-icon">▼</span>
+                            <span>Diagrama ${idx + 1}</span>
+                            <small style="color: #64748b; font-size: 10px; font-weight: normal; margin-left: 6px;">(Arrastrar para mover · Rueda para zoom)</small>
+                        </div>
+                        <div class="mermaid-toolbar">
+                            <button class="m-btn" data-action="zoom-in" title="Acercar">＋ Zoom</button>
+                            <button class="m-btn" data-action="zoom-out" title="Alejar">－</button>
+                            <button class="m-btn" data-action="reset" title="Centrar">⟲ Centrar</button>
+                            <button class="m-btn" data-action="fullscreen" title="Pantalla completa">⤢ Pantalla Completa</button>
+                        </div>
+                    </div>
+                    <div class="mermaid-viewport">
+                        <div class="mermaid-svg-container">
+                            <div class="mermaid">${code}</div>
+                        </div>
+                    </div>
+                `;
+
+                pre.replaceWith(wrapper);
+                setupMermaidInteractive(wrapper);
+            });
+
+            if (mermaidBlocks.length > 0) {
+                try {
+                    mermaid.run();
+                } catch(e) {
+                    console.warn("Mermaid error:", e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

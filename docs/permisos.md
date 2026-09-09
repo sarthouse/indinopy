@@ -11,25 +11,27 @@ Django maneja la seguridad mediante tres pilares:
 
 ### Estructura de Roles sugerida para Indino (Grupos)
 - **Dueño / Gerente**: Permisos totales (Superusuario).
-- **Ventas**: Permisos para `view` y `add` Pedidos, `view` Clientes. No puede borrar.
-- **Tallerista**: Permisos mínimos. Solo puede acceder a un panel especial para avanzar etapas de sus OPs asignadas.
-- **Administración / Tesorería**: Permisos sobre Facturas, Pagos y Liquidaciones.
+- **Ventas**: Permisos para `view` y `add` PedidoVenta, `view` Contactos. No puede borrar registros.
+- **Tallerista**: Permisos mínimos. Solo puede acceder a un panel especial para avanzar sus `OPEtapa` asignadas.
+- **Administración / Tesorería**: Permisos sobre Facturas, Pagos, DocumentoAdjunto y Liquidaciones.
 
 ## 2. Permisos Personalizados (Custom Permissions)
 
-A veces los 4 permisos por defecto no alcanzan. Recordando el caso de la Orden de Producción (OP), donde no queríamos que los talleristas vieran los costos, podemos crear un permiso específico dentro del archivo `models.py`.
+A veces los 4 permisos por defecto no alcanzan. Recordando el caso de la Orden de Producción (OP), donde no queríamos que los talleristas vieran los costos, podemos declarar permisos específicos dentro del archivo `models.py`.
 
 ```python
 # apps/produccion/models.py
-from django.db import models
+from apps.base.models import DocumentoBase
 
-class OrdenProduccion(models.Model):
-    # ... tus campos ...
+class OrdenProduccion(DocumentoBase):
+    # ... relaciones y campos específicos ...
 
     class Meta:
+        verbose_name = 'Orden de Producción'
+        verbose_name_plural = 'Órdenes de Producción'
         permissions = [
             ("view_costos_op", "Puede ver los costos e insumos valorizados de la OP"),
-            ("aprobar_op", "Puede pasar una OP de Pendiente a En Proceso"),
+            ("aprobar_op", "Puede pasar una OP de Borrador a Confirmado"),
         ]
 ```
 

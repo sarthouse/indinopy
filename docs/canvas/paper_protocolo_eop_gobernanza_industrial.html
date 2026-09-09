@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper: Protocolo e-OP & PoPW - Indinopy ERP/MES</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #0a0e17;
+            --bg-card: #111827;
+            --border-color: #1f2937;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --accent: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .doc-container {
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 36px 44px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .doc-header-badge {
+            display: inline-block;
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--primary-hover);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #f8fafc;
+            margin-top: 1.4em;
+            margin-bottom: 0.6em;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 26px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: #60a5fa;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 6px;
+            color: #93c5fd;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #bfdbfe;
+        }
+
+        p, ul, ol {
+            margin-top: 0.6em;
+            margin-bottom: 0.8em;
+            color: #cbd5e1;
+        }
+
+        li {
+            margin-bottom: 0.3em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #93c5fd;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        blockquote {
+            border-left: 4px solid var(--primary);
+            background-color: rgba(59, 130, 246, 0.08);
+            padding: 10px 16px;
+            margin: 16px 0;
+            border-radius: 0 6px 6px 0;
+            color: #cbd5e0;
+        }
+
+        code {
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12.5px;
+            color: #f1f5f9;
+        }
+
+        pre {
+            background-color: #030712;
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        /* MERMAID INTERACTIVE WRAPPER */
+        .mermaid-wrapper {
+            background-color: #030712;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            margin: 24px 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.2s;
+        }
+
+        .mermaid-wrapper:hover {
+            border-color: #374151;
+        }
+
+        .mermaid-header {
+            background-color: #0f172a;
+            border-bottom: 1px solid #1f2937;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .mermaid-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .mermaid-title:hover {
+            color: #60a5fa;
+        }
+
+        .mermaid-toggle-icon {
+            font-size: 10px;
+            transition: transform 0.2s ease;
+            display: inline-block;
+            color: #60a5fa;
+        }
+
+        .mermaid-wrapper.is-collapsed .mermaid-toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        .mermaid-wrapper.is-collapsed .mermaid-viewport {
+            display: none;
+        }
+
+        .mermaid-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .m-btn {
+            background-color: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .m-btn:hover {
+            background-color: #2563eb;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .mermaid-viewport {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .mermaid-viewport:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-svg-container {
+            transition: transform 0.05s ease-out;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mermaid-svg-container svg {
+            max-width: 95% !important;
+            max-height: 95% !important;
+            height: auto !important;
+            user-select: none;
+        }
+
+        /* FULLSCREEN MODAL */
+        .mermaid-wrapper.is-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 999999 !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            background-color: #030712 !important;
+        }
+
+        .mermaid-wrapper.is-fullscreen .mermaid-viewport {
+            height: calc(100vh - 45px) !important;
+            max-height: none !important;
+            flex: 1;
+        }
+
+        .katex-display {
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 8px 0;
+            max-width: 100%;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 28px 0;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="doc-container">
+        <span class="doc-header-badge">📄 Paper Académico</span>
+        <h1>Protocolo e-OP: Un Sistema Descentralizado de Crédito Productivo, Custodia en Escrow y Gobernanza Policéntrica para Cadenas de Valor Manufactureras</h1>
+<h3><em>e-OP Protocol: A Decentralized Industrial Credit, Milestone Escrow, and Polycentric Governance System for Real-World Manufacturing Value Chains</em></h3>
+<p><strong>Colectivo de Ingeniería y Política Industrial Indinopy</strong><br />
+<em>En colaboración con la Comisión Técnica de la Mesa de Enlace Sectorial (MES Federal)</em><br />
+<em>Conurbano Bonaerense, República Argentina</em><br />
+<em>Septiembre de 2026</em>  </p>
+<hr />
+<h3>Resumen (Abstract)</h3>
+<p>Las cadenas de valor manufactureras intensivas en trabajo (calzado, confección y marroquinería) en economías periféricas enfrentan una crisis terminal caracterizada por la contracción del consumo, la presión fiscal sobre costos fijos y el racionamiento estructural del crédito bancario tradicional (Stiglitz &amp; Weiss, 1981). Este artículo presenta el diseño formal, la modelización matemática y la arquitectura de implementación del <strong>Protocolo de Orden de Producción Electrónica (e-OP)</strong>, un sistema sociotécnico y financiero desintermediado que transforma la orden de fabricación en un título de colateral crediticio inalterable. </p>
+<p>El sistema integra: (1) una primitiva criptográfica de compromiso productivo con verificación de árbol de Merkle sobre la receta de materiales (BOM); (2) un motor de consenso basado en <strong>Prueba de Trabajo Productivo (Proof-of-Productive-Work - PoPW)</strong> con liquidación escalonada en custodia (<em>Escrow</em>) y contratos de bloqueo temporal (<em>Timelocks</em>) que formalizan el <strong>Silencio Administrativo Positivo</strong> en 48 horas; (3) un pool de liquidez comunitaria sustentado en el <strong>Fideicomiso de Desarrollo Industrial (FDI)</strong> con apalancamiento prudencial indexado al Índice de Precios Internos al Por Mayor (IPIM); y (4) un marco de gobernanza policéntrica paritaria (<strong>Mesa de Enlace Sectorial - MES</strong>) basado en los principios de diseño institucional para bienes comunes de Elinor Ostrom. </p>
+<p>Demostramos mediante teoría de juegos que el protocolo alcanza un Equilibrio de Nash perfecto en subjuegos donde la cooperación honesta es la estrategia dominante para marcas comitentes y talleres tercerizados, erradicando el riesgo moral sin requerir garantías propietarias hipotecarias. Finalmente, se detalla la implementación de referencia en software libre sobre el sistema ERP/MES <strong>Indinopy</strong>.</p>
+<p><strong>Palabras clave:</strong> Crédito Industrial, Gobernanza Policéntrica, Diseño de Mecanismos, Contratos Inteligentes, Economía Informal, Distritos Industriales, Sistemas MES, Teoría de Juegos.<br />
+<strong>Clasificación JEL:</strong> L67, O17, D02, G23, C72, K12.</p>
+<hr />
+<h2>1. Introducción y Planteo del Problema</h2>
+<p>La manufactura liviana en el Conurbano Bonaerense y los cordones industriales de América Latina atraviesa una crisis de subsistencia originada por una falla triple de mercado y coordinación institucional:</p>
+<pre><code class="language-mermaid">flowchart TD
+    A[&quot;Crisis Estructural&lt;br/&gt;de la Cadena&quot;] --&gt; B[&quot;1. Falla Crediticia&lt;br/&gt;(Stiglitz-Weiss)&quot;]
+    A --&gt; C[&quot;2. Falla Transaccional&lt;br/&gt;(Desconfianza Coaseana)&quot;]
+    A --&gt; D[&quot;3. Falla Legal&lt;br/&gt;(Purgatorio Fiscal)&quot;]
+
+    B --&gt; E[&quot;Exclusión del Taller&lt;br/&gt;(Sin Capital de Giro)&quot;]
+    C --&gt; F[&quot;Asimetría de Calidad&lt;br/&gt;('Lemons' de Akerlof)&quot;]
+    D --&gt; G[&quot;Identidad Prestada&lt;br/&gt;(Utilidades Ficticias)&quot;]
+
+    E &amp; F &amp; G --&gt; H[&quot;Colapso Productivo Territorial&lt;br/&gt;(24.180 unidades cerradas)&quot;]
+</code></pre>
+<ol>
+<li><strong>La Falla de Racionamiento Crediticio (Stiglitz &amp; Weiss, 1981):</strong><br />
+   El sistema bancario comercial opera mediante algoritmos de <em>scoring</em> patrimonial basados en activos físicos (inmuebles, vehículos) y balances contables históricos. El micro-taller manufacturero (aparador, cortador, armador) carece de dicho colateral. La banca responde racionando el crédito a tasa cero de disponibilidad: no le presta al taller a ninguna tasa de interés, estrangulando su capital de trabajo operativo.</li>
+<li><strong>La Falla de Costos de Transacción y Monopolio Bilateral (Coase, 1937; Williamson, 1979):</strong><br />
+   La descentralización productiva en talleres externos a façón genera costos prohibitivos de búsqueda, redacción contractual y monitoreo de entregas. La falta de confianza conduce a relaciones predatorias: las marcas imponen plazos de pago a 60-90 días (utilizando al tallerista como financista forzoso de su capital de giro), mientras que los talleres responden con demoras estacionales y desvíos de stock.</li>
+<li><strong>El Purgatorio Fiscal y el Capital Muerto (De Soto, 2000; Kosacoff, 2000):</strong><br />
+   La presión tributaria sobre alícuotas planas y regímenes informativos mensuales crea un umbral prohibitivo para la formalización. Los talleres operan en la informalidad como mecanismo de autodefensa. Esto genera el fenómeno de la <strong>identidad fiscal prestada</strong> (uso de CUITs de familiares para eludir recategorizaciones) y priva a la PyME comitente formal de deducir entre el 30% y el 50% de sus costos reales de producción en el Impuesto a las Ganancias y computar crédito fiscal de IVA, tributando sobre ganancias ficticias.</li>
+</ol>
+<p>Frente a este colapso, los subsidios asistenciales tradicionales perpetúan la indigencia productiva, mientras que la desregulación liberal acelera la extranjerización. El <strong>Protocolo e-OP</strong> propone una alternativa de ingeniería institucional y económica: construir una <strong>infraestructura digital descentralizada</strong> donde la capacidad de trabajo físico en curso se reconozca como colateral autónomo ejecutable.</p>
+<hr />
+<h2>2. Marco Teórico Multidisciplinario</h2>
+<p>El protocolo e-OP sintetiza cuatro tradiciones teóricas de la economía y la ciencia de la computación:</p>
+<ul>
+<li><strong>Gobernanza Policéntrica de Recursos Comunes (Ostrom, 1990, 2010):</strong><br />
+  Superación de la dicotomía Estado-Mercado. La red de talleres y la capacidad de producción del territorio se modelan como un <strong>recurso de uso común (Common-Pool Resource - CPR)</strong> gobernado por una institución paritaria descentralizada (la Mesa de Enlace Sectorial), dotada de reglas claras, graduación de sanciones y resolución rápida de conflictos.</li>
+<li><strong>Distritos Industriales Marshallianos y Especialización Flexible (Marshall, 1920; Becattini, 1989, 1990; Brusco, 1982; Piore &amp; Sabel, 1984):</strong><br />
+  El modelo de la Tercera Italia (Emilia-Romaña, Prato, Marche), donde redes densas de microempresas artesanales compiten en diseño pero cooperan intensamente en financiamiento mutuo, compra de materias primas y centros tecnológicos, superando la productividad de la producción en masa fordista.</li>
+<li><strong>Contratos Incompletos y Derechos Residuales de Control (Grossman &amp; Hart, 1986; Hart &amp; Moore, 1990; Royal Swedish Academy of Sciences, 2016):</strong><br />
+  Reconocimiento explícito de que ningún contrato fabril puede prever contingencias ex-ante (rotura fortuita de máquinas, cortes energéticos, fallas de partidas de cuero). El protocolo define ex-ante los procedimientos de renegociación, mediación técnica del INTI y asignación de pérdidas.</li>
+<li><strong>Primitivas Criptográficas y Contratos Inteligentes (Szabo, 1997; Nakamoto, 2008; Buterin, 2014):</strong><br />
+  Uso de estructuras inmutables de datos, hashes criptográficos y mecanismos de custodia (<em>Escrow</em>) con bloqueos temporales (<em>Timelocks</em>) para erradicar la discrecionalidad burocrática del intermediario financiero.</li>
+</ul>
+<hr />
+<h2>3. Especificación Formal de la Primitiva e-OP</h2>
+<p>La <strong>Orden de Producción Electrónica (e-OP)</strong> se define formalmente como una tupla inmutable de nueve componentes:</p>
+<p>$$\mathcal{OP} = \langle \text{UUID}, \mathcal{K}_C, \mathcal{K}_T, \mathcal{M}_{\text{BOM}}, \mathcal{Q}, \vec{\mathcal{C}}, \mathcal{H}, \mathcal{R}_L, \Sigma \rangle$$</p>
+<p>Donde:
+* $\text{UUID} \in \{0, 1\}^{128}$: Identificador universal único pseudoaleatorio.
+* $\mathcal{K}_C, \mathcal{K}_T \in \mathcal{G}$: Claves públicas criptográficas del comitente (marca) y del tallerista ejecutor bajo curvas elípticas Ed25519.
+* $\mathcal{M}_{\text{BOM}} = \text{MerkleRoot}(\{m_1, m_2, \dots, m_k\})$: Raíz del árbol de Merkle (Merkle, 1987) que resume de forma determinista y a prueba de manipulaciones la receta técnica (Bill of Materials), consumos unitarios teóricos de cuero, suela, adhesivos y tolerancias de merma técnica.
+* $\mathcal{Q} = \{(v_j, q_j)\}_{j=1}^n$: Vector de demanda física que desglosa cantidades requeridas por cada variante (curva de talles y colores).
+* $\vec{\mathcal{C}} = \langle c_{\text{MOD}}, c_{\text{CS}}, c_{\text{BOM}}, c_{\text{GG}}, c_{\text{FDI}}, c_{\text{TAX}}, c_{\text{MG}} \rangle \in \mathbb{R}_+^7$: Vector de Desglose Factorial de Costos ítem por ítem (Mano de Obra Directa, Cargas Sociales y Sindicales, Insumos BOM aportados, Gastos Generales/Amortización, Reserva FDI 2%, Impuestos/Monotributo y Margen Comercial), con valor nominal total $\mathcal{P} = \|\vec{\mathcal{C}}\|_1$ en Unidades de Cuenta Industrial ($\text{UCI}$).
+* $\mathcal{H} = \{h_0, h_1, \dots, h_m\}$: Conjunto ordenado de hitos de ejecución y desembolso financiero en Escrow.
+* $\mathcal{R}_L$: Régimen legal y tributario de afectación (Maquila Industrial Ley 25.113 / Locación de Obra Arts. 1251 y 1356 CCCN con inembargabilidad de insumos).
+* $\Sigma = \{\sigma_C, \sigma_T, \sigma_M\}$: Conjunto de firmas digitales multifirma ($2 \text{ de } 3$) emitidas por Comitente, Tallerista y Árbitro de la MES.</p>
+<pre><code class="language-mermaid">classDiagram
+    class e_OP {
+        +UUID uuid
+        +Ed25519PubKey comitente_key
+        +Ed25519PubKey taller_key
+        +Hash256 merkle_root_BOM
+        +VectorCurva cantidades_talles
+        +Decimal valor_mano_obra_UCI
+        +RegimenLegal maquila_inembargable
+        +Multisig2of3 firmas_digitales
+    }
+    class MerkleTreeBOM {
+        +Leaf m1_cuero_m2_tolerancia
+        +Leaf m2_suela_par
+        +Leaf m3_adhesivo_litro
+        +Leaf m4_avios_unidades
+        +compute_root() Hash256
+    }
+    class HitosEscrow {
+        +Hito0 anticipo_arranque (35-50%)
+        +HitoAvance entrega_parcial_certificada
+        +HitoFinal conformidad_calidad
+    }
+    e_OP *-- MerkleTreeBOM
+    e_OP *-- HitosEscrow
+</code></pre>
+<h3>3.1. Inembargabilidad Estructural y Custodia de Maquila</h3>
+<p>El protocolo formaliza la disociación legal de activos:
+$$\text{Propiedad}(\text{Insumos}) = \mathcal{K}_C \quad \land \quad \text{Tenencia}(\text{Insumos}) = \mathcal{K}_T$$
+<p>Al ingresar al sistema, los insumos y productos semielaborados adquieren el estado de <strong>Activos Intangibles de Afectación Productiva Territorial</strong>. En virtud de los artículos 1251 y 1356 del Código Civil y Comercial de la Nación (República Argentina, 2014), el tallerista actúa estrictamente como <em>depositario y transformador</em>. Queda prohibida su ejecución judicial o embargo por acreedores particulares del tallerista o del comitente, blindando el capital físico de trabajo en el territorio.</p>
+<h3>3.2. Formalización del Puente de Transición Fiscal y Neutralización Patrimonial</h3>
+<p>Para modelar la absorción formal del eslabón manual sin fricción tributaria punitiva, el protocolo implementa una función de clearing fiscal desacoplado:
+$$\tau(\mathcal{OP}) = \begin{cases} 
+\mu_{\text{Mono}} \cdot \mathcal{P}_{\text{MOD}} & \text{si Prestador Eventual Individual (Tope Cat. A)} \\
+\text{IVA}_{\text{Diferido}}(\text{Clearing}) - 0.25 \cdot \mathcal{P}_{\text{MOD}} & \text{si Unidad Productiva SAS (Tope MiPyME)}
+\end{cases}$$
+Donde el término $0.25 \cdot \mathcal{P}_{\text{MOD}}$ formaliza el <strong>Crédito Fiscal Presunto del 25%</strong>, permitiendo que la empresa formal deduzca íntegramente la mano de obra en transición territorial, mientras que la <strong>Cuenta de IVA Sectorial Diferida</strong> supedita la exigibilidad fiscal a la acreditación monetaria efectiva del clearing bancario, erradicando el devengamiento artificial sobre facturas impagas.</p>
+<hr />
+<h2>4. Algoritmo de Consenso: Proof-of-Productive-Work (PoPW) y Timelocks</h2>
+<p>El ciclo de vida del colateral productivo opera mediante una <strong>Máquina de Estados Finita Determinista (FSM)</strong>:</p>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; CREATED: Emisión por Comitente
+    CREATED --&gt; COLLATERALIZED: Integración Reserva FDI (2%)
+    COLLATERALIZED --&gt; HITO0_UNLOCKED: Timelock 48h sin veto o Validación Express (2h)
+    HITO0_UNLOCKED --&gt; IN_PROCESS: Despacho Insumos (Remito Traslado)
+
+    state IN_PROCESS {
+        [*] --&gt; ETAPA_EJECUCION
+        ETAPA_EJECUCION --&gt; MILESTONE_CLAIMED: Declaración de Hito por Taller
+        MILESTONE_CLAIMED --&gt; PHYSICAL_AUDIT: Inspección Técnica (24h)
+        PHYSICAL_AUDIT --&gt; ESCROW_PARTIAL_RELEASE: Certificación OK
+        ESCROW_PARTIAL_RELEASE --&gt; ETAPA_EJECUCION: Próximo tramo
+    }
+
+    IN_PROCESS --&gt; SETTLED: Retorno Terminado + Conformidad Calidad
+    IN_PROCESS --&gt; DISPUTED: Alerta Tutela Sindical / Cuello de Botella
+
+    DISPUTED --&gt; ARBITRATION: Tribunal de Trinchera (72h)
+    ARBITRATION --&gt; REALLOCATED: Fragmentación Solidaria de Lote
+    ARBITRATION --&gt; SETTLED: Liquidación de Fianza / Repago
+    SETTLED --&gt; [*]
+</code></pre>
+<h3>4.1. Formalización Matemática del Silencio Administrativo Positivo (Timelock Contract)</h3>
+<p>Para neutralizar la parálisis por captura burocrática o disputas políticas, la función de transición de estado hacia el desembolso del <strong>Hito Cero</strong> ($\mathcal{H}_0$) se modela como un contrato de bloqueo temporal:</p>
+<p>$$\mathcal{S}(t + \Delta t) = 
+\begin{cases} 
+\text{HITO0\_UNLOCKED} & \text{si } \Delta t \ge 48\text{ h} \quad \land \quad \mathcal{V}_{\text{Comisión}}(\mathcal{OP}) = \emptyset \\
+\text{HITO0\_UNLOCKED} & \text{si } \Delta t < 48\text{ h} \quad \land \quad \text{Aprobación}(\mathcal{OP}) = \text{True} \\
+\text{FAST\_TRACK} & \text{si } \Delta t \ge 2\text{ h} \quad \land \quad \text{EsRéplicaIdéntica}(\mathcal{OP}) = \text{True} \\
+\text{DISPUTED} & \text{si } \Delta t < 48\text{ h} \quad \land \quad \mathcal{V}_{\text{Comisión}}(\mathcal{OP}) \neq \emptyset
+\end{cases}$$</p>
+<p>Donde $\mathcal{V}_{\text{Comisión}}$ representa la emisión formal de un dictamen de objeción técnica por parte de la Comisión de Crédito y Riesgo de la MES. Si el cuerpo colegiado no emite dictamen fundado dentro del plazo duro de 48 horas hábiles, <strong>el sistema informático gatilla automáticamente la firma criptográfica de convalidación por omisión</strong>, habilitando la interoperabilidad financiera de la orden.</p>
+<h3>4.2. Prueba de Trabajo Productivo (PoPW)</h3>
+<p>A diferencia de los protocolos de consenso computacional (PoW) que consumen energía en cálculos abstractos, la <strong>Prueba de Trabajo Productivo (PoPW)</strong> vincula el flujo informático a la física de la manufactura. Para transicionar de <code>IN_PROCESS</code> a <code>ESCROW_PARTIAL_RELEASE</code>, el taller genera una prueba $\pi_{\text{PoPW}}$ que combina:
+1. Declaración digital estructurada en el parte de producción: $\langle \text{pares 1ra}, \text{pares 2da}, \text{descarte} \rangle$.
+2. Metadatos verificables de geolocalización satelital del taller registrado.
+3. Validación biométrica facial de identidad del titular mediante interoperabilidad con servicios de identidad pública digital (RENAPER).
+4. Firma digital o ausencia de veto técnico de la Comisión de Homologación (INTI/Sindicato) en un plazo no mayor a 24 horas hábiles.</p>
+<h3>4.3. Algorética de Trinchera y Mecanismo Anti-Colusión (Talleres Espejo)</h3>
+<p>En consonancia con el magisterio social de la Encíclica <em>Magnifica Humanitas</em>, el protocolo subordina la algorítmica al bienestar del trabajo humano. La máquina de inferencia audita de forma continua la función de densidad geográfica y temporal de transacciones:
+$$\Delta_{\text{Colusión}} = \|\vec{x}_i - \vec{x}_j\|_2 + \lambda \cdot |t_i - t_j|$$
+Si múltiples e-OPs formalmente atribuidas a prestadores individuales distintos convergen sistemáticamente en la misma coordenada geográfica ($\|\vec{x}_i - \vec{x}_j\| < \epsilon$), el protocolo clasifica la transacción como <strong>Fragmentación Artificial (Taller Espejo)</strong>, suspendiendo la vía rápida (<em>Fast-Track</em>) y requiriendo inspección in situ del PTF y tutela sindical para preservar el convenio de rama.</p>
+<hr />
+<h2>5. Arquitectura Financiera, Liquidez y Ecuaciones de Solvencia del FDI</h2>
+<p>El <strong>Fideicomiso de Desarrollo Industrial (FDI)</strong> opera como una bóveda de compensación y liquidación (<em>Clearing</em>) independiente de la banca comercial de reserva fraccionaria.</p>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph INFLOWS[&quot;1. Fondos Recurrentes (Inflows)&quot;]
+        direction TB
+        F1[&quot;Regalías y Retenciones de Exportación&quot;]
+        F2[&quot;Reserva de Capital de Marcas Comitentes&quot;]
+        F3[&quot;Ahorro Mutuo y Cajas Sectoriales&quot;]
+    end
+
+    subgraph FDI_VAULT[&quot;2. Bóveda Central FDI (Clearing BAPRO)&quot;]
+        direction TB
+        POOL[&quot;Fondo de Garantía de 2do Piso (K = 3)&quot;]
+        ESCROW[&quot;Bóvedas Estancas de Escrow por e-OP&quot;]
+        POOL --&gt; ESCROW
+    end
+
+    subgraph OUTFLOWS[&quot;3. Destinos de Financiamiento (Outflows)&quot;]
+        direction TB
+        P1[&quot;Hito Cero: Anticipo de Arranque (35-50%)&quot;]
+        P2[&quot;Hitos de Avance contra PoPW Certificada&quot;]
+        P3[&quot;Compensación Energética Fabril&quot;]
+        P4[&quot;Banco Comunitario de Maquinaria CIFO&quot;]
+    end
+
+    INFLOWS ==&gt; POOL
+    ESCROW ==&gt; OUTFLOWS
+</code></pre>
+<h3>5.1. Dinámica Continua de Solvencia del Fondo</h3>
+<p>La masa fiduciaria $V_{\text{FDI}}(t)$ en un instante $t$ se describe mediante la ecuación diferencial estocástica de balances:</p>
+<p>$$\frac{dV_{\text{FDI}}(t)}{dt} = \Phi_{\text{Regalías}}(t) + \Phi_{\text{Marcas}}(t) + \Phi_{\text{Ahorro}}(t) + \sum_{i=1}^N \Psi_i(t) - \sum_{j=1}^M \Omega_j(t) - \Lambda_{\text{Mora}}(t)$$</p>
+<p>Donde:
+* $\Phi$ representan los flujos de fondeo exógeno continuo (retenciones mineras/energéticas, cánones de marcas y ahorro privado).
+* $\Psi_i(t)$ representa el flujo de repago de las e-OPs al completarse el ciclo comercial de venta minorista o distribución (período medio de 30 días).
+* $\Omega_j(t)$ es el flujo de adelantos líquidos de Hito Cero y avances otorgados a los talleres.
+* $\Lambda_{\text{Mora}}(t)$ es la función de absorción de pérdidas por siniestros productivos.</p>
+<h3>5.2. Teorema de Sostenibilidad del Fondo ante Contingencias</h3>
+<p><strong>Teorema 1 (Estabilidad Asintótica de la Liquidez):</strong><br />
+<em>Sea un fondo con capital base $C_0$, ratio de apalancamiento $K=3$, plazo medio de rotación de cartera $\tau = 30\text{ días}$, y tasa de pérdida de primer piso por contingencias de taller $\delta$. Si $\delta \le 0.08$ (8% anual) y la tasa de recapitalización exógena satisface:</em>
+$$\phi_{\text{exógena}} \ge \delta \cdot K \cdot \Omega_{\text{total}}$$
+<em>entonces el fondo no incurre en iliquidez estocástica y la probabilidad de default del clearing converge a cero para $t \to \infty$.</em></p>
+<p><em>Demostración (Esbozo):</em><br />
+Dado que el Hito Cero desembolsa solo el $35\%$ del presupuesto del servicio y el $65\%$ restante permanece bloqueado en Escrow condicionado a entregas físicas de primera calidad, la exposición bruta al riesgo no diversificable está acotada superiormente a $\omega_{\text{riesgo}} \le 0.35 \cdot \mathcal{P}$. </p>
+<p>Ante una parálisis total del taller, el mecanismo de <em>Fragmentación Solidaria</em> reasigna el remanente de materiales protegidos por Maquila a un taller lindero con capacidad ociosa, limitando la pérdida neta al valor del anticipo inicial. Con un rendimiento de canon de marca del $2\%$ y una inyección contracíclica del $0.5\%$ de derechos exportadores, la tasa de reposición supera el límite crítico de pérdida $\delta = 0.08$, garantizando la estabilidad del sistema sin requerir rescates del Tesoro Nacional.</p>
+<h3>5.3. Neutralización de Descalce Inflacionario (Unidad de Cuenta Industrial)</h3>
+<p>Para neutralizar la volatilidad de precios durante el ciclo de confección, el protocolo establece que todo compromiso financiero se pacta en <strong>Unidades de Cuenta Industrial ($\text{UCI}$)</strong>:</p>
+<p>$$\mathcal{P}_{\text{ARS}}(t) = \mathcal{P}_{\text{UCI}} \times \left( \frac{\text{IPIM}(t)}{\text{IPIM}_0} \right)$$</p>
+<p>Al liquidar cada hito en la cuenta de clearing, el sistema indexa automáticamente el valor en pesos al índice mayorista manufacturero del INDEC, preservando el poder adquisitivo del salario del tallerista y la solvencia patrimonial del fondo.</p>
+<h3>5.4. Redes CIFO y Banco de Maquinaria como Capital Físico y Administrativo Común (CPR)</h3>
+<p>El fondo no solo provee liquidez monetaria; capitaliza físicamente el territorio destinando una asignación específica $\Phi_{\text{CIFO}} = 0.03 \cdot V_{\text{FDI}}$ al financiamiento de los Centros de Innovación y Formación de Oficios (CIFO), el Banco Comunitario de Maquinarias y su <strong>Área de Asesoría Contable y Administrativa</strong>.</p>
+<p>El equipamiento opera bajo la regla de acceso comunal de Ostrom: cesión en comodato con condonación de pasivos preexistentes de ARCA, mantenimiento preventivo soberano pesificado y opción a transferencia definitiva de dominio tras completar con éxito $N=3$ e-OPs certificadas. Ante siniestros críticos, el protocolo garantiza un tiempo medio de restitución de máquina de auxilio (<em>Muletto Técnico</em>) $\mathbb{E}[T_{\text{muletto}}] \le 24\text{ horas}$, con cobertura de lucro cesante con cargo al fondo de riesgo $\Lambda_{\text{Mora}}$.</p>
+<p>Simultáneamente, la Red CIFO mutualiza los costos de cumplimiento normativo mediante un servicio compartido de consultoría contable $\mathcal{S}_{\text{admin}}$, reduciendo a cero el costo de transacción de la formalización ($C_{\text{compliance}} \to 0$). El CIFO asume la emisión asistida de e-OPs vía API de ARCA, el control de la Cuenta de IVA Sectorial Diferida y la estructuración de la nómina bajo convenio co-financiada por el FDI, asegurando que ningún taller sea excluido por asimetría de gestión administrativa.</p>
+<hr />
+<h2>6. Teoría de Juegos y Matriz de Incentivos</h2>
+<p>Analizamos la interacción estratégica entre la <strong>Marca Comitente ($M$)</strong> y el <strong>Tallerista ($T$)</strong> como un juego repetido de horizonte infinito con factor de descuento $\delta \in (0, 1)$.</p>
+<h3>6.1. Espacio de Acciones y Pagos</h3>
+<ul>
+<li>La Marca puede elegir entre: <strong>Cooperar ($C_M$)</strong> (pagar precios justos por encima del piso de convenio, liberar hitos a término) o <strong>Defectar ($D_M$)</strong> (retener pagos, imponer precios de miseria).</li>
+<li>El Tallerista puede elegir entre: <strong>Cooperar ($C_T$)</strong> (entregar lotes a término dentro de la tolerancia de merma INTI) o <strong>Defectar ($D_T$)</strong> (desviar stock de cuero, entregar pares defectuosos).</li>
+</ul>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph JUEGO[&quot;Interacción Estratégica en el Protocolo e-OP&quot;]
+        direction TB
+        E1[&quot;(Cooperar Marca, Cooperar Taller)&lt;br/&gt;Pago: (π_M, π_T) &gt; 0&lt;br/&gt;Resultado: Score Solidario + Crédito&quot;]
+        E2[&quot;(Defectar Marca, Cooperar Taller)&lt;br/&gt;Acción: Retención indebida&lt;br/&gt;Castigo: Fianza Líquida + Slashing UCP&quot;]
+        E3[&quot;(Cooperar Marca, Defectar Taller)&lt;br/&gt;Acción: Desvío o impericia grave&lt;br/&gt;Castigo: Retención 30% en OPs futuras&quot;]
+        E4[&quot;(Defectar Marca, Defectar Taller)&lt;br/&gt;Pago: (-L, -L)&lt;br/&gt;Resultado: Exclusión total del sistema&quot;]
+
+        E1 --- E2
+        E2 --- E3
+        E3 --- E4
+    end
+</code></pre>
+<h3>6.2. Matrices de Pago y Mecanismo de Slashing (Penalización Automática)</h3>
+<p>En el régimen tradicional informal, la defección patronal ($D_M$) era frecuente porque el costo de litigar para el tallerista era infinito. En el <strong>Protocolo e-OP</strong>, las penalizaciones se ejecutan algorítmicamente (<em>Slashing</em>):</p>
+<ol>
+<li><strong>Slashing sobre la Marca ($D_M$):</strong></li>
+<li>Quita inmediata de hasta el $50\%$ de sus Unidades de Crédito Productivo (UCP), perdiendo la prioridad aduanera de importación temporaria con arancel cero.</li>
+<li>Ejecución inmediata de la fianza líquida de resguardo depositada en el FDI.</li>
+<li>Publicación de la infracción en el Boletín Oficial Sectorial y alerta pública en la Bolsa de Trabajo.</li>
+<li><strong>Slashing sobre el Taller ($D_T$):</strong></li>
+<li>El FDI indemniza a la marca con cargo a su fondo de riesgo por el costo de reposición de los materiales.</li>
+<li>El sistema genera una orden de retención automática del $30\%$ sobre los flujos de clearing de las futuras e-OPs del taller hasta resarcir el daño.</li>
+<li>Pérdida de visibilidad y degradación de la insignia en el directorio público de capacidades.</li>
+</ol>
+<p><strong>Proposición 1:</strong> <em>En el juego repetido bajo el Protocolo e-OP, el perfil de estrategias $(\text{Cooperar}, \text{Cooperar})$ constituye un </em><em>Equilibrio de Nash Perfecto en Subjuegos (SPE)</em><em> sustentado por una estrategia de gatillo implacable (Grim Trigger; Friedman, 1971), donde ningún jugador tiene incentivos individuales unilaterales para desviarse.</em></p>
+<p><em>Demostración:</em><br />
+Para la marca comitente, el valor presente de cooperar es:
+$$V_M(C) = \frac{\pi_M + \beta \cdot \text{UCP}}{1 - \delta}$$
+Donde $\beta \cdot \text{UCP}$ representa la rentabilidad marginal acumulada derivada de operar con arancel cero (0%) en bienes de capital bajo el filtro de <strong>Tecnología Conveniente</strong> (Art. 22 Ley de Salvataje), exenciones intermedias de Ingresos Brutos y prioridad aduanera. El beneficio de defectar en un período reteniéndole el saldo al tallerista reporta un pago único $\pi_M + \text{SaldoRetenido}$, seguido por la exclusión perpetua del régimen y la pérdida del acceso a la red de talleres certificados:
+$$V_M(D) = \pi_M + \text{SaldoRetenido} + \frac{\delta \cdot \pi_{\text{MercadoInformal}}}{1 - \delta}$$
+Dado que los sobrecostos impositivos de operar en la informalidad (no deducibilidad de Ganancias) y la pérdida de los beneficios del RIGI superan con creces el saldo de una orden ($V_M(C) > V_M(D)$ para todo $\delta > \delta^* \approx 0.38$), <strong>la cooperación honesta es estrictamente dominante</strong>.</p>
+<hr />
+<h2>7. Gobernanza Policéntrica: La MES bajo el Modelo Ostrom</h2>
+<p>La <strong>Mesa de Enlace Sectorial (MES)</strong> materializa los ocho principios de diseño institucional identificados por Elinor Ostrom para la gestión exitosa y duradera de bienes comunes:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Principio de Elinor Ostrom</th>
+<th style="text-align: left;">Implementación en el Protocolo e-OP / MES</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>1. Límites claramente definidos</strong></td>
+<td style="text-align: left;">Padrón digital de la Bolsa de Trabajo: solo acceden unidades con alta en Monotributo Productivo o SAS de hasta 30 operarios y marcas homologadas con reserva integrada al FDI.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>2. Coherencia entre reglas y condiciones locales</strong></td>
+<td style="text-align: left;">Tablas de tarifas mínimas y descarte de cuero calibradas territorialmente por distrito y tipo de calzado, no por burócratas de oficina.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>3. Mecanismos de elección colectiva</strong></td>
+<td style="text-align: left;">Estructura paritaria de las 7 sillas con voto directo de sub-padrones de talleres individuales y consolidados.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>4. Monitoreo y rendición de cuentas</strong></td>
+<td style="text-align: left;">Los monitores son los propios pares: el Promotor Territorial (PTF), el delegado sindical en territorio y el perito del INTI.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>5. Sanciones graduadas</strong></td>
+<td style="text-align: left;">Escala de penalizaciones: (1) Apercibimiento digital; (2) Quita de puntos UCP; (3) Congelamiento de giro de stock; (4) Exclusión definitiva.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>6. Mecanismos rápidos de resolución de conflictos</strong></td>
+<td style="text-align: left;">Tribunal de Arbitraje de Trinchera con laudo perentorio en 72 horas hábiles; desestimación de la vía judicial ordinaria como paso previo forzoso.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>7. Reconocimiento de derechos de organización</strong></td>
+<td style="text-align: left;">Facultades públicas delegadas por la Ley de Salvataje Nacional y habilitación simplificada de oficio municipal en 48 horas.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>8. Empresas anidadas (Niveles múltiples)</strong></td>
+<td style="text-align: left;">Coordinación de dos velocidades: MES Municipal (operativa de trinchera) anidada en el Consejo Superior de la MES Federal (macroestrategia y alzada).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>8. Implementación de Referencia: Arquitectura del Sistema Indinopy</h2>
+<p>El protocolo fue diseñado para operar como código de software libre ejecutable sobre la arquitectura de <strong>Indinopy</strong> (Django 5+, Python 3.12+, PostgreSQL y Celery):</p>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph PRESENTATION[&quot;1. Capa de Presentación y Clientes&quot;]
+        direction TB
+        WEB_ADM[&quot;Panel Web de Planta / Administración (Django SSR)&quot;]
+        MOB_TALLER[&quot;Cliente Móvil PWA del Tallerista&quot;]
+        PORTAL_QR[&quot;Portal de Trazabilidad Pública (/t/{UUID})&quot;]
+    end
+
+    subgraph ENGINE[&quot;2. Capa de Negocio (Indinopy Core)&quot;]
+        direction TB
+        APP_PROD[&quot;apps.produccion: Motor e-OP y BOM Merkle&quot;]
+        APP_INV[&quot;apps.inventario: Quants y Remitos Inembargables&quot;]
+        APP_TES[&quot;apps.tesoreria: Contratos de Escrow e Hitos&quot;]
+        APP_MES[&quot;apps.mes: Votaciones y Silencio Positivo&quot;]
+    end
+
+    subgraph ASYNC[&quot;3. Tareas Asíncronas (Celery + Redis)&quot;]
+        direction TB
+        WORKER_48H[&quot;Worker: Timelock 48h (Silencio Positivo)&quot;]
+        WORKER_ADUANA[&quot;Worker: Monitoreo Aduanero 360d&quot;]
+    end
+
+    subgraph PERSISTENCE[&quot;4. Persistencia e Interoperabilidad&quot;]
+        direction TB
+        DB[(PostgreSQL + Simple History)]
+        API_BANCO[&quot;API Clearing Técnico (Banco Provincia)&quot;]
+        API_ARCA[&quot;API Constatación Fiscal (ARCA / RENAPER)&quot;]
+    end
+
+    PRESENTATION ==&gt; ENGINE
+    ENGINE ==&gt; ASYNC
+    ENGINE ==&gt; PERSISTENCE
+    ASYNC ==&gt; PERSISTENCE
+</code></pre>
+<h3>8.1. Componentes Técnicos Implementados</h3>
+<ol>
+<li><strong>Motor de Partida Doble Industrial (<code>apps.inventario</code>):</strong><br />
+   No existen contadores atómicos simples de stock. Todo insumo se traslada mediante registros balanceados entre ubicaciones origen y destino (<code>StockQuant</code>). Los insumos en taller residen en ubicaciones virtuales de tipo <code>fason</code>, vinculadas al ID del contacto custodio.</li>
+<li><strong>Generador del Sello QR de Trazabilidad Socioproductiva:</strong><br />
+   Al completarse la orden, el sistema computa la descomposición factorial de costos y genera una URI criptográfica pública para el etiquetado del calzado terminado:
+   $$\text{URL}_{\text{trazabilidad}} = \text{https://indino.ar/t/}\{ \text{UUID} \}$$
+   Mostrando en tiempo real: (a) Municipio de confección; (b) Porcentaje de retribución directa al tallerista; (c) Porcentaje de insumos nacionales; (d) Carga fiscal agregada; y (e) Margen bruto de comercialización.</li>
+</ol>
+<hr />
+<h2>9. Conclusiones y Discusión Programática</h2>
+<p>El <strong>Protocolo e-OP</strong> demuestra que la dicotomía entre la precarización salvaje de la economía informal y la inviabilidad financiera impuesta por la banca tradicional es un falso dilema originado en la escasez de herramientas de coordinación institucional.</p>
+<p>Al concebir la <strong>Orden de Producción como una primitiva criptográfica de colateral financiero</strong>, respaldada por un fondo de liquidez comunitaria desintermediado (<strong>FDI</strong>) y tutelada por una gobernanza policéntrica paritaria (<strong>MES</strong>), el protocolo logra:
+1. <strong>Desacoplar el financiamiento de la propiedad inmobiliaria:</strong> Transfiere el poder de colateralización al valor real del trabajo manufacturero en marcha.
+2. <strong>Erradicar la acumulación de deudas cíclicas:</strong> La <em>Suspensión Activa de Oficio</em> garantiza que la carga tributaria acompaña el ritmo biológico de la producción y no la rigidez del calendario fiscal.
+3. <strong>Restablecer la soberanía técnica territorial:</strong> El filtro de <em>Tecnología Conveniente</em> y los centros <em>CIFO</em> aseguran que la maquinaria incorporada dynamicice el tejido metalúrgico local y transmita el saber hacer artesanal a las nuevas generaciones.</p>
+<p>La implementación en software libre mediante la plataforma <strong>Indinopy</strong> prueba que este esquema no depende de utopías regulatorias abstractas, sino que constituye una <strong>ingeniería sociotécnica lista para su despliegue operativo en las trincheras industriales de la Patria</strong>.</p>
+<hr />
+<h2>Referencias Bibliográficas</h2>
+<ul>
+<li>Akerlof, G. A. (1970). The Market for "Lemons": Quality Uncertainty and the Market Mechanism. <em>The Quarterly Journal of Economics</em>, 84(3), 488–500. https://doi.org/10.2307/1879431</li>
+<li>Becattini, G. (1989). Sectors and/or districts: Some remarks on the conceptual foundations of industrial economics. In E. Goodman &amp; J. Bamford (Eds.), <em>Small firms and industrial districts in Italy</em> (pp. 123–135). Routledge.</li>
+<li>Becattini, G. (1990). The Marshallian industrial district as a socio-economic notion. In F. Pyke, G. Becattini, &amp; W. Sengenberger (Eds.), <em>Industrial districts and inter-firm co-operation in Italy</em> (pp. 37–51). International Institute for Labour Studies.</li>
+<li>Brusco, S. (1982). The Emilian model: Productive decentralisation and social integration. <em>Cambridge Journal of Economics</em>, 6(2), 167–184. https://doi.org/10.1093/oxfordjournals.cje.a035510</li>
+<li>Buterin, V. (2014). <em>Ethereum: A Next-Generation Smart Contract and Decentralized Application Platform</em>. White Paper, Ethereum Foundation. https://ethereum.org/en/whitepaper/</li>
+<li>Coase, R. H. (1937). The Nature of the Firm. <em>Economica</em>, 4(16), 386–405. https://doi.org/10.1111/j.1468-0335.1937.tb00002.x</li>
+<li>De Soto, H. (2000). <em>The Mystery of Capital: Why Capitalism Triumphs in the West and Fails Everywhere Else</em>. Basic Books.</li>
+<li>Friedman, J. W. (1971). A Non-cooperative Equilibrium for Supergames. <em>The Review of Economic Studies</em>, 38(1), 1–12. https://doi.org/10.2307/2296617</li>
+<li>Grossman, S. J., &amp; Hart, O. D. (1986). The Costs and Benefits of Ownership: A Theory of Vertical and Lateral Integration. <em>Journal of Political Economy</em>, 94(4), 691–719. https://doi.org/10.1086/261404</li>
+<li>Hart, O., &amp; Moore, J. (1990). Property Rights and the Nature of the Firm. <em>Journal of Political Economy</em>, 98(6), 1119–1158. https://doi.org/10.1086/261729</li>
+<li>Kosacoff, B. (Ed.). (2000). <em>El desempeño industrial argentino: Más allá de la sustitución de importaciones</em>. Comisión Económica para América Latina y el Caribe (CEPAL) / Universidad Nacional de Quilmes.</li>
+<li>Marshall, A. (1920). <em>Principles of Economics</em> (8th ed.). Macmillan and Co.</li>
+<li>Merkle, R. C. (1987). A Digital Signature Based on a Conventional Encryption Function. In C. Pomerance (Ed.), <em>Advances in Cryptology — CRYPTO '87</em> (Lecture Notes in Computer Science, Vol. 293, pp. 369–378). Springer. https://doi.org/10.1007/3-540-48184-2_32</li>
+<li>Nakamoto, S. (2008). <em>Bitcoin: A Peer-to-Peer Electronic Cash System</em>. Satoshi Nakamoto. https://bitcoin.org/bitcoin.pdf</li>
+<li>Ostrom, E. (1990). <em>Governing the Commons: The Evolution of Institutions for Collective Action</em>. Cambridge University Press. https://doi.org/10.1017/CBO9780511807763</li>
+<li>Ostrom, E. (2010). Beyond Markets and States: Polycentric Governance of Complex Economic Systems. <em>American Economic Review</em>, 100(3), 641–672. https://doi.org/10.1257/aer.100.3.641</li>
+<li>Piore, M. J., &amp; Sabel, C. F. (1984). <em>The Second Industrial Divide: Possibilities for Prosperity</em>. Basic Books.</li>
+<li>República Argentina. (1999). <em>Ley 25.113: Régimen de Contrato de Maquila</em>. Honorable Congreso de la Nación Argentina. Boletín Oficial N° 29.176.</li>
+<li>República Argentina. (2014). <em>Código Civil y Comercial de la Nación</em> (Ley 26.994). Honorable Congreso de la Nación Argentina. Boletín Oficial N° 32.985.</li>
+<li>Royal Swedish Academy of Sciences. (2016). <em>Contract Theory: Oliver Hart and Bengt Holmström</em>. Scientific Background on the Sveriges Riksbank Prize in Economic Sciences in Memory of Alfred Nobel 2016. Nobel Prize Foundation.</li>
+<li>Stiglitz, J. E., &amp; Weiss, A. (1981). Credit Rationing in Markets with Imperfect Information. <em>American Economic Review</em>, 71(3), 393–410.</li>
+<li>Szabo, N. (1997). Formalizing and Securing Relationships on Public Networks. <em>First Monday</em>, 2(9). https://doi.org/10.5210/fm.v2i9.548</li>
+<li>Williamson, O. E. (1979). Transaction-Cost Economics: The Governance of Contractual Relations. <em>The Journal of Law and Economics</em>, 22(2), 233–261. https://doi.org/10.1086/466942</li>
+</ul>
+    </div>
+
+    <script>
+        // Initialize KaTeX
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ],
+                throwOnError: false,
+                ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+            });
+        });
+
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            fontFamily: 'inherit',
+            flowchart: { useMaxWidth: false, htmlLabels: true },
+            sequence: { useMaxWidth: false },
+            gantt: { useMaxWidth: false }
+        });
+
+        // Controller for interactive pan & zoom
+        function setupMermaidInteractive(wrapper) {
+            const title = wrapper.querySelector('.mermaid-title');
+            const viewport = wrapper.querySelector('.mermaid-viewport');
+            const svgContainer = wrapper.querySelector('.mermaid-svg-container');
+            const btnIn = wrapper.querySelector('[data-action="zoom-in"]');
+            const btnOut = wrapper.querySelector('[data-action="zoom-out"]');
+            const btnReset = wrapper.querySelector('[data-action="reset"]');
+            const btnFull = wrapper.querySelector('[data-action="fullscreen"]');
+
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+
+            function updateTransform() {
+                svgContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+
+            // Toggle collapse
+            title.addEventListener('click', () => {
+                wrapper.classList.toggle('is-collapsed');
+            });
+
+            // Zoom In / Out / Reset
+            btnIn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = Math.min(5, scale * 1.25);
+                updateTransform();
+            });
+
+            btnOut.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = Math.max(0.2, scale / 1.25);
+                updateTransform();
+            });
+
+            btnReset.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            });
+
+            // Fullscreen
+            btnFull.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isFull = wrapper.classList.toggle('is-fullscreen');
+                btnFull.innerHTML = isFull ? '<span>✕</span> Cerrar' : '<span>⤢</span> Pantalla Completa';
+                document.body.style.overflow = isFull ? 'hidden' : '';
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && wrapper.classList.contains('is-fullscreen')) {
+                    wrapper.classList.remove('is-fullscreen');
+                    btnFull.innerHTML = '<span>⤢</span> Pantalla Completa';
+                    document.body.style.overflow = '';
+                    scale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform();
+                }
+            });
+
+            // Pan Dragging
+            viewport.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.m-btn')) return;
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // Wheel Zoom
+            viewport.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const factor = e.deltaY < 0 ? 1.15 : 0.87;
+                scale = Math.min(Math.max(0.2, scale * factor), 5);
+                updateTransform();
+            }, { passive: false });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
+            mermaidBlocks.forEach(function(block, idx) {
+                const pre = block.parentElement;
+                const code = block.textContent;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'mermaid-wrapper';
+                wrapper.innerHTML = `
+                    <div class="mermaid-header">
+                        <div class="mermaid-title" title="Click para contraer o expandir">
+                            <span class="mermaid-toggle-icon">▼</span>
+                            <span>Diagrama ${idx + 1}</span>
+                            <small style="color: #64748b; font-size: 10px; font-weight: normal; margin-left: 6px;">(Arrastrar para mover · Rueda para zoom)</small>
+                        </div>
+                        <div class="mermaid-toolbar">
+                            <button class="m-btn" data-action="zoom-in" title="Acercar">＋ Zoom</button>
+                            <button class="m-btn" data-action="zoom-out" title="Alejar">－</button>
+                            <button class="m-btn" data-action="reset" title="Centrar">⟲ Centrar</button>
+                            <button class="m-btn" data-action="fullscreen" title="Pantalla completa">⤢ Pantalla Completa</button>
+                        </div>
+                    </div>
+                    <div class="mermaid-viewport">
+                        <div class="mermaid-svg-container">
+                            <div class="mermaid">${code}</div>
+                        </div>
+                    </div>
+                `;
+
+                pre.replaceWith(wrapper);
+                setupMermaidInteractive(wrapper);
+            });
+
+            if (mermaidBlocks.length > 0) {
+                try {
+                    mermaid.run();
+                } catch(e) {
+                    console.warn("Mermaid error:", e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

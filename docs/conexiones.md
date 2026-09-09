@@ -11,8 +11,12 @@ Implementaremos endpoints en Django para recibir **Webhooks**. Aunque no usemos 
 - Inicia el flujo de Ventas (Validando si es Minorista y bajando stock, o si requiere OP).
 
 ### B. Sincronización Activa (De Django a WooCommerce)
-- Cuando el módulo de `Almacén` actualiza el stock de un Producto Terminado, Django debe enviar una petición HTTP (usando la librería `requests` o la oficial `woocommerce`) para actualizar el stock en la tienda online.
-- Para no penalizar la carga de la página del administrador, estas llamadas salientes deben realizarse mediante **tareas en segundo plano usando Celery y Redis/RabbitMQ**.
+- Cuando el módulo de `inventario` actualiza el stock de un Producto Terminado (`StockQuant`), Django envía una petición HTTP (usando la librería oficial `woocommerce`) para actualizar el stock en la tienda online.
+- Para no penalizar la carga de la página del administrador, estas llamadas salientes se realizan mediante **tareas en segundo plano usando Celery y Redis**.
 
-## 2. API Interna (Opcional)
+## 2. Facturación Electrónica (AFIP WSFE)
+- Conexión vía certificados digitales (CRT y KEY) con los web services de AFIP para autorizar facturas electrónicas (obtención de CAE).
+- Asociación directa con los datos fiscales de `contactos.Contacto` (CUIT/CUIL y condición frente al IVA).
+
+## 3. API Interna (Opcional)
 Si a futuro los talleristas necesitan una app móvil para escanear QRs y avanzar etapas de la OP, se expondrán endpoints de solo-lectura/actualización usando Django REST Framework.

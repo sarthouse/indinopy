@@ -1,25 +1,43 @@
 # Lógica de Negocio y Flujos
 
-En Django, la lógica compleja se manejará en una capa de servicios (`services.py`) para orquestar la relación entre las Fichas Técnicas (Recetas) y la Producción.
+> 🧭 **Navegación**: [Índice General](README.md) ➔ Anterior: [Modelos de Datos](modelos.md) ➔ **Lógica de Negocio** ➔ Siguiente: [Arquitectura de Señales](arquitectura_signals.md) | [Guía Rápida Operativa](manuales/guia_rapida_operativa.md)
 
-## 1. Generación de OP a partir de una Receta (BOM)
-La creación de una Orden de Producción (OP) no es manual campo por campo, sino un proceso de **instanciación**:
+En Django, la lógica compleja se maneja mediante señales y capas de servicios (`services.py`) para orquestar la relación entre las Fichas Técnicas (Recetas), la Producción y el Inventario.
 
-Cuando Ventas o Producción solicita fabricar "100 pares del Zapato X":
-1. **Selección de Receta**: Se selecciona la `Receta` activa para ese producto.
-2. **Cálculo de Insumos**: Un servicio recorre los `RecetaInsumo`. Multiplica la `cantidad_base` requerida de cuero, pegamento y suela por "100", generando automáticamente los registros de `OPInsumoRequerido`.
-3. **Hoja de Ruta**: Se clonan los registros de `RecetaEtapa` hacia `OPEtapaTracking`, heredando las `observaciones_proceso` y el `tallerista_predeterminado` para esa etapa.
-4. **Reserva de Herramientas**: Se bloquean las Hormas correspondientes en Almacén pasándolas a estado "En Uso".
+## 1. Generación y Ciclo de Vida de la Orden de Producción (OP)
+
+La creación de una `OrdenProduccion` (OP) es un proceso automatizado respaldado por señales atómicas:
+
+1. **Instanciación de la OP**:
+   - Se crea la `OrdenProduccion` seleccionando una `Receta` activa (que define el Producto Base / Template).
+   - Se cargan las variaciones específicas a fabricar mediante registros `OPVariacion` (especificando los SKUs finales, ej. talles y colores con sus cantidades).
+   - Se instancian las etapas en `OPEtapa` a partir de las `RecetaEtapa`.
+
+2. **Cálculo Dinámico de Insumos (`calcular_insumos_requeridos_op`)**:
+   - Al pasar la OP a estado `confirmado` (o invocar el cálculo), el sistema itera por cada `OPVariacion`.
+   - Evalúa cada `RecetaInsumo`: si `variantes_destino` está vacío, el insumo aplica a todas las unidades; si contiene atributos específicos (ej. "Talle 42" o "Color Negro"), solo se computa si la variante destino posee dichos atributos.
+   - Suma y consolida las cantidades exactas en registros `OPInsumoRequerido(insumo=SKU, cantidad_requerida)`.
+
+3. **Reserva Automática en Inventario (`reservar_insumos_op`)**:
+   - Inmediatamente, la señal genera un `MovimientoStock` de tipo `produccion` en estado `confirmado` (reserva).
+   - Origen: Ubicación Física Interna (ej. "Depósito Central").
+   - Destino: Ubicación Virtual de Producción (ej. "Línea de Armado / Fasón").
+   - El motor de inventario incrementa `StockQuant.cantidad_reservada` y reduce `cantidad_disponible`, garantizando que ningún otro proceso consuma los materiales comprometidos.
+
+4. **Finalización y Alta de Producto Terminado (`ejecutar_produccion_op`)**:
+   - Al marcar la OP como `finalizado`:
+     - **Consumo Real**: El `MovimientoStock` de insumos pasa a `finalizado`, deduciendo `cantidad_fisica` y liberando la reserva en el Quant.
+     - **Ingreso de Terminados**: Se genera y finaliza automáticamente un `MovimientoStock` desde la ubicación virtual "Producción" hacia la ubicación física interna con los SKUs y cantidades definidos en `OPVariacion`.
 
 ## 2. Flujo Diferenciado de Ventas (Minorista vs Mayorista)
-- **Minorista**: El pedido entra como pagado y se despacha de stock.
-- **Distribuidor**: El pedido queda en "Esperando Seña". Al ingresar el pago en Tesorería, un signal de Django dispara el servicio mencionado en el punto 1 para generar la OP automáticamente basada en la receta.
+- **Minorista (B2C)**: El pedido entra pagado (WooCommerce / Mostrador) y genera un remito de entrega inmediato desde el stock disponible.
+- **Distribuidor (B2B / Make to Order)**: El pedido mayorista requiere seña. Al confirmarse el cobro inicial en Tesorería, el sistema genera la OP asociada. Al fabricarse el lote, se cobra el saldo contraentrega y se despacha.
 
-## 3. Tracking de Producción y Liquidaciones
-La OP es un proceso vivo:
-- **Diferencia de Materiales**: Aunque la OP calculó 100 metros de cuero (según la receta), en el `OPInsumoRequerido` se puede anotar si realmente se consumieron 105 metros (merma).
-- **Liquidación Automática**: Cuando el tallerista termina su etapa y se marca como "Finalizado" en el `OPEtapaTracking`, se genera una deuda a pagar en `tesoreria`.
+## 3. Seguimiento de Etapas y Liquidación a Talleristas
+- Cada `OPEtapa` representa un proceso (Corte, Aparado, Rebajado) con un tallerista asignado (`contactos.Contacto`).
+- Al finalizar la etapa, se registra el `costo_real` de la mano de obra.
+- Tesorería agrupa semanalmente todas las etapas finalizadas por tallerista para emitir una única orden de pago o liquidación.
 
-## 4. Eventos Asíncronos (Celery)
-- **Generación de PDF**: Conversión de `orden_produccion.html` a PDF en segundo plano.
-- **Alertas de Quiebre de Stock**: Si al instanciar una OP a partir de una receta el inventario proyectado de un insumo cae bajo cero, enviar email a Compras.
+## 4. Adjuntos y Trazabilidad Transversal
+- Cualquier documento (`OrdenProduccion`, `MovimientoStock`, etc.) permite adjuntar archivos directamente (`op.adjuntos.create(archivo=...)`), guardando fotos del corte, remitos firmados por choferes o especificaciones de matricería.
+- Cada cambio en modelos `TimeStampedModel` queda registrado en tablas históricas vía `simple_history`.
