@@ -39,12 +39,6 @@ class MiembroComision(TimeStampedModel):
         ],
         default="vocal",
     )
-    clave_publica_ed25519 = models.CharField(
-        max_length=64,
-        blank=True,
-        null=True,
-        help_text="Para firma de dictámenes y vetos",
-    )
 
     class Meta:
         verbose_name = _("Miembro de Comisión")

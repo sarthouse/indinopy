@@ -122,11 +122,13 @@ class RecetaEtapa(TimeStampedModel):
 # ==========================================
 
 
-class OrdenProduccion(DocumentoBase):
+from apps.base.models import TimeStampedModel, DocumentoBase, DocumentoFirmableMixin
+
+
+class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
     """
     Documento rector de la fabricación del Lote.
-    Hereda de DocumentoBase: numero, fecha, estado (borrador, confirmado, cancelado, anulado),
-    observaciones, creado_en, modificado_en.
+    Hereda de DocumentoBase y DocumentoFirmableMixin.
     """
 
     SUBESTADO_CHOICES = [
@@ -204,22 +206,7 @@ class OrdenProduccion(DocumentoBase):
         null=True, blank=True, verbose_name=_("Fecha de Fondeo (Inicio Timelock 48h)")
     )
 
-    # Identidad digital y seguridad jurídica de la e-OP
-    uuid_identificador = models.UUIDField(
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-        verbose_name=_("Identificador Único e-OP"),
-    )
-    hash_seguridad = models.CharField(
-        max_length=64,
-        blank=True,
-        editable=False,
-        verbose_name=_("Hash Criptográfico e-OP"),
-        help_text=_(
-            "Digest SHA-256 inmutable generado al confirmar la orden para interoperabilidad crediticia y verificación de autenticidad"
-        ),
-    )
+    # Identidad digital y seguridad jurídica de la e-OP son heredadas de DocumentoFirmableMixin
     regimen_juridico = models.CharField(
         max_length=40,
         choices=[
@@ -296,14 +283,7 @@ class OrdenProduccion(DocumentoBase):
         verbose_name=_("Margen (MG)"),
     )
 
-    # Sigma: Firmas Criptográficas
-    firmas_digitales = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text=_(
-            "Esquema Multifirma 2-de-3: {'comitente': 'sig_hash', 'tallerista': 'sig_hash', 'arbitro': 'sig_hash'}"
-        ),
-    )
+    # Sigma: Firmas Criptográficas son heredadas de DocumentoFirmableMixin
 
     es_sello_buen_diseno = models.BooleanField(
         default=False,
@@ -369,6 +349,10 @@ class OrdenProduccion(DocumentoBase):
             )
 
             num_parte = self.partes_produccion.count() + 1
+            from django.contrib.contenttypes.models import ContentType
+
+            ct = ContentType.objects.get_for_model(self)
+
             remito_terminados = MovimientoStock.objects.create(
                 numero=f"ING-{self.numero}-P{num_parte}",
                 tipo="recepcion",
@@ -377,6 +361,8 @@ class OrdenProduccion(DocumentoBase):
                 ubicacion_destino=almacen,
                 contacto=self.cliente,
                 responsable=usuario,
+                content_type_origen=ct,
+                object_id_origen=self.id,
                 documento_origen=self.numero,
                 observaciones=f"Entrega parcial {num_parte} de OP {self.numero}. {observaciones}",
             )
@@ -436,8 +422,10 @@ class OrdenProduccion(DocumentoBase):
             remito_reserva = MovimientoStock.objects.filter(
                 numero=f"RES-{self.numero}"
             ).first()
-            if remito_reserva and self.cantidad_total > 0:
-                factor = Decimal(total_tanda) / Decimal(self.cantidad_total)
+            if remito_reserva and self.cantidad_total > self.cantidad_producida:
+                factor = Decimal(total_tanda) / Decimal(
+                    self.cantidad_total - self.cantidad_producida
+                )
                 for linea_res in list(remito_reserva.lineas.filter(estado="reservado")):
                     qty_a_consumir = linea_res.cantidad * factor
                     if qty_a_consumir > 0:
@@ -580,6 +568,10 @@ class OrdenProduccion(DocumentoBase):
                 ).count()
                 + 1
             )
+            from django.contrib.contenttypes.models import ContentType
+
+            ct = ContentType.objects.get_for_model(self)
+
             remito_dev = MovimientoStock.objects.create(
                 numero=f"DEV-{self.numero}-{num_dev:02d}",
                 tipo="traslado",
@@ -587,6 +579,8 @@ class OrdenProduccion(DocumentoBase):
                 ubicacion_origen=ubicacion_produccion,
                 ubicacion_destino=almacen,
                 responsable=usuario,
+                content_type_origen=ct,
+                object_id_origen=self.id,
                 documento_origen=self.numero,
                 observaciones=f"Devolución de sobrantes de insumos de OP {self.numero}. {observaciones}",
             )
@@ -658,29 +652,8 @@ class OrdenProduccion(DocumentoBase):
         }
         return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
-    def calcular_hash_eop(self):
-        """Calcula el hash SHA-256 canónico del documento e-OP."""
-        payload_str = self.generar_payload_canonico()
-        return hashlib.sha256(payload_str.encode("utf-8")).hexdigest()
-
-    def sellar_hash_eop(self):
-        """
-        Calcula y fija el hash criptográfico inmutable si aún no fue emitido.
-        Se ejecuta al confirmar la orden para convertirla en e-OP inmutable y colateralizable.
-        """
-        if not self.hash_seguridad:
-            self.hash_seguridad = self.calcular_hash_eop()
-            self.save(update_fields=["hash_seguridad"])
-        return self.hash_seguridad
-
-    def verificar_integridad_hash(self):
-        """
-        Verifica si los datos canónicos de la OP coinciden con el hash sellado.
-        Retorna True si no hubo alteraciones post-emisión.
-        """
-        if not self.hash_seguridad:
-            return False
-        return self.calcular_hash_eop() == self.hash_seguridad
+    # Los métodos criptográficos y de verificación ahora son heredados
+    # de DocumentoFirmableMixin (sellar_hash_seguridad, verificar_integridad_hash)
 
 
 class OPVariacion(TimeStampedModel):
@@ -730,7 +703,10 @@ class OPInsumoRequerido(TimeStampedModel):
         verbose_name=_("Orden de producción"),
     )
     insumo = models.ForeignKey(
-        Producto, on_delete=models.RESTRICT, verbose_name=_("Insumo (SKU)")
+        Producto,
+        on_delete=models.RESTRICT,
+        related_name="requerimientos_op",
+        verbose_name=_("Insumo (SKU)"),
     )
     origen = models.CharField(
         max_length=20,
@@ -901,7 +877,10 @@ class OPEtapaTracking(TimeStampedModel):
         verbose_name=_("Orden de producción"),
     )
     etapa_origen = models.ForeignKey(
-        RecetaEtapa, on_delete=models.RESTRICT, verbose_name=_("Etapa de origen")
+        RecetaEtapa,
+        on_delete=models.RESTRICT,
+        related_name="trackings",
+        verbose_name=_("Etapa de origen"),
     )
     tallerista_asignado = models.ForeignKey(
         "contactos.Contacto",
@@ -990,6 +969,10 @@ class OPEtapaTracking(TimeStampedModel):
             "inembargable y exclusiva del comitente emisor. El receptor actúa únicamente como custodio y transformador del material."
         )
 
+        from django.contrib.contenttypes.models import ContentType
+
+        ct = ContentType.objects.get_for_model(self.op)
+
         remito = MovimientoStock.objects.create(
             numero=f"TRA-{self.op.numero}-E{self.etapa_origen.orden_ejecucion}",
             tipo="traslado",
@@ -998,6 +981,8 @@ class OPEtapaTracking(TimeStampedModel):
             ubicacion_origen=origen,
             ubicacion_destino=destino,
             responsable=usuario or self.responsable_interno,
+            content_type_origen=ct,
+            object_id_origen=self.op.id,
             documento_origen=self.op.numero,
             observaciones=f"Traslado de piezas para etapa '{self.etapa_origen.servicio.nombre}' de OP {self.op.numero}. {clausula_legal}",
         )
@@ -1027,6 +1012,10 @@ class OPEtapaTracking(TimeStampedModel):
                 tipo="interna", defaults={"nombre": "Almacén Principal", "activa": True}
             )
 
+        from django.contrib.contenttypes.models import ContentType
+
+        ct = ContentType.objects.get_for_model(self.op)
+
         remito = MovimientoStock.objects.create(
             numero=f"RET-{self.op.numero}-E{self.etapa_origen.orden_ejecucion}",
             tipo="traslado",
@@ -1035,6 +1024,8 @@ class OPEtapaTracking(TimeStampedModel):
             ubicacion_origen=origen,
             ubicacion_destino=destino,
             responsable=usuario or self.responsable_interno,
+            content_type_origen=ct,
+            object_id_origen=self.op.id,
             documento_origen=self.op.numero,
             observaciones=f"Retorno de piezas terminadas de etapa '{self.etapa_origen.servicio.nombre}' de OP {self.op.numero}",
         )

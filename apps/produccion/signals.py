@@ -41,7 +41,9 @@ def calcular_insumos_requeridos_op(op):
     op.insumos_requeridos.all().delete()
 
     insumos_a_crear = []
-    variaciones_orden = list(op.variaciones.prefetch_related("producto__valores_atributo"))
+    variaciones_orden = list(
+        op.variaciones.prefetch_related("producto__valores_atributo")
+    )
 
     for ri in receta.insumos.prefetch_related("variantes_destino").all():
         filtros_variante = ri.variantes_destino.all()
@@ -52,10 +54,14 @@ def calcular_insumos_requeridos_op(op):
         else:
             # B) Aplica SOLO a las variantes que coincidan con los atributos (ej: Tela Roja)
             cantidad_total_aplicable = Decimal(0)
-            ids_atributos_requeridos = set(filtros_variante.values_list("id", flat=True))
+            ids_atributos_requeridos = set(
+                filtros_variante.values_list("id", flat=True)
+            )
 
             for var in variaciones_orden:
-                atributos_producto = set(var.producto.valores_atributo.values_list("id", flat=True))
+                atributos_producto = set(
+                    var.producto.valores_atributo.values_list("id", flat=True)
+                )
                 if ids_atributos_requeridos.issubset(atributos_producto):
                     cantidad_total_aplicable += Decimal(var.cantidad)
 
@@ -82,8 +88,8 @@ def instanciar_op_desde_receta(sender, instance, created, **kwargs):
     y la hoja de ruta de etapas.
     """
     if created and instance.receta:
-        # A) Calcular insumos teóricos iniciales
-        calcular_insumos_requeridos_op(instance)
+        # Los insumos teóricos no se pueden calcular aún porque no existen las OPVariacion (curva de talles).
+        # Se calculan recién cuando la OP pasa a estado 'confirmado'.
 
         # B) Clonar etapas de tracking
         etapas_a_crear = []
@@ -100,13 +106,23 @@ def instanciar_op_desde_receta(sender, instance, created, **kwargs):
 
 
 # -------------------------------------------------------------------------
-# 2. CAPTURAR ESTADO ANTERIOR DE LA OP
+# 2. CAPTURAR ESTADO ANTERIOR Y VALIDAR MULTIFIRMA
 # -------------------------------------------------------------------------
 @receiver(pre_save, sender=OrdenProduccion)
-def capturar_estado_anterior_op(sender, instance, **kwargs):
+def capturar_estado_y_multifirma_op(sender, instance, **kwargs):
     if instance.pk:
-        old = OrdenProduccion.objects.filter(pk=instance.pk).values("estado").first()
+        old = (
+            OrdenProduccion.objects.filter(pk=instance.pk)
+            .values("estado", "firmas_digitales")
+            .first()
+        )
         instance._old_estado = old["estado"] if old else None
+
+        # Validar Multisig: Si estamos en borrador y alcanzamos firmas requeridas
+        if instance.estado == "borrador" and instance.tipo == "fason":
+            firmas = instance.firmas_digitales or {}
+            if "comitente" in firmas and "tallerista" in firmas:
+                instance.estado = "confirmado"
     else:
         instance._old_estado = None
 
@@ -127,7 +143,11 @@ def procesar_transicion_estado_op(sender, instance, created, **kwargs):
     # A) BORRADOR -> CONFIRMADO: Sellar e-OP con hash y reservar insumos propios
     if estado_nuevo == "confirmado":
         with transaction.atomic():
-            instance.sellar_hash_eop()
+            instance.sellar_hash_seguridad()
+
+            from django.contrib.contenttypes.models import ContentType
+
+            ct = ContentType.objects.get_for_model(instance)
 
             # Creamos el remito interno de traslado a producción
             remito_insumos, _ = MovimientoStock.objects.get_or_create(
@@ -137,6 +157,9 @@ def procesar_transicion_estado_op(sender, instance, created, **kwargs):
                     "estado": "confirmado",
                     "ubicacion_origen": almacen,
                     "ubicacion_destino": ubicacion_produccion,
+                    "content_type_origen": ct,
+                    "object_id_origen": instance.id,
+                    "documento_origen": instance.numero,
                     "observaciones": f"Reserva de insumos para OP {instance.numero}",
                 },
             )
@@ -157,6 +180,53 @@ def procesar_transicion_estado_op(sender, instance, created, **kwargs):
                     referencia=f"Insumo OP {instance.numero}",
                 )
 
+            # Generar Contrato Escrow automáticamente
+            from apps.tesoreria.models import ContratoEscrow, HitoEscrow
+
+            escrow = ContratoEscrow.objects.create(
+                eop_uuid=instance.uuid_identificador,
+                monto_total_uci=instance.costo_total_fason,
+                estado="borrador",
+            )
+            # Hito base para entrega
+            HitoEscrow.objects.create(
+                contrato=escrow,
+                nombre="Hito Final - Entrega Completa",
+                porcentaje=Decimal("100.00"),
+                estado="bloqueado",
+            )
+
+            # Sincronización con Nodo MES (RegistroEOP)
+            from apps.mes.models import RegistroEOP
+            from django.utils import timezone
+            import datetime
+
+            RegistroEOP.objects.create(
+                uuid_identificador=instance.uuid_identificador,
+                hash_seguridad=instance.hash_seguridad,
+                comitente_cuit=instance.cliente.cuil if instance.cliente else "00000000000",
+                tallerista_cuit=instance.tallerista_principal.cuil if instance.tallerista_principal else "00000000000",
+                monto_total_uci=instance.costo_total_fason,
+                timelock_vencimiento=timezone.now() + datetime.timedelta(hours=48),
+                estado="en_revision"
+            )
+
+            # Persistencia Documental: Guardar el payload canónico como JSON adjunto
+            from apps.documentos.models import DocumentoAdjunto
+            from django.core.files.base.ContentFile
+            
+            payload_str = instance.generar_payload_canonico()
+            archivo_json = ContentFile(payload_str.encode("utf-8"), name=f"eOP_{instance.numero}_canonical.json")
+            
+            DocumentoAdjunto.objects.create(
+                content_type=ct,
+                object_id=instance.id,
+                nombre=f"Contrato Criptográfico e-OP {instance.numero}",
+                archivo=archivo_json,
+                mimetype="application/json",
+                descripcion="Payload canónico inmutable con hash SHA-256 de la Orden de Producción."
+            )
+
     # B) CONFIRMADO -> FINALIZADO: Consumir insumos e ingresar Producto Terminado
     elif estado_nuevo == "finalizado":
         with transaction.atomic():
@@ -176,6 +246,10 @@ def procesar_transicion_estado_op(sender, instance, created, **kwargs):
                 var for var in instance.variaciones.all() if var.cantidad_pendiente > 0
             ]
             if variaciones_pendientes:
+                from django.contrib.contenttypes.models import ContentType
+
+                ct = ContentType.objects.get_for_model(instance)
+
                 remito_ingreso = MovimientoStock.objects.create(
                     numero=f"ING-{instance.numero}-FINAL",
                     tipo="recepcion",
@@ -183,6 +257,8 @@ def procesar_transicion_estado_op(sender, instance, created, **kwargs):
                     ubicacion_origen=ubicacion_produccion,
                     ubicacion_destino=almacen,
                     contacto=instance.cliente,
+                    content_type_origen=ct,
+                    object_id_origen=instance.id,
                     documento_origen=instance.numero,
                     observaciones=f"Ingreso de producto terminado de OP {instance.numero}",
                 )
@@ -204,8 +280,15 @@ def procesar_transicion_estado_op(sender, instance, created, **kwargs):
                     )
 
                 # Actualizamos el total producido en base de datos sin disparar recursión
-                total_producido = sum(v.cantidad_producida for v in instance.variaciones.all())
-                OrdenProduccion.objects.filter(pk=instance.pk).update(cantidad_producida=total_producido)
+                total_producido = sum(
+                    v.cantidad_producida for v in instance.variaciones.all()
+                )
+                OrdenProduccion.objects.filter(pk=instance.pk).update(
+                    cantidad_producida=total_producido
+                )
+
+            # La liberación del Escrow ahora es responsabilidad del PTF firmando el HitoEscrow
+            # (Ver tesoreria/signals.py -> verificar_firma_ptf)
 
     # C) CANCELACIÓN: Si estaba confirmada y se cancela, liberar reservas
     elif estado_nuevo in ["cancelado", "anulado"] and estado_viejo == "confirmado":

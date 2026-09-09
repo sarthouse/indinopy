@@ -4,11 +4,13 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.base.models import DocumentoBase, TimeStampedModel
 
+
 class TarifaProveedor(TimeStampedModel):
     """
     Lista de precios de proveedor (Odoo: product.supplierinfo).
     Permite automatizar compras y reabastecimiento conociendo quién vende qué, a qué precio y cuánto tarda.
     """
+
     proveedor = models.ForeignKey(
         "contactos.Contacto",
         on_delete=models.CASCADE,
@@ -26,11 +28,26 @@ class TarifaProveedor(TimeStampedModel):
         on_delete=models.RESTRICT,
         verbose_name=_("Moneda"),
     )
-    precio = models.DecimalField(max_digits=15, decimal_places=4, verbose_name=_("Precio Unitario"))
-    cantidad_minima = models.DecimalField(max_digits=12, decimal_places=4, default=Decimal("1.0000"), verbose_name=_("Cantidad Mínima Requerida"))
-    tiempo_entrega_dias = models.PositiveIntegerField(default=1, verbose_name=_("Tiempo de Entrega (Días)"), help_text=_("Lead time desde que se pide hasta que llega"))
-    vigencia_desde = models.DateField(null=True, blank=True, verbose_name=_("Vigencia Desde"))
-    vigencia_hasta = models.DateField(null=True, blank=True, verbose_name=_("Vigencia Hasta"))
+    precio = models.DecimalField(
+        max_digits=15, decimal_places=4, verbose_name=_("Precio Unitario")
+    )
+    cantidad_minima = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        default=Decimal("1.0000"),
+        verbose_name=_("Cantidad Mínima Requerida"),
+    )
+    tiempo_entrega_dias = models.PositiveIntegerField(
+        default=1,
+        verbose_name=_("Tiempo de Entrega (Días)"),
+        help_text=_("Lead time desde que se pide hasta que llega"),
+    )
+    vigencia_desde = models.DateField(
+        null=True, blank=True, verbose_name=_("Vigencia Desde")
+    )
+    vigencia_hasta = models.DateField(
+        null=True, blank=True, verbose_name=_("Vigencia Hasta")
+    )
 
     class Meta:
         verbose_name = _("Tarifa de Proveedor")
@@ -39,6 +56,8 @@ class TarifaProveedor(TimeStampedModel):
 
     def __str__(self):
         return f"{self.proveedor.nombre} - {self.producto.sku} ({self.moneda.simbolo} {self.precio})"
+
+
 class OrdenCompra(DocumentoBase):
     """
     Orden de Compra comercial a proveedores de insumos o servicios (Odoo: purchase.order).
@@ -110,7 +129,9 @@ class OrdenCompra(DocumentoBase):
 
     @property
     def cantidad_total_recibida(self):
-        return sum((linea.cantidad_recibida for linea in self.lineas.all()), Decimal("0.00"))
+        return sum(
+            (linea.cantidad_recibida for linea in self.lineas.all()), Decimal("0.00")
+        )
 
     @property
     def porcentaje_recibido(self):
@@ -152,15 +173,23 @@ class OrdenCompra(DocumentoBase):
     def get_movimientos_stock(self):
         """Devuelve todos los movimientos de stock asociados a esta orden de compra."""
         from apps.inventario.models import MovimientoStock
+        from django.contrib.contenttypes.models import ContentType
+
+        ct = ContentType.objects.get_for_model(self)
         return MovimientoStock.objects.filter(
-            models.Q(documento_origen=self.numero) | models.Q(numero__startswith=f"REC-{self.numero}")
+            models.Q(content_type_origen=ct, object_id_origen=self.id)
+            | models.Q(numero__startswith=f"REC-{self.numero}")
         ).distinct()
 
     def generar_recepcion_stock(self, almacen_destino=None, usuario=None):
         """
         Crea o retorna el MovimientoStock entrante (Remito de recepción) en Almacén.
         """
-        from apps.inventario.models import Ubicacion, MovimientoStock, LineaMovimientoStock
+        from apps.inventario.models import (
+            Ubicacion,
+            MovimientoStock,
+            LineaMovimientoStock,
+        )
 
         if not almacen_destino:
             almacen_destino, _ = Ubicacion.objects.get_or_create(
@@ -168,8 +197,13 @@ class OrdenCompra(DocumentoBase):
             )
 
         virtual_proveedor, _ = Ubicacion.objects.get_or_create(
-            tipo="proveedor", defaults={"nombre": "Proveedores (Virtual)", "activa": True}
+            tipo="proveedor",
+            defaults={"nombre": "Proveedores (Virtual)", "activa": True},
         )
+
+        from django.contrib.contenttypes.models import ContentType
+
+        ct = ContentType.objects.get_for_model(self)
 
         numero_rec = f"REC-{self.numero}"
         movimiento, created = MovimientoStock.objects.get_or_create(
@@ -180,6 +214,8 @@ class OrdenCompra(DocumentoBase):
                 "contacto": self.proveedor,
                 "ubicacion_origen": virtual_proveedor,
                 "ubicacion_destino": almacen_destino,
+                "content_type_origen": ct,
+                "object_id_origen": self.id,
                 "documento_origen": self.numero,
                 "responsable": usuario,
                 "observaciones": f"Recepción de mercadería para Orden de Compra {self.numero}",
@@ -209,16 +245,20 @@ class OrdenCompra(DocumentoBase):
         """
         from apps.inventario.models import LineaMovimientoStock
 
+        from django.contrib.contenttypes.models import ContentType
+
+        ct = ContentType.objects.get_for_model(self)
+
         for linea in self.lineas.all():
-            total_recibido = (
-                LineaMovimientoStock.objects.filter(
-                    movimiento__tipo="recepcion",
-                    movimiento__estado="finalizado",
-                    movimiento__documento_origen=self.numero,
-                    producto=linea.producto,
-                    estado="realizado",
-                ).aggregate(total=models.Sum("cantidad_hecha"))["total"]
-                or Decimal("0.0000")
+            total_recibido = LineaMovimientoStock.objects.filter(
+                movimiento__tipo="recepcion",
+                movimiento__estado="finalizado",
+                movimiento__content_type_origen=ct,
+                movimiento__object_id_origen=self.id,
+                producto=linea.producto,
+                estado="realizado",
+            ).aggregate(total=models.Sum("cantidad_hecha"))["total"] or Decimal(
+                "0.0000"
             )
             linea.cantidad_recibida = total_recibido
             linea.save(update_fields=["cantidad_recibida"])
@@ -302,12 +342,20 @@ class LineaOrdenCompra(TimeStampedModel):
 
     @property
     def subtotal(self):
-        return round(self.cantidad * self.precio_unitario, 2)
+        from decimal import Decimal, ROUND_HALF_UP
+
+        return (self.cantidad * self.precio_unitario).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
 
     @property
     def iva_monto(self):
+        from decimal import Decimal, ROUND_HALF_UP
+
         if self.impuesto:
-            return round(self.subtotal * (self.impuesto.alicuota / Decimal("100.0")), 2)
+            return (
+                self.subtotal * (self.impuesto.alicuota / Decimal("100.0"))
+            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         return Decimal("0.00")
 
     @property
@@ -317,5 +365,6 @@ class LineaOrdenCompra(TimeStampedModel):
     def save(self, *args, **kwargs):
         # Auto-completar unidad de medida desde el template del producto si no fue especificada
         if not self.unidad_medida_id and self.producto_id:
-            self.unidad_medida = self.producto.template.unidad_medida
+            if hasattr(self.producto, "template") and self.producto.template:
+                self.unidad_medida = self.producto.template.unidad_medida
         super().save(*args, **kwargs)

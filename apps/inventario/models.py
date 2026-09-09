@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 
 from apps.base.models import TimeStampedModel, DocumentoBase
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 
 class Categoria(TimeStampedModel):
@@ -25,23 +26,31 @@ class UnidadMedida(TimeStampedModel):
     Unidad de medida para inventario, producción y ventas (Odoo: uom.uom).
     Permite definir unidades dinámicas (ej: Metros, Pares, Rollos, Litros).
     """
+
     TIPO_CHOICES = [
-        ('unidad', _('Unidad / Cantidad')),
-        ('longitud', _('Longitud / Distancia')),
-        ('peso', _('Peso / Masa')),
-        ('volumen', _('Volumen / Capacidad')),
-        ('tiempo', _('Tiempo')),
+        ("unidad", _("Unidad / Cantidad")),
+        ("longitud", _("Longitud / Distancia")),
+        ("peso", _("Peso / Masa")),
+        ("volumen", _("Volumen / Capacidad")),
+        ("tiempo", _("Tiempo")),
     ]
 
-    nombre = models.CharField(max_length=50, unique=True, verbose_name=_('Nombre'))
-    simbolo = models.CharField(max_length=10, unique=True, verbose_name=_('Símbolo / Abreviatura'))
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='unidad', verbose_name=_('Tipo de medida'))
-    activa = models.BooleanField(default=True, verbose_name=_('Activa'))
+    nombre = models.CharField(max_length=50, unique=True, verbose_name=_("Nombre"))
+    simbolo = models.CharField(
+        max_length=10, unique=True, verbose_name=_("Símbolo / Abreviatura")
+    )
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPO_CHOICES,
+        default="unidad",
+        verbose_name=_("Tipo de medida"),
+    )
+    activa = models.BooleanField(default=True, verbose_name=_("Activa"))
 
     class Meta:
-        verbose_name = _('Unidad de medida')
-        verbose_name_plural = _('Unidades de medida')
-        ordering = ['tipo', 'nombre']
+        verbose_name = _("Unidad de medida")
+        verbose_name_plural = _("Unidades de medida")
+        ordering = ["tipo", "nombre"]
 
     def __str__(self):
         return f"{self.nombre} ({self.simbolo})"
@@ -90,14 +99,18 @@ class ProductoTemplate(TimeStampedModel):
         decimal_places=4,
         default=Decimal("0.0"),
         verbose_name=_("Stock mínimo / Punto de pedido"),
-        help_text=_("Cantidad mínima recomendada en almacén para disparar compras o fabricación"),
+        help_text=_(
+            "Cantidad mínima recomendada en almacén para disparar compras o fabricación"
+        ),
     )
     stock_maximo = models.DecimalField(
         max_digits=12,
         decimal_places=4,
         default=Decimal("0.0"),
         verbose_name=_("Stock máximo sugerido"),
-        help_text=_("Límite superior deseado para evitar sobrestock e inmovilización de capital"),
+        help_text=_(
+            "Límite superior deseado para evitar sobrestock e inmovilización de capital"
+        ),
     )
 
     activo = models.BooleanField(default=True)
@@ -110,10 +123,13 @@ class ProductoTemplate(TimeStampedModel):
         """Indica si el stock total disponible consolidado en almacenes internos está por debajo del mínimo."""
         if self.stock_minimo <= Decimal("0.0"):
             return False
-        total_disp = self.productos.filter(
-            quants__ubicacion__tipo="interna"
+        total_disp = self.variantes.filter(
+            stockquant__ubicacion__tipo="interna"
         ).aggregate(
-            total=models.Sum(models.F("quants__cantidad_fisica") - models.F("quants__cantidad_reservada"))
+            total=models.Sum(
+                models.F("stockquant__cantidad_fisica")
+                - models.F("stockquant__cantidad_reservada")
+            )
         )["total"] or Decimal("0.0")
         return total_disp < self.stock_minimo
 
@@ -180,7 +196,9 @@ class Ubicacion(TimeStampedModel):
         blank=True,
         related_name="ubicaciones",
         verbose_name=_("Contacto / Tallerista responsable"),
-        help_text=_("Asigna esta ubicación al tallerista o proveedor custodio de la mercadería"),
+        help_text=_(
+            "Asigna esta ubicación al tallerista o proveedor custodio de la mercadería"
+        ),
     )
     activa = models.BooleanField(default=True)
 
@@ -195,11 +213,16 @@ class Ubicacion(TimeStampedModel):
 class Lote(TimeStampedModel):
     """Identifica un lote específico de manufactura o compra para un Producto"""
 
-    numero = models.CharField(max_length=100, unique=True, help_text="Ej: LOTE-24-10-A")
+    numero = models.CharField(max_length=100, help_text="Ej: LOTE-24-10-A")
     producto = models.ForeignKey(
         Producto, on_delete=models.CASCADE, related_name="lotes"
     )
     referencia_externa = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        unique_together = ("numero", "producto")
+        verbose_name = "Lote"
+        verbose_name_plural = "Lotes"
 
     def __str__(self):
         return self.numero
@@ -222,8 +245,16 @@ class StockQuant(TimeStampedModel):
     )
 
     class Meta:
-        # Solo puede haber un quant (registro) por combinación exacta de producto + ubicacion + lote
-        unique_together = ("producto", "ubicacion", "lote")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["producto", "ubicacion", "lote"], name="unique_quant_con_lote"
+            ),
+            models.UniqueConstraint(
+                fields=["producto", "ubicacion"],
+                condition=models.Q(lote__isnull=True),
+                name="unique_quant_sin_lote",
+            ),
+        ]
 
     @property
     def cantidad_disponible(self):
@@ -231,7 +262,11 @@ class StockQuant(TimeStampedModel):
 
     def __str__(self):
         lote_str = f" [Lote: {self.lote.numero}]" if self.lote else ""
-        uom_str = self.producto.template.unidad_medida.simbolo if self.producto.template.unidad_medida else ""
+        uom_str = (
+            self.producto.template.unidad_medida.simbolo
+            if self.producto.template.unidad_medida
+            else ""
+        )
         return f"{self.cantidad_fisica} {uom_str} - {self.producto}{lote_str} en {self.ubicacion.nombre}"
 
 
@@ -273,12 +308,28 @@ class MovimientoStock(DocumentoBase):
         User, on_delete=models.SET_NULL, null=True, blank=True
     )
 
+    content_type_origen = models.ForeignKey(
+        "contenttypes.ContentType",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("Tipo de documento origen"),
+    )
+    object_id_origen = models.PositiveIntegerField(
+        null=True, blank=True, verbose_name=_("ID de documento origen")
+    )
+    documento_origen_obj = GenericForeignKey("content_type_origen", "object_id_origen")
+
+    # Mantenemos este campo como referencia plana (legacy o externa)
     documento_origen = models.CharField(
         max_length=100,
         blank=True,
         null=True,
-        verbose_name=_("Documento de origen"),
-        help_text=_("Referencia a la OC, OP o Pedido generador, ej: OC-0001, OP-0042, PED-0100"),
+        verbose_name=_("Referencia de origen (Texto)"),
+        help_text=_(
+            "Referencia de solo lectura al documento generador si no hay link GFK"
+        ),
     )
     backorder_de = models.ForeignKey(
         "self",
@@ -287,7 +338,9 @@ class MovimientoStock(DocumentoBase):
         blank=True,
         related_name="backorders",
         verbose_name=_("Backorder de"),
-        help_text=_("Remito original del cual este movimiento es saldo remanente pendiente"),
+        help_text=_(
+            "Remito original del cual este movimiento es saldo remanente pendiente"
+        ),
     )
 
     class Meta(DocumentoBase.Meta):
@@ -296,7 +349,9 @@ class MovimientoStock(DocumentoBase):
 
     def __str__(self):
         fiscal = "Fiscal" if self.es_fiscal else "X"
-        backorder_str = f" [Backorder de {self.backorder_de.numero}]" if self.backorder_de else ""
+        backorder_str = (
+            f" [Backorder de {self.backorder_de.numero}]" if self.backorder_de else ""
+        )
         return f"{self.numero}{backorder_str} ({self.get_tipo_display()} - {fiscal}) [{self.get_estado_display()}]"
 
     def dividir_backorder(self, cantidades_realizadas, usuario=None):
@@ -309,13 +364,16 @@ class MovimientoStock(DocumentoBase):
           3. Pasa el movimiento actual y sus líneas procesadas a 'realizado'/'finalizado'.
         """
         from django.db import transaction
+
         with transaction.atomic():
             hay_remanente = False
             lineas_remanentes = []
 
             for linea in self.lineas.all():
                 qty_solicitada = linea.cantidad
-                qty_real = Decimal(str(cantidades_realizadas.get(linea.id, qty_solicitada)))
+                qty_real = Decimal(
+                    str(cantidades_realizadas.get(linea.id, qty_solicitada))
+                )
 
                 if qty_real < qty_solicitada:
                     remanente = qty_solicitada - qty_real
@@ -343,6 +401,8 @@ class MovimientoStock(DocumentoBase):
                     ubicacion_origen=self.ubicacion_origen,
                     ubicacion_destino=self.ubicacion_destino,
                     responsable=usuario or self.responsable,
+                    content_type_origen=self.content_type_origen,
+                    object_id_origen=self.object_id_origen,
                     documento_origen=self.documento_origen or self.numero,
                     backorder_de=self,
                     estado="confirmado",
@@ -389,7 +449,9 @@ class LineaMovimientoStock(TimeStampedModel):
     )
 
     producto = models.ForeignKey(Producto, on_delete=models.RESTRICT)
-    cantidad = models.DecimalField(max_digits=12, decimal_places=4, verbose_name=_("Cantidad demandada"))
+    cantidad = models.DecimalField(
+        max_digits=12, decimal_places=4, verbose_name=_("Cantidad demandada")
+    )
     cantidad_hecha = models.DecimalField(
         max_digits=12,
         decimal_places=4,
@@ -434,6 +496,11 @@ class LineaMovimientoStock(TimeStampedModel):
         verbose_name = "Línea de movimiento de stock"
         verbose_name_plural = "Líneas de movimiento de stock"
         ordering = ["-creado_en"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_estado = self.estado
+        self._original_cantidad_hecha = self.cantidad_hecha
 
     def save(self, *args, **kwargs):
         # Autocompletar ubicaciones desde la cabecera si están vacías

@@ -4,7 +4,6 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 from .models import OrdenCompra
-from apps.inventario.models import MovimientoStock, LineaMovimientoStock
 
 
 @receiver(pre_save, sender=OrdenCompra)
@@ -37,9 +36,16 @@ def procesar_transicion_estado_oc(sender, instance, created, **kwargs):
 
     # B) -> CANCELADO: Cancelar remitos entrantes no ejecutados
     elif estado_nuevo == "cancelado":
+        from apps.inventario.models import MovimientoStock
+
         with transaction.atomic():
+            from django.contrib.contenttypes.models import ContentType
+
+            ct = ContentType.objects.get_for_model(instance)
+
             remitos_pendientes = MovimientoStock.objects.filter(
-                documento_origen=instance.numero,
+                content_type_origen=ct,
+                object_id_origen=instance.id,
                 tipo="recepcion",
                 estado__in=["borrador", "confirmado"],
             )
@@ -51,25 +57,28 @@ def procesar_transicion_estado_oc(sender, instance, created, **kwargs):
                     linea.save()
 
 
-@receiver(post_save, sender=MovimientoStock)
+@receiver(post_save, sender="inventario.MovimientoStock")
 def sincronizar_recepcion_stock_con_oc(sender, instance, **kwargs):
     """
     Cuando un MovimientoStock de tipo 'recepcion' se guarda (especialmente al pasar a 'finalizado'
     o dividirse en backorder), sincroniza las cantidades recibidas en la Orden de Compra origen.
     """
-    if instance.tipo == "recepcion" and instance.documento_origen:
-        oc = OrdenCompra.objects.filter(numero=instance.documento_origen).first()
-        if oc:
-            oc.actualizar_cantidades_recibidas()
+    if instance.tipo == "recepcion" and instance.content_type_origen:
+        if isinstance(instance.documento_origen_obj, OrdenCompra):
+            instance.documento_origen_obj.actualizar_cantidades_recibidas()
 
 
-@receiver(post_save, sender=LineaMovimientoStock)
+@receiver(post_save, sender="inventario.LineaMovimientoStock")
 def sincronizar_linea_stock_con_oc(sender, instance, **kwargs):
     """
     Si una línea de recepción cambia a 'realizado', actualiza las cantidades recibidas de la OC.
     """
-    if instance.movimiento and instance.movimiento.tipo == "recepcion" and instance.movimiento.documento_origen:
+    if (
+        getattr(instance, "movimiento", None)
+        and instance.movimiento.tipo == "recepcion"
+        and instance.movimiento.content_type_origen
+    ):
         if instance.estado == "realizado":
-            oc = OrdenCompra.objects.filter(numero=instance.movimiento.documento_origen).first()
-            if oc:
+            oc = instance.movimiento.documento_origen_obj
+            if isinstance(oc, OrdenCompra):
                 oc.actualizar_cantidades_recibidas()

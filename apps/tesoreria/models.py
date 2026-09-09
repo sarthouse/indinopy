@@ -34,16 +34,18 @@ class Caja(TimeStampedModel):
 
     @property
     def saldo_actual(self):
-        ingresos = self.movimientos.filter(estado="confirmado").aggregate(
-            total=Sum("monto_ingreso")
-        )["total"] or Decimal("0.00")
-        egresos = self.movimientos.filter(estado="confirmado").aggregate(
-            total=Sum("monto_egreso")
-        )["total"] or Decimal("0.00")
+        aggr = self.movimientos.filter(estado="confirmado").aggregate(
+            ingresos=Sum("monto_ingreso"), egresos=Sum("monto_egreso")
+        )
+        ingresos = aggr["ingresos"] or Decimal("0.00")
+        egresos = aggr["egresos"] or Decimal("0.00")
         return ingresos - egresos
 
 
-class ComprobanteTesoreria(DocumentoBase):
+from apps.base.models import TimeStampedModel, DocumentoBase, DocumentoFirmableMixin
+
+
+class ComprobanteTesoreria(DocumentoFirmableMixin, DocumentoBase):
     """
     Documento maestro operativo: Recibo (Cobranza) u Orden de Pago.
     """
@@ -65,6 +67,14 @@ class ComprobanteTesoreria(DocumentoBase):
         blank=True,
         verbose_name="Cliente / Proveedor",
     )
+    escrow_asociado = models.ForeignKey(
+        "tesoreria.ContratoEscrow",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Contrato Escrow asociado",
+        help_text="Usado para Fondeo (FDI) o Repago (Marca)",
+    )
 
     class Meta:
         verbose_name = "Comprobante de Tesorería"
@@ -84,6 +94,24 @@ class ComprobanteTesoreria(DocumentoBase):
         return self.valores.aggregate(total=Sum("monto_egreso"))["total"] or Decimal(
             "0.00"
         )
+
+    def generar_payload_canonico(self):
+        """
+        Genera el payload canónico para firma de la Orden de Pago/Recibo.
+        """
+        import json
+
+        payload = {
+            "uuid": str(self.uuid_identificador),
+            "numero": self.numero,
+            "tipo": self.tipo,
+            "fecha": str(self.fecha),
+            "contacto_id": self.contacto_id,
+            "total_ingreso": str(self.total_ingreso),
+            "total_egreso": str(self.total_egreso),
+            "creado_en": self.creado_en.isoformat() if self.creado_en else None,
+        }
+        return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
 class MovimientoCaja(TimeStampedModel):
@@ -262,7 +290,8 @@ class ContratoEscrow(TimeStampedModel):
         ("borrador", "Borrador / Pendiente de Fondeo"),
         ("fondeado", "Fondeado Activo (Capital bloqueado)"),
         ("ejecutando", "Ejecución por Hitos"),
-        ("liquidado", "Liquidado (Cerrado)"),
+        ("liquidado", "Liquidado (Tallerista Pagado)"),
+        ("repago_completado", "Repago Completado (Cerrado)"),
         ("disputa", "En Disputa / Congelado"),
     ]
 
@@ -288,9 +317,10 @@ class ContratoEscrow(TimeStampedModel):
         return f"Escrow e-OP {self.eop_uuid} [{self.get_estado_display()}]"
 
 
-class HitoEscrow(TimeStampedModel):
+class HitoEscrow(DocumentoFirmableMixin, TimeStampedModel):
     """
     Tramos de liberación de fondos (Ej: Hito 0 (Anticipo 35%), Hito 1 (Avance), Hito Final).
+    Hereda de DocumentoFirmableMixin para requerir firma criptográfica del PTF/Auditor.
     """
 
     contrato = models.ForeignKey(
@@ -301,6 +331,12 @@ class HitoEscrow(TimeStampedModel):
     )
     porcentaje = models.DecimalField(
         max_digits=5, decimal_places=2, help_text="Porcentaje del total del contrato"
+    )
+
+    requiere_auditoria_ptf = models.BooleanField(
+        default=True,
+        verbose_name="Requiere Firma PTF",
+        help_text="Si está activo, el hito no se libera sin la firma criptográfica del Promotor Territorial.",
     )
 
     estado = models.CharField(
@@ -325,3 +361,15 @@ class HitoEscrow(TimeStampedModel):
 
     def __str__(self):
         return f"{self.nombre} ({self.porcentaje}%) - {self.get_estado_display()}"
+
+    def generar_payload_canonico(self):
+        import json
+
+        payload = {
+            "uuid": str(self.uuid_identificador),
+            "contrato_uuid": str(self.contrato.eop_uuid),
+            "nombre": self.nombre,
+            "porcentaje": str(self.porcentaje),
+            "estado": self.estado,
+        }
+        return json.dumps(payload, sort_keys=True, separators=(",", ":"))
