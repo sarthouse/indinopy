@@ -146,6 +146,14 @@
             flex-direction: column;
             flex-shrink: 0;
             overflow-y: auto;
+            transition: width 0.3s ease, opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            opacity: 0;
+            overflow: hidden;
+            border-right: none;
         }
 
         .sidebar-header {
@@ -343,6 +351,9 @@
     <!-- TOPBAR -->
     <header class="topbar">
         <div class="brand-group">
+            <button id="toggleSidebar"
+                style="background: transparent; border: none; color: white; cursor: pointer; font-size: 18px; padding: 0 8px; margin-right: 8px;"
+                title="Alternar Menú">☰</button>
             <span class="brand-badge">INDINOPY</span>
             <div class="brand-title">
                 Canvas Industrial RIGI Conurbano 2026
@@ -612,6 +623,10 @@
                 }
             });
         }
+        // Alternar cajón lateral
+        document.getElementById('toggleSidebar').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        });
     </script>
 </body>
 
