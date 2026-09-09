@@ -41,7 +41,7 @@ sequenceDiagram
     CF->>V: Pedido Minorista (Ej. WooCommerce)
     CF->>T: Pago Total (100% Inmediato)
     V->>CF: Entrega Inmediata + Factura/Ticket
-    
+
     %% Flujo Distribuidor
     CD->>V: Pedido Mayorista (Lote a producir)
     V->>CD: Solicita Seña (Ej. 50%)
@@ -110,7 +110,7 @@ sequenceDiagram
     P->>Prod: Entrega de Materiales
     P->>Adm: Factura (si corresponde)
     Adm->>P: Pago (Contraentrega o Diferido)
-    
+
     Prod->>T: OP (Duplicado) instruye el proceso
     T->>Adm: Liquidación de Servicio (Aparado, etc.)
     Adm->>T: Pago por piezas procesadas
@@ -118,7 +118,7 @@ sequenceDiagram
 
 ## 4. Conclusiones Arquitectónicas para la App "Indino"
 
-1.  **Doble Vista de la Orden de Producción (OP):** El sistema debe contar con robustos permisos de usuario (ACL). Un usuario "Taller" o "Fabricante" que inicie sesión para ver su OP (duplicado digital) o escanear un QR, **jamás** debe tener acceso al endpoint de la API que expone el presupuesto y los costos de los insumos (exclusivo para Administración/Dueños).
-2.  **Tracking Granular por Etapas:** La entidad `OP` en la base de datos debe tener relaciones uno-a-muchos con un modelo de `Etapas` o `Tracking` (ej. Corte, Rebajado, Aparado, Bordado, Armado). Cada etapa debe poder registrar qué Tallerista la completó para luego automatizar la liquidación de sus pagos.
-3.  **Gestión de Herramientas (Hormas):** El inventario no solo descuenta materiales fungibles (cuero, suelas). Debe manejar un concepto de "Préstamo o Asignación temporal de Activos" para las Hormas. Cuando una OP está en proceso, la Horma Modelo "X" pasa a estado *En Uso*, bloqueando su disponibilidad para otros lotes hasta que finalice el armado.
-4.  **Bifurcación del Flujo de Venta:** El carrito o módulo de creación de pedidos debe verificar el rol del usuario: si es `Rol: Distribuidor`, dispara la lógica de "Esperando Seña"; si es `Rol: Final`, exige el pago vía pasarela/caja del 100% para generar la orden.
+1. **Doble Vista de la Orden de Producción (OP):** El sistema debe contar con robustos permisos de usuario (ACL). Un usuario "Taller" o "Fabricante" que inicie sesión para ver su OP (duplicado digital) o escanear un QR, **jamás** debe tener acceso al endpoint de la API que expone el presupuesto y los costos de los insumos (exclusivo para Administración/Dueños).
+2. **Tracking Granular por Etapas:** La entidad `OP` en la base de datos debe tener relaciones uno-a-muchos con un modelo de `Etapas` o `Tracking` (ej. Corte, Rebajado, Aparado, Bordado, Armado). Cada etapa debe poder registrar qué Tallerista la completó para luego automatizar la liquidación de sus pagos.
+3. **Gestión de Herramientas (Hormas):** El inventario no solo descuenta materiales fungibles (cuero, suelas). Debe manejar un concepto de "Préstamo o Asignación temporal de Activos" para las Hormas. Cuando una OP está en proceso, la Horma Modelo "X" pasa a estado *En Uso*, bloqueando su disponibilidad para otros lotes hasta que finalice el armado.
+4. **Bifurcación del Flujo de Venta:** El carrito o módulo de creación de pedidos debe verificar el rol del usuario: si es `Rol: Distribuidor`, dispara la lógica de "Esperando Seña"; si es `Rol: Final`, exige el pago vía pasarela/caja del 100% para generar la orden.
