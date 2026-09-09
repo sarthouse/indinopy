@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glosario de Conceptos e-OP - Indinopy ERP/MES</title>
-    
+    <title>Glosario de Conceptos e-OP - Visor MD Nativo</title>
+
+    <!-- KaTeX -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Mermaid -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <!-- Marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         :root {
@@ -54,7 +61,10 @@
             margin-bottom: 12px;
         }
 
-        h1, h2, h3, h4 {
+        h1,
+        h2,
+        h3,
+        h4 {
             color: #f8fafc;
             margin-top: 1.4em;
             margin-bottom: 0.6em;
@@ -81,7 +91,9 @@
             color: #bfdbfe;
         }
 
-        p, ul, ol {
+        p,
+        ul,
+        ol {
             margin-top: 0.6em;
             margin-bottom: 0.8em;
             color: #cbd5e1;
@@ -98,7 +110,8 @@
             font-size: 13px;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid var(--border-color);
             padding: 8px 12px;
             text-align: left;
@@ -158,11 +171,17 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             transition: border-color 0.2s;
         }
-
+        .mermaid-wrapper.fullscreen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 9999;
+            margin: 0;
+            border-radius: 0;
+            height: 100vh;
+        }
         .mermaid-wrapper:hover {
             border-color: #374151;
         }
-
         .mermaid-header {
             background-color: #0f172a;
             border-bottom: 1px solid #1f2937;
@@ -172,7 +191,6 @@
             align-items: center;
             user-select: none;
         }
-
         .mermaid-title {
             display: flex;
             align-items: center;
@@ -180,106 +198,52 @@
             font-size: 12px;
             font-weight: 700;
             color: #94a3b8;
-            cursor: pointer;
         }
-
-        .mermaid-title:hover {
-            color: #60a5fa;
-        }
-
-        .mermaid-toggle-icon {
-            font-size: 10px;
-            transition: transform 0.2s ease;
-            display: inline-block;
-            color: #60a5fa;
-        }
-
-        .mermaid-wrapper.is-collapsed .mermaid-toggle-icon {
-            transform: rotate(-90deg);
-        }
-
-        .mermaid-wrapper.is-collapsed .mermaid-viewport {
-            display: none;
-        }
-
-        .mermaid-toolbar {
+        .mermaid-controls {
             display: flex;
-            align-items: center;
             gap: 6px;
         }
-
         .m-btn {
-            background-color: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255,255,255,0.05);
+            border: 1px solid #334155;
             color: #cbd5e1;
-            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
+            padding: 2px 8px;
             cursor: pointer;
-            display: inline-flex;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
             align-items: center;
-            gap: 4px;
-            transition: all 0.15s ease;
+            justify-content: center;
         }
-
         .m-btn:hover {
-            background-color: #2563eb;
-            border-color: #3b82f6;
-            color: #ffffff;
+            background-color: rgba(255,255,255,0.15);
+            color: #fff;
         }
-
         .mermaid-viewport {
             position: relative;
             width: 100%;
-            height: 380px;
+            height: auto;
+            min-height: 200px;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: grab;
             background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            cursor: grab;
         }
-
         .mermaid-viewport:active {
             cursor: grabbing;
         }
-
-        .mermaid-svg-container {
-            transition: transform 0.05s ease-out;
-            transform-origin: center center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
+        .mermaid-wrapper.fullscreen .mermaid-viewport {
+            height: calc(100vh - 36px);
+            flex-grow: 1;
         }
-
-        .mermaid-svg-container svg {
-            max-width: 95% !important;
-            max-height: 95% !important;
-            height: auto !important;
-            user-select: none;
-        }
-
-        /* FULLSCREEN MODAL */
-        .mermaid-wrapper.is-fullscreen {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 999999 !important;
-            margin: 0 !important;
-            border-radius: 0 !important;
-            background-color: #030712 !important;
-        }
-
-        .mermaid-wrapper.is-fullscreen .mermaid-viewport {
-            height: calc(100vh - 45px) !important;
-            max-height: none !important;
-            flex: 1;
+        .mermaid-wrapper.collapsed .mermaid-viewport {
+            display: none;
         }
 
         .katex-display {
@@ -303,466 +267,223 @@
         a:hover {
             text-decoration: underline;
         }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .error {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
     </style>
 </head>
+
 <body>
     <div class="doc-container">
-        <span class="doc-header-badge">📖 Glosario</span>
-        <h1>Glosario Integral de Conceptos: Mockup e-OP y Gobernanza Industrial</h1>
-<h3><em>Guía Taxonómica de Términos Legales, Criptográficos, Técnicos, Financieros y de Trinchera</em></h3>
-<p><strong>Sistema de Gestión Indinopy ERP/MES · Mesa de Enlace Sectorial (MES Federal / Nodo Conurbano)</strong></p>
-<hr />
-<p>Este glosario documenta y define en profundidad cada uno de los conceptos, siglas, fórmulas, procedimientos e instituciones presentes en el título de crédito industrial de ejemplo (<strong><code>mockup_orden_produccion.html</code></strong>) y en la arquitectura de gobernanza de la <strong>Orden de Producción Electrónica (e-OP)</strong>.</p>
-<pre><code class="language-mermaid">flowchart TD
-    ROOT[&quot;Glosario Integral e-OP&quot;]
-
-    subgraph G1[&quot;Institución y Reglas&quot;]
-        B[&quot;1. Metadatos del Sistema&quot;]
-        C[&quot;2. Criptografía y Trazabilidad&quot;]
-        D[&quot;3. Actores y Velo Societario&quot;]
-    end
-
-    subgraph G2[&quot;Física Productiva&quot;]
-        E[&quot;4. Técnica del Calzado y BOM&quot;]
-        F[&quot;5. Tracking Físico y Partes&quot;]
-    end
-
-    subgraph G3[&quot;Finanzas y Marco Legal&quot;]
-        G[&quot;6. Arquitectura Escrow y UCI&quot;]
-        H[&quot;7. Desglose Factorial de Costos&quot;]
-        I[&quot;8. Tutela Sindical y Arbitraje&quot;]
-        J[&quot;9. Régimen Fiscal y Previsional&quot;]
-    end
-
-    ROOT --&gt; G1
-    ROOT --&gt; G2
-    ROOT --&gt; G3
-</code></pre>
-<hr />
-<h2>1. Identificación del Sistema y Metadatos Institucionales</h2>
-<h3><strong>Indinopy ERP/MES</strong></h3>
-<p>Plataforma de software libre (bajo licencia abierta) diseñada específicamente para la planificación de recursos empresariales (<strong>ERP - Enterprise Resource Planning</strong>) y la ejecución de manufactura en planta (<strong>MES - Manufacturing Execution System</strong>) en cadenas de valor de calzado, confección y marroquinería. <strong>No es una empresa fabricante ni una marca comercial</strong>, sino la infraestructura técnica digital que procesa las órdenes, audita los stocks por partida doble y gestiona la interacción con la Mesa de Enlace Sectorial.</p>
-<h3><strong>Orden de Producción Electrónica (e-OP)</strong></h3>
-<p>Primitiva digital que transforma la orden de fabricación tradicional en un <strong>título de afectación productiva, colateral crediticio fiduciario e instrumento de pago en custodia (<em>Escrow</em>)</strong>. No es un simple comprobante interno; al ser convalidada por la MES, adquiere fuerza ejecutiva crediticia ante el Fondo Fiduciario (FDI) y valor probatorio de gasto computable ante las autoridades fiscales.</p>
-<h3><strong>Mesa de Enlace Sectorial (MES Federal y Local)</strong></h3>
-<p>Órgano colegiado de gobernanza policéntrica paritaria integrado por 7 sillas representativas de la cadena: (1) Cámaras de Marcas Comitentes; (2) Cámaras de Fabricantes Integrados; (3) Talleres Consolidados (SAS/Cooperativas); (4) Talleres Individuales (Monotributo Productivo); (5) Estado Municipal/Provincial (Árbitro de Crédito); (6) Sindicato de Rama (UTICRA/SETIA); y (7) Organismo Tecnológico Neutral (INTI). Articula a nivel macro (<strong>MES Federal</strong>) y en la trinchera operativa (<strong>MES Municipal / Nodos Regionales</strong>).</p>
-<h3><strong>Fideicomiso de Desarrollo Industrial (FDI)</strong></h3>
-<p>Fondo fiduciario de segundo piso administrado con la participación del <strong>Banco de la Provincia de Buenos Aires (BAPRO)</strong> y cajas de crédito cooperativo. Desintermedia el crédito bancario comercial operando con un ratio de apalancamiento prudencial ($K=3$), financiando el capital de trabajo de los talleres contra el colateral de las e-OPs activas.</p>
-<h3><strong>Contrato Timelock (Bloqueo Temporal de 48 Horas)</strong></h3>
-<p>Algoritmo de control temporal programado en el sistema informático. Establece una ventana máxima e improrrogable de <strong>48 horas hábiles</strong> desde la carga de una e-OP para que la Comisión de Crédito de la MES emita un dictamen fundado de objeción técnica. Si la comisión no se pronuncia en ese lapso, el sistema desbloquea automáticamente el anticipo.</p>
-<h3><strong>Silencio Administrativo Positivo</strong></h3>
-<p>Principio rector de ingeniería procesal: ante la inacción u omisión burocrática del cuerpo colegiado dentro del plazo perentorio de 48 horas, <strong>el sistema informático da por aprobada la orden de pleno derecho por vía de silencio positivo</strong>. Impide que disputas partidarias o desidia administrativa congelen el trabajo del tallerista.</p>
-<hr />
-<h2>2. Primitivas Criptográficas y de Trazabilidad Inmutable</h2>
-<h3><strong>UUID (Universally Unique Identifier)</strong></h3>
-<p>Identificador universal único pseudoaleatorio de 128 bits (ej. <code>e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</code>). Garantiza la unicidad matemática global de cada e-OP emitida en el sistema, vinculando en una sola clave todas las transacciones físicas, remitos, movimientos de inventario y transferencias bancarias asociadas.</p>
-<h3><strong>Merkle Root BOM ($\mathcal{M}_{BOM}$)</strong></h3>
-<p>Raíz criptográfica de un <strong>Árbol de Merkle</strong> generado a partir de las hojas que contienen cada insumo, consumo unitario y tolerancia de merma de la receta técnica. Permite verificar matemáticamente que la lista de materiales no fue adulterada a posteriori sin necesidad de exponer en público la totalidad de la fórmula industrial protegida de la marca.</p>
-<h3><strong>Claves Criptográficas Ed25519</strong></h3>
-<p>Esquema de firma digital de curvas elípticas de última generación (EdDSA). Ofrece alta velocidad de cálculo y resistencia contra ataques de canal lateral, utilizado para firmar digitalmente las autorizaciones de la marca comitente, del tallerista y del árbitro institucional de la MES.</p>
-<h3><strong>Esquema Multifirma 2 de 3 (Multisig 2-of-3)</strong></h3>
-<p>Mecanismo de seguridad transaccional donde los fondos bloqueados en Escrow solo pueden liberarse si confluyen al menos dos firmas criptográficas autorizadas: (a) Marca Comitente; (b) Tallerista Ejecutor; (c) Árbitro de la MES. Evita que cualquiera de las partes bloquee unilateralmente el dinero de manera abusiva.</p>
-<h3><strong>Sello QR de Trazabilidad Socioproductiva</strong></h3>
-<p>Código bidimensional impreso en la etiqueta de packaging de cada par de calzado. Al ser escaneado por el consumidor final en góndola o comercio electrónico, redirige a una URL pública (<code>https://indino.ar/t/{UUID}</code>) que desglosa de manera transparente la descomposición factorial de costos: mano de obra territorial, materias primas nacionales, carga impositiva neta y margen comercial.</p>
-<hr />
-<h2>3. Actores de Gobernanza y Velo Societario</h2>
-<h3><strong>Marca Comitente</strong></h3>
-<p>Empresa que encarga la producción, aporta el diseño, provee las materias primas bajo régimen de custodia, comercializa el producto terminado e integra el fondeo de la mano de obra en la bóveda de Escrow del FDI.</p>
-<h3><strong>Beneficiario Final Real (UBO - Ultimate Beneficial Owner)</strong></h3>
-<p>Persona física titular, socio gerente o director real de la marca comitente, identificado fehacientemente mediante su DNI y constatación biométrica ante RENAPER. 
-* <strong>Doctrina contra Quiebras Fraudulentas:</strong> Si la marca quiebra una razón social ("Calzados Fantasma S.R.L.") dejando pasivos salariales, la penalización (<em>Slashing</em>) y la pérdida de score no quedan en la persona jurídica vaciada, sino que <strong>se heredan en el DNI del titular real</strong>, exigiéndole 100% de fianza líquida si intenta operar con una nueva sociedad.</p>
-<h3><strong>Tallerista Ejecutor / Unidad Productiva Territorial</strong></h3>
-<p>Microempresa, taller familiar o consorcio barrial (cortadores, aparadores, armadores) que aporta la capacidad de trabajo físico y la maquinaria de trinchera. Opera adherido a la Bolsa de Trabajo bajo la figura de Monotributo Productivo o Sociedad por Acciones Simplificada (SAS).</p>
-<h3><strong>Promotor Territorial de Formalización (PTF)</strong></h3>
-<p>Trabajador de base del oficio con antigüedad mínima comprobable de 12 meses y aval de 5 talleres vecinos, designado por la MES local y rentado con honorario de 2 Salarios Mínimos, Vitales y Móviles financiados por el FDI. Actúa como <strong>agente fiduciario de proximidad</strong>: inspecciona talleres, constata avances de lote, ayuda a cargar partes por WhatsApp y da fe ante la MES para la liberación de los hitos del Escrow digital.</p>
-<h3><strong>Score Solidario de la Bolsa de Trabajo</strong></h3>
-<p>Algoritmo de reputación cooperativa que reemplaza al <em>scoring</em> bancario tradicional. Califica a marcas y talleres sobre una escala de 0 a 100 puntos en base a variables reales: índice de cumplimiento de plazos, calidad de entrega, bajo nivel de desperdicio de cuero y cumplimiento de pisos salariales.</p>
-<hr />
-<h2>4. Técnica del Calzado, BOM y Mermas</h2>
-<h3><strong>BOM (Bill of Materials / Lista de Materiales)</strong></h3>
-<p>Receta técnica formal y exhaustiva que detalla todos los insumos necesarios para fabricar una unidad de producto (un par de calzado): superficie de cuero, metros de cordura, pares de suelas, kilogramos de adhesivo, pares de punteras y avíos.</p>
-<h3><strong>Curva de Talles</strong></h3>
-<p>Matriz de distribución cuantitativa de pares que compone un lote de producción, desglosada por número de calzado (en Argentina, habitualmente del talle 38 al 45 para calzado masculino de trabajo). Responde a la distribución de tallas antropométrica del mercado consumidor.</p>
-<h3><strong>Horma Normalizada (ej. INTI-CALZ-H34)</strong></h3>
-<p>Matriz física de madera o polietileno de alta densidad que reproduce la anatomía del pie humano y determina el volumen interno, ancho, calce y silueta estética del calzado. El código <code>INTI-CALZ</code> indica que la horma fue auditada por los centros tecnológicos estatales para garantizar estándares ortopédicos y ergonómicos de trabajo.</p>
-<h3><strong>Sello Buen Diseño (SBD)</strong></h3>
-<p>Distinción oficial otorgada por la Secretaría de Industria de la Nación a productos que destacan por su innovación, agregación de valor local y calidad de materiales. En el protocolo e-OP, contar con certificación SBD autoriza al taller y a la marca a solicitar un <strong>anticipo preferencial de arranque (Hito Cero) de hasta el 40% o 50%</strong>.</p>
-<h3><strong>Merma Técnica Aprobada por el INTI</strong></h3>
-<p>Porcentaje de desperdicio admisible e inevitable que se produce durante el proceso de corte de materiales heterogéneos (como el cuero vacuno, cuyas formas irregulares y cicatrices impiden un aprovechamiento del 100%). La homologación de mermas por el INTI (ej. 8% en cuero flor, 5% en forro textil) impide que la marca comitente acuse arbitrariamente al tallerista de robo de material ante el descarte natural de la chapa de cuero.</p>
-<h3><strong>Cuero Vacuno Box Flor Hidrofugado</strong></h3>
-<p>Cuero curtido al cromo de espesor 1.8 a 2.0 mm obtenido de la capa exterior del animal (la "flor"), tratado con aceites hidrófugos durante el proceso de recurtido para repeler la penetración del agua sin perder transpirabilidad.</p>
-<h3><strong>Cordura Rip-Stop 1000D</strong></h3>
-<p>Tejido técnico de poliamida de alta tenacidad con hilado de 1000 deniers y trama antidesgarro en cuadrícula (<em>Rip-Stop</em>). Utilizado en laterales y cañas del calzado táctico para alivianar peso manteniendo resistencia a la abrasión.</p>
-<h3><strong>Puntera Normalizada IRAM 3610</strong></h3>
-<p>Casquillo protector anatómico colocado en la puntera del borcego, ensayado bajo la Norma IRAM 3610 para resistir una energía de impacto de 200 Joules y una carga de compresión de 15 kN sin aplastamiento de los dedos del operario.</p>
-<h3><strong>Adhesivo Poliuretánico sin Tolueno + Halogenante</strong></h3>
-<p>Pegamento de base poliéster-poliuretano libre de toluol (solvente aromático altamente nocivo para las vías respiratorias del zapatero). Requiere la aplicación previa de un líquido halogenante sobre la suela de caucho para modificar químicamente la polaridad superficial y garantizar una adherencia indeleble tras reactivación térmica.</p>
-<hr />
-<h2>5. Tracking Físico y Partes de Producción</h2>
-<h3><strong>Parte de Producción Físico (<code>OPParteProduccion</code> - PART-N°)</strong></h3>
-<p>Comprobante operativo digital y en papel mediante el cual el tallerista declara la culminación de un tramo del trabajo, especificando: pares conformes de primera calidad, pares de segunda y porcentaje de scrap resultante. Es el disparador probatorio que gatilla la auditoría del PTF.</p>
-<h3><strong>Liquidación Desacoplada por Etapa</strong></h3>
-<p>Principio arquitectónico del sistema donde cada etapa productiva es tratada como un nodo financiero independiente. Si el taller de corte completó su trabajo, <strong>su pago se liquida de inmediato</strong>; no queda congelado si el taller de aparado posterior sufre demoras operativas.</p>
-<h3><strong>Etapa 1: Corte y Rebajado</strong></h3>
-<p>Operación donde se trazan y cortan las piezas de cuero y forro según la moldería, procediendo luego al rebajado (desbaste perimetral del espesor del cuero con cuchilla circular) para que las uniones cosidas no queden toscas ni lastimen el pie.</p>
-<h3><strong>Etapa 2: Aparado y Costura</strong></h3>
-<p>Proceso artesanal y de máquina mediante el cual las piezas planas de cuero y cordura son ensambladas, cementadas y cosidas con pespuntes simples, dobles y atraques reforzados, conformando la estructura tridimensional superior del calzado (la "capellada").</p>
-<h3><strong>Etapa 3: Armado, Centrado y Montaje</strong></h3>
-<p>Operación pesada en la cual la capellada aparada se monta sobre la horma plástica, se coloca el contrafuerte y la puntera de acero, se estira el cuero mediante pinzas de montar, y se une la suela de caucho con cemento reactivado en prensa neumática vulcanizadora.</p>
-<h3><strong>Etapa 4: Acabado, Emplantillado, Lustre y Empaque</strong></h3>
-<p>Etapa final de deshormado, colocación de plantillas de confort en goma EVA, limpieza de hilachas y restos de adhesivo, lustre protector del cuero, colocación de cordones y estibado en cajas individuales de cartón con etiqueta QR.</p>
-<hr />
-<h2>6. Arquitectura Financiera, Escrow Digital y Moneda</h2>
-<h3><strong>Escrow Digital Atomizado</strong></h3>
-<p>Dispositivo fiduciario programable en el sistema informático. Los fondos correspondientes a la retribución de la mano de obra son depositados por la marca comitente en una subcuenta fiduciaria cerrada del FDI en el momento en que se emite la orden. La marca <strong>pierde la libre disponibilidad del dinero</strong>, el cual se va liberando automáticamente hacia la cuenta del tallerista conforme se verifican los hitos pactados.</p>
-<h3><strong>Hito Cero (Anticipo de Arranque Territorial)</strong></h3>
-<p>Primer desembolso financiero liberado a favor del tallerista (habitualmente entre el <strong>35% y el 40%</strong>, o hasta el <strong>50% con Sello Buen Diseño</strong>). Se acredita inmediatamente tras la convalidación de la orden por la MES (o al cumplirse las 48 horas de silencio positivo). Su fin es fondear el capital de trabajo inicial: compra de hilos, agujas, solventes, energía eléctrica y adelantos salariales para el sustento diario de los costureros.</p>
-<h3><strong>Hitos de Avance (Hito 1 y 2)</strong></h3>
-<p>Desembolsos intermedios que se liberan de forma escalonada contra la constatación física de entrega de etapas parciales (ej. 20% al finalizar el corte de los 500 pares, 25% al entregar el aparado cosido).</p>
-<h3><strong>Hito Final (Saldo de Cierre de Lote)</strong></h3>
-<p>Último tramo del pago (habitualmente el <strong>15% al 20%</strong>) retenido en Escrow hasta la recepción definitiva del lote terminado en depósito y el control de calidad final. Permanece protegido durante una ventana de 48 horas para la eventual interposición de la tutela sindical ex-post.</p>
-<h3><strong>UCI (Unidad de Cuenta Industrial)</strong></h3>
-<p>Unidad de indexación fiduciaria del sistema (1 UCI $\approx$ valor canasta base de mano de obra manufacturera). Todo contrato de e-OP pacta su valor en UCIs, las cuales se liquidan en pesos al momento efectivo de cobro según la variación del <strong>Índice de Precios Internos al Por Mayor (IPIM Manufacturero INDEC)</strong>:
-$$\mathcal{P}_{\text{ARS}}(t) = \mathcal{P}_{\text{UCI}} \times \left( \frac{\text{IPIM}(t)}{\text{IPIM}_0} \right)$$
-Protege al tallerista del descalce inflacionario entre el día que presupuestó el lote y el día que lo terminó de coser.</p>
-<h3><strong>Micro-canon de Red MES (Take-rate del 1.0%)</strong></h3>
-<p>Alícuota fija descontada automáticamente del clearing de cada e-OP liquidada exitosamente. Se divide en: sostenimiento de los honorarios mensuales de los Promotores Territoriales (PTF), equipamiento de centros tecnológicos CIFO y mantenimiento de los servidores del sistema Indinopy. Garantiza el autofinanciamiento del régimen sin depender de subsidios del Estado.</p>
-<h3><strong>Fondo de Riesgo y Contingencias del FDI (0.5%)</strong></h3>
-<p>Fondo fiduciario de reserva colectiva alimentado con una alícuota de medio punto sobre las órdenes. Se utiliza para absorber pérdidas fortuitas por rotura de maquinaria pesada, incendios o siniestros en talleres vulnerables, evitando que una contingencia individual hunda a la microempresa o paralice la cadena.</p>
-<hr />
-<h2>7. Matriz Factorial de Costos Ítem por Ítem</h2>
-<h3><strong>Costo Industrial Fabril</strong></h3>
-<p>Costo técnico directo consolidado de fabricación en planta, compuesto por la suma matemática de:
-$$\text{Costo Industrial} = \text{Insumos BOM} + \text{Mano de Obra Neta} + \text{Cargas Previsionales} + \text{Canon MES} + \text{Impuestos Directos}$$</p>
-<h3><strong>Mano de Obra Directa Territorial</strong></h3>
-<p>Suma de los valores percibidos por los diferentes talleres y operarios especializados que intervinieron en la transformación física del calzado (corte, rebajado, aparado, armado y empaque). Representa el valor agregado del trabajo vivo en el distrito.</p>
-<h3><strong>Margen Comercial y Distribución de la Marca</strong></h3>
-<p>Diferencia bruta entre el Costo Industrial Fabril y el Precio de Venta al Público (sin IVA). Retribuye los costos de desarrollo de moldería, diseño, marketing comercial, logística federal, estructura administrativa y rentabilidad del comitente.</p>
-<h3><strong>P.V.P. Sugerido (Precio de Venta al Público con IVA)</strong></h3>
-<p>Precio final proyectado para la venta del calzado en el mostrador del comercio minorista o plataforma de e-commerce, incluyendo el Impuesto al Valor Agregado del 21% aplicable al consumidor final.</p>
-<hr />
-<h2>8. Tutela Laboral, Veto Ex-Post y Arbitraje</h2>
-<h3><strong>Veto Ex-Post Sindical</strong></h3>
-<p>Potestad de policía de trabajo ejercida por el sindicato con personería gremial (UTICRA o SETIA). A diferencia del modelo burocrático tradicional, el gremio <strong>no frena el inicio de la orden con sellos preventivos</strong>, sino que audita la realidad física en el taller durante la confección o al momento de la entrega.</p>
-<h3><strong>Alerta de Escrow</strong></h3>
-<p>Gatillo informático activado por el sindicato si detecta precios de mano de obra por debajo del piso de convenio colectivo o condiciones insalubres de explotación. Produce el <strong>bloqueo preventivo automático del Hito Final (15%) en el FDI por un plazo máximo de 48 horas hábiles</strong>, sin suspender el trabajo de las máquinas ni privar al tallerista del cobro de lo ya realizado.</p>
-<h3><strong>Fianza Líquida de Continuidad Operativa</strong></h3>
-<p>Mecanismo de resguardo que impide que la mercadería quede secuestrada y la marca pierda la temporada comercial. La empresa comitente puede depositar en garantía el <strong>100% del monto salarial en litigio en la cuenta del FDI</strong>; una vez acreditada la fianza, retira los bultos para su venta mientras el diferendo continúa sustanciándose por la vía arbitral.</p>
-<h3><strong>Tribunal de Arbitraje de Trinchera</strong></h3>
-<p>Tribunal arbitral perentorio constituido en la MES local, integrado por: (a) El perito técnico neutral del INTI (que ejerce la presidencia); (b) Dos vocales sorteados de la Bolsa de Trabajo (un tallerista y una marca ajenos al litigio). Dicta laudo inapelable en un plazo duro de <strong>72 horas hábiles</strong>, ordenando la readecuación retroactiva de tarifas o desestimando la queja.</p>
-<h3><strong>Mecanismo de Slashing (Penalización Algorítmica)</strong></h3>
-<p>Castigo informático automático ante faltas graves o reincidencia en prácticas predatorias:
-* <strong>Para Marcas Defectoras:</strong> Quita inmediata de Unidades de Crédito Productivo (UCP), pérdida del beneficio de arancel cero y, a la tercera condena firme, <strong>exclusión total del RIGI del Conurbano</strong>.
-* <strong>Para Talleres Defectores:</strong> Retención del 30% en liquidaciones de e-OPs futuras para resarcir cuero dañado y degradación de la insignia en la Bolsa de Trabajo.</p>
-<hr />
-<h2>9. Régimen Impositivo, Fiscal y Previsional</h2>
-<h3><strong>Locación de Obra vs. Compraventa</strong></h3>
-<p>Diferenciación legal de fondo regulada por el Código Civil y Comercial de la Nación (Art. 1251):
-* En la <strong>compraventa</strong>, el taller compraría cuero y vendería zapatos, quedando atrapado en el débito de IVA y presunciones de Ganancias de un comerciante.
-* En la <strong>locación de obra con insumos provistos</strong>, el tallerista vende únicamente un <em>servicio de transformación de trabajo humano</em>. No adquiere la propiedad del cuero ni vende el calzado terminado, tributando solo sobre su honorario de confección.</p>
-<h3><strong>Cláusula de Inembargabilidad Territorial de Insumos</strong></h3>
-<p>Blindaje legal explícito conforme a los artículos 1251 y 1356 del CCCN. Las materias primas y semielaborados en taller constituyen <strong>activos intangibles de afectación productiva territorial</strong>. No forman parte del patrimonio ejecutable del tallerista ni pueden ser embargados por deudas comerciales o bancarias de la marca comitente.</p>
-<h3><strong>Monotributo Productivo con Micro-retención en Clearing (1.5%)</strong></h3>
-<p>Régimen tributario simplificado adaptado a la economía popular manufacturera:
-* Se elimina la cuota fija mensual mensualizada que acumulaba deudas en épocas de parálisis o caída de ventas.
-* El impuesto se recauda mediante una <strong>micro-retención del 1.5% aplicada automáticamente en la cuenta bancaria de clearing</strong> en el instante exacto en que el tallerista cobra cada hito.</p>
-<h3><strong>Suspensión Activa de Oficio</strong></h3>
-<p>Garantía que ampara al Monotributista Productivo: si el taller pasa meses sin emitir partes ni registrar e-OPs activas, el sistema de ARCA/MES <strong>suspende de oficio el devengamiento de cargas, multas, intereses o bajas de oficio</strong>. El taller puede reactivarse en cualquier momento sin pagar deudas acumuladas.</p>
-<h3><strong>Deducción al 100% en Impuesto a las Ganancias</strong></h3>
-<p>Impacto decisivo para la marca comitente: la e-OP certificada por la MES opera como comprobante fiscal habilitante que le permite a la PyME comitente formal <strong>deducir el 100% del gasto de confección pagado a los talleres tercerizados</strong>. Termina con la perversión de tributar Ganancias sobre "utilidades ficticias" causadas por la falta de facturación formal de los talleres clandestinos.</p>
-<h3><strong>Subvención del 100% de Contribuciones Patronales (FDI Previsional)</strong></h3>
-<p>Mecanismo de choque para la formalización del empleo asalariado en talleres de base: el FDI financia el <strong>100% de los aportes patronales (27% del salario bruto) de los primeros dos trabajadores regularizados por taller durante un período de 24 meses</strong>, eliminando el costo previsional de arranque para la incorporación de mano de obra joven o no registrada.</p>
-<h3><strong>Pacto Fiscal Productivo y Exención de Tasas Locales</strong></h3>
-<p>Acuerdo institucional suscripto entre la Nación, la Provincia de Buenos Aires (ARBA) y los Municipios del Conurbano: los talleres y fábricas adheridos gozan de <strong>exención total por 10 años de la Tasa de Seguridad e Higiene municipal y alícuota cero en Ingresos Brutos</strong> sobre la porción de mano de obra de confección, compensado a los municipios con transferencias directas de infraestructura industrial.</p>
-<hr />
-<h2>10. Tabla Rápida de Siglas y Acrónimos</h2>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Sigla</th>
-<th style="text-align: left;">Significado Completo</th>
-<th style="text-align: left;">Ámbito de Aplicación</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><strong>BAPRO</strong></td>
-<td style="text-align: left;">Banco de la Provincia de Buenos Aires</td>
-<td style="text-align: left;">Entidad fiduciaria y agente de clearing bancario</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>BOM</strong></td>
-<td style="text-align: left;"><em>Bill of Materials</em> (Lista / Receta de Materiales)</td>
-<td style="text-align: left;">Especificación técnica de ingeniería fabril</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>CCCN</strong></td>
-<td style="text-align: left;">Código Civil y Comercial de la Nación (Ley 26.994)</td>
-<td style="text-align: left;">Marco legal contractual (Arts. 1251 y 1356)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>CCT</strong></td>
-<td style="text-align: left;">Convenio Colectivo de Trabajo de Rama</td>
-<td style="text-align: left;">Normativa salarial paritaria de base (UTICRA/SETIA)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>CIFO</strong></td>
-<td style="text-align: left;">Centro de Integración y Formación de Oficios</td>
-<td style="text-align: left;">Banco comunitario de maquinaria pesada y capacitación</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>Ed25519</strong></td>
-<td style="text-align: left;">Edwards-curve Digital Signature Algorithm</td>
-<td style="text-align: left;">Criptografía asimétrica de firma digital rápida</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>e-OP</strong></td>
-<td style="text-align: left;">Orden de Producción Electrónica</td>
-<td style="text-align: left;">Primitiva digital y título de crédito fiduciario</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>ERP</strong></td>
-<td style="text-align: left;"><em>Enterprise Resource Planning</em></td>
-<td style="text-align: left;">Módulo de compras, tesorería y contabilidad</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>FDI</strong></td>
-<td style="text-align: left;">Fideicomiso de Desarrollo Industrial</td>
-<td style="text-align: left;">Bóveda fiduciaria de segundo piso y liquidez</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>INTI</strong></td>
-<td style="text-align: left;">Instituto Nacional de Tecnología Industrial</td>
-<td style="text-align: left;">Organismo técnico neutral, certificador de mermas y normas</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>IPIM</strong></td>
-<td style="text-align: left;">Índice de Precios Internos al Por Mayor (INDEC)</td>
-<td style="text-align: left;">Referencia de indexación de la Unidad de Cuenta Industrial</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>MES</strong></td>
-<td style="text-align: left;">Mesa de Enlace Sectorial (Federal / Local)</td>
-<td style="text-align: left;">Órgano paritario de gobierno de la cadena (7 sillas)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>MES</strong></td>
-<td style="text-align: left;"><em>Manufacturing Execution System</em> (en Indinopy)</td>
-<td style="text-align: left;">Sistema de tracking de planta y partes de producción</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>PTF</strong></td>
-<td style="text-align: left;">Promotor Territorial de Formalización</td>
-<td style="text-align: left;">Representante territorial par y veedor del Escrow</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>RIGI</strong></td>
-<td style="text-align: left;">Régimen de Incentivo a las Grandes Inversiones</td>
-<td style="text-align: left;">Marco de contraste que fundamenta el régimen PyME</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>SAS</strong></td>
-<td style="text-align: left;">Sociedad por Acciones Simplificada</td>
-<td style="text-align: left;">Figura societaria ágil para talleres de hasta 30 operarios</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>SBD</strong></td>
-<td style="text-align: left;">Sello Buen Diseño</td>
-<td style="text-align: left;">Distinción oficial que premia la calidad e innovación local</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>UBO</strong></td>
-<td style="text-align: left;"><em>Ultimate Beneficial Owner</em> (Beneficiario Final)</td>
-<td style="text-align: left;">DNI de la persona física detrás de la persona jurídica</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>UCI</strong></td>
-<td style="text-align: left;">Unidad de Cuenta Industrial</td>
-<td style="text-align: left;">Moneda de indexación fiduciaria de la mano de obra</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>UCP</strong></td>
-<td style="text-align: left;">Unidad de Crédito Productivo</td>
-<td style="text-align: left;">Score y puntaje de prioridad aduanera para comitentes</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>UTICRA</strong></td>
-<td style="text-align: left;">Unión Trabajadores de la Industria del Calzado</td>
-<td style="text-align: left;">Gremio de rama con tutela territorial (Silla 6 MES)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>UUID</strong></td>
-<td style="text-align: left;"><em>Universally Unique Identifier</em></td>
-<td style="text-align: left;">Identificador universal único de la e-OP</td>
-</tr>
-</tbody>
-</table>
+        <span class="doc-header-badge">📚 Visor Nativo Markdown</span>
+        <div id="content">
+            <div class="loading">Cargando documento original "glosario_conceptos_mockup.md"...</div>
+        </div>
     </div>
 
     <script>
-        // Initialize KaTeX
-        document.addEventListener("DOMContentLoaded", function() {
-            renderMathInElement(document.body, {
-                delimiters: [
-                    {left: "$$", right: "$$", display: true},
-                    {left: "$", right: "$", display: false}
-                ],
-                throwOnError: false,
-                ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
-            });
-        });
-
-        // Initialize Mermaid
+        // Configuración inicial de Mermaid
         mermaid.initialize({
             startOnLoad: false,
             theme: 'dark',
-            securityLevel: 'loose',
-            fontFamily: 'inherit',
-            flowchart: { useMaxWidth: false, htmlLabels: true },
-            sequence: { useMaxWidth: false },
-            gantt: { useMaxWidth: false }
+            securityLevel: 'loose'
         });
 
-        // Controller for interactive pan & zoom
-        function setupMermaidInteractive(wrapper) {
-            const title = wrapper.querySelector('.mermaid-title');
-            const viewport = wrapper.querySelector('.mermaid-viewport');
-            const svgContainer = wrapper.querySelector('.mermaid-svg-container');
-            const btnIn = wrapper.querySelector('[data-action="zoom-in"]');
-            const btnOut = wrapper.querySelector('[data-action="zoom-out"]');
-            const btnReset = wrapper.querySelector('[data-action="reset"]');
-            const btnFull = wrapper.querySelector('[data-action="fullscreen"]');
-
-            let scale = 1;
-            let translateX = 0;
-            let translateY = 0;
-            let isDragging = false;
-            let startX = 0;
-            let startY = 0;
-
-            function updateTransform() {
-                svgContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-            }
-
-            // Toggle collapse
-            title.addEventListener('click', () => {
-                wrapper.classList.toggle('is-collapsed');
-            });
-
-            // Zoom In / Out / Reset
-            btnIn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                scale = Math.min(5, scale * 1.25);
-                updateTransform();
-            });
-
-            btnOut.addEventListener('click', (e) => {
-                e.stopPropagation();
-                scale = Math.max(0.2, scale / 1.25);
-                updateTransform();
-            });
-
-            btnReset.addEventListener('click', (e) => {
-                e.stopPropagation();
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                updateTransform();
-            });
-
-            // Fullscreen
-            btnFull.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isFull = wrapper.classList.toggle('is-fullscreen');
-                btnFull.innerHTML = isFull ? '<span>✕</span> Cerrar' : '<span>⤢</span> Pantalla Completa';
-                document.body.style.overflow = isFull ? 'hidden' : '';
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                updateTransform();
-            });
-
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && wrapper.classList.contains('is-fullscreen')) {
-                    wrapper.classList.remove('is-fullscreen');
-                    btnFull.innerHTML = '<span>⤢</span> Pantalla Completa';
-                    document.body.style.overflow = '';
-                    scale = 1;
-                    translateX = 0;
-                    translateY = 0;
-                    updateTransform();
-                }
-            });
-
-            // Pan Dragging
-            viewport.addEventListener('mousedown', (e) => {
-                if (e.target.closest('.m-btn')) return;
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-            });
-
-            window.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-                updateTransform();
-            });
-
-            window.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-
-            // Wheel Zoom
-            viewport.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                const factor = e.deltaY < 0 ? 1.15 : 0.87;
-                scale = Math.min(Math.max(0.2, scale * factor), 5);
-                updateTransform();
-            }, { passive: false });
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
-            mermaidBlocks.forEach(function(block, idx) {
-                const pre = block.parentElement;
-                const code = block.textContent;
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'mermaid-wrapper';
-                wrapper.innerHTML = `
+        // Configuración de Marked para interceptar bloques de código Mermaid
+        const renderer = new marked.Renderer();
+        const originalCode = renderer.code.bind(renderer);
+        renderer.code = function(tokenOrCode, language, isEscaped) {
+            const codeText = typeof tokenOrCode === 'object' ? tokenOrCode.text : tokenOrCode;
+            const lang = typeof tokenOrCode === 'object' ? tokenOrCode.lang : language;
+            
+            if (lang === 'mermaid') {
+                return `
+                <div class="mermaid-wrapper">
                     <div class="mermaid-header">
-                        <div class="mermaid-title" title="Click para contraer o expandir">
-                            <span class="mermaid-toggle-icon">▼</span>
-                            <span>Diagrama ${idx + 1}</span>
-                            <small style="color: #64748b; font-size: 10px; font-weight: normal; margin-left: 6px;">(Arrastrar para mover · Rueda para zoom)</small>
-                        </div>
-                        <div class="mermaid-toolbar">
-                            <button class="m-btn" data-action="zoom-in" title="Acercar">＋ Zoom</button>
-                            <button class="m-btn" data-action="zoom-out" title="Alejar">－</button>
-                            <button class="m-btn" data-action="reset" title="Centrar">⟲ Centrar</button>
-                            <button class="m-btn" data-action="fullscreen" title="Pantalla completa">⤢ Pantalla Completa</button>
+                        <div class="mermaid-title">📊 Diagrama Mermaid</div>
+                        <div class="mermaid-controls">
+                            <button class="m-btn btn-zoom-in" title="Acercar">➕</button>
+                            <button class="m-btn btn-zoom-out" title="Alejar">➖</button>
+                            <button class="m-btn btn-reset" title="Restaurar">🔄</button>
+                            <button class="m-btn btn-fullscreen" title="Pantalla Completa">⛶</button>
+                            <button class="m-btn btn-collapse" title="Expandir/Contraer">▼</button>
                         </div>
                     </div>
                     <div class="mermaid-viewport">
-                        <div class="mermaid-svg-container">
-                            <div class="mermaid">${code}</div>
+                        <div class="mermaid" style="transform: scale(1) translate(0px, 0px); transition: transform 0.1s ease-out; transform-origin: center;">${codeText}</div>
+                    </div>
+                </div>`;
+            }
+            return originalCode(tokenOrCode, language, isEscaped);
+        };
+        marked.setOptions({ renderer: renderer });
+
+        async function loadMarkdown() {
+            try {
+                // Hacemos el fetch() al archivo MD que está en la misma carpeta
+                const response = await fetch('glosario_conceptos_mockup.md');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status} - No se pudo cargar el archivo.`);
+                }
+
+                const markdownText = await response.text();
+
+                // Parseamos el markdown a HTML en memoria
+                const htmlContent = marked.parse(markdownText);
+
+                // Inyectamos el HTML dinámicamente
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = htmlContent;
+
+                // Renderizamos la sintaxis matemática de KaTeX ($ y $$)
+                renderMathInElement(contentDiv, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+
+                // Renderizamos los diagramas de Mermaid que acabamos de inyectar
+                const mermaidElements = document.querySelectorAll('.mermaid');
+                if (mermaidElements.length > 0) {
+                    await mermaid.run({ nodes: mermaidElements });
+                    
+                    // Inicializar interactividad (Zoom, Pan, Fullscreen)
+                    document.querySelectorAll('.mermaid-wrapper').forEach(wrapper => {
+                        const viewport = wrapper.querySelector('.mermaid-viewport');
+                        const mermaidDiv = wrapper.querySelector('.mermaid');
+                        const btnZoomIn = wrapper.querySelector('.btn-zoom-in');
+                        const btnZoomOut = wrapper.querySelector('.btn-zoom-out');
+                        const btnReset = wrapper.querySelector('.btn-reset');
+                        const btnFullscreen = wrapper.querySelector('.btn-fullscreen');
+                        const btnCollapse = wrapper.querySelector('.btn-collapse');
+
+                        let scale = 1, translateX = 0, translateY = 0;
+                        let isDragging = false, startX, startY;
+
+                        const updateTransform = () => {
+                            mermaidDiv.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+                        };
+
+                        btnZoomIn.onclick = () => { scale *= 1.2; updateTransform(); };
+                        btnZoomOut.onclick = () => { scale /= 1.2; updateTransform(); };
+                        btnReset.onclick = () => { scale = 1; translateX = 0; translateY = 0; updateTransform(); };
+                        
+                        btnCollapse.onclick = () => {
+                            wrapper.classList.toggle('collapsed');
+                            btnCollapse.textContent = wrapper.classList.contains('collapsed') ? '▶' : '▼';
+                        };
+                        
+                        btnFullscreen.onclick = () => {
+                            wrapper.classList.toggle('fullscreen');
+                        };
+
+                        viewport.addEventListener('mousedown', (e) => {
+                            isDragging = true;
+                            startX = e.clientX - translateX;
+                            startY = e.clientY - translateY;
+                            viewport.style.cursor = 'grabbing';
+                        });
+                        
+                        window.addEventListener('mousemove', (e) => {
+                            if (!isDragging) return;
+                            translateX = e.clientX - startX;
+                            translateY = e.clientY - startY;
+                            mermaidDiv.style.transition = 'none';
+                            updateTransform();
+                        });
+                        
+                        window.addEventListener('mouseup', () => {
+                            isDragging = false;
+                            viewport.style.cursor = 'grab';
+                            mermaidDiv.style.transition = 'transform 0.1s ease-out';
+                        });
+                        
+                        window.addEventListener('mouseleave', () => {
+                            if(isDragging) {
+                                isDragging = false;
+                                viewport.style.cursor = 'grab';
+                                mermaidDiv.style.transition = 'transform 0.1s ease-out';
+                            }
+                        });
+
+                        viewport.addEventListener('wheel', (e) => {
+                            e.preventDefault();
+                            scale *= e.deltaY < 0 ? 1.1 : 0.9;
+                            updateTransform();
+                        }, { passive: false });
+                    });
+                }
+
+            } catch (error) {
+                console.warn('Error loading Markdown via fetch (CORS block on file://). Falling back to manual file input.', error);
+
+                document.getElementById('content').innerHTML = `
+                    <div class="error" style="background-color: transparent; border-color: #3b82f6; text-align: center;">
+                        <h3 style="color: #60a5fa;">Carga Local Requerida</h3>
+                        <p style="color: #cbd5e1; margin-bottom: 20px;">Estás abriendo el archivo localmente (file://), por lo que el navegador bloquea la carga automática por seguridad.</p>
+                        
+                        <div style="padding: 20px; border: 2px dashed #3b82f6; border-radius: 8px; background: rgba(59, 130, 246, 0.05); display: inline-block;">
+                            <p style="margin-top: 0; font-weight: bold; color: #93c5fd;">Por favor, seleccioná manualmente el archivo .md:</p>
+                            <input type="file" id="file-input" accept=".md,.txt" style="color: #e2e8f0; font-size: 14px; padding: 10px; cursor: pointer;">
                         </div>
                     </div>
                 `;
 
-                pre.replaceWith(wrapper);
-                setupMermaidInteractive(wrapper);
-            });
+                // Agregar listener para el selector de archivos
+                document.getElementById('file-input').addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
 
-            if (mermaidBlocks.length > 0) {
-                try {
-                    mermaid.run();
-                } catch(e) {
-                    console.warn("Mermaid error:", e);
-                }
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const markdownText = e.target.result;
+
+                        // Parsear y renderizar (misma lógica que el try)
+                        const htmlContent = marked.parse(markdownText);
+                        const contentDiv = document.getElementById('content');
+                        contentDiv.innerHTML = htmlContent;
+
+                        renderMathInElement(contentDiv, {
+                            delimiters: [
+                                { left: '$$', right: '$$', display: true },
+                                { left: '$', right: '$', display: false },
+                                { left: '\\(', right: '\\)', display: false },
+                                { left: '\\[', right: '\\]', display: true }
+                            ],
+                            throwOnError: false
+                        });
+
+                        const mermaidElements = document.querySelectorAll('.mermaid');
+                        if (mermaidElements.length > 0) {
+                            mermaid.run({ nodes: mermaidElements });
+                        }
+                    };
+                    reader.readAsText(file);
+                });
             }
-        });
+        }
+
+        // Ejecutamos la lógica principal al cargar la estructura del DOM
+        document.addEventListener('DOMContentLoaded', loadMarkdown);
     </script>
 </body>
+
 </html>

@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arquitectura Institucional MES - Indinopy ERP/MES</title>
-    
+    <title>Arquitectura Institucional MES - Visor MD Nativo</title>
+
+    <!-- KaTeX -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Mermaid -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <!-- Marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         :root {
@@ -54,7 +61,10 @@
             margin-bottom: 12px;
         }
 
-        h1, h2, h3, h4 {
+        h1,
+        h2,
+        h3,
+        h4 {
             color: #f8fafc;
             margin-top: 1.4em;
             margin-bottom: 0.6em;
@@ -81,7 +91,9 @@
             color: #bfdbfe;
         }
 
-        p, ul, ol {
+        p,
+        ul,
+        ol {
             margin-top: 0.6em;
             margin-bottom: 0.8em;
             color: #cbd5e1;
@@ -98,7 +110,8 @@
             font-size: 13px;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid var(--border-color);
             padding: 8px 12px;
             text-align: left;
@@ -158,11 +171,17 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             transition: border-color 0.2s;
         }
-
+        .mermaid-wrapper.fullscreen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 9999;
+            margin: 0;
+            border-radius: 0;
+            height: 100vh;
+        }
         .mermaid-wrapper:hover {
             border-color: #374151;
         }
-
         .mermaid-header {
             background-color: #0f172a;
             border-bottom: 1px solid #1f2937;
@@ -172,7 +191,6 @@
             align-items: center;
             user-select: none;
         }
-
         .mermaid-title {
             display: flex;
             align-items: center;
@@ -180,106 +198,52 @@
             font-size: 12px;
             font-weight: 700;
             color: #94a3b8;
-            cursor: pointer;
         }
-
-        .mermaid-title:hover {
-            color: #60a5fa;
-        }
-
-        .mermaid-toggle-icon {
-            font-size: 10px;
-            transition: transform 0.2s ease;
-            display: inline-block;
-            color: #60a5fa;
-        }
-
-        .mermaid-wrapper.is-collapsed .mermaid-toggle-icon {
-            transform: rotate(-90deg);
-        }
-
-        .mermaid-wrapper.is-collapsed .mermaid-viewport {
-            display: none;
-        }
-
-        .mermaid-toolbar {
+        .mermaid-controls {
             display: flex;
-            align-items: center;
             gap: 6px;
         }
-
         .m-btn {
-            background-color: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255,255,255,0.05);
+            border: 1px solid #334155;
             color: #cbd5e1;
-            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
+            padding: 2px 8px;
             cursor: pointer;
-            display: inline-flex;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
             align-items: center;
-            gap: 4px;
-            transition: all 0.15s ease;
+            justify-content: center;
         }
-
         .m-btn:hover {
-            background-color: #2563eb;
-            border-color: #3b82f6;
-            color: #ffffff;
+            background-color: rgba(255,255,255,0.15);
+            color: #fff;
         }
-
         .mermaid-viewport {
             position: relative;
             width: 100%;
-            height: 380px;
+            height: auto;
+            min-height: 200px;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: grab;
             background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            cursor: grab;
         }
-
         .mermaid-viewport:active {
             cursor: grabbing;
         }
-
-        .mermaid-svg-container {
-            transition: transform 0.05s ease-out;
-            transform-origin: center center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
+        .mermaid-wrapper.fullscreen .mermaid-viewport {
+            height: calc(100vh - 36px);
+            flex-grow: 1;
         }
-
-        .mermaid-svg-container svg {
-            max-width: 95% !important;
-            max-height: 95% !important;
-            height: auto !important;
-            user-select: none;
-        }
-
-        /* FULLSCREEN MODAL */
-        .mermaid-wrapper.is-fullscreen {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 999999 !important;
-            margin: 0 !important;
-            border-radius: 0 !important;
-            background-color: #030712 !important;
-        }
-
-        .mermaid-wrapper.is-fullscreen .mermaid-viewport {
-            height: calc(100vh - 45px) !important;
-            max-height: none !important;
-            flex: 1;
+        .mermaid-wrapper.collapsed .mermaid-viewport {
+            display: none;
         }
 
         .katex-display {
@@ -303,677 +267,223 @@
         a:hover {
             text-decoration: underline;
         }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .error {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
     </style>
 </head>
+
 <body>
     <div class="doc-container">
-        <span class="doc-header-badge">🏛️ Gobernanza</span>
-        <h1>Arquitectura Institucional y Tecnológica de la Mesa de Enlace Sectorial (MES)</h1>
-<h2>Proyecto Programático de Gobernanza Industrial, Comunidad Organizada y Soberanía Productiva</h2>
-<blockquote>
-<p><strong>Documento rector:</strong> Proyecto Programático de Política Industrial y Arquitectura de Sistemas<br />
-<strong>Marco doctrinario:</strong> <a href="dossier_rigi_conurbano_2026.html">Dossier RIGI Conurbano 2026</a><br />
-<strong>Plataforma destino:</strong> <strong>Indinopy</strong> (Módulo <code>apps/mes</code> / <code>apps/gobernanza</code>)<br />
-<strong>Fecha:</strong> Septiembre de 2026<br />
-<strong>Estado:</strong> Especificación Programática, Institucional y Técnica  </p>
-</blockquote>
-<hr />
-<h2>🤖 Guía de Contexto para Agentes de IA y Diseñadores de Políticas Públicas</h2>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>Definición de propósito:</strong> Este documento define la <strong>arquitectura institucional, legal, procesal e informática</strong> de la <strong>Mesa de Enlace Sectorial (MES)</strong> en sus dos niveles (Federal y Municipal). Su lectura permite a un agente de software, a un funcionario de gobierno o a un dirigente sectorial comprender con exactitud matemática cómo se articulan los poderes de decisión, los plazos duros con silencio administrativo positivo, los cuerpos de arbitraje, la fábrica de resoluciones y el Boletín Oficial Sectorial.</p>
-</blockquote>
-<hr />
-<h2>1. Bases Doctrinarias y Fundamentos Programáticos</h2>
-<p>La reconstrucción de la industria manufacturera no se logra mediante la imposición de decretos burocráticos ni mediante el abandono del mercado desregulado. El proyecto programático de la MES se sustenta en tres principios rectores:</p>
-<ol>
-<li><strong>La Comunidad Organizada frente a la Atomización:</strong> La cadena de valor del calzado, el cuero y la indumentaria no puede operar como un campo de batalla de intereses individuales donde la gran marca comercial impone precios de miseria y el tallerista familiar sobrevive en la informalidad. Quienes diseñan, quienes producen, quienes financian y quienes fiscalizan se integran en una <strong>institución paritaria de conducción estratégica</strong>.</li>
-<li><strong>El Estado como Facilitador y Árbitro, no como Patrón Policial:</strong> La burocracia estatal suele llegar al taller solo para fiscalizar, clausurar o cobrar tasas. En la MES, el Estado asume roles técnicos específicos: el <strong>INTI</strong> garantiza la soberanía tecnológica neutral y el <strong>Municipio</strong> actúa como garante del arraigo territorial y árbitro imparcial ante conflictos de trinchera.</li>
-<li><strong>Subordinación del Capital a la Producción Real:</strong> La banca usurera y los algoritmos de scoring patrimonial quedan desplazados. El corazón del sistema financiero es el <strong>Fideicomiso de Desarrollo Industrial (FDI)</strong>, donde la Orden de Producción digital ("e-OP") es el activo colateral y la MES es el tribunal técnico que valida la liberación de fondos contra hitos físicos de trabajo.</li>
-</ol>
-<hr />
-<h2>2. Topología Federal Multinivel</h2>
-<p>La gobernanza se estructura en una jerarquía descentralizada de dos velocidades: el <strong>Consejo Superior Federal</strong> (macroestrategia y tablas marco) y los <strong>Nodos Municipales</strong> (operación diaria de trinchera en cada distrito productivo).</p>
-<pre><code class="language-mermaid">flowchart TD
-    subgraph FED[&quot;NIVEL FEDERAL: Consejo Superior de la MES Federal&quot;]
-        direction TB
-        CS_DIR[&quot;Directorio Federal Tripartito\n(INTI, Federaciones Sindicales, Cámaras Nacionales, Sec. Comercio)&quot;]
-        CS_NORM[&quot;Plenario Normativo: Resoluciones Generales Federales (RGF)\n(Pisos Salariales Nacionales, Aranceles e Índices IPIM)&quot;]
-        CS_TECH[&quot;Comisión Federal de Tecnología Conveniente\n(Dictámenes y Tablas Únicas de Maquinaria con INTI)&quot;]
-        CS_ALZ[&quot;Tribunal Superior de Alzada\n(Última Instancia de Mediación, Recurso de Apelación y Exclusiones)&quot;]
-        CS_BOL[&quot;Boletín Oficial Sectorial Central y Tablero Macro&quot;]
-    end
-
-    subgraph LOC[&quot;NIVEL LOCAL: Nodo MES Municipal (La Matanza, San Martín, Lanús, etc.)&quot;]
-        direction TB
-        LM_MESA[&quot;Mesa Local de Conducción (7 Miembros Titulares)\nPresidida por la Secretaría de Producción Municipal&quot;]
-        LM_TEC[&quot;Comisión de Homologación Técnica\n(Perito INTI Local + Delegado Sindical de Rama)&quot;]
-        LM_CRE[&quot;Comisión de Crédito y Riesgo\n(Representantes de Talleristas + Marcas + Municipio)&quot;]
-        LM_ARB[&quot;Tribunal de Arbitraje de Trinchera\n(Conciliación Obligatoria en 72 horas)&quot;]
-        LM_BOL[&quot;Bolsa de Trabajo Distrital y Padrón de Talleres&quot;]
-    end
-
-    CS_NORM --&gt;|Directivas Marco y Pisos de Precio| LM_MESA
-    CS_TECH --&gt;|Tablas Federales de Tecnología Homologada| LM_TEC
-    LM_MESA --&gt;|Recurso de Alzada ante Parálisis Local| CS_ALZ
-    LM_MESA --&gt;|Reportes Semanales de Capacidad e Incobrabilidad| CS_BOL
-    LM_CRE --&gt;|Disparo de Desembolsos| FDI_LOC[&quot;Cuentas de Clearing FDI / Banco Provincia&quot;]
-</code></pre>
-<h3>2.1. Competencias Exclusivas de la MES Federal</h3>
-<ul>
-<li>Dictar las <strong>Tablas Federales de Tecnología Conveniente</strong> con asistencia técnica vinculante del INTI (ningún municipio puede inventar criterios de maquinaria por su cuenta).</li>
-<li>Establecer y actualizar trimestralmente los <strong>Pisos Mínimos de Mano de Obra por Proceso</strong> (corte, rebajado, aparado, armado) indexados al IPIM del INDEC y paritarias de rama.</li>
-<li>Administrar el sistema de puntaje digital de <strong>Unidades de Crédito Productivo (UCP) / Score Solidario</strong> para acceso prioritario al Mercado Libre de Cambios (MLC) y cupos de importación.</li>
-<li>Actuar como <strong>Tribunal de Alzada</strong> definitivo ante rebeldía institucional o parálisis política de un nodo local.</li>
-</ul>
-<h3>2.2. Competencias Exclusivas de la MES Municipal (Distrital)</h3>
-<ul>
-<li>Validación, registro y convalidación de las <strong>Órdenes de Producción Digitales (e-OP)</strong> locales.</li>
-<li>Autorización de desembolsos del FDI (Hito Cero e Hitos de Avance) mediante la Comisión de Crédito.</li>
-<li>Emisión automática de la <strong>Habilitación Simplificada de Oficio</strong> y exención de tasas municipales en 48 horas.</li>
-<li>Conducción de la <strong>Bolsa de Trabajo Distrital</strong> (monitoreo de capacidad instalada y cuellos de botella).</li>
-<li>Resolución de controversias mediante el <strong>Tribunal de Arbitraje de Trinchera</strong>.</li>
-</ul>
-<hr />
-<h2>3. Composición de la Mesa Local y Equilibrio de Fuerzas</h2>
-<p>Para neutralizar cualquier intento de cooptación por parte del gran capital comercial o de la burocracia de turno, el gobierno del Nodo Municipal se asienta sobre <strong>7 sillas con representación equilibrada</strong>:</p>
-<pre><code class="language-mermaid">pie title Distribución del Poder en la MES Municipal (7 Miembros)
-    &quot;Talleristas Monotributo Productivo&quot; : 1
-    &quot;Talleristas Unidades SAS&quot; : 1
-    &quot;Marcas Comerciales / Cámaras&quot; : 2
-    &quot;Sindicato de Rama (Tutela Laboral)&quot; : 1
-    &quot;INTI (Soberanía Técnica)&quot; : 1
-    &quot;Municipio (Árbitro y Presidencia)&quot; : 1
-</code></pre>
-<h3>3.1. Detalle de las 7 Sillas</h3>
-<ol>
-<li><strong>Silla 1 — Talleristas de Base (Monotributo Productivo):</strong> Representante titular electo por voto directo del sub-padrón de trabajadores manuales individuales (aparadores, cortadores, costureros a destajo). Defiende la tarifa por par y la agilidad de los cobros en cuenta.</li>
-<li><strong>Silla 2 — Unidades Productivas Consolidadas (Puente SAS):</strong> Representante titular electo por los talleres estructurados bajo figuras asociativas o SAS con dotación de hasta 30 trabajadores registrados. Defiende la amortización de capital, la provisión de insumos y los costos de convenio.</li>
-<li><strong>Sillas 3 y 4 — Marcas Comitentes y Comercializadores:</strong> Dos representantes titulares designados por la cámara empresaria sectorial adherida al régimen. Aportan el volumen de demanda comercial y la reserva de capital obligatoria (2%) al FDI.</li>
-<li><strong>Silla 5 — Soberanía Técnica (INTI):</strong> Un perito industrial de designación institucional directa. Aporta el criterio técnico objetivo, homologa maquinarias y audita tolerancias de mermas.</li>
-<li><strong>Silla 6 — Tutela de la Dignidad Laboral (Sindicato):</strong> Representante designado por el gremio de rama con personería gremial vigente (SETIA y afines). Ejerce la auditoría ex-post en territorio y certifica las condiciones de trabajo digno.</li>
-<li><strong>Silla 7 — Árbitro Jurisdiccional (Secretaría de Producción Municipal):</strong> Funcionario designado por el Municipio adherente. <strong>Preside la Mesa y la Comisión de Crédito</strong>, ejerciendo el voto de desempate en caso de paridad para garantizar la paz social y el empleo territorial.</li>
-</ol>
-<h3>3.2. Mecánica de Votación y Régimen de Mayorías</h3>
-<ul>
-<li><strong>Quórum Legal para Sesionar:</strong> 5 miembros presentes.</li>
-<li><strong>Decisiones Ordinarias:</strong> Mayoría simple (4 votos favorables).</li>
-<li><strong>Materias Reservadas (Mayoría Agravada de 5 votos):</strong></li>
-<li>Modificación de pisos de precios por minuto/hora de confección.</li>
-<li>Elevación al Consejo Federal de la sanción de exclusión de una marca del RIGI.</li>
-<li>Reasignación de partidas presupuestarias del Fondo de Fomento del FDI.</li>
-<li><strong>Cláusula de Protección de las Bases (Voto Concurrente):</strong> En toda votación de materias reservadas se exige de forma obligatoria el <strong>voto afirmativo concurrente de al menos uno (1) de los representantes del Nodo Productivo (Silla 1 o Silla 2)</strong>. Queda prohibida por ley cualquier resolución sobre tarifas o presupuesto que pretenda imponerse contra la voluntad unánime de los talleristas.</li>
-</ul>
-<hr />
-<h2>4. Comisiones Especializadas y Separación de Poderes</h2>
-<p>A fin de garantizar que el control de calidad no se mezcle con la conveniencia financiera, la MES opera mediante dos comisiones con mandatos separados e incompatibles:</p>
-<pre><code class="language-mermaid">flowchart TD
-    subgraph COM_TEC[&quot;1. Comisión de Homologación Técnica&quot;]
-        direction TB
-        CT_M[&quot;Integrantes: INTI + Sindicato&quot;]
-        CT_1[&quot;Dictamen de Tecnología Conveniente (15 días)&quot;]
-        CT_2[&quot;Certificación física de Hitos de Avance (24h)&quot;]
-        CT_3[&quot;Pre-calificación del Score Solidario (UCP)&quot;]
-        CT_4[&quot;Determinación de tablas de descarte de cuero&quot;]
-    end
-
-    subgraph COM_CRE[&quot;2. Comisión de Crédito y Riesgo&quot;]
-        direction TB
-        CR_M[&quot;Integrantes: Talleres + Marcas&lt;br/&gt;Preside: Municipio (Desempate)&quot;]
-        CR_1[&quot;Validación de viabilidad de e-OP (48h)&quot;]
-        CR_2[&quot;Autorización de liquidación de Hito Cero&quot;]
-        CR_3[&quot;Gestión del Fondo de Garantía del FDI&quot;]
-        CR_4[&quot;Auditoría del repago por clearing&quot;]
-    end
-
-    COM_TEC ==&gt;|Informe Técnico Vinculante| COM_CRE
-</code></pre>
-<h3>Incompatibilidad Absoluta:</h3>
-<p>Ningún miembro de la Comisión de Crédito puede votar o intervenir en una orden de producción o solicitud de financiamiento en la que tenga interés comercial directo, vínculo de parentesco hasta el cuarto grado o relación societaria previa con la empresa comitente o el taller postulante.</p>
-
-<h3>4.1. Régimen de "Tecnología Conveniente" y Arancel Cero Aduanero</h3>
-<p>La Comisión de Homologación Técnica ejerce el filtro soberano para la importación de maquinaria con arancel cero (Art. 22 Ley de Salvataje):</p>
-<ul>
-<li><strong>Principio de No Competencia:</strong> El beneficio solo aplica a bienes de capital sin producción nacional equivalente.</li>
-<li><strong>Los 3 Criterios Objetivos de Exclusión (INTI):</strong> Solo se homologa el arancel cero si el fabricante nacional: (1) no entrega en &le; 90 días corridos; (2) ofrece garantía técnica inferior a 12 meses; o (3) su precio supera en más de un 30% el valor CIF importado.</li>
-<li><strong>Silencio Positivo Aduanero:</strong> Si el perito del INTI no emite dictamen en 15 días hábiles, se emite de pleno derecho la autorización aduanera.</li>
-<li><strong>Encadenamiento Forzoso Metalúrgico:</strong> Los proveedores extranjeros deben transferir planos y licenciar el mantenimiento a pymes metalúrgicas locales y centros CIFO.</li>
-<li><strong>Inmovilización Patrimonial por 5 Años:</strong> Queda prohibida la reventa de las máquinas importadas por un lustro.</li>
-</ul>
-
-<h3>4.2. Gobernanza de la Red CIFO y Administración del Banco Comunitario de Maquinarias</h3>
-<p>La MES articula el capital humano y los bienes de capital del territorio:</p>
-<ul>
-<li><strong>Red CIFO (Financiada con el 3% inembargable del FDI):</strong> Co-gestionada por el Gremio, Cámaras de Diseño y el Municipio/INTI. Brinda acceso popular irrestricto sin secundario previo, becas de formación técnica y reparte el 50% de la renta neta de los lotes escuela a los alumnos. Sus egresados ingresan con Prioridad 1 a la Bolsa de Trabajo.</li>
-<li><strong>Área de Asesoría Contable y Administrativa Comunitaria:</strong> Cada CIFO dispone de una consultoría técnica gratuita para talleres en transición. Gestiona altas de SAS en 48h, facturación de e-OP por API de ARCA, administración del IVA diferido, armado de carpetas para el cómputo del 35% de costos no documentados y liquidación de sueldos de convenio con subsidio patronal del 27% del FDI.</li>
-<li><strong>Banco Comunitario de Maquinarias:</strong> Releva maquinaria parada y otorga la condonación total de pasivos preexistentes de ARCA a quienes la cedan en comodato por 36 meses.</li>
-<li><strong>Asignación con Opción a Transferencia Definitiva:</strong> Se entregan en comodato a egresados de los CIFO y talleres que completen con éxito 3 e-OP.</li>
-<li><strong>Muletto Técnico en 24 Horas:</strong> Ante rotura fortuita de máquinas que paralice la producción, el Banco provee una máquina de auxilio en 24h y el FDI liquida compensación por lucro cesante.</li>
-</ul>
-
-<h3>4.3. Supervisión Ética de la IA Algorética</h3>
-<p>El Consejo Superior de la MES ejerce la conducción de los algoritmos de la plataforma según la doctrina de la Encíclica <em>Magnifica Humanitas</em> y el magisterio social de Francisco:</p>
-<ul>
-<li><strong>Precios Éticos Paritarios:</strong> El sistema bloquea de oficio e-OP que pretendan perforar los pisos salariales de convenio.</li>
-<li><strong>Detección de Talleres Espejo:</strong> Auditoría continua de IPs y georreferenciación satelital para detectar fragmentaciones artificiales patronales que busquen eludir el convenio.</li>
-<li><strong>Asistente por Voz del PTF:</strong> Interfaz en lenguaje natural para que el promotor territorial disuelva la brecha digital en el taller.</li>
-<li><strong>Supremacía Humana Indeleble:</strong> Ninguna IA puede aplicar sanciones ni exclusiones; la facultad punitiva o regulatoria reside exclusivamente en los miembros humanos de la MES.</li>
-</ul>
-<hr />
-<h2>5. Protocolos Operativos y Plazos Duros con Silencio Administrativo Positivo</h2>
-<p>El enemigo número uno del tallerista es la lentitud burocrática. Para que el sistema funcione en la trinchera, cada procedimiento tiene un <strong>plazo máximo perentorio en horas</strong>, tras el cual se activa el <strong>Silencio Administrativo Positivo</strong> por sistema informático centralizado:</p>
-<pre><code class="language-mermaid">sequenceDiagram
-    autonumber
-    actor Marca as Marca Comitente
-    participant SIS as Plataforma Central e-OP (Indinopy/MES)
-    participant COM as Comisión de Crédito
-    participant BAN as Banco Provincia / Billetera FDI
-    actor Taller as Tallerista de Barrio
-
-    Marca-&gt;&gt;SIS: Carga e-OP digital (Insumos, Tallerista, Precio pactado)
-    SIS-&gt;&gt;SIS: ¿Es réplica idéntica de orden anterior?
-    alt Sí: Protocolo Fast-Track (Duplicación Express)
-        SIS-&gt;&gt;SIS: Validación automática en 2 Horas
-        SIS-&gt;&gt;BAN: Orden de liberación de Hito Cero
-    else No: Circuito Ordinario
-        SIS-&gt;&gt;COM: Notifica a la Comisión de Crédito (Plazo duro: 48h)
-        alt Comisión aprueba formalmente en &lt;48h
-            COM-&gt;&gt;SIS: Dictamen favorable registrado
-        else Comisión no se pronuncia en 48h
-            SIS-&gt;&gt;SIS: GATILLO DE SILENCIO POSITIVO AUTOMÁTICO
-        end
-        SIS-&gt;&gt;BAN: Autorización de clearing para Hito Cero
-    end
-    BAN-&gt;&gt;Taller: Acreditación de Hito Cero (35% o 50% con SBD)
-    Taller-&gt;&gt;SIS: Notificación de Hito Cumplido vía App móvil
-    SIS-&gt;&gt;COM: Plazo de certificación técnica: 24 Horas
-    COM-&gt;&gt;BAN: Certificación OK -&gt; Liberación del siguiente tramo Escrow
-</code></pre>
-<h3>Tabla de Plazos Perentorios:</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Trámite</th>
-<th style="text-align: center;">Plazo Límite</th>
-<th style="text-align: left;">Efecto del Vencimiento sin Pronunciamiento</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><strong>Validación de e-OP Ordinaria</strong></td>
-<td style="text-align: center;"><strong>48 horas hábiles</strong></td>
-<td style="text-align: left;"><strong>Silencio Positivo:</strong> El sistema central da por aprobada e interoperable la e-OP, liberando el desembolso de arranque sin que bloqueos políticos puedan frenar el trabajo.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>e-OP Espejo (Fast-Track)</strong></td>
-<td style="text-align: center;"><strong>2 horas</strong></td>
-<td style="text-align: left;">Aprobación algorítmica inmediata supeditada solo al cruce de stock y capacidad ociosa en la Bolsa de Trabajo.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>Certificación de Hito Productivo</strong></td>
-<td style="text-align: center;"><strong>24 horas hábiles</strong></td>
-<td style="text-align: left;">Liberación automática de la cuota correspondiente del Escrow digital hacia la cuenta de clearing del tallerista.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>Dictamen de Tecnología Conveniente</strong></td>
-<td style="text-align: center;"><strong>15 días hábiles</strong></td>
-<td style="text-align: left;">Concesión automática de pleno derecho del beneficio de arancel cero aduanero por Silencio Positivo.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>Audiencia de Arbitraje de Conflictos</strong></td>
-<td style="text-align: center;"><strong>10 días hábiles</strong></td>
-<td style="text-align: left;">Elevación obligatoria y directa de la causa al Consejo Superior de la MES Federal para resolución inmediata.</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2>6. Procedimientos Especiales de Tutela y Arbitraje</h2>
-<h3>6.1. El Veto Ex-Post Sindical y la Alerta de Escrow</h3>
-<p>Para no burocratizar el arranque de la producción, el sindicato no frena la orden antes de su inicio. Su poder tutelar se ejerce mediante la <strong>Auditoría Posterior en Territorio</strong>:
-1. <strong>Detección:</strong> Si el delegado gremial constata precios por debajo del convenio o condiciones insalubres, interpone una <strong>Acción de Tutela de Urgencia</strong> ante el sistema.
-2. <strong>Efecto Inmediato (Alerta de Escrow):</strong> Se congela preventivamente la liberación del último 20% del pago en la cuenta fiduciaria del FDI por un plazo máximo de 48 horas. <strong>Bajo ningún concepto se interrumpe el trabajo físico del taller ni se anula su derecho al cobro de lo realizado</strong>.
-3. <strong>Fianza de Continuidad:</strong> Para evitar que la mercadería quede trabada y la marca pierda la temporada comercial, la empresa puede depositar una fianza en garantía líquida por el monto salarial en litigio, permitiendo el retiro inmediato de los lotes terminados mientras el Tribunal de Arbitraje sustancia el fondo de la cuestión.</p>
-<h3>6.2. El Tribunal de Arbitraje de Trinchera</h3>
-<p>Órgano local de mediación de conflictos rápidos integrado por:
-* <strong>Presidencia:</strong> El perito del INTI (neutralidad técnica).
-* <strong>Vocales:</strong> 2 representantes del sector privado desinsaculados por sorteo trimestral del padrón de la Bolsa (un tallerista y una marca ajenos al conflicto).
-* <strong>Plazo de Laudo:</strong> 72 horas para dictar resolución de conciliación obligatoria.</p>
-<h3>6.3. Canal de Denuncias y "Perimetral Administrativa"</h3>
-<p>Ante pedidos de coimas o extorsiones por parte de inspectores fiscales o municipales:
-* La radicación de la denuncia en la MES otorga al taller una <strong>Inmunidad Fiscal Temporaria de 180 días</strong> (ninguna delegación de ARCA puede cursar inspecciones presenciales).
-* Se emite una <strong>Orden de Restricción Administrativa de Emergencia</strong>: se notifica a la justicia penal, se bloquea el usuario informático del inspector denunciado y se le prohíbe el ingreso al cuadrante productivo del taller denunciante ("perimetral administrativa").
-* Si una seccional fiscal acumula más de 3 denuncias firmes en un año, se suspenden los plus salariales por recaudación ("cuenta de jerarquización") de toda esa delegación hasta su saneamiento interno.</p>
-
-<h3>6.4. El Dictamen de Transición Asistida y el Puente SAS</h3>
-<p>Para erradicar el "purgatorio fiscal" y el préstamo de identidades (CUITs ajenos):</p>
-<ol>
-<li><strong>Relevamiento Activo del PTF:</strong> El Promotor Territorial constata en territorio la capacidad real del taller, maquinaria y dotación de oficio.</li>
-<li><strong>Elevación del Dictamen:</strong> El PTF eleva ante la Comisión de Crédito y Riesgo de la MES el <em>Dictamen de Transición Asistida</em>, proponiendo el salto a la figura de Sociedad por Acciones Simplificada (SAS).</li>
-<li><strong>Efectos Jurídicos Cautelares Inmediatos:</strong> La homologación institucional de la MES gatilla por sistema:
-<ul>
-<li><strong>Alta de Oficio de la SAS</strong> en la Ventanilla Única Municipal con vinculación a la Cuenta de IVA Sectorial Diferida (el IVA solo se devenga contra clearing efectivo del FDI).</li>
-<li><strong>Suspensión Preventiva de Ejecuciones por 180 Días:</strong> Orden obligatoria a ARCA de frenar cualquier pedido de quiebra, traba de cuentas o embargo fundado en deudas tributarias de la etapa informal previa.</li>
-<li><strong>Crédito Fiscal Presunto del 25%:</strong> Cómputo de costos presuntos de producción para amortiguar el escalamiento hacia la plena formalidad.</li>
-<li><strong>Derivación Obligatoria al Área Contable del CIFO:</strong> El tallerista es asignado a la asesoría técnica y contable del CIFO local, que asume de oficio el tutelaje administrativo gratuito durante los 180 días y el seguimiento de sus primeras 3 e-OP.</li>
-<li><strong>Secreto Tuitivo:</strong> Prohibición absoluta de utilizar los datos relevados para iniciar fiscalizaciones retroactivas o juicios de apremio.</li>
-</ul>
-</li>
-</ol>
-<hr />
-<h2>7. La Fábrica Normativa: Instrumentos y Publicidad</h2>
-<p>Los actos de gobierno de la MES se materializan a través de instrumentos jurídicos tipificados que componen la doctrina y jurisprudencia de la cadena:</p>
-<pre><code class="language-mermaid">classDiagram
-    class ResolucionGeneralFederal {
-        +String numero_rgf
-        +Date fecha_sancion
-        +String objeto (Tarifas marco, Normas técnicas)
-        +VotoAgravado quorum_calificado
-        +publicar_en_boletin()
-    }
-    class ResolucionGeneralLocal {
-        +String numero_rgl
-        +String municipio_jurisdiccion
-        +String adecuacion_distrital
-        +Boolean exencion_tasas_habilitada
-    }
-    class DictamenTecnicoHomologacion {
-        +String numero_dth
-        +PeritoINTI firma_tecnica
-        +String maquinaria_o_merma
-        +Boolean elegible_arancel_cero
-    }
-    class ActaConciliacionTrinchera {
-        +String numero_acta
-        +String op_referencia
-        +Decimal monto_acordado
-        +Boolean laudo_homologado
-    }
-    class AlertaTutelaSindical {
-        +String id_alerta
-        +String motivo_precarizacion
-        +Boolean retencion_escrow_activa
-        +DateTime vencimiento_48h
-    }
-
-    ResolucionGeneralFederal &lt;|-- ResolucionGeneralLocal : Subordinada a
-    DictamenTecnicoHomologacion --&gt; ResolucionGeneralFederal : Alimenta tablas de
-    ActaConciliacionTrinchera --&gt; AlertaTutelaSindical : Resuelve conflicto de
-</code></pre>
-<h3>7.1. El Boletín Oficial Sectorial (Estructura Semanal)</h3>
-<p>La MES publicará semanalmente su órgano de difusión público y digital, estructurado en 5 secciones obligatorias:
-* <strong>Sección I — Tarifas y Paritarias de Confección:</strong> Cuadros oficiales de precios mínimos por minuto y por par para cada sub-proceso (corte, aparado, rebajado, armado, inyección), pesificados e indexados al IPIM.
-* <strong>Sección II — Registro Público de Homologaciones:</strong> Dictámenes técnicos del INTI sobre maquinarias aprobadas con arancel cero y argumentos de no disponibilidad local, generando jurisprudencia técnica transparente.
-* <strong>Sección III — Padrón de Capacidades y Bolsa de Trabajo:</strong> Directorio distrital de talleres activos, curvas de ocupación semanal y alertas de oficios con vacancia o riesgo de extinción.
-* <strong>Sección IV — Reporte Fiduciario del FDI:</strong> Balance transparente de la cartera de adelantos, ratio de rotación del fondo, volumen de e-OPs activas y tasa real de incobrabilidad.
-* <strong>Sección V — Registro Disciplinario y Alertas:</strong> Notificaciones de marcas en mora, apercibimientos digitales y exclusiones definitivas del RIGI.</p>
-<hr />
-<h2>8. Blueprint de Ingeniería de Software (Módulo <code>apps/mes</code> en Django)</h2>
-<p>A continuación se detalla la arquitectura de modelos para incorporar la MES a la base de código de <strong>Indinopy</strong>:</p>
-<pre><code class="language-python">from decimal import Decimal
-from django.db import models
-from django.contrib.auth.models import User
-from apps.base.models import TimeStampedModel, DocumentoBase
-
-# ==========================================
-# 1. TOPOLOGÍA INSTITUCIONAL Y PADRÓN
-# ==========================================
-
-class JurisdiccionMES(TimeStampedModel):
-    &quot;&quot;&quot;Nodos territoriales: Federal (Nacional) o Municipal (Distritos).&quot;&quot;&quot;
-    TIPO_CHOICES = [
-        (&quot;federal&quot;, &quot;Consejo Superior Federal&quot;),
-        (&quot;municipal&quot;, &quot;Nodo MES Municipal&quot;),
-    ]
-    nombre = models.CharField(max_length=150, unique=True)
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=&quot;municipal&quot;)
-    provincia = models.CharField(max_length=100, default=&quot;Buenos Aires&quot;)
-    municipio = models.CharField(max_length=100, blank=True, null=True)
-    codigo_partido = models.CharField(max_length=20, blank=True, null=True)
-    activa = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f&quot;{self.nombre} [{self.get_tipo_display()}]&quot;
-
-
-class MiembroMesa(TimeStampedModel):
-    &quot;&quot;&quot;Integrantes con banca formal en el plenario de la MES.&quot;&quot;&quot;
-    NODO_CHOICES = [
-        (&quot;taller_mono&quot;, &quot;Silla 1: Tallerista Monotributo Productivo&quot;),
-        (&quot;taller_sas&quot;, &quot;Silla 2: Tallerista Unidad Consolidada (SAS)&quot;),
-        (&quot;marca_1&quot;, &quot;Silla 3: Marca Comitente Titular 1&quot;),
-        (&quot;marca_2&quot;, &quot;Silla 4: Marca Comitente Titular 2&quot;),
-        (&quot;inti&quot;, &quot;Silla 5: Soberanía Técnica (INTI)&quot;),
-        (&quot;sindicato&quot;, &quot;Silla 6: Tutela Laboral (Sindicato)&quot;),
-        (&quot;municipio&quot;, &quot;Silla 7: Árbitro Jurisdiccional (Secretaría Producción)&quot;),
-    ]
-    jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE, related_name=&quot;miembros&quot;)
-    usuario = models.ForeignKey(User, on_delete=models.RESTRICT)
-    contacto = models.ForeignKey(&quot;contactos.Contacto&quot;, on_delete=models.SET_NULL, null=True, blank=True)
-    nodo = models.CharField(max_length=30, choices=NODO_CHOICES)
-    es_titular = models.BooleanField(default=True)
-    es_presidente = models.BooleanField(default=False)
-    fecha_inicio_mandato = models.DateField()
-    fecha_fin_mandato = models.DateField()
-    activo = models.BooleanField(default=True)
-
-    class Meta:
-        unique_together = (&quot;jurisdiccion&quot;, &quot;nodo&quot;, &quot;es_titular&quot;)
-
-    def __str__(self):
-        return f&quot;{self.get_nodo_display()}: {self.usuario.get_full_name()} ({self.jurisdiccion.nombre})&quot;
-
-
-# ==========================================
-# 2. PROCESOS DELIBERATIVOS Y VOTACIONES
-# ==========================================
-
-class SesionPlenaria(TimeStampedModel):
-    &quot;&quot;&quot;Asambleas periódicas donde se debate normativa y aprueba el giro institucional.&quot;&quot;&quot;
-    jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE, related_name=&quot;sesiones&quot;)
-    numero_acta = models.CharField(max_length=50, unique=True)
-    fecha = models.DateTimeField()
-    orden_del_dia = models.TextField()
-    asistentes = models.ManyToManyField(MiembroMesa, related_name=&quot;asistencias&quot;)
-    quorum_verificado = models.BooleanField(default=False)
-    acta_firmada_digitalmente = models.FileField(upload_to=&quot;mes/actas/&quot;, blank=True, null=True)
-
-    def __str__(self):
-        return f&quot;Acta {self.numero_acta} - {self.jurisdiccion.nombre} ({self.fecha.strftime('%d/%m/%Y')})&quot;
-
-
-class ProyectoResolucion(TimeStampedModel):
-    &quot;&quot;&quot;Iniciativas normativas sometidas a votación en el plenario.&quot;&quot;&quot;
-    TIPO_MATERIA = [
-        (&quot;ordinaria&quot;, &quot;Materia Ordinaria (Mayoría Simple)&quot;),
-        (&quot;reservada&quot;, &quot;Materia Reservada (Mayoría Agravada 5 votos + Concurrencia Taller)&quot;),
-    ]
-    ESTADO = [
-        (&quot;borrador&quot;, &quot;En Redacción&quot;),
-        (&quot;en_debate&quot;, &quot;Sometido a Plenario&quot;),
-        (&quot;aprobado&quot;, &quot;Aprobado / Promulgado&quot;),
-        (&quot;rechazado&quot;, &quot;Rechazado&quot;),
-        (&quot;vetado&quot;, &quot;Vetado por Alzada Federal&quot;),
-    ]
-    jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE)
-    sesion = models.ForeignKey(SesionPlenaria, on_delete=models.SET_NULL, null=True, blank=True)
-    numero = models.CharField(max_length=50, unique=True)
-    titulo = models.CharField(max_length=255)
-    tipo_materia = models.CharField(max_length=20, choices=TIPO_MATERIA, default=&quot;ordinaria&quot;)
-    considerandos = models.TextField()
-    articulado = models.TextField()
-    estado = models.CharField(max_length=20, choices=ESTADO, default=&quot;borrador&quot;)
-
-    # Resultado de votación
-    votos_positivos = models.PositiveSmallIntegerField(default=0)
-    votos_negativos = models.PositiveSmallIntegerField(default=0)
-    voto_productivo_concurrente = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f&quot;{self.numero}: {self.titulo} [{self.get_estado_display()}]&quot;
-
-
-# ==========================================
-# 3. CONTROL OPERATIVO, PLAZOS Y ARBITRAJE
-# ==========================================
-
-class ValidacionOrdenProduccion(TimeStampedModel):
-    &quot;&quot;&quot;Bitácora de validación de 48 horas para la e-OP con disparador de Silencio Positivo.&quot;&quot;&quot;
-    op = models.OneToOneField(&quot;produccion.OrdenProduccion&quot;, on_delete=models.CASCADE, related_name=&quot;validacion_mes&quot;)
-    jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.RESTRICT)
-    es_fast_track = models.BooleanField(default=False)
-    fecha_ingreso = models.DateTimeField(auto_now_add=True)
-    fecha_limite_48h = models.DateTimeField()
-    aprobada_por_silencio_positivo = models.BooleanField(default=False)
-    aprobada_formalmente = models.BooleanField(default=False)
-    observaciones = models.TextField(blank=True, null=True)
-
-    def verificar_silencio_positivo(self):
-        &quot;&quot;&quot;Tarea Celery periódica ejecuta este método para liberar fondos si expiró el plazo.&quot;&quot;&quot;
-        from django.utils import timezone
-        if not self.aprobada_formalmente and not self.aprobada_por_silencio_positivo:
-            if timezone.now() &gt;= self.fecha_limite_48h:
-                self.aprobada_por_silencio_positivo = True
-                self.op.estado = &quot;confirmado&quot;
-                self.op.save()
-                self.save()
-                return True
-        return False
-
-
-class DisputaArbitrajeTrinchera(TimeStampedModel):
-    &quot;&quot;&quot;Gestión de controversias de calidad o precios ante el Tribunal Local.&quot;&quot;&quot;
-    ESTADO = [
-        (&quot;ingresada&quot;, &quot;Denuncia Radicada&quot;),
-        (&quot;audiencia_fijada&quot;, &quot;En Período de Audiencia (72h)&quot;),
-        (&quot;laudo_notificado&quot;, &quot;Laudo Homologado&quot;),
-        (&quot;recurso_alzada&quot;, &quot;Apelado a MES Federal&quot;),
-        (&quot;ejecutado&quot;, &quot;Fondos de Fianza Liquidados&quot;),
-    ]
-    jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE)
-    op = models.ForeignKey(&quot;produccion.OrdenProduccion&quot;, on_delete=models.RESTRICT)
-    parte_reclamante = models.ForeignKey(&quot;contactos.Contacto&quot;, on_delete=models.RESTRICT, related_name=&quot;reclamos_mes_iniciados&quot;)
-    parte_demandada = models.ForeignKey(&quot;contactos.Contacto&quot;, on_delete=models.RESTRICT, related_name=&quot;reclamos_mes_recibidos&quot;)
-    monto_en_disputa = models.DecimalField(max_digits=15, decimal_places=2)
-    fianza_depositada = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal(&quot;0.00&quot;))
-    motivo_reclamo = models.TextField()
-    laudo_resolucion = models.TextField(blank=True, null=True)
-    estado = models.CharField(max_length=25, choices=ESTADO, default=&quot;ingresada&quot;)
-    fecha_limite_laudo = models.DateTimeField()
-
-
-# ==========================================
-# 4. BOLETÍN OFICIAL SECTORIAL
-# ==========================================
-
-class EdicionBoletinSectorial(TimeStampedModel):
-    &quot;&quot;&quot;Publicación periódica oficial con resoluciones, tarifas y balances.&quot;&quot;&quot;
-    jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE)
-    numero_edicion = models.PositiveIntegerField()
-    fecha_publicacion = models.DateField()
-    pdf_compilado = models.FileField(upload_to=&quot;mes/boletines/&quot;)
-    publicada = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = (&quot;jurisdiccion&quot;, &quot;numero_edicion&quot;)
-
-    def __str__(self):
-        return f&quot;Boletín N° {self.numero_edicion} - {self.jurisdiccion.nombre} ({self.fecha_publicacion})&quot;
-</code></pre>
-<hr />
-<h2>9. Hoja de Ruta Programática de Despliegue</h2>
-<p>La implementación de la MES se articula en 4 fases progresivas de maduración política y tecnológica:</p>
-<pre><code class="language-mermaid">gantt
-    title Plan Programático de Despliegue de la MES
-    dateFormat  YYYY-MM-DD
-    section Fase 1: Prototipo Piloto
-    Mesa Piloto en San Martín / La Matanza   :p1, 2026-10-01, 30d
-    Módulo de Software e-OP 48h en Indinopy :p2, 2026-10-15, 25d
-    section Fase 2: Tribunal e INTI
-    Constitución Tribunal de Trinchera      :p3, 2026-11-10, 20d
-    Tablas de Tecnología Conveniente INTI   :p4, 2026-11-20, 20d
-    section Fase 3: Integración Financiera
-    Enlace de Clearing FDI / Banco Provincia:p5, 2026-12-10, 30d
-    Primer Boletín Oficial Sectorial        :p6, 2026-12-20, 15d
-    section Fase 4: Federalización
-    Constitución del Consejo Superior Fed.  :p7, 2027-01-15, 45d
-    Interoperabilidad Federal Multidistrito :p8, 2027-02-01, 30d
-</code></pre>
-<ol>
-<li><strong>Fase 1 — Piloto Territorial de Trinchera:</strong><br />
-   Firma del acuerdo intersectorial en los municipios con mayor densidad de calzado (San Martín y La Matanza). Puesta en producción del software Indinopy con la máquina de validación de 48 horas y silencio positivo para las primeras 20 marcas comitentes.</li>
-<li><strong>Fase 2 — Integración Técnica y Arbitraje:</strong><br />
-   Incorporación formal de la delegación local del INTI y gremio de rama. Funcionamiento del Tribunal de Arbitraje y publicación de las primeras tablas de mermas y tecnología.</li>
-<li><strong>Fase 3 — Integración Financiera con el FDI:</strong><br />
-   Conexión mediante API de las órdenes de pago validadas con las cuentas de clearing del Banco Provincia, automatizando la liquidación del Hito Cero en milisegundos. Publicación de la Edición N° 1 del Boletín Oficial Sectorial.</li>
-<li><strong>Fase 4 — Escalamiento al Consejo Superior Federal:</strong><br />
-   Promulgación formal de la Ley de Salvataje Nacional y el RIGI del Conurbano en el Congreso Nacional, habilitando la personería de derecho público del Consejo Federal y la interoperabilidad en todo el país.</li>
-</ol>
+        <span class="doc-header-badge">📚 Visor Nativo Markdown</span>
+        <div id="content">
+            <div class="loading">Cargando documento original "arquitectura_mes_gobernanza.md"...</div>
+        </div>
     </div>
 
     <script>
-        // Initialize KaTeX
-        document.addEventListener("DOMContentLoaded", function() {
-            renderMathInElement(document.body, {
-                delimiters: [
-                    {left: "$$", right: "$$", display: true},
-                    {left: "$", right: "$", display: false}
-                ],
-                throwOnError: false,
-                ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
-            });
-        });
-
-        // Initialize Mermaid
+        // Configuración inicial de Mermaid
         mermaid.initialize({
             startOnLoad: false,
             theme: 'dark',
-            securityLevel: 'loose',
-            fontFamily: 'inherit',
-            flowchart: { useMaxWidth: false, htmlLabels: true },
-            sequence: { useMaxWidth: false },
-            gantt: { useMaxWidth: false }
+            securityLevel: 'loose'
         });
 
-        // Controller for interactive pan & zoom
-        function setupMermaidInteractive(wrapper) {
-            const title = wrapper.querySelector('.mermaid-title');
-            const viewport = wrapper.querySelector('.mermaid-viewport');
-            const svgContainer = wrapper.querySelector('.mermaid-svg-container');
-            const btnIn = wrapper.querySelector('[data-action="zoom-in"]');
-            const btnOut = wrapper.querySelector('[data-action="zoom-out"]');
-            const btnReset = wrapper.querySelector('[data-action="reset"]');
-            const btnFull = wrapper.querySelector('[data-action="fullscreen"]');
-
-            let scale = 1;
-            let translateX = 0;
-            let translateY = 0;
-            let isDragging = false;
-            let startX = 0;
-            let startY = 0;
-
-            function updateTransform() {
-                svgContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-            }
-
-            // Toggle collapse
-            title.addEventListener('click', () => {
-                wrapper.classList.toggle('is-collapsed');
-            });
-
-            // Zoom In / Out / Reset
-            btnIn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                scale = Math.min(5, scale * 1.25);
-                updateTransform();
-            });
-
-            btnOut.addEventListener('click', (e) => {
-                e.stopPropagation();
-                scale = Math.max(0.2, scale / 1.25);
-                updateTransform();
-            });
-
-            btnReset.addEventListener('click', (e) => {
-                e.stopPropagation();
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                updateTransform();
-            });
-
-            // Fullscreen
-            btnFull.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isFull = wrapper.classList.toggle('is-fullscreen');
-                btnFull.innerHTML = isFull ? '<span>✕</span> Cerrar' : '<span>⤢</span> Pantalla Completa';
-                document.body.style.overflow = isFull ? 'hidden' : '';
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                updateTransform();
-            });
-
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && wrapper.classList.contains('is-fullscreen')) {
-                    wrapper.classList.remove('is-fullscreen');
-                    btnFull.innerHTML = '<span>⤢</span> Pantalla Completa';
-                    document.body.style.overflow = '';
-                    scale = 1;
-                    translateX = 0;
-                    translateY = 0;
-                    updateTransform();
-                }
-            });
-
-            // Pan Dragging
-            viewport.addEventListener('mousedown', (e) => {
-                if (e.target.closest('.m-btn')) return;
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-            });
-
-            window.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-                updateTransform();
-            });
-
-            window.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-
-            // Wheel Zoom
-            viewport.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                const factor = e.deltaY < 0 ? 1.15 : 0.87;
-                scale = Math.min(Math.max(0.2, scale * factor), 5);
-                updateTransform();
-            }, { passive: false });
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
-            mermaidBlocks.forEach(function(block, idx) {
-                const pre = block.parentElement;
-                const code = block.textContent;
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'mermaid-wrapper';
-                wrapper.innerHTML = `
+        // Configuración de Marked para interceptar bloques de código Mermaid
+        const renderer = new marked.Renderer();
+        const originalCode = renderer.code.bind(renderer);
+        renderer.code = function(tokenOrCode, language, isEscaped) {
+            const codeText = typeof tokenOrCode === 'object' ? tokenOrCode.text : tokenOrCode;
+            const lang = typeof tokenOrCode === 'object' ? tokenOrCode.lang : language;
+            
+            if (lang === 'mermaid') {
+                return `
+                <div class="mermaid-wrapper">
                     <div class="mermaid-header">
-                        <div class="mermaid-title" title="Click para contraer o expandir">
-                            <span class="mermaid-toggle-icon">▼</span>
-                            <span>Diagrama ${idx + 1}</span>
-                            <small style="color: #64748b; font-size: 10px; font-weight: normal; margin-left: 6px;">(Arrastrar para mover · Rueda para zoom)</small>
-                        </div>
-                        <div class="mermaid-toolbar">
-                            <button class="m-btn" data-action="zoom-in" title="Acercar">＋ Zoom</button>
-                            <button class="m-btn" data-action="zoom-out" title="Alejar">－</button>
-                            <button class="m-btn" data-action="reset" title="Centrar">⟲ Centrar</button>
-                            <button class="m-btn" data-action="fullscreen" title="Pantalla completa">⤢ Pantalla Completa</button>
+                        <div class="mermaid-title">📊 Diagrama Mermaid</div>
+                        <div class="mermaid-controls">
+                            <button class="m-btn btn-zoom-in" title="Acercar">➕</button>
+                            <button class="m-btn btn-zoom-out" title="Alejar">➖</button>
+                            <button class="m-btn btn-reset" title="Restaurar">🔄</button>
+                            <button class="m-btn btn-fullscreen" title="Pantalla Completa">⛶</button>
+                            <button class="m-btn btn-collapse" title="Expandir/Contraer">▼</button>
                         </div>
                     </div>
                     <div class="mermaid-viewport">
-                        <div class="mermaid-svg-container">
-                            <div class="mermaid">${code}</div>
+                        <div class="mermaid" style="transform: scale(1) translate(0px, 0px); transition: transform 0.1s ease-out; transform-origin: center;">${codeText}</div>
+                    </div>
+                </div>`;
+            }
+            return originalCode(tokenOrCode, language, isEscaped);
+        };
+        marked.setOptions({ renderer: renderer });
+
+        async function loadMarkdown() {
+            try {
+                // Hacemos el fetch() al archivo MD que está en la misma carpeta
+                const response = await fetch('arquitectura_mes_gobernanza.md');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status} - No se pudo cargar el archivo.`);
+                }
+
+                const markdownText = await response.text();
+
+                // Parseamos el markdown a HTML en memoria
+                const htmlContent = marked.parse(markdownText);
+
+                // Inyectamos el HTML dinámicamente
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = htmlContent;
+
+                // Renderizamos la sintaxis matemática de KaTeX ($ y $$)
+                renderMathInElement(contentDiv, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+
+                // Renderizamos los diagramas de Mermaid que acabamos de inyectar
+                const mermaidElements = document.querySelectorAll('.mermaid');
+                if (mermaidElements.length > 0) {
+                    await mermaid.run({ nodes: mermaidElements });
+                    
+                    // Inicializar interactividad (Zoom, Pan, Fullscreen)
+                    document.querySelectorAll('.mermaid-wrapper').forEach(wrapper => {
+                        const viewport = wrapper.querySelector('.mermaid-viewport');
+                        const mermaidDiv = wrapper.querySelector('.mermaid');
+                        const btnZoomIn = wrapper.querySelector('.btn-zoom-in');
+                        const btnZoomOut = wrapper.querySelector('.btn-zoom-out');
+                        const btnReset = wrapper.querySelector('.btn-reset');
+                        const btnFullscreen = wrapper.querySelector('.btn-fullscreen');
+                        const btnCollapse = wrapper.querySelector('.btn-collapse');
+
+                        let scale = 1, translateX = 0, translateY = 0;
+                        let isDragging = false, startX, startY;
+
+                        const updateTransform = () => {
+                            mermaidDiv.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+                        };
+
+                        btnZoomIn.onclick = () => { scale *= 1.2; updateTransform(); };
+                        btnZoomOut.onclick = () => { scale /= 1.2; updateTransform(); };
+                        btnReset.onclick = () => { scale = 1; translateX = 0; translateY = 0; updateTransform(); };
+                        
+                        btnCollapse.onclick = () => {
+                            wrapper.classList.toggle('collapsed');
+                            btnCollapse.textContent = wrapper.classList.contains('collapsed') ? '▶' : '▼';
+                        };
+                        
+                        btnFullscreen.onclick = () => {
+                            wrapper.classList.toggle('fullscreen');
+                        };
+
+                        viewport.addEventListener('mousedown', (e) => {
+                            isDragging = true;
+                            startX = e.clientX - translateX;
+                            startY = e.clientY - translateY;
+                            viewport.style.cursor = 'grabbing';
+                        });
+                        
+                        window.addEventListener('mousemove', (e) => {
+                            if (!isDragging) return;
+                            translateX = e.clientX - startX;
+                            translateY = e.clientY - startY;
+                            mermaidDiv.style.transition = 'none';
+                            updateTransform();
+                        });
+                        
+                        window.addEventListener('mouseup', () => {
+                            isDragging = false;
+                            viewport.style.cursor = 'grab';
+                            mermaidDiv.style.transition = 'transform 0.1s ease-out';
+                        });
+                        
+                        window.addEventListener('mouseleave', () => {
+                            if(isDragging) {
+                                isDragging = false;
+                                viewport.style.cursor = 'grab';
+                                mermaidDiv.style.transition = 'transform 0.1s ease-out';
+                            }
+                        });
+
+                        viewport.addEventListener('wheel', (e) => {
+                            e.preventDefault();
+                            scale *= e.deltaY < 0 ? 1.1 : 0.9;
+                            updateTransform();
+                        }, { passive: false });
+                    });
+                }
+
+            } catch (error) {
+                console.warn('Error loading Markdown via fetch (CORS block on file://). Falling back to manual file input.', error);
+
+                document.getElementById('content').innerHTML = `
+                    <div class="error" style="background-color: transparent; border-color: #3b82f6; text-align: center;">
+                        <h3 style="color: #60a5fa;">Carga Local Requerida</h3>
+                        <p style="color: #cbd5e1; margin-bottom: 20px;">Estás abriendo el archivo localmente (file://), por lo que el navegador bloquea la carga automática por seguridad.</p>
+                        
+                        <div style="padding: 20px; border: 2px dashed #3b82f6; border-radius: 8px; background: rgba(59, 130, 246, 0.05); display: inline-block;">
+                            <p style="margin-top: 0; font-weight: bold; color: #93c5fd;">Por favor, seleccioná manualmente el archivo .md:</p>
+                            <input type="file" id="file-input" accept=".md,.txt" style="color: #e2e8f0; font-size: 14px; padding: 10px; cursor: pointer;">
                         </div>
                     </div>
                 `;
 
-                pre.replaceWith(wrapper);
-                setupMermaidInteractive(wrapper);
-            });
+                // Agregar listener para el selector de archivos
+                document.getElementById('file-input').addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
 
-            if (mermaidBlocks.length > 0) {
-                try {
-                    mermaid.run();
-                } catch(e) {
-                    console.warn("Mermaid error:", e);
-                }
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const markdownText = e.target.result;
+
+                        // Parsear y renderizar (misma lógica que el try)
+                        const htmlContent = marked.parse(markdownText);
+                        const contentDiv = document.getElementById('content');
+                        contentDiv.innerHTML = htmlContent;
+
+                        renderMathInElement(contentDiv, {
+                            delimiters: [
+                                { left: '$$', right: '$$', display: true },
+                                { left: '$', right: '$', display: false },
+                                { left: '\\(', right: '\\)', display: false },
+                                { left: '\\[', right: '\\]', display: true }
+                            ],
+                            throwOnError: false
+                        });
+
+                        const mermaidElements = document.querySelectorAll('.mermaid');
+                        if (mermaidElements.length > 0) {
+                            mermaid.run({ nodes: mermaidElements });
+                        }
+                    };
+                    reader.readAsText(file);
+                });
             }
-        });
+        }
+
+        // Ejecutamos la lógica principal al cargar la estructura del DOM
+        document.addEventListener('DOMContentLoaded', loadMarkdown);
     </script>
 </body>
+
 </html>
