@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arquitectura Institucional MES - Visor MD Nativo</title>
+    <title>Flujos Documentales Indino - Visor MD Nativo</title>
 
     <!-- KaTeX -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -171,17 +171,23 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             transition: border-color 0.2s;
         }
+
         .mermaid-wrapper.fullscreen {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             z-index: 9999;
             margin: 0;
             border-radius: 0;
             height: 100vh;
         }
+
         .mermaid-wrapper:hover {
             border-color: #374151;
         }
+
         .mermaid-header {
             background-color: #0f172a;
             border-bottom: 1px solid #1f2937;
@@ -191,6 +197,7 @@
             align-items: center;
             user-select: none;
         }
+
         .mermaid-title {
             display: flex;
             align-items: center;
@@ -199,12 +206,14 @@
             font-weight: 700;
             color: #94a3b8;
         }
+
         .mermaid-controls {
             display: flex;
             gap: 6px;
         }
+
         .m-btn {
-            background-color: rgba(255,255,255,0.05);
+            background-color: rgba(255, 255, 255, 0.05);
             border: 1px solid #334155;
             color: #cbd5e1;
             border-radius: 4px;
@@ -216,10 +225,12 @@
             align-items: center;
             justify-content: center;
         }
+
         .m-btn:hover {
-            background-color: rgba(255,255,255,0.15);
+            background-color: rgba(255, 255, 255, 0.15);
             color: #fff;
         }
+
         .mermaid-viewport {
             position: relative;
             width: 100%;
@@ -229,19 +240,22 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 20px 20px;
             padding: 20px;
             box-sizing: border-box;
             cursor: grab;
         }
+
         .mermaid-viewport:active {
             cursor: grabbing;
         }
+
         .mermaid-wrapper.fullscreen .mermaid-viewport {
             height: calc(100vh - 36px);
             flex-grow: 1;
         }
+
         .mermaid-wrapper.collapsed .mermaid-viewport {
             display: none;
         }
@@ -290,7 +304,7 @@
     <div class="doc-container">
         <span class="doc-header-badge">📚 Visor Nativo Markdown</span>
         <div id="content">
-            <div class="loading">Cargando documento original "arquitectura_mes_gobernanza.md"...</div>
+            <div class="loading">Cargando documento original "flujos_documentales_indino.md"...</div>
         </div>
     </div>
 
@@ -303,14 +317,14 @@
         });
 
         // Configuración de Marked para interceptar bloques de código Mermaid
-        const renderer = new marked.Renderer();
-        const originalCode = renderer.code.bind(renderer);
-        renderer.code = function(tokenOrCode, language, isEscaped) {
-            const codeText = typeof tokenOrCode === 'object' ? tokenOrCode.text : tokenOrCode;
-            const lang = typeof tokenOrCode === 'object' ? tokenOrCode.lang : language;
-            
-            if (lang === 'mermaid') {
-                return `
+        marked.use({
+            renderer: {
+                code(tokenOrCode) {
+                    const codeText = typeof tokenOrCode === 'object' ? tokenOrCode.text : arguments[0];
+                    const lang = typeof tokenOrCode === 'object' ? tokenOrCode.lang : arguments[1];
+
+                    if (lang === 'mermaid') {
+                        return `
                 <div class="mermaid-wrapper">
                     <div class="mermaid-header">
                         <div class="mermaid-title">📊 Diagrama Mermaid</div>
@@ -326,15 +340,16 @@
                         <div class="mermaid" style="transform: scale(1) translate(0px, 0px); transition: transform 0.1s ease-out; transform-origin: center;">${codeText}</div>
                     </div>
                 </div>`;
+                    }
+                    return false; // Delega al renderizador por defecto para python, etc.
+                }
             }
-            return originalCode(tokenOrCode, language, isEscaped);
-        };
-        marked.setOptions({ renderer: renderer });
+        });
 
         async function loadMarkdown() {
             try {
                 // Hacemos el fetch() al archivo MD que está en la misma carpeta
-                const response = await fetch('arquitectura_mes_gobernanza.md');
+                const response = await fetch('flujos_documentales_indino.md');
 
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status} - No se pudo cargar el archivo.`);
@@ -364,7 +379,7 @@
                 const mermaidElements = document.querySelectorAll('.mermaid');
                 if (mermaidElements.length > 0) {
                     await mermaid.run({ nodes: mermaidElements });
-                    
+
                     // Inicializar interactividad (Zoom, Pan, Fullscreen)
                     document.querySelectorAll('.mermaid-wrapper').forEach(wrapper => {
                         const viewport = wrapper.querySelector('.mermaid-viewport');
@@ -385,12 +400,12 @@
                         btnZoomIn.onclick = () => { scale *= 1.2; updateTransform(); };
                         btnZoomOut.onclick = () => { scale /= 1.2; updateTransform(); };
                         btnReset.onclick = () => { scale = 1; translateX = 0; translateY = 0; updateTransform(); };
-                        
+
                         btnCollapse.onclick = () => {
                             wrapper.classList.toggle('collapsed');
                             btnCollapse.textContent = wrapper.classList.contains('collapsed') ? '▶' : '▼';
                         };
-                        
+
                         btnFullscreen.onclick = () => {
                             wrapper.classList.toggle('fullscreen');
                         };
@@ -401,7 +416,7 @@
                             startY = e.clientY - translateY;
                             viewport.style.cursor = 'grabbing';
                         });
-                        
+
                         window.addEventListener('mousemove', (e) => {
                             if (!isDragging) return;
                             translateX = e.clientX - startX;
@@ -409,15 +424,15 @@
                             mermaidDiv.style.transition = 'none';
                             updateTransform();
                         });
-                        
+
                         window.addEventListener('mouseup', () => {
                             isDragging = false;
                             viewport.style.cursor = 'grab';
                             mermaidDiv.style.transition = 'transform 0.1s ease-out';
                         });
-                        
+
                         window.addEventListener('mouseleave', () => {
-                            if(isDragging) {
+                            if (isDragging) {
                                 isDragging = false;
                                 viewport.style.cursor = 'grab';
                                 mermaidDiv.style.transition = 'transform 0.1s ease-out';

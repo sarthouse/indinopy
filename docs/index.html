@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -336,6 +337,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- TOPBAR -->
@@ -364,7 +366,9 @@
         <nav class="sidebar">
             <div class="sidebar-header">
                 <span>Colección Documental</span>
-                <span style="font-size: 10px; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px;">8 Piezas</span>
+                <span
+                    style="font-size: 10px; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px;">8
+                    Piezas</span>
             </div>
             <ul class="nav-list" id="navList">
                 <li class="nav-item active" data-id="mockup" onclick="switchDoc('mockup')">
@@ -375,7 +379,8 @@
                         </div>
                         <span class="nav-badge">Título de Crédito</span>
                     </div>
-                    <div class="nav-desc">Instrumento legal-financiero homologado por la MES, con partes, escrow y desglose factorial ítem por ítem.</div>
+                    <div class="nav-desc">Instrumento legal-financiero homologado por la MES, con partes, escrow y
+                        desglose factorial ítem por ítem.</div>
                 </li>
 
                 <li class="nav-item" data-id="glosario" onclick="switchDoc('glosario')">
@@ -386,7 +391,8 @@
                         </div>
                         <span class="nav-badge">Glosario</span>
                     </div>
-                    <div class="nav-desc">Guía taxonómica completa: UBO, Merkle Root, CCCN 1251/1356, Silencio 48h, PTF, mermas INTI y Escrow.</div>
+                    <div class="nav-desc">Guía taxonómica completa: UBO, Merkle Root, CCCN 1251/1356, Silencio 48h, PTF,
+                        mermas INTI y Escrow.</div>
                 </li>
 
                 <li class="nav-item" data-id="paper" onclick="switchDoc('paper')">
@@ -397,7 +403,8 @@
                         </div>
                         <span class="nav-badge">Académico</span>
                     </div>
-                    <div class="nav-desc">Artículo científico formal: PoPW, Timelock 48h, Nash, Puente SAS, Redes CIFO y Algorética de Trinchera.</div>
+                    <div class="nav-desc">Artículo científico formal: PoPW, Timelock 48h, Nash, Puente SAS, Redes CIFO y
+                        Algorética de Trinchera.</div>
                 </li>
 
                 <li class="nav-item" data-id="arquitectura" onclick="switchDoc('arquitectura')">
@@ -408,7 +415,8 @@
                         </div>
                         <span class="nav-badge">Gobernanza</span>
                     </div>
-                    <div class="nav-desc">Estructura institucional: 7 sillas, comisiones, Banco de Maquinaria CIFO, arbitraje 72h y perimetral a inspectores.</div>
+                    <div class="nav-desc">Estructura institucional: 7 sillas, comisiones, Banco de Maquinaria CIFO,
+                        arbitraje 72h y perimetral a inspectores.</div>
                 </li>
 
                 <li class="nav-item" data-id="analisis" onclick="switchDoc('analisis')">
@@ -419,7 +427,8 @@
                         </div>
                         <span class="nav-badge">Especificación</span>
                     </div>
-                    <div class="nav-desc">Relevamiento de los 5 pilares, adaptación a apps Indinopy (producción, tesorería, contactos) y roadmap.</div>
+                    <div class="nav-desc">Relevamiento de los 5 pilares, adaptación a apps Indinopy (producción,
+                        tesorería, contactos) y roadmap.</div>
                 </li>
 
                 <li class="nav-item" data-id="flujos" onclick="switchDoc('flujos')">
@@ -430,7 +439,8 @@
                         </div>
                         <span class="nav-badge">Workflow</span>
                     </div>
-                    <div class="nav-desc">Máquinas de estado y ciclo de comprobantes: Pedidos, OP, Partes, Liquidaciones Façón y Remitos.</div>
+                    <div class="nav-desc">Máquinas de estado y ciclo de comprobantes: Pedidos, OP, Partes, Liquidaciones
+                        Façón y Remitos.</div>
                 </li>
 
                 <li class="nav-item" data-id="dossier" onclick="switchDoc('dossier')">
@@ -441,7 +451,8 @@
                         </div>
                         <span class="nav-badge">Matriz</span>
                     </div>
-                    <div class="nav-desc">El documento político-industrial matriz: 1300+ líneas con articulado de ley y régimen de fomento PyME.</div>
+                    <div class="nav-desc">El documento político-industrial matriz: 1300+ líneas con articulado de ley y
+                        régimen de fomento PyME.</div>
                 </li>
 
                 <li class="nav-item" data-id="tecnica" onclick="switchDoc('tecnica')">
@@ -452,7 +463,20 @@
                         </div>
                         <span class="nav-badge">Visión & Solución</span>
                     </div>
-                    <div class="nav-desc">Diagnóstico, módulos Django y los 5 dispositivos: Puente SAS, CIFO, Algorética, Tutela e Inmunidad, y Arancel Cero.</div>
+                    <div class="nav-desc">Diagnóstico, módulos Django y los 5 dispositivos: Puente SAS, CIFO,
+                        Algorética, Tutela e Inmunidad, y Arancel Cero.</div>
+                </li>
+
+                <li class="nav-item" data-id="manifiesto" onclick="switchDoc('manifiesto')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>✊</span>
+                            <span>Manifiesto Soberano</span>
+                        </div>
+                        <span class="nav-badge">Manifiesto</span>
+                    </div>
+                    <div class="nav-desc">Declaración de principios: trabajo genuino, comunidad organizada y nueva
+                        doctrina de emancipación productiva.</div>
                 </li>
             </ul>
 
@@ -472,8 +496,10 @@
                     <span class="nav-badge" id="currentBadge">Título de Crédito</span>
                 </div>
                 <div class="doc-actions">
-                    <a id="btnToolbarPdf" href="mockup_orden_produccion.pdf" target="_blank" class="action-btn btn-primary">
-                        <span>📄</span> Abrir PDF Oficial
+                    <a id="btnToolbarPdf" href="#"
+                        onclick="document.getElementById('viewerFrame').contentWindow.print(); return false;"
+                        class="action-btn btn-primary">
+                        <span>🖨️</span> Imprimir Mockup (PDF)
                     </a>
                     <a id="btnDirectLink" href="mockup_orden_produccion.html" target="_blank" class="action-btn">
                         <span>↗</span> Abrir en Nueva Ventana
@@ -483,7 +509,8 @@
 
             <!-- VIEWER PANE -->
             <div class="viewer-container">
-                <iframe id="viewerFrame" class="viewer-iframe" src="mockup_orden_produccion.html" frameborder="0"></iframe>
+                <iframe id="viewerFrame" class="viewer-iframe" src="mockup_orden_produccion.html"
+                    frameborder="0"></iframe>
             </div>
         </main>
     </div>
@@ -546,6 +573,13 @@
                 icon: "💡",
                 badge: "Visión & Solución",
                 isMockup: false
+            },
+            manifiesto: {
+                title: "Manifiesto de la Manufactura Soberana",
+                file: "manifiesto_de_la_manufactura_soberana.html",
+                icon: "✊",
+                badge: "Manifiesto",
+                isMockup: false
             }
         };
 
@@ -580,4 +614,5 @@
         }
     </script>
 </body>
+
 </html>
