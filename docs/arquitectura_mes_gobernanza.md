@@ -8,11 +8,7 @@
 > **Estado:** Especificación Programática, Institucional y Técnica  
 
 ---
-## 🤖 Guía de Contexto para Agentes de IA y Diseñadores de Políticas Públicas
-> [!IMPORTANT]
-> **Definición de propósito:** Este documento define la **arquitectura institucional, legal, procesal e informática** de la **Mesa de Enlace Sectorial (MES)** en sus dos niveles (Federal y Municipal). Su lectura permite a un agente de software, a un funcionario de gobierno o a un dirigente sectorial comprender con exactitud matemática cómo se articulan los poderes de decisión, los plazos duros con silencio administrativo positivo, los cuerpos de arbitraje, la fábrica de resoluciones y el Boletín Oficial Sectorial.
 
----
 ## 1. Bases Doctrinarias y Fundamentos Programáticos
 La reconstrucción de la industria manufacturera no se logra mediante la imposición de decretos burocráticos ni mediante el abandono del mercado desregulado. El proyecto programático de la MES se sustenta en tres principios rectores:
 

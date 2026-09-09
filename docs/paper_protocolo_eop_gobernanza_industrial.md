@@ -4,8 +4,7 @@
 
 **Tiago Gabriel Sarthou**  
 *Contacto: tiagosarthou@gmail.com*  
-*En colaboración con la Comisión Técnica de la Mesa de Enlace Sectorial (MES Federal)*  
-*Conurbano Bonaerense, República Argentina*  
+*Ciudad de Buenos Aires, República Argentina*  
 *Septiembre de 2026*  
 
 ---

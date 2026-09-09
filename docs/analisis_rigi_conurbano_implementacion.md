@@ -8,12 +8,7 @@
 
 ---
 
-## 🤖 Guía de Contexto para Agentes de IA y Desarrolladores
-
-> [!IMPORTANT]
-> **Instrucción de lectura para agentes:** Este documento no es un ensayo teórico aislado; es una **especificación técnica de ingeniería de software** que traduce un proyecto de política industrial y marco normativo real argentino a modelos de datos, servicios y reglas de negocio para el código fuente de **Indinopy**.
-
-### ¿De qué estamos hablando? (Resumen Ejecutivo de Contexto)
+## ¿De qué estamos hablando? (Resumen Ejecutivo de Contexto)
 
 1. **El Problema Real:** En Argentina, la manufactura de calzado e indumentaria opera con un alto grado de tercerización en talleres periféricos familiares (aparadores, costureros, armadores a destajo). Históricamente, estos talleres viven en la informalidad o en el "purgatorio fiscal" (cobran en efectivo o usan CUITs prestados de familiares para no ahogarse en impuestos y ejecuciones bancarias). Al no haber facturas, la empresa formal (Indino) no puede deducir sus costos reales de mano de obra en Ganancias ni computar el crédito fiscal de IVA, tributando sobre utilidades ficticias.
 2. **El Documento Fuente (`Dossier RIGI Conurbano 2026.md`):** Es un proyecto de Ley de Salvataje Nacional y Régimen de Incentivo (RIGI del Conurbano) para micro y pequeñas fábricas (hasta 30 operarios). Plantea que en lugar de ahogar al taller con inspecciones o dejarlo a merced de la usura bancaria tradicional, se cree un **ecosistema de soberanía productiva**:

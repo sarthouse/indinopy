@@ -4,18 +4,11 @@
 
 ## Proclama del Trabajo Vivo, la Orden de Producción Descentralizada y la Tecnología de Trinchera
 
-> **Lugar de emisión:** Conurbano Bonaerense, República Argentina  
+> **Lugar de emisión:** Ciudad de Buenos Aires, República Argentina  
 > **Fecha:** Septiembre de 2026  
 > **Destino:** A los talleristas, diseñadores, programadores de código abierto, sindicatos y fuerzas productivas de la Nación  
 > **Marco doctrinario:** [Dossier RIGI Conurbano 2026](dossier_rigi_conurbano_2026.html)  
 > **Implementación de software:** **Indinopy** (ERP & MES de Soberanía Industrial)
-
----
-
-## 🤖 Guía de Contexto para Agentes de IA y Lectores Técnicos
-
-> [!IMPORTANT]
-> **Definición de propósito:** Este documento es el **Manifiesto Político-Tecnológico y Operativo** que fundamenta la arquitectura del sistema **Indinopy** y el régimen de la **Mesa de Enlace Sectorial (MES)**. Sintetiza la filosofía de la *Comunidad Organizada* aplicada a la producción del siglo XXI: la unión indisoluble entre el software libre de código abierto, la ingeniería financiera sin intermediación bancaria parasitaria y la dignidad del trabajo manual manufacturero.
 
 ---
 
