@@ -1,5 +1,5 @@
 from decimal import Decimal
-from django.db import models
+from django.contrib.gis.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.base.models import TimeStampedModel
@@ -142,12 +142,39 @@ class Contacto(TimeStampedModel):
         max_length=20, blank=True, verbose_name=_("Código postal")
     )
 
-    # Parámetros Financieros
     limite_credito = models.DecimalField(
         max_digits=15,
         decimal_places=2,
         default=Decimal("0.00"),
         verbose_name=_("Límite de crédito en cuenta corriente"),
+    )
+
+    # Identidad y Scoring Protocolo e-OP
+    es_taller_homologado = models.BooleanField(
+        default=False,
+        verbose_name=_("Homologado por INTI/Sindicato"),
+        help_text=_("Habilita recepción de e-OPs bajo régimen RIGI/Salvataje"),
+    )
+    ucp_score = models.IntegerField(
+        default=0,
+        verbose_name=_("Unidades de Crédito Productivo (UCP)"),
+        help_text=_(
+            "Puntaje solidario que sube con cumplimientos y baja con defecciones (Slashing)"
+        ),
+    )
+    clave_publica_ed25519 = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        verbose_name=_("Clave Pública Ed25519"),
+        help_text=_("Para validación de firmas criptográficas en e-OPs"),
+    )
+    ubicacion_catastral = models.PointField(
+        srid=4326,
+        blank=True,
+        null=True,
+        verbose_name=_("Ubicación Catastral (GPS)"),
+        help_text=_("Geolocalización oficial para auditoría de distancia en PoPW"),
     )
 
     # Estado y Notas

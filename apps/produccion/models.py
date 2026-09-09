@@ -2,7 +2,7 @@ import hashlib
 import json
 import uuid
 from decimal import Decimal
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import TimeStampedModel, DocumentoBase
@@ -67,7 +67,9 @@ class RecetaInsumo(TimeStampedModel):
         decimal_places=2,
         default=Decimal("10.00"),
         verbose_name=_("Merma técnica tolerable (%)"),
-        help_text=_("Estándar INTI de descarte admisible en corte y aparado (hasta 10%)"),
+        help_text=_(
+            "Estándar INTI de descarte admisible en corte y aparado (hasta 10%)"
+        ),
     )
     variantes_destino = models.ManyToManyField(AtributoValor, blank=True)
 
@@ -174,8 +176,7 @@ class OrdenProduccion(DocumentoBase):
         verbose_name=_("Cantidad total a fabricar")
     )
     cantidad_producida = models.PositiveIntegerField(
-        default=0,
-        verbose_name=_("Cantidad total producida hasta la fecha")
+        default=0, verbose_name=_("Cantidad total producida hasta la fecha")
     )
 
     tipo = models.CharField(
@@ -197,11 +198,10 @@ class OrdenProduccion(DocumentoBase):
         max_length=30,
         choices=ESTADO_ESCROW_CHOICES,
         default="no_aplica",
-        verbose_name=_("Estado Escrow (Protocolo e-OP)")
+        verbose_name=_("Estado Escrow (Protocolo e-OP)"),
     )
     fecha_fondeo_escrow = models.DateTimeField(
-        null=True, blank=True,
-        verbose_name=_("Fecha de Fondeo (Inicio Timelock 48h)")
+        null=True, blank=True, verbose_name=_("Fecha de Fondeo (Inicio Timelock 48h)")
     )
 
     # Identidad digital y seguridad jurídica de la e-OP
@@ -224,7 +224,10 @@ class OrdenProduccion(DocumentoBase):
         max_length=40,
         choices=[
             ("fason_locacion_obra", _("Façón / Locación de Obra (Arts. 1251 CCCN)")),
-            ("maquila_industrial", _("Maquila Industrial (Proyecto Reforma Ley 25.113)")),
+            (
+                "maquila_industrial",
+                _("Maquila Industrial (Proyecto Reforma Ley 25.113)"),
+            ),
             ("produccion_propia", _("Producción Integrada en Planta")),
         ],
         default="fason_locacion_obra",
@@ -237,6 +240,71 @@ class OrdenProduccion(DocumentoBase):
             "Declara las materias primas y semielaborados como propiedad inembargable del comitente emisor"
         ),
     )
+    # === Protocolo e-OP ===
+    # K_T: Tallerista / Custodio principal
+    tallerista_principal = models.ForeignKey(
+        "contactos.Contacto",
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True,
+        related_name="ops_como_tallerista",
+        verbose_name=_("Tallerista / Fasón Principal"),
+        help_text=_("Responsable primario ante el protocolo de custodia y liquidación"),
+    )
+
+    # Vector C: Desglose Factorial de Costos Inmutable (en UCI o ARS indexado)
+    costo_mod = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.0"),
+        verbose_name=_("Mano de Obra Directa (MOD)"),
+    )
+    costo_cs = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.0"),
+        verbose_name=_("Cargas Sociales (CS)"),
+    )
+    costo_bom = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.0"),
+        verbose_name=_("Insumos (BOM)"),
+    )
+    costo_gg = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.0"),
+        verbose_name=_("Gastos Generales / Amortización (GG)"),
+    )
+    costo_fdi = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.0"),
+        verbose_name=_("Reserva FDI (2%)"),
+    )
+    costo_tax = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.0"),
+        verbose_name=_("Impuestos / Monotributo (TAX)"),
+    )
+    costo_mg = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.0"),
+        verbose_name=_("Margen (MG)"),
+    )
+
+    # Sigma: Firmas Criptográficas
+    firmas_digitales = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_(
+            "Esquema Multifirma 2-de-3: {'comitente': 'sig_hash', 'tallerista': 'sig_hash', 'arbitro': 'sig_hash'}"
+        ),
+    )
+
     es_sello_buen_diseno = models.BooleanField(
         default=False,
         verbose_name=_("Distinción Sello Buen Diseño (SBD)"),
@@ -257,30 +325,47 @@ class OrdenProduccion(DocumentoBase):
     def __str__(self):
         cliente_nombre = ""
         if self.cliente:
-            cliente_nombre = f" - {self.cliente.razon_social or self.cliente.nombre_fantasia}"
-        template_nombre = self.receta.producto_template.nombre if self.receta and self.receta.producto_template else "S/D"
+            cliente_nombre = (
+                f" - {self.cliente.razon_social or self.cliente.nombre_fantasia}"
+            )
+        template_nombre = (
+            self.receta.producto_template.nombre
+            if self.receta and self.receta.producto_template
+            else "S/D"
+        )
         return f"OP {self.numero} - {template_nombre}{cliente_nombre} ({self.cantidad_producida}/{self.cantidad_total})"
 
     @property
     def porcentaje_avance(self):
         if self.cantidad_total > 0:
-            return round((Decimal(self.cantidad_producida) / Decimal(self.cantidad_total)) * Decimal("100.0"), 1)
+            return round(
+                (Decimal(self.cantidad_producida) / Decimal(self.cantidad_total))
+                * Decimal("100.0"),
+                1,
+            )
         return Decimal("0.0")
 
-    def registrar_produccion_parcial(self, variaciones_cantidades, observaciones="", usuario=None):
+    def registrar_produccion_parcial(
+        self, variaciones_cantidades, observaciones="", usuario=None
+    ):
         """
         Registra la finalización parcial de una tanda de la OP (Odoo MRP).
         - variaciones_cantidades: dict con {op_variacion_id: cantidad_producida}
         """
         from django.db import transaction
-        from apps.inventario.models import Ubicacion, MovimientoStock, LineaMovimientoStock
+        from apps.inventario.models import (
+            Ubicacion,
+            MovimientoStock,
+            LineaMovimientoStock,
+        )
 
         with transaction.atomic():
             almacen, _ = Ubicacion.objects.get_or_create(
                 tipo="interna", defaults={"nombre": "Almacén Principal", "activa": True}
             )
             ubicacion_produccion, _ = Ubicacion.objects.get_or_create(
-                tipo="produccion", defaults={"nombre": "Fábrica (Virtual)", "activa": True}
+                tipo="produccion",
+                defaults={"nombre": "Fábrica (Virtual)", "activa": True},
             )
 
             num_parte = self.partes_produccion.count() + 1
@@ -348,7 +433,9 @@ class OrdenProduccion(DocumentoBase):
                     )
 
             # Consumir insumos proporcionales de la reserva
-            remito_reserva = MovimientoStock.objects.filter(numero=f"RES-{self.numero}").first()
+            remito_reserva = MovimientoStock.objects.filter(
+                numero=f"RES-{self.numero}"
+            ).first()
             if remito_reserva and self.cantidad_total > 0:
                 factor = Decimal(total_tanda) / Decimal(self.cantidad_total)
                 for linea_res in list(remito_reserva.lineas.filter(estado="reservado")):
@@ -364,7 +451,9 @@ class OrdenProduccion(DocumentoBase):
                             estado="realizado",
                             referencia=f"Consumo tanda {num_parte} OP {self.numero}",
                         )
-                        linea_res.cantidad = max(Decimal("0.0"), linea_res.cantidad - qty_a_consumir)
+                        linea_res.cantidad = max(
+                            Decimal("0.0"), linea_res.cantidad - qty_a_consumir
+                        )
                         if linea_res.cantidad == 0:
                             linea_res.delete()
                         else:
@@ -388,7 +477,9 @@ class OrdenProduccion(DocumentoBase):
         from apps.inventario.models import MovimientoStock
 
         with transaction.atomic():
-            remito_reserva = MovimientoStock.objects.filter(numero=f"RES-{self.numero}").first()
+            remito_reserva = MovimientoStock.objects.filter(
+                numero=f"RES-{self.numero}"
+            ).first()
             if remito_reserva:
                 for linea_res in remito_reserva.lineas.filter(estado="reservado"):
                     linea_res.estado = "cancelado"
@@ -406,7 +497,11 @@ class OrdenProduccion(DocumentoBase):
         """Calcula el costo teórico acumulado de los insumos requeridos."""
         total = Decimal("0.00")
         for req in self.insumos_requeridos.all():
-            costo_unit = req.insumo.template.costo if req.insumo and req.insumo.template else Decimal("0.00")
+            costo_unit = (
+                req.insumo.template.costo
+                if req.insumo and req.insumo.template
+                else Decimal("0.00")
+            )
             total += req.cantidad_teorica * costo_unit
         return round(total, 2)
 
@@ -415,8 +510,16 @@ class OrdenProduccion(DocumentoBase):
         """Calcula el costo real de los insumos consumidos si fue asentada la merma real."""
         total = Decimal("0.00")
         for req in self.insumos_requeridos.all():
-            cant = req.cantidad_consumida_real if req.cantidad_consumida_real is not None else req.cantidad_teorica
-            costo_unit = req.insumo.template.costo if req.insumo and req.insumo.template else Decimal("0.00")
+            cant = (
+                req.cantidad_consumida_real
+                if req.cantidad_consumida_real is not None
+                else req.cantidad_teorica
+            )
+            costo_unit = (
+                req.insumo.template.costo
+                if req.insumo and req.insumo.template
+                else Decimal("0.00")
+            )
             total += cant * costo_unit
         return round(total, 2)
 
@@ -424,7 +527,10 @@ class OrdenProduccion(DocumentoBase):
     def costo_total_fason(self):
         """Suma las liquidaciones y costos de servicios de talleristas registrados en tracking."""
         return sum(
-            (etapa.costo_servicio_total or Decimal("0.00") for etapa in self.tracking_etapas.all()),
+            (
+                etapa.costo_servicio_total or Decimal("0.00")
+                for etapa in self.tracking_etapas.all()
+            ),
             Decimal("0.00"),
         )
 
@@ -441,26 +547,39 @@ class OrdenProduccion(DocumentoBase):
             return round(self.costo_total_estimado / Decimal(cant), 2)
         return Decimal("0.00")
 
-    def generar_devolucion_sobrantes(self, insumos_cantidades, usuario=None, observaciones=""):
+    def generar_devolucion_sobrantes(
+        self, insumos_cantidades, usuario=None, observaciones=""
+    ):
         """
         Genera un remito de retorno de insumos no consumidos desde la fábrica virtual
         hacia el Almacén Principal.
         - insumos_cantidades: dict {insumo_sku_id: cantidad_a_devolver}
         """
         from django.db import transaction
-        from apps.inventario.models import Ubicacion, MovimientoStock, LineaMovimientoStock, Producto
+        from apps.inventario.models import (
+            Ubicacion,
+            MovimientoStock,
+            LineaMovimientoStock,
+            Producto,
+        )
 
         with transaction.atomic():
             almacen, _ = Ubicacion.objects.get_or_create(
                 tipo="interna", defaults={"nombre": "Almacén Principal", "activa": True}
             )
             ubicacion_produccion, _ = Ubicacion.objects.get_or_create(
-                tipo="produccion", defaults={"nombre": "Fábrica (Virtual)", "activa": True}
+                tipo="produccion",
+                defaults={"nombre": "Fábrica (Virtual)", "activa": True},
             )
 
-            num_dev = MovimientoStock.objects.filter(
-                documento_origen=self.numero, tipo="traslado", numero__startswith=f"DEV-{self.numero}"
-            ).count() + 1
+            num_dev = (
+                MovimientoStock.objects.filter(
+                    documento_origen=self.numero,
+                    tipo="traslado",
+                    numero__startswith=f"DEV-{self.numero}",
+                ).count()
+                + 1
+            )
             remito_dev = MovimientoStock.objects.create(
                 numero=f"DEV-{self.numero}-{num_dev:02d}",
                 tipo="traslado",
@@ -495,27 +614,29 @@ class OrdenProduccion(DocumentoBase):
         Calcula la Raíz del Árbol de Merkle para la lista de insumos (BOM) asignados a esta OP.
         Cumple con la especificación M_BOM del Protocolo e-OP usando la foto transaccional inmutable.
         """
-        insumos = list(self.insumos_requeridos.all().order_by('id'))
+        insumos = list(self.insumos_requeridos.all().order_by("id"))
         if not insumos:
             return None
-            
+
         # Nivel de hojas (Leaves)
         hojas = []
         for req in insumos:
             # Usamos cantidad teórica y el insumo asociado
             data = f"{req.insumo_id}:{req.cantidad_teorica}"
             hojas.append(hashlib.sha256(data.encode("utf-8")).hexdigest())
-            
+
         # Calcular raíz (implementación simplificada concatenando hashes)
         while len(hojas) > 1:
             if len(hojas) % 2 != 0:
-                hojas.append(hojas[-1]) # Duplicar último si es impar
+                hojas.append(hojas[-1])  # Duplicar último si es impar
             siguiente_nivel = []
             for i in range(0, len(hojas), 2):
-                combinado = hojas[i] + hojas[i+1]
-                siguiente_nivel.append(hashlib.sha256(combinado.encode("utf-8")).hexdigest())
+                combinado = hojas[i] + hojas[i + 1]
+                siguiente_nivel.append(
+                    hashlib.sha256(combinado.encode("utf-8")).hexdigest()
+                )
             hojas = siguiente_nivel
-            
+
         return hojas[0]
 
     def generar_payload_canonico(self):
@@ -640,9 +761,7 @@ class OPInsumoRequerido(TimeStampedModel):
         verbose_name_plural = _("Insumos requeridos de OP")
 
     def __str__(self):
-        return (
-            f"Req: {self.insumo} ({self.cantidad_teorica}) para {self.op.numero}"
-        )
+        return f"Req: {self.insumo} ({self.cantidad_teorica}) para {self.op.numero}"
 
     @property
     def alerta_desvio_merma(self):
@@ -654,7 +773,9 @@ class OPInsumoRequerido(TimeStampedModel):
             ri = self.op.receta.insumos.filter(insumo=self.insumo).first()
             if ri and ri.porcentaje_merma_tolerada:
                 tolerancia_pct = ri.porcentaje_merma_tolerada
-        limite_max = self.cantidad_teorica * (Decimal("1.0") + (tolerancia_pct / Decimal("100.0")))
+        limite_max = self.cantidad_teorica * (
+            Decimal("1.0") + (tolerancia_pct / Decimal("100.0"))
+        )
         return self.cantidad_consumida_real > limite_max
 
 
@@ -664,16 +785,23 @@ class OPParteProduccion(TimeStampedModel):
     Permite declarar que se terminaron X pares de ciertas variantes, generando el alta
     inmediata en stock y el consumo proporcional de los insumos.
     """
+
     op = models.ForeignKey(
         OrdenProduccion,
         on_delete=models.CASCADE,
         related_name="partes_produccion",
         verbose_name=_("Orden de producción"),
     )
-    numero_parte = models.CharField(max_length=50, blank=True, verbose_name=_("N° de Parte"))
+    numero_parte = models.CharField(
+        max_length=50, blank=True, verbose_name=_("N° de Parte")
+    )
     fecha = models.DateTimeField(auto_now_add=True, verbose_name=_("Fecha de registro"))
     responsable = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Responsable")
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("Responsable"),
     )
     movimiento_terminados = models.ForeignKey(
         "inventario.MovimientoStock",
@@ -683,7 +811,27 @@ class OPParteProduccion(TimeStampedModel):
         related_name="partes_ingreso_op",
         verbose_name=_("Remito de ingreso terminado"),
     )
-    observaciones = models.TextField(blank=True, null=True, verbose_name=_("Observaciones"))
+    observaciones = models.TextField(
+        blank=True, null=True, verbose_name=_("Observaciones")
+    )
+
+    # PoPW: Prueba de Trabajo Productivo
+    ubicacion_gps_declarada = models.PointField(
+        srid=4326,
+        blank=True,
+        null=True,
+        verbose_name=_("Ubicación GPS al declarar"),
+        help_text=_(
+            "Coordenada exacta del dispositivo al reportar este avance (anti-spoofing)"
+        ),
+    )
+    hash_validacion_biometrica = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        verbose_name=_("Hash Validación Biométrica"),
+        help_text=_("Hash del token devuelto por RENAPER / Servicio Liveness"),
+    )
 
     class Meta:
         verbose_name = _("Parte de Producción")
@@ -696,6 +844,7 @@ class OPParteProduccion(TimeStampedModel):
 
 class OPParteProduccionLinea(TimeStampedModel):
     """Línea de cantidades por variante terminadas en un parte específico."""
+
     parte = models.ForeignKey(
         OPParteProduccion,
         on_delete=models.CASCADE,
@@ -715,7 +864,9 @@ class OPParteProduccionLinea(TimeStampedModel):
     cantidad_segunda = models.PositiveIntegerField(
         default=0,
         verbose_name=_("Cantidad segunda selección"),
-        help_text=_("Pares terminados con detalles estéticos para canal outlet/descuento"),
+        help_text=_(
+            "Pares terminados con detalles estéticos para canal outlet/descuento"
+        ),
     )
     cantidad_descarte = models.PositiveIntegerField(
         default=0,
@@ -776,7 +927,9 @@ class OPEtapaTracking(TimeStampedModel):
         blank=True,
         related_name="etapas_retorno_taller",
         verbose_name=_("Remito de retorno de taller"),
-        help_text=_("Remito que ampara el reingreso del lote semielaborado desde el taller externo a planta"),
+        help_text=_(
+            "Remito que ampara el reingreso del lote semielaborado desde el taller externo a planta"
+        ),
     )
     responsable_interno = models.ForeignKey(
         User,
@@ -824,7 +977,9 @@ class OPEtapaTracking(TimeStampedModel):
                 tipo="fason",
                 contacto=self.tallerista_asignado,
                 defaults={
-                    "nombre": f"Taller: {self.tallerista_asignado}" if self.tallerista_asignado else "Taller Externo",
+                    "nombre": f"Taller: {self.tallerista_asignado}"
+                    if self.tallerista_asignado
+                    else "Taller Externo",
                     "activa": True,
                 },
             )
@@ -861,7 +1016,9 @@ class OPEtapaTracking(TimeStampedModel):
                 tipo="fason",
                 contacto=self.tallerista_asignado,
                 defaults={
-                    "nombre": f"Taller: {self.tallerista_asignado}" if self.tallerista_asignado else "Taller Externo",
+                    "nombre": f"Taller: {self.tallerista_asignado}"
+                    if self.tallerista_asignado
+                    else "Taller Externo",
                     "activa": True,
                 },
             )

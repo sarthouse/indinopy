@@ -22,7 +22,7 @@ Neutralizar la parálisis burocrática y política. Si la Comisión de Crédito 
 Mediante un código QR inviolable en la lengüeta del calzado, el consumidor final escanea y ve con exactitud matemática el desglose de cada peso: cuánto cobró el taller de barrio, cuánto costaron los insumos nacionales, cuánto retuvo el fisco y cuánto la marca.
 
 ### 🛑 6. Suspensión Activa de Oficio (Cero Deuda Fija)
-Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su estado a "Suspensión Activa". Su carga impositiva cae automáticamente a $0 y no devenga deuda previsional ni intereses retroactivos por parálisis fabril involuntaria.
+Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su estado a "Suspensión Activa". Su carga impositiva cae automáticamente a \$0 y no devenga deuda previsional ni intereses retroactivos por parálisis fabril involuntaria.
 
 ## 2. Cuadro Comparativo: Sistema Tradicional vs. Protocolo Indinopy
 
@@ -32,7 +32,7 @@ Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su 
 | **Plazo de Cobro Taller** | `60 a 90 días` (Diferido arbitrario por la marca) | `Inmediato` (Hito 0 al 30-40% + Avances contra pares certificados) |
 | **Riesgo de Parálisis** | `Burocracia discrecional` (Cajoneo de expedientes) | `Timelock 48h` (Silencio Administrativo Positivo por sistema) |
 | **Seguridad Jurídica** | `Embargos cruzados` (Juicios laborales o comerciales traban stock) | `Inembargabilidad CCCN` (Activo de afectación productiva territorial) |
-| **Régimen Fiscal** | `Cuota fija destructiva` (Monotributo acumula deuda sin producir) | `Suspensión Activa` (Si no hay máquina en marcha, el impuesto es $0) |
+| **Régimen Fiscal** | `Cuota fija destructiva` (Monotributo acumula deuda sin producir) | `Suspensión Activa` (Si no hay máquina en marcha, el impuesto es \$0) |
 | **Fijación de Precios** | `Dumping y precarización` (La marca impone precios de miseria) | `Pisos Éticos Paritarios` (Alertas automáticas por debajo de convenio) |
 
 ## 3. ¿Cómo lo Resuelve Indinopy Técnicamente? (Módulos de Software)

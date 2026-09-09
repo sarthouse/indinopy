@@ -1,14 +1,18 @@
-<span class="doc-header-badge">🚩 Doctrina</span>
-
 # Manifiesto de la Manufactura Soberana y la Comunidad Organizada
-
 ## Proclama del Trabajo Vivo, la Orden de Producción Descentralizada y la Tecnología de Trinchera
 
-> **Lugar de emisión:** Ciudad de Buenos Aires, República Argentina  
+> **Lugar de emisión:** Conurbano Bonaerense, República Argentina  
 > **Fecha:** Septiembre de 2026  
 > **Destino:** A los talleristas, diseñadores, programadores de código abierto, sindicatos y fuerzas productivas de la Nación  
-> **Marco doctrinario:** [Dossier RIGI Conurbano 2026](dossier_rigi_conurbano_2026.html)  
-> **Implementación de software:** **Indinopy** (ERP & MES de Soberanía Industrial)
+> **Marco doctrinario:** [Dossier RIGI Conurbano 2026.md](Dossier%20RIGI%20Conurbano%202026.md)  
+> **Implementación de software:** **Indinopy** (ERP & MES de Soberanía Industrial)  
+
+---
+
+## 🤖 Guía de Contexto para Agentes de IA y Lectores Técnicos
+
+> [!IMPORTANT]
+> **Definición de propósito:** Este documento es el **Manifiesto Político-Tecnológico y Operativo** que fundamenta la arquitectura del sistema **Indinopy** y el régimen de la **Mesa de Enlace Sectorial (MES)**. Sintetiza la filosofía de la *Comunidad Organizada* aplicada a la producción del siglo XXI: la unión indisoluble entre el software libre de código abierto, la ingeniería financiera sin intermediación bancaria parasitaria y la dignidad del trabajo manual manufacturero.
 
 ---
 
@@ -51,39 +55,30 @@ LA TECNOLOGÍA CONVENIENTE Y ABIERTA  por sobre  LA PATENTE CORPORATIVA CERRADA
 Para gobernar nuestra producción sin patrones usureros ni inspectores extorsionadores, declaramos las siguientes diez reglas operativas:
 
 ### 1. La Orden de Producción es nuestro dinero y nuestro título de dignidad
-
 La **e-OP digital** es un contrato inviolable y un título crediticio de descuento automático. Quien tiene una e-OP registrada ante la Mesa de Enlace tiene un activo de valor preferente ante cualquier entidad financiera o fiduciaria del país.
 
 ### 2. El Hito Cero es sagrado: nadie enciende un motor sin anticipo
-
 Se terminó la costumbre patronal de entregar materiales y esperar 60 días para cobrar. Al firmarse la e-OP y despacharse los insumos, el **Fideicomiso de Desarrollo Industrial (FDI)** libera de forma automática entre el 30% y el 40% del valor del servicio (o 50% con Sello de Buen Diseño) a la cuenta del tallerista. El trabajo se arranca con capital en el bolsillo.
 
 ### 3. El cuero es del comitente; las manos son del taller (Doctrina de Maquila)
-
 La mercadería que viaja y reposa en el taller de barrio está blindada por el régimen de Maquila y Locación de Obra (Arts. 1251 y 1356 CCCN). Es **estrictamente inembargable**. Si la marca quiebra o el taller tiene litigios, los cueros, suelas y cortes no se tocan: son activos de afectación productiva territorial.
 
 ### 4. El Estado tiene 48 horas: si calla, la producción avanza (Silencio Positivo)
-
 La burocracia no tiene derecho a frenar la rueda. Si la Mesa de Crédito no objeta formalmente una e-OP en 48 horas hábiles, el sistema informático activa el **Silencio Administrativo Positivo** y libera los fondos. Ninguna interna partidaria ni desidia administrativa congelará la comida de una familia trabajadora.
 
 ### 5. Si la máquina se detiene, el impuesto es cero (Suspensión Activa de Oficio)
-
 El impuesto debe seguir a la producción física, no al calendario del burócrata. Si transcurren 15 días sin que un tallerista reciba un nuevo lote de trabajo, el sistema muta su estado a **Suspensión Activa**: su carga fiscal cae a cero pesos ($0) y no se devenga un solo centavo de deuda previsional o intereses retroactivos.
 
 ### 6. Filtro de Tecnología Conveniente: no importamos chatarra ni cerrojos
-
 Ningún bien de capital importado con arancel cero entrará al país si tiene producción nacional sustituta. Y si no la tiene, la marca extranjera está obligada a liberar planos de despiece, diagramas electrónicos y software libre, licenciando el servicio técnico a las pymes metalúrgicas y escuelas de oficios locales.
 
 ### 7. Tutela Sindical de Urgencia: auditar para elevar, nunca para trabar
-
 El sindicato no es un inspector de aduana previa: es el guardián de la dignidad obrera. Ejerce su rol mediante **auditoría ex-post**. Si constata precios de miseria o precarización, congela el tramo final en Escrow por 48 horas para exigir la readecuación salarial, pero la mercadería no se pudre en el taller si la empresa presenta fianza líquida de resguardo.
 
 ### 8. Desacople Energético y Tarifa Plana Industrial
-
 Las máquinas de nuestros talleres no pueden pagar la energía al precio especulativo de Wall Street. Instituimos la **Tarifa Plana Manufacturera**, calculada en pesos argentinos sobre los costos reales de generación local más un margen justo, subsidiada por la renta de los recursos naturales que exporta la Patria.
 
 ### 9. El Sello QR de Trazabilidad Socioproductiva
-
 Cada par de borcegos, cada zapato y cada prenda terminada llevará en su lengüeta o etiqueta un código QR inviolable. Al escanearlo, el consumidor verá la verdad desglosada:
 * Cuánto cobró el tallerista por su mano de obra.
 * Cuánto costaron los cueros y suelas nacionales.
@@ -91,7 +86,6 @@ Cada par de borcegos, cada zapato y cada prenda terminada llevará en su lengüe
 * Cuánto retuvo la marca por su diseño, logística y comercialización.
 
 ### 10. Perimetral Administrativa ante la Extorsión
-
 Quien pida coima a un tallerista de trinchera no es un inspector: es un saboteador de la industria nacional. Ante la denuncia fundada en la MES, el taller adquiere **180 días de inmunidad fiscal total** y el funcionario queda inhabilitado con perimetral informática y territorial de inmediato.
 
 ---
@@ -138,6 +132,5 @@ Frente a la desolación de la especulación, levantamos la bandera de la **Comun
 **Escribir código. Coser zapatos. Defender la industria. Construir la Patria.**
 
 ---
-
 *Dado en el territorio fabril del Conurbano Bonaerense, a los 9 días del mes de septiembre de 2026.*  
-*Por la Mesa de Enlace Sectorial, los Talleres Federados y Tiago Gabriel Sarthou (tiagosarthou@gmail.com).*
+*Por la Mesa de Enlace Sectorial, los Talleres Federados y el Colectivo de Desarrollo Indinopy.*
