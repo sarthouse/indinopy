@@ -357,8 +357,21 @@
 
                 const markdownText = await response.text();
 
-                // Parseamos el markdown a HTML en memoria
-                const htmlContent = marked.parse(markdownText);
+                // 1. Extraer bloques matemáticos (inline y block) para protegerlos de Marked (que rompe los guiones bajos _)
+                const mathBlocks = [];
+                const mathRegex = /(\$\$[\s\S]*?\$\$|\$(?:\\.|[^\$\\])*?\$)/g;
+                const textWithTokens = markdownText.replace(mathRegex, (match) => {
+                    mathBlocks.push(match);
+                    return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
+                });
+
+                // 2. Parseamos el markdown a HTML en memoria
+                let htmlContent = marked.parse(textWithTokens);
+
+                // 3. Restaurar los bloques matemáticos intactos
+                mathBlocks.forEach((block, index) => {
+                    htmlContent = htmlContent.replace(`@@MATH_BLOCK_${index}@@`, block);
+                });
 
                 // Inyectamos el HTML dinámicamente
                 const contentDiv = document.getElementById('content');
