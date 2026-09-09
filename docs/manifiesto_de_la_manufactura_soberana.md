@@ -147,4 +147,4 @@ Frente a la desolación de la especulación, levantamos la bandera de la **Comun
 ---
 
 *Dado en el territorio fabril del Conurbano Bonaerense, a los 9 días del mes de septiembre de 2026.*  
-*Por la Mesa de Enlace Sectorial, los Talleres Federados y el Colectivo de Desarrollo Indinopy.*
+*Por la Mesa de Enlace Sectorial, los Talleres Federados y Tiago Gabriel Sarthou (tiagosarthou@gmail.com).*

@@ -2,7 +2,8 @@
 
 ### *e-OP Protocol: A Cryptographically Audited Industrial Credit, Milestone Escrow, and Polycentric Governance System for Real-World Manufacturing Value Chains*
 
-**Colectivo de Ingeniería y Política Industrial Indinopy**  
+**Tiago Gabriel Sarthou**  
+*Contacto: tiagosarthou@gmail.com*  
 *En colaboración con la Comisión Técnica de la Mesa de Enlace Sectorial (MES Federal)*  
 *Conurbano Bonaerense, República Argentina*  
 *Septiembre de 2026*  
@@ -487,7 +488,7 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 * Buterin, V. (2014). *Ethereum: A Next-Generation Smart Contract and Decentralized Application Platform*. White Paper, Ethereum Foundation. https://ethereum.org/en/whitepaper/
 * Caniato, F., Gelsomino, L. M., Perego, A., & Ronchi, S. (2019). Does finance solve the supply chain financing problem? *Supply Chain Management: An International Journal*, 24(1), 52–65. https://doi.org/10.1108/SCM-12-2017-0436
 * Coase, R. H. (1937). The Nature of the Firm. *Economica*, 4(16), 386–405. https://doi.org/10.1111/j.1468-0335.1937.tb00002.x
-* Colectivo de Ingeniería y Política Industrial Indinopy. (2026). *Dossier de Reconstrucción Industrial "RIGI del Conurbano 2026": Propuesta de Ley de Salvataje Nacional para la Cadena de Valor del Calzado*. Buenos Aires.
+* Sarthou, Tiago Gabriel. (2026). *Dossier de Reconstrucción Industrial "RIGI del Conurbano 2026": Propuesta de Ley de Salvataje Nacional para la Cadena de Valor del Calzado*. Buenos Aires.
 * Coraggio, J. L. (2011). *Economía social y solidaria: El trabajo antes que el capital*. Abya-Yala / FLACSO Ecuador.
 * De Soto, H. (2000). *The Mystery of Capital: Why Capitalism Triumphs in the West and Fails Everywhere Else*. Basic Books.
 * Diakopoulos, N. (2016). Accountability in Algorithmic Decision Making. *Communications of the ACM*, 59(2), 56–62. https://doi.org/10.1145/2844110
