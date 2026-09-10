@@ -23,11 +23,33 @@
         body {
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px;
             color: var(--text-main);
             font-size: 11.5px;
             line-height: 1.4;
-            background-color: #edf2f7;
+            background-color: #0a0e17;
+        }
+
+        .btn-back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+            z-index: 1000;
+        }
+
+        .btn-back-home:hover {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
         }
 
         .container {
@@ -412,10 +434,75 @@
             padding: 0 15px;
         }
 
+        .ejemplar-dropdown {
+            margin: 0 auto 20px auto;
+            max-width: 210mm;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .ejemplar-summary {
+            padding: 15px 20px;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            user-select: none;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ejemplar-summary:hover {
+            background: #334155;
+        }
+        .btn-print-single {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-print-single:hover {
+            background-color: #2563eb;
+        }
+        .btn-print {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #059669;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
+            z-index: 1000;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-print:hover {
+            background-color: #047857;
+            transform: translateY(-2px);
+        }
+
         @media print {
             body {
                 background: white;
                 padding: 0;
+            }
+
+            body.print-single-mode .ejemplar-dropdown:not(.print-active) {
+                display: none !important;
             }
 
             .container {
@@ -433,11 +520,28 @@
             .page-break::after {
                 display: none;
             }
+
+            .btn-back-home, .btn-print {
+                display: none;
+            }
+
+            .ejemplar-dropdown {
+                display: block;
+                border: none;
+                margin: 0;
+                background: transparent;
+                max-width: none;
+            }
+
+            .ejemplar-summary {
+                display: none;
+            }
         }
     </style>
 </head>
 
 <body>
+    <a href="index.html" class="btn-back-home">← Volver al Inicio</a>
 
     <!-- ========================================================================= -->
     <!-- EJEMPLAR 1: ADMINISTRATIVO / CRÉDITO (CON COSTOS)                        -->
@@ -1537,6 +1641,67 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Envolver los contenedores en desplegables <details>
+            document.querySelectorAll('.container').forEach((container) => {
+                const label = container.querySelector('.ejemplar-label');
+                let titleText = "EJEMPLAR";
+                if (label) {
+                    titleText = label.textContent.trim().split(' (')[0];
+                }
+
+                const details = document.createElement('details');
+                details.className = 'ejemplar-dropdown';
+                details.open = true; // Por defecto abierto
+                
+                const summary = document.createElement('summary');
+                summary.className = 'ejemplar-summary';
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.innerHTML = '📁 ' + titleText;
+                summary.appendChild(titleSpan);
+
+                // Botón de impresión individual
+                const printSingleBtn = document.createElement('button');
+                printSingleBtn.className = 'btn-print-single';
+                printSingleBtn.innerHTML = '🖨️ Imprimir';
+                printSingleBtn.title = 'Imprimir solo este ejemplar';
+                printSingleBtn.onclick = (e) => {
+                    e.preventDefault(); // Evitar que el clic abra/cierre el desplegable
+                    details.open = true;
+                    
+                    // Activar el modo de impresión individual aislando este elemento
+                    document.body.classList.add('print-single-mode');
+                    details.classList.add('print-active');
+                    
+                    window.print();
+                    
+                    // Restaurar todo a la normalidad después de imprimir
+                    setTimeout(() => {
+                        document.body.classList.remove('print-single-mode');
+                        details.classList.remove('print-active');
+                    }, 1000);
+                };
+                summary.appendChild(printSingleBtn);
+                details.appendChild(summary);
+                
+                // Mover el container adentro del details
+                container.parentNode.insertBefore(details, container);
+                details.appendChild(container);
+            });
+
+            // 2. Crear botón generador de impresión global (Todos)
+            const printBtn = document.createElement('button');
+            printBtn.className = 'btn-print';
+            printBtn.innerHTML = '🖨️ Imprimir TODOS';
+            printBtn.onclick = () => {
+                document.querySelectorAll('.ejemplar-dropdown').forEach(d => d.open = true);
+                window.print();
+            };
+            document.body.appendChild(printBtn);
+        });
+    </script>
 </body>
 
 </html>
