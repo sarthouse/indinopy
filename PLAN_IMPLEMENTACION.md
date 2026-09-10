@@ -349,8 +349,7 @@ POLLING API (Fallback — Pull)
 - [x] `PTFService.aprobar_eop()` — Flujo completo de aprobación exprés
 - [x] `PTFService.vetar_eop()` — Veto que abre TribunalArbitraje automáticamente
 - [x] `PTFService.aplicar_silencio_positivo()` — Worker para Celery Beat (Timelock 48h)
-- [ ] Instalar `PyNaCl` y activar verificación matemática Ed25519 real
-  (stubs marcados con `# TODO Fase 3` en `PTFService.verificar_firma_campo()`)
+- [x] Instalar `PyNaCl` y activar verificación matemática Ed25519 real
 - [ ] Flujo completo de generación de par de claves via WebCrypto API en browser
 - [ ] Verificación GPS en `OPParteProduccion` (PoPW)
 ### Fase 4 — Red Federada (MES)

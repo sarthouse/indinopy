@@ -11,6 +11,10 @@ dependencies = [
     "psycopg[binary]>=3.3.5",
     "python-dotenv>=1.2.3",
     "requests>=2.31.0",
+    "pynacl>=1.5.0",
+    "djangorestframework>=3.18.1",
+    "celery>=5.6.3",
+    "redis>=8.1.0",
 ]
 
 # 2. CONFIGURACIÓN GENERAL DE RUFF

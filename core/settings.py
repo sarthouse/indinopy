@@ -45,23 +45,45 @@ BASE_APPS = [
     "django.contrib.gis",
 ]
 
+# Rol del Nodo en la Red Federada (MES, COMITENTE, TALLERISTA)
+NODE_ROLE = os.getenv("NODE_ROLE", "COMITENTE").upper()
 
-DJANGO_APPS = [
+# Apps base obligatorias para todos los nodos
+CORE_APPS = [
     "apps.base",
-    "apps.contabilidad",
     "apps.documentos",
     "apps.contactos",
+    "apps.federacion",
+]
+
+# Apps específicas de ERP (Marcas y Talleres)
+ERP_APPS = [
+    "apps.contabilidad",
     "apps.ventas",
     "apps.compras",
     "apps.produccion",
     "apps.inventario",
     "apps.tesoreria",
+]
+
+# Apps específicas de la Mesa de Enlace Sectorial
+MES_APPS = [
     "apps.mes",
 ]
 
-THIRD_PARTY_APPS = ["simple_history"]
+THIRD_PARTY_APPS = [
+    "simple_history",
+    "rest_framework",
+]
 
-INSTALLED_APPS = BASE_APPS + THIRD_PARTY_APPS + DJANGO_APPS
+# Carga dinámica según el rol
+INSTALLED_APPS = BASE_APPS + THIRD_PARTY_APPS + CORE_APPS
+
+if NODE_ROLE in ["COMITENTE", "TALLERISTA", "DEV"]:
+    INSTALLED_APPS += ERP_APPS
+
+if NODE_ROLE in ["MES", "DEV"]:
+    INSTALLED_APPS += MES_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

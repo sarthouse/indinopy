@@ -382,11 +382,35 @@
                     Piezas</span>
             </div>
             <ul class="nav-list" id="navList">
-                <li class="nav-item active" data-id="mockup" onclick="switchDoc('mockup')">
+                <li class="nav-item active" data-id="dossier" onclick="switchDoc('dossier')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>📚</span>
+                            <span>Dossier RIGI Conurbano</span>
+                        </div>
+                        <span class="nav-badge">Matriz</span>
+                    </div>
+                    <div class="nav-desc">El documento político-industrial matriz: 1300+ líneas con articulado de ley y
+                        régimen de fomento PyME.</div>
+                </li>
+
+                <li class="nav-item" data-id="paper" onclick="switchDoc('paper')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>📄</span>
+                            <span>Paper: Protocolo e-OP</span>
+                        </div>
+                        <span class="nav-badge">Académico</span>
+                    </div>
+                    <div class="nav-desc">Artículo científico formal: PoPW, Timelock 48h, Nash, Puente SAS, Redes CIFO y
+                        Algorética de Trinchera.</div>
+                </li>
+
+                <li class="nav-item" data-id="mockup" onclick="switchDoc('mockup')">
                     <div class="nav-header-row">
                         <div class="nav-title-group">
                             <span>🗎</span>
-                            <span>Mockup e-OP</span>
+                            <span>Modelo e-OP</span>
                         </div>
                         <span class="nav-badge">Título de Crédito</span>
                     </div>
@@ -404,18 +428,6 @@
                     </div>
                     <div class="nav-desc">Guía taxonómica completa: UBO, Merkle Root, CCCN 1251/1356, Silencio 48h, PTF,
                         mermas INTI y Escrow.</div>
-                </li>
-
-                <li class="nav-item" data-id="paper" onclick="switchDoc('paper')">
-                    <div class="nav-header-row">
-                        <div class="nav-title-group">
-                            <span>📄</span>
-                            <span>Paper: Protocolo e-OP</span>
-                        </div>
-                        <span class="nav-badge">Académico</span>
-                    </div>
-                    <div class="nav-desc">Artículo científico formal: PoPW, Timelock 48h, Nash, Puente SAS, Redes CIFO y
-                        Algorética de Trinchera.</div>
                 </li>
 
                 <li class="nav-item" data-id="arquitectura" onclick="switchDoc('arquitectura')">
@@ -454,18 +466,6 @@
                         Façón y Remitos.</div>
                 </li>
 
-                <li class="nav-item" data-id="dossier" onclick="switchDoc('dossier')">
-                    <div class="nav-header-row">
-                        <div class="nav-title-group">
-                            <span>📚</span>
-                            <span>Dossier RIGI Conurbano</span>
-                        </div>
-                        <span class="nav-badge">Matriz</span>
-                    </div>
-                    <div class="nav-desc">El documento político-industrial matriz: 1300+ líneas con articulado de ley y
-                        régimen de fomento PyME.</div>
-                </li>
-
                 <li class="nav-item" data-id="tecnica" onclick="switchDoc('tecnica')">
                     <div class="nav-header-row">
                         <div class="nav-title-group">
@@ -502,17 +502,17 @@
             <!-- CONTENT TOOLBAR -->
             <div class="content-bar">
                 <div class="doc-info-header">
-                    <span id="currentIcon" style="font-size: 18px;">🗎</span>
-                    <span class="doc-title" id="currentTitle">Mockup e-OP (Título de Crédito)</span>
-                    <span class="nav-badge" id="currentBadge">Título de Crédito</span>
+                    <span id="currentIcon" style="font-size: 18px;">📚</span>
+                    <span class="doc-title" id="currentTitle">Dossier RIGI Conurbano 2026</span>
+                    <span class="nav-badge" id="currentBadge">Matriz</span>
                 </div>
                 <div class="doc-actions">
                     <a id="btnToolbarPdf" href="#"
                         onclick="document.getElementById('viewerFrame').contentWindow.print(); return false;"
-                        class="action-btn btn-primary">
-                        <span>🖨️</span> Imprimir Mockup (PDF)
+                        class="action-btn btn-primary" style="display: none;">
+                        <span>🖨️</span> Imprimir Modelo (PDF)
                     </a>
-                    <a id="btnDirectLink" href="mockup_orden_produccion.html" target="_blank" class="action-btn">
+                    <a id="btnDirectLink" href="dossier_rigi_conurbano_2026.html" target="_blank" class="action-btn">
                         <span>↗</span> Abrir en Nueva Ventana
                     </a>
                 </div>
@@ -520,17 +520,16 @@
 
             <!-- VIEWER PANE -->
             <div class="viewer-container">
-                <iframe id="viewerFrame" class="viewer-iframe" src="mockup_orden_produccion.html"
+                <iframe id="viewerFrame" class="viewer-iframe" src="dossier_rigi_conurbano_2026.html"
                     frameborder="0"></iframe>
             </div>
         </main>
     </div>
 
-    <!-- SCRIPT DE NAVEGACIÓN INSTANTÁNEA -->
     <script>
         const DOCS = {
             mockup: {
-                title: "Mockup e-OP (Título de Crédito)",
+                title: "Modelo e-OP (Título de Crédito)",
                 file: "mockup_orden_produccion.html",
                 icon: "🗎",
                 badge: "Título de Crédito",

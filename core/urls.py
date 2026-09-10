@@ -16,14 +16,27 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('produccion/', include('apps.produccion.urls', namespace='produccion')),
-    path('tesoreria/', include('apps.tesoreria.urls', namespace='tesoreria')),
-    path('inventario/', include('apps.inventario.urls', namespace='inventario')),
-    path('compras/', include('apps.compras.urls', namespace='compras')),
     path('contactos/', include('apps.contactos.urls', namespace='contactos')),
-    path('contabilidad/', include('apps.contabilidad.urls', namespace='contabilidad')),
-    path('ventas/', include('apps.ventas.urls', namespace='ventas')),
+    path('documentos/', include('apps.documentos.urls', namespace='documentos')),
 ]
+
+# Si el nodo carga las apps de ERP, exponemos sus URLs
+if "apps.produccion" in settings.INSTALLED_APPS:
+    urlpatterns += [
+        path('produccion/', include('apps.produccion.urls', namespace='produccion')),
+        path('tesoreria/', include('apps.tesoreria.urls', namespace='tesoreria')),
+        path('inventario/', include('apps.inventario.urls', namespace='inventario')),
+        path('compras/', include('apps.compras.urls', namespace='compras')),
+        path('contabilidad/', include('apps.contabilidad.urls', namespace='contabilidad')),
+        path('ventas/', include('apps.ventas.urls', namespace='ventas')),
+    ]
+
+# Si el nodo carga la app de Gobernanza (MES), exponemos sus URLs
+if "apps.mes" in settings.INSTALLED_APPS:
+    urlpatterns += [
+        path('mes/', include('apps.mes.urls', namespace='mes')),
+    ]

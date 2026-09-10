@@ -200,22 +200,28 @@ class PTFService:
         if not perfil_ptf.clave_publica_ed25519:
             raise ValueError("El PTF no tiene clave pública registrada.")
 
-        # Stub funcional: verifica que el formato sea correcto
-        # En Fase 3 esto se reemplaza por la verificación matemática real
         if not firma_hex or len(firma_hex) != 128:  # 64 bytes Ed25519 = 128 hex chars
             return False
 
-        # TODO Fase 3: descomentar cuando PyNaCl esté instalado
-        # try:
-        #     from nacl.signing import VerifyKey
-        #     from nacl.exceptions import BadSignatureError
-        #     vk = VerifyKey(bytes.fromhex(perfil_ptf.clave_publica_ed25519))
-        #     vk.verify(bytes.fromhex(hash_eop_hex), bytes.fromhex(firma_hex))
-        #     return True
-        # except BadSignatureError:
-        #     return False
-
-        return True  # Stub: siempre True hasta Fase 3
+        try:
+            from nacl.signing import VerifyKey
+            from nacl.exceptions import BadSignatureError
+            
+            # La clave pública se guarda en hex, la pasamos a bytes
+            vk = VerifyKey(bytes.fromhex(perfil_ptf.clave_publica_ed25519))
+            
+            # El mensaje original (en bytes) es el hash de la OP, firmado
+            mensaje_bytes = bytes.fromhex(hash_eop_hex)
+            firma_bytes = bytes.fromhex(firma_hex)
+            
+            # verify(message, signature)
+            vk.verify(mensaje_bytes, firma_bytes)
+            return True
+        except BadSignatureError:
+            return False
+        except (ValueError, TypeError):
+            # En caso de que haya un error decodificando los hex
+            return False
 
     @staticmethod
     def verificar_gps_en_zona(gps_point, perfil_ptf):
