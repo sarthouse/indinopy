@@ -40,6 +40,63 @@ marked.use({
     }
 });
 
+function generateTOC(contentDiv) {
+    const headings = contentDiv.querySelectorAll('h1, h2, h3');
+    if (headings.length < 2) return; // Skip if too few headings
+
+    // Crear el botón flotante para abrir el índice
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'toc-toggle-btn';
+    toggleBtn.innerHTML = '📑 Índice';
+    document.body.appendChild(toggleBtn);
+
+    // Crear el panel lateral (Drawer)
+    const sidebar = document.createElement('nav');
+    sidebar.className = 'toc-sidebar';
+    
+    const sidebarHeader = document.createElement('div');
+    sidebarHeader.className = 'toc-sidebar-header';
+    sidebarHeader.innerHTML = '<h3>Índice de Contenidos</h3><button class="toc-close-btn">✖</button>';
+    sidebar.appendChild(sidebarHeader);
+
+    const ul = document.createElement('ul');
+    ul.className = 'toc-list';
+
+    headings.forEach((heading, index) => {
+        if (!heading.id) {
+            heading.id = 'section-' + index + '-' + heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        }
+
+        const li = document.createElement('li');
+        li.className = 'toc-item toc-' + heading.tagName.toLowerCase();
+        
+        const a = document.createElement('a');
+        a.href = '#' + heading.id;
+        a.textContent = heading.textContent;
+        
+        // Cerrar el panel al hacer clic en un link
+        a.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+        
+        li.appendChild(a);
+        ul.appendChild(li);
+    });
+
+    sidebar.appendChild(ul);
+    document.body.appendChild(sidebar);
+
+    // Lógica de apertura y cierre
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.add('open');
+    });
+
+    const closeBtn = sidebarHeader.querySelector('.toc-close-btn');
+    closeBtn.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+    });
+}
+
 async function loadMarkdown() {
     try {
         // Hacemos el fetch() al archivo MD que está en la misma carpeta
@@ -72,6 +129,9 @@ async function loadMarkdown() {
         // Inyectamos el HTML dinámicamente
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = htmlContent;
+
+        // Generar Índice de Contenidos Automático
+        generateTOC(contentDiv);
 
         // Renderizamos la sintaxis matemática de KaTeX ($ y $$)
         renderMathInElement(contentDiv, {
@@ -187,6 +247,9 @@ async function loadMarkdown() {
                 const htmlContent = marked.parse(markdownText);
                 const contentDiv = document.getElementById('content');
                 contentDiv.innerHTML = htmlContent;
+
+                // Generar Índice de Contenidos Automático
+                generateTOC(contentDiv);
 
                 renderMathInElement(contentDiv, {
                     delimiters: [
