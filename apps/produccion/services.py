@@ -86,35 +86,38 @@ class ProduccionService:
         ProduccionService.calcular_insumos_requeridos_op(op)
         op.sellar_hash_seguridad()
 
-        almacen, ubicacion_produccion = _obtener_ubicaciones_base()
-        ct = ContentType.objects.get_for_model(op)
-
-        remito_insumos, _ = MovimientoStock.objects.get_or_create(
-            numero=f"RES-{op.numero}",
-            defaults={
-                "tipo": "traslado",
-                "estado": "confirmado",
-                "ubicacion_origen": almacen,
-                "ubicacion_destino": ubicacion_produccion,
-                "content_type_origen": ct,
-                "object_id_origen": op.id,
-                "documento_origen": op.numero,
-                "observaciones": f"Reserva de insumos para OP {op.numero}",
-            },
-        )
-
-        for req in op.insumos_requeridos.filter(origen="empresa"):
-            linea = LineaMovimientoStock.objects.create(
-                movimiento=remito_insumos,
-                producto=req.insumo,
-                cantidad=req.cantidad_teorica,
-                cantidad_hecha=req.cantidad_teorica,
-                ubicacion_origen=almacen,
-                ubicacion_destino=ubicacion_produccion,
-                estado="borrador",
-                referencia=f"Insumo OP {op.numero}",
+        # Si la OP se inyectó de forma externa (Headless API) y trae su propio BOM, 
+        # asumimos que el inventario se descuenta en el ERP principal (SAP/Odoo) y salteamos la reserva local.
+        if not op.bom_headless:
+            almacen, ubicacion_produccion = _obtener_ubicaciones_base()
+            ct = ContentType.objects.get_for_model(op)
+    
+            remito_insumos, _ = MovimientoStock.objects.get_or_create(
+                numero=f"RES-{op.numero}",
+                defaults={
+                    "tipo": "traslado",
+                    "estado": "confirmado",
+                    "ubicacion_origen": almacen,
+                    "ubicacion_destino": ubicacion_produccion,
+                    "content_type_origen": ct,
+                    "object_id_origen": op.id,
+                    "documento_origen": op.numero,
+                    "observaciones": f"Reserva de insumos para OP {op.numero}",
+                },
             )
-            StockService.reservar_linea(linea)
+    
+            for req in op.insumos_requeridos.filter(origen="empresa"):
+                linea = LineaMovimientoStock.objects.create(
+                    movimiento=remito_insumos,
+                    producto=req.insumo,
+                    cantidad=req.cantidad_teorica,
+                    cantidad_hecha=req.cantidad_teorica,
+                    ubicacion_origen=almacen,
+                    ubicacion_destino=ubicacion_produccion,
+                    estado="borrador",
+                    referencia=f"Insumo OP {op.numero}",
+                )
+                StockService.reservar_linea(linea)
 
         # === Lógica del Sistema Dual (RIGI / e-OP Federada) ===
         if op.es_eop_federada:

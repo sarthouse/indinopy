@@ -172,6 +172,13 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         on_delete=models.RESTRICT,
         related_name="ordenes_produccion",
         verbose_name=_("Receta base"),
+        null=True, blank=True,
+        help_text=_("Opcional en Modo Headless (cuando el BOM viene del ERP legacy)")
+    )
+    bom_headless = models.JSONField(
+        null=True, blank=True,
+        verbose_name=_("BOM Externo (Headless)"),
+        help_text=_("Guarda la lista de materiales teórica inyectada por API externa")
     )
     cliente = models.ForeignKey(
         "contactos.Contacto",

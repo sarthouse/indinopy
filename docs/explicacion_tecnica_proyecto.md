@@ -2,6 +2,8 @@
 
 # Explicación Técnica del Proyecto: Cómo Indinopy Resuelve la Crisis Productiva
 
+🔗 **Repositorio Oficial (Open Source):** [github.com/sarthouse/indinopy](https://github.com/sarthouse/indinopy)
+
 > **Tesis Central:** El problema del calzado y la manufactura en el Conurbano no es la falta de capacidad técnica ni de demanda de mano de obra. Es una **falla estructural de arquitectura institucional y financiera**: la banca tradicional solo presta contra inmuebles, el fisco ahoga al que produce con costos fijos, y las marcas financian su capital de trabajo postergando los pagos de los talleres más débiles. **Indinopy** es el sistema de gestión libre (ERP/MES) que formaliza, colateraliza y gobierna la cadena en el territorio.
 
 ## 1. ¿Qué Buscamos? (Los 5 Objetivos Estratégicos)
@@ -162,4 +164,5 @@ Diseñado para la fábrica que desea mantener su base de datos físicamente en u
     2. **Túneles Inversos (Zero Trust):** Para flujos que exigen tiempo real estricto, Indinopy es compatible con Cloudflare Tunnels o Ngrok. Se establece un "tubo seguro" desde la PC hacia internet, permitiendo que el dominio `fabricaperez.indinopy.ar` impacte directo en la PC del galpón, totalmente encriptado y oculto de escaneos de hackers.
 
 ---
-Documento de Especificación Estratégica · Sistema de Gestión **Indinopy ERP/MES** para la Mesa de Enlace Sectorial (MES).
+Documento de Especificación Estratégica · Sistema de Gestión **Indinopy ERP/MES** para la Mesa de Enlace Sectorial (MES).  
+💻 **Código Fuente:** [github.com/sarthouse/indinopy](https://github.com/sarthouse/indinopy)
