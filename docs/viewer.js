@@ -209,4 +209,16 @@ async function loadMarkdown() {
 }
 
 // Ejecutamos la lógica principal al cargar la estructura del DOM
-document.addEventListener('DOMContentLoaded', loadMarkdown);
+document.addEventListener('DOMContentLoaded', () => {
+    // Inyectar botón de volver al inicio
+    const container = document.querySelector('.doc-container');
+    if (container) {
+        const backBtn = document.createElement('a');
+        backBtn.href = 'index.html';
+        backBtn.className = 'btn-back-home';
+        backBtn.innerHTML = '← Volver al Inicio';
+        container.insertBefore(backBtn, container.firstChild);
+    }
+
+    loadMarkdown();
+});
