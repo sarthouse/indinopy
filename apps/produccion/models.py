@@ -144,6 +144,16 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         ("fason", _("A Fasón (Tercerización externa)")),
     ]
 
+    es_eop_federada = models.BooleanField(
+        default=False,
+        verbose_name=_("Es e-OP Federada (RIGI)"),
+        help_text=_(
+            "Sistema Dual: Si está marcado, la orden requiere certificación de la MES, "
+            "Escrow en el FDI, auditoría de PTFs y está sujeta al Timelock de 48h. "
+            "Si está desmarcado, es una OP Privada Simple sin burocracia."
+        ),
+    )
+
     ESTADO_ESCROW_CHOICES = [
         ("no_aplica", _("No Aplica (Interna)")),
         ("fondeado", _("Escrow Fondeado (Pendiente MES)")),

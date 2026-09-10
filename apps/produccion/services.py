@@ -116,42 +116,70 @@ class ProduccionService:
             )
             StockService.reservar_linea(linea)
 
-        from apps.tesoreria.models import ContratoEscrow, HitoEscrow
-        escrow = ContratoEscrow.objects.create(
-            eop_uuid=op.uuid_identificador,
-            monto_total_uci=op.costo_total_fason,
-            estado="borrador",
-        )
-        HitoEscrow.objects.create(
-            contrato=escrow,
-            nombre="Hito Final - Entrega Completa",
-            porcentaje=Decimal("100.00"),
-            estado="bloqueado",
-        )
+        # === Lógica del Sistema Dual (RIGI / e-OP Federada) ===
+        if op.es_eop_federada:
+            from apps.tesoreria.models import ContratoEscrow, HitoEscrow
+            escrow = ContratoEscrow.objects.create(
+                eop_uuid=op.uuid_identificador,
+                monto_total_uci=op.costo_total_fason,
+                estado="borrador",
+            )
+            HitoEscrow.objects.create(
+                contrato=escrow,
+                nombre="Hito Final - Entrega Completa",
+                porcentaje=Decimal("100.00"),
+                estado="bloqueado",
+            )
 
-        from apps.mes.models import RegistroEOP
-        RegistroEOP.objects.create(
-            uuid_identificador=op.uuid_identificador,
-            hash_seguridad=op.hash_seguridad,
-            comitente_cuit=op.cliente.cuil if op.cliente else "00000000000",
-            tallerista_cuit=op.tallerista_principal.cuil if op.tallerista_principal else "00000000000",
-            monto_total_uci=op.costo_total_fason,
-            timelock_vencimiento=timezone.now() + datetime.timedelta(hours=48),
-            estado="en_revision"
-        )
+            from apps.mes.models import RegistroEOP
+            RegistroEOP.objects.create(
+                uuid_identificador=op.uuid_identificador,
+                hash_seguridad=op.hash_seguridad,
+                comitente_cuit=op.cliente.cuil if op.cliente else "00000000000",
+                tallerista_cuit=op.tallerista_principal.cuil if op.tallerista_principal else "00000000000",
+                monto_total_uci=op.costo_total_fason,
+                timelock_vencimiento=timezone.now() + datetime.timedelta(hours=48),
+                estado="en_revision"
+            )
 
-        from apps.documentos.models import DocumentoAdjunto
-        from django.core.files.base import ContentFile
-        payload_str = op.generar_payload_canonico()
-        archivo_json = ContentFile(payload_str.encode("utf-8"), name=f"eOP_{op.numero}_canonical.json")
-        DocumentoAdjunto.objects.create(
-            content_type=ct,
-            object_id=op.id,
-            nombre=f"Contrato Criptográfico e-OP {op.numero}",
-            archivo=archivo_json,
-            mimetype="application/json",
-            descripcion="Payload canónico inmutable con hash SHA-256 de la Orden de Producción."
-        )
+            from apps.documentos.models import DocumentoAdjunto
+            from django.core.files.base import ContentFile
+            payload_str = op.generar_payload_canonico()
+            archivo_json = ContentFile(payload_str.encode("utf-8"), name=f"eOP_{op.numero}_canonical.json")
+            DocumentoAdjunto.objects.create(
+                content_type=ct,
+                object_id=op.id,
+                nombre=f"Contrato Criptográfico e-OP {op.numero}",
+                archivo=archivo_json,
+                mimetype="application/json",
+                descripcion="Payload canónico inmutable con hash SHA-256 de la Orden de Producción."
+            )
+
+    @staticmethod
+    @transaction.atomic
+    def avanzar_etapa_op(op, nueva_etapa, payload_ptf=None):
+        """
+        Avanza la OP a un nuevo subestado (ej: 'cortado' -> 'aparado').
+        Usa el Sistema Dual: si es federada, exige validación PTF.
+        """
+        if op.estado != "confirmado":
+            raise ValueError("Solo se pueden avanzar OPs confirmadas.")
+            
+        if op.es_eop_federada:
+            # 🛑 Flujo Federado RIGI (Alta Seguridad)
+            if not payload_ptf:
+                raise ValueError("Las e-OP federadas requieren firma y coordenadas GPS del PTF para avanzar.")
+            
+            # TODO: Llamar al PTFService para verificar_firma_campo(payload_ptf, PTF)
+            # TODO: Llamar a EscrowService para liberar_hito()
+            
+            # Por ahora solo actualizamos el estado simulando éxito
+            op.subestado = nueva_etapa
+            op.save(update_fields=["subestado"])
+        else:
+            # 🟢 Flujo Privado (Simple)
+            op.subestado = nueva_etapa
+            op.save(update_fields=["subestado"])
 
     @staticmethod
     @transaction.atomic

@@ -1,124 +1,114 @@
-# Teoría Administrativa y Flujos Documentales en "Indino"
+# Flujos Documentales en Indinopy ERP/MES
 
-Este documento detalla la estructura administrativa, los módulos operativos y los flujos documentales de la empresa **Indino**, basándose en la teoría administrativa y contable argentina, adaptada a una realidad omnicanal, dual (formal/informal) y con una fuerte impronta de producción manufacturera (ej. calzado/marroquinería/indumentaria) a través de talleres propios y externos.
+Este documento detalla la estructura administrativa, los módulos operativos y los flujos documentales del ecosistema **Indinopy**, basándose en el protocolo del **Canvas Industrial RIGI Conurbano 2026**. Se enfoca en la formalización productiva, la criptografía federada y la gobernanza territorial.
 
-## 1. Departamentos (Módulos de la App "Indino")
+## 1. Módulos Operativos (Nodos del Ecosistema)
 
-*   **Módulo de Ventas (Comercial):** Gestiona pedidos multicanal. Aplica políticas de precios y pagos distintas según el tipo de cliente (Final vs. Distribuidor).
-*   **Módulo de Compras (Abastecimiento):** Gestiona la adquisición de insumos basándose en los presupuestos de las Órdenes de Producción.
-*   **Módulo de Producción (Manufactura):** Controla el ciclo de vida del Lote, las herramientas (hormas), y el tracking por múltiples etapas y talleristas externos (aparado, rebajado, etc.).
-*   **Módulo de Almacén/Depósito (Stock):** Controla inventarios de insumos, herramientas, semielaborados y productos terminados.
-*   **Módulo de Tesorería y Contabilidad:** Manejo de cajas (oficiales/extraoficiales), cobros diferidos a distribuidores y pagos de servicios a talleristas.
+*   **Ventas (`apps.ventas`):** Integración multitienda vía WooCommerce (Webhooks + API REST). Gestiona pedidos B2C/B2B y el feedback loop de despachos.
+*   **Producción (`apps.produccion`):** Controla el ciclo de vida de la **e-OP (Orden de Producción Electrónica)**, las recetas técnicas (Merkle BOM) y el tracking de hitos físicos (PoPW).
+*   **Inventario (`apps.inventario`):** Gestión de stock por partida doble. Administra los traslados bajo régimen de Maquila, disociando la propiedad (Comitente) de la custodia (Tallerista).
+*   **Tesorería (`apps.tesoreria`):** Motor del **Escrow Digital**. Administra la partición factorial de fondos (FDI) y la liberación de hitos contra validación en campo.
+*   **Gobernanza (`apps.mes`):** Módulo de la Mesa de Enlace Sectorial. Controla el registro canónico de e-OPs, los Timelocks (48h), la identidad de los PTFs y el Tribunal de Arbitraje.
 
-## 2. Documentos Comerciales y Operativos (Enfoque Industrial)
+## 2. Documentos Centrales del Protocolo
 
-El eje central del sistema recae en los documentos que combinan la necesidad financiera con la técnica:
+El eje del sistema abandona el esquema tradicional para adoptar instrumentos legales-criptográficos:
 
-*   **Orden de Producción (OP):** Es el documento rector de la fabricación del Lote. **Se confecciona por duplicado**:
-    *   **Original (Para Administración):** Documento clasificado. Contiene el presupuesto desglosado por insumo y los costos detallados de cada proceso (costo de corte, costo de aparado, etc.).
-    *   **Duplicado (Para el Fabricante/Taller):** Viaja con la mercadería. Omite cualquier dato de costos (información clasificada). Detalla estrictamente: cantidad de piezas a confeccionar, variaciones (curva de talles/colores), herramientas exactas a utilizar (número de modelo de hormas) y el tracking de etapas (qué procesos externos debe cumplir, ej. bordado, aparado, rebajado).
-*   **Comprobantes Fiscales y No Fiscales:** Factura (AFIP), Remito (R), Comprobante X (interno/subfacturación), Remito de Traslado (para mover piezas entre talleristas).
+*   **e-OP (Orden de Producción Electrónica):** No es un simple papel de trabajo; es un **Título de Crédito** inmutable (SHA-256) firmado digitalmente por las partes (Ed25519). Activa automáticamente contratos de Escrow y traslados de inventario.
+*   **Certificado Digital PTF:** Credencial JSON firmada por la MES que acredita la identidad y zona de cobertura GPS de un Promotor Territorial de Formalización, verificable offline.
+*   **Remito de Maquila (Arts. 1251/1356 CCCN):** Documento que formaliza el traslado de insumos al taller, estableciendo su estricta **inembargabilidad**.
+*   **Factura Electrónica AFIP:** Comprobante fiscal (FacturadorAFIP) generado automáticamente con el clearing del FDI (Cuenta de IVA diferida).
+
+### El Sistema Dual: OP Privada vs e-OP Federada
+Para no burocratizar innecesariamente a los actores que no requieren de los beneficios del RIGI (ej: Marcas que se autofinancian o producen internamente), Indinopy opera bajo un **Sistema Dual**:
+1. **OP Privada (Simple):** Es una orden de producción rápida y directa entre la Marca y el Taller. No requiere bloqueo de fondos en Escrow, no pasa por la Comisión de la MES ni requiere firmas criptográficas de los auditores (PTF). Es ágil y 100% de derecho privado.
+2. **e-OP Federada (RIGI):** Se activa marcando la opción `es_eop_federada = True`. Engancha automáticamente todo el ecosistema institucional: fondeo en el FDI, Timelock de 48h, auditoría PoPW por el PTF y beneficios fiscales del Puente SAS. Se utiliza cuando el Tallerista o la Marca necesitan seguridad de cobro, financiamiento o reducción impositiva.
 
 ---
 
-## 3. Esquemas y Flujos Documentales por Etapa
+## 3. Esquemas y Flujos Documentales
 
-### A. Circuito de Ventas y Cobros (Diferenciado por Tipo de Cliente)
+### A. Circuito de Producción y Gobernanza (El Ciclo de la e-OP)
 
-**Descripción de la etapa:**
-La política financiera de Indino varía diametralmente si se vende al por menor o al por mayor.
-*   **Cliente Final:** Paga el último precio de lista completo, al momento de la compra, en un solo pago (sin diferido).
-*   **Distribuidor:** Entra en un esquema de cobro diferido. Se exige una Seña para dar inicio al lote/pedido, y el saldo restante se cobra contraentrega.
+**Descripción:**
+El Comitente no financia a 90 días ni el Tallerista trabaja "a ciegas". La e-OP colateraliza la producción y la MES garantiza el cobro mediante el Silencio Administrativo Positivo.
 
 ```mermaid
 sequenceDiagram
-    participant CF as Cliente Final
-    participant CD as Distribuidor
-    participant V as Ventas (Indino)
-    participant T as Tesorería (Indino)
+    participant C as Comitente (Marca)
+    participant T as Tallerista
+    participant E as Tesorería (Escrow FDI)
+    participant P as PTF (Auditor)
+    participant M as Nodo MES (Gobernanza)
 
-    %% Flujo Cliente Final
-    CF->>V: Pedido Minorista (Ej. WooCommerce)
-    CF->>T: Pago Total (100% Inmediato)
-    V->>CF: Entrega Inmediata + Factura/Ticket
-
-    %% Flujo Distribuidor
-    CD->>V: Pedido Mayorista (Lote a producir)
-    V->>CD: Solicita Seña (Ej. 50%)
-    CD->>T: Paga Seña (Cobro Diferido 1)
-    V->>V: Habilita Orden de Producción
-    Note over V,T: ... Tiempo de Producción ...
-    V->>CD: Aviso de Mercadería Lista
-    CD->>T: Pago de Saldo (Cobro Diferido 2)
-    V->>CD: Entrega Lote + Comprobantes (Fiscal/X)
+    C->>C: Crea e-OP (Curva, Costos, Hitos)
+    C->>T: Propone e-OP (Multifirma)
+    T->>C: Firma y Acepta e-OP (Ed25519)
+    C->>E: Fondea el 100% (Bloqueado en Escrow)
+    E-->>T: Notifica Fondeo Exitoso (Inicia Trabajo)
+    
+    Note over T,P: Tallerista finaliza un lote
+    P->>T: Visita de Campo (Inspección)
+    P->>M: Firma Aprobación Exprés (GPS + Ed25519)
+    
+    Note over M: Inicia Timelock 48h
+    alt Veto en 48h
+        M->>M: Comisión veta (Abre Tribunal 72h)
+    else Silencio Positivo
+        M->>M: Worker aprueba e-OP de oficio
+        M->>E: Ordena Liberar Hito
+        E->>T: Transfiere Fondos (Clearing)
+    end
 ```
 
-### B. Circuito de Producción (Etapas, Herramientas y Talleristas Externos)
+### B. Circuito de Ventas (Integración WooCommerce)
 
-**Descripción de la etapa:**
-La fabricación implica el paso del lote por múltiples "manos". Un fabricante central puede apoyarse en talleristas individuales.
-
-**Flujo paso a paso:**
-1.  **Emisión de la OP:** Producción genera la Orden de Producción (OP). Archiva el Original (con costos) y envía el Duplicado (ciego de costos) a planta o al Fabricante principal.
-2.  **Provisión:** Almacén entrega los insumos (cuero, pegamento, suelas) y las herramientas precisas (Hormas modelo N° X) según lo dictado por la OP.
-3.  **Tracking de Etapas Externas:** El fabricante realiza procesos y deriva piezas a talleristas satélites (Rebajador, Aparador, Bordador) acompañadas de Remitos internos.
-4.  **Cierre:** El fabricante ensambla todo, devuelve las hormas a Almacén, e ingresa el Producto Terminado.
-5.  **Liquidación:** Cada tallerista cobra únicamente por su servicio brindado en la etapa específica.
+**Descripción:**
+El ERP no reemplaza a las plataformas de e-commerce de las marcas, sino que las integra bidireccionalmente garantizando que la demanda traccione la producción.
 
 ```mermaid
 sequenceDiagram
-    participant Adm as Prod/Admin (Indino)
-    participant A as Almacén (Insumos/Hormas)
-    participant F as Fabricante Principal
-    participant T as Talleristas Ext. (Bordado/Aparado)
+    participant W as WooCommerce (Tienda)
+    participant V as Ventas (Webhook Indinopy)
+    participant I as Inventario (StockService)
+    participant P as Producción (Opcional)
 
-    Adm->>Adm: Crea OP (Original con Costos)
-    Adm->>F: Entrega OP (Duplicado SIN Costos)
-    A->>F: Entrega Insumos + Hormas (Modelo exacto)
-    F->>F: Etapa 1 (Ej. Corte)
-    F->>T: Remite piezas cortadas
-    T->>T: Etapa 2 (Rebajado / Aparado / Bordado)
-    T-->>F: Devuelve piezas procesadas
-    F->>F: Etapa 3 (Armado con Hormas)
-    F->>A: Devuelve Hormas y entrega Lote Terminado
-    F->>Adm: Reporta OP finalizada
+    W->>V: POST /ventas/webhooks/ (HMAC-SHA256)
+    V->>V: Valida Firma y Extrae JSON
+    V->>I: Reserva de Stock Automática
+    
+    alt Stock Insuficiente
+        I-->>P: Alerta de Quiebre -> Sugiere Nueva e-OP
+    else Stock Disponible
+        I->>I: Despacha Mercadería (Realiza Reserva)
+        I->>W: PUT /wp-json/wc/v3/orders/ (Cambia a "Completado")
+    end
 ```
 
-### C. Circuito de Compras (Basado en OP) y Pagos
+### C. Circuito de Inventario (Traslados de Maquila)
 
-**Descripción de la etapa:**
-Las compras no se hacen a ciegas; responden al presupuesto desglosado de las Órdenes de Producción o al punto de pedido del Almacén.
-
-**Flujo paso a paso:**
-1.  Al analizar las OP pendientes, **Compras** determina el requerimiento exacto de insumos.
-2.  Se emite una **Orden de Compra** a los proveedores.
-3.  Ingresa la mercadería (con Factura o en "Negro" sin comprobante válido). Almacén controla cantidades; Contabilidad cruza con los costos presupuestados en la OP original.
-4.  **Pagos a Proveedores y Talleristas:** 
-    *   Talleristas: Tesorería liquida los servicios según el tracking de la OP (cuántos pares aparó, cuánto cobró por par).
-    *   Proveedores de materiales: Se paga según plazo (Contraentrega, Diferido, Cuenta Corriente).
+**Descripción:**
+La materia prima (ej. cuero) viaja al taller sin transferir su dominio comercial, protegiendo a ambas partes de embargos o juicios de terceros.
 
 ```mermaid
 sequenceDiagram
-    participant Prod as Producción
-    participant C as Compras
-    participant P as Proveedores (Materiales)
-    participant Adm as Contabilidad/Tesorería
-    participant T as Talleristas (Servicios)
+    participant P as Producción (e-OP)
+    participant C as Inventario (Comitente)
+    participant T as Inventario (Taller)
 
-    Prod->>C: Necesidad de Insumos (Según OP)
-    C->>P: Orden de Compra (Materiales)
-    P->>Prod: Entrega de Materiales
-    P->>Adm: Factura (si corresponde)
-    Adm->>P: Pago (Contraentrega o Diferido)
-
-    Prod->>T: OP (Duplicado) instruye el proceso
-    T->>Adm: Liquidación de Servicio (Aparado, etc.)
-    Adm->>T: Pago por piezas procesadas
+    P->>C: e-OP Aprobada -> Demanda Insumos
+    C->>C: Genera Remito de Maquila (CCCN 1251)
+    C->>T: Despacha Insumos Físicos
+    Note over T: Stock figura como "Custodia" (No embargable)
+    T->>T: Transforma Insumos (Producción)
+    T->>C: Devuelve Producto Terminado
+    C->>C: Ingresa Calzado (Activo Final)
 ```
 
-## 4. Conclusiones Arquitectónicas para la App "Indino"
+---
 
-1. **Doble Vista de la Orden de Producción (OP):** El sistema debe contar con robustos permisos de usuario (ACL). Un usuario "Taller" o "Fabricante" que inicie sesión para ver su OP (duplicado digital) o escanear un QR, **jamás** debe tener acceso al endpoint de la API que expone el presupuesto y los costos de los insumos (exclusivo para Administración/Dueños).
-2. **Tracking Granular por Etapas:** La entidad `OP` en la base de datos debe tener relaciones uno-a-muchos con un modelo de `Etapas` o `Tracking` (ej. Corte, Rebajado, Aparado, Bordado, Armado). Cada etapa debe poder registrar qué Tallerista la completó para luego automatizar la liquidación de sus pagos.
-3. **Gestión de Herramientas (Hormas):** El inventario no solo descuenta materiales fungibles (cuero, suelas). Debe manejar un concepto de "Préstamo o Asignación temporal de Activos" para las Hormas. Cuando una OP está en proceso, la Horma Modelo "X" pasa a estado *En Uso*, bloqueando su disponibilidad para otros lotes hasta que finalice el armado.
-4. **Bifurcación del Flujo de Venta:** El carrito o módulo de creación de pedidos debe verificar el rol del usuario: si es `Rol: Distribuidor`, dispara la lógica de "Esperando Seña"; si es `Rol: Final`, exige el pago vía pasarela/caja del 100% para generar la orden.
+## 4. Conclusiones Arquitectónicas para Indinopy
+
+1. **Separación de Responsabilidades (Service Layer):** La complejidad transaccional (ej. liberar el Escrow mientras se actualiza el estado de la e-OP) reside estrictamente en los *Services* (`ProduccionService`, `EscrowService`), nunca en las Signals o Vistas.
+2. **Topología Federada (`NODE_ROLE`):** El mismo código fuente (repositorio) se comporta distinto según el `.env`. Si el nodo es `COMITENTE`, expone ventas e inventario. Si es `MES`, expone el Tribunal y desactiva WooCommerce.
+3. **Erradicación de Documentos Informales:** Quedan obsoletos los conceptos de "subfacturación" o comprobantes no válidos. El IVA diferido y el puente SAS permiten que el 100% de la cadena transaccione en blanco desde la primera e-OP.

@@ -49,12 +49,19 @@ Indinopy es un **ERP/MES para PyMEs de la industria del calzado y la indumentari
 Backend:        Django 6.1 (MVT + REST API)
 Base de Datos:  PostgreSQL + PostGIS (coordenadas GPS)
 ORM History:    django-simple-history (auditoría inmutable)
-Criptografía:   hashlib (SHA-256) + PyNaCl (Ed25519) [pendiente]
+Criptografía:   hashlib (SHA-256) + PyNaCl (Ed25519)
 Geoespacial:    django.contrib.gis (PointField, MultiPolygonField)
 Facturación:    afip-py (WSFE/WSFEX)
 E-Commerce:     WooCommerce REST API v3 (Webhooks + Polling)
-Async:          Celery + Redis [pendiente]
+Async / Tareas: Celery + Redis (Timelock 48h y encolamiento de Webhooks masivos)
 ```
+
+### Patrones de Despliegue de Infraestructura y Enrutamiento
+
+1. **SaaS (Servidor Comunitario / Multi-Tenant):** Despliegue recomendado en un VPS de entrada (2 vCPUs, 4GB RAM) alojado por la Cámara o el CIFO de un municipio. 
+   - **Enrutamiento DNS Jerárquico:** El nodo MES local gestiona la subzona delegada `{municipio}-mes.indinopy.ar`. Las fábricas acceden a su propio inquilino a través del Nivel 3: `{marca}.{municipio}-mes.indinopy.ar`.
+   - **Manejo de Carga:** Al operar con WooCommerce, utiliza **Redis y Celery** para absorber picos de tráfico (Efecto HotSale) sin saturar el servidor web.
+2. **On-Premise (PC en el Taller):** Instalación en una PC estándar de la fábrica. Dado que los routers de fábrica bloquean conexiones entrantes, se conecta a la Red Federada y a WooCommerce mediante **Polling** (el Nodo consulta novedades cada 5 minutos de forma silenciosa) o **Túneles Inversos** (ej. Cloudflare Tunnels) para recibir webhooks en tiempo real sin abrir puertos.
 
 ### Patrón Arquitectónico: Capa de Servicios (Service Layer)
 
@@ -224,7 +231,29 @@ MES (CA Root)
   - Dispara liberación automática del Escrow
 ```
 
-### Endpoints de Federación del Nodo MES (Pendiente)
+### El Sistema Dual (OP Privada vs e-OP Federada)
+
+Para no burocratizar el uso diario de las PyMEs, Indinopy cuenta con un **Sistema Dual** controlado por la bandera `es_eop_federada`:
+- **OP Privada (Simple):** No requiere MES, PTF, Timelock ni Escrow. Las etapas se avanzan internamente por sistema generando una simple *Cuenta por Pagar* para el taller, que el Tesorero de la marca cancela manualmente mediante transferencias tradicionales. Permite el uso de Cajas No Fiscales y Comprobantes X para la gestión del flujo real no formalizado.
+- **e-OP Federada (RIGI):** Engancha el Smart Contract, bloquea los fondos en el Fideicomiso y transfiere automáticamente a través del Banco Provincia o entidad fiduciaria mediante el sistema de clearing cuando se valida la firma de la etapa.
+
+### Formalización Automática: Alta de Oficio en la Primera e-OP
+
+El software elimina la barrera burocrática del tallerista informal (que carece de CUIT o Clave Fiscal). 
+1. **Trigger de Alta:** Cuando un Tallerista acepta su primera e-OP desde la app, si su DNI no está registrado fiscalmente en la MES, el ERP genera un payload especial tipo `ALTA_OFICIO`.
+2. **APIs RENAPER/ARCA:** El Nodo MES recibe el payload, valida la biometría del Tallerista vía API del RENAPER, y dispara un webservice hacia ARCA/AFIP para generar el alta en el **Monotributo Productivo** de forma 100% programática.
+3. **Apertura de Cuenta Inembargable:** En el mismo milisegundo, vía Open Banking, se abre la **Cuenta de Clearing Técnica en el Banco Provincia**. Esta cuenta (tanto para el trabajador individual como para el taller gestor SAS) nace con el flag de **inembargabilidad** absoluta por ley, protegiendo los fondos de cualquier pasivo de la etapa informal previa.
+
+### Portal Fiduciario y Operatoria Bancaria (BAPRO/FDI)
+
+La liberación de fondos del Escrow no ocurre mágicamente; requiere que la entidad financiera (ej: Banco Provincia) ejecute el clearing. La arquitectura lo resuelve con el rol de **Fiduciario**:
+
+1. **El Nodo MES tiene un Dashboard Bancario:** En `/mes/banco/` o vía API, el oficial de cuenta del Fideicomiso accede con rol `FIDUCIARIO`.
+2. **Generación de Lotes (Batch TXT):** Cuando la MES aprueba 50 hitos en el día, el Fiduciario genera un "Lote de Liquidación" que exporta un archivo estandarizado (ej: formato Interbanking/BAPRO).
+3. **API Directa (Open Banking):** Alternativamente, si el banco expone una API de pagos masivos corporativos, el worker de Celery (`EscrowService.liberar_hito`) puede inyectar la instrucción de pago B2B directamente al banco con la partición factorial (98% al CBU del taller, 2% al CBU de la MES).
+4. **Comprobantes y Facturación:** Tras el clearing exitoso del banco, Indinopy llama al WSFE de AFIP, emite la Factura Electrónica y cancela la posición de IVA diferido.
+
+### Endpoints de Federación del Nodo MES (Pendiente de Desarrollar)
 
 ```python
 # Registro de nodos en la red
@@ -232,14 +261,18 @@ POST /federacion/nodos/registrar/
 GET  /federacion/nodos/lista/
 
 # Registro de PTFs homologados
-GET  /federacion/ptf/registro/          ← Lista pública de PTFs activos
-GET  /federacion/ptf/{cuit}/certificado/ ← Certificado individual
-POST /federacion/ptf/revocar/           ← Solo MES (autenticado)
+GET  /federacion/ptf/registro/               ← Lista pública de PTFs activos
+GET  /federacion/ptf/{cuit}/certificado/     ← Certificado individual
+POST /federacion/ptf/revocar/                ← Solo MES (autenticado)
 
-# e-OPs
-POST /federacion/eop/entrante/          ← Recibe e-OP de nodo Comitente
-POST /federacion/eop/{uuid}/firma/      ← Recibe firma de Tallerista o PTF
-GET  /federacion/eop/{uuid}/estado/     ← Consulta estado Timelock
+# e-OPs y Escrow
+POST /federacion/eop/entrante/               ← Recibe e-OP de nodo Comitente
+POST /federacion/eop/{uuid}/firma/           ← Recibe firma de Tallerista o PTF
+GET  /federacion/eop/{uuid}/estado/          ← Consulta estado Timelock
+
+# Fideicomiso / Banco
+GET  /federacion/banco/clearing/pendientes/  ← Lotes de pago a ejecutar
+POST /federacion/banco/clearing/confirmar/   ← Webhook del BAPRO tras pagar
 ```
 
 ---
@@ -359,7 +392,14 @@ POLLING API (Fallback — Pull)
 - [ ] Receptor de e-OPs entrantes desde nodos externos
 - [ ] Worker Celery para Timelock de 48h (Silencio Positivo)
 
-### Fase 5 — Gobernanza Institucional
+### Fase 5 — Integración Headless (API Gateway e-OP)
+- [ ] Implementar flag `MODO_HEADLESS` en `ConfiguracionEmpresa` / `settings.py`
+- [ ] Desacople de `ProduccionService`: Saltear `StockService` si es headless (inventario gestionado por SAP)
+- [ ] Relajar restricción de `Receta` (BOM local) en `OrdenProduccion` usando `JSONField` (BOM dinámico externo)
+- [ ] Endpoints DRF en `apps/produccion/` para recibir OPs crudas (`POST /api/v1/interna/e-op/`)
+- [ ] Webhooks de retorno al ERP Legacy para informar liberación de hitos del Escrow
+
+### Fase 6 — Gobernanza Institucional
 - [ ] Completar `ComisionCredito` con las 7 sillas correctas
 - [ ] Flujo de votación para habilitación de PTFs
 - [ ] Bolsa de Trabajo Productivo
@@ -367,14 +407,14 @@ POLLING API (Fallback — Pull)
 - [ ] Tribunal de Arbitraje (72h)
 - [ ] Alertas de Colusión (`AlertaColusion` con Celery)
 
-### Fase 6 — Integración Fiscal Completa
+### Fase 7 — Integración Fiscal Completa
 - [ ] Implementación completa WSFE (Factura A, B, C)
 - [ ] WSFEX (Facturas de Exportación)
 - [ ] Factura de Crédito Electrónica (FCE / MiPyME)
 - [ ] Liquidaciones de Fasón (Monotributo Productivo)
 - [ ] Integración ARCA (ex-AFIP) para seguimiento tributario
 
-### Fase 7 — App Móvil PTF (Fuera del scope Django)
+### Fase 8 — App Móvil PTF (Fuera del scope Django)
 - [ ] App Flutter/React Native
 - [ ] Generación de par de claves en Secure Enclave del dispositivo
 - [ ] Firma Ed25519 con desbloqueo biométrico (FaceID / Huella)

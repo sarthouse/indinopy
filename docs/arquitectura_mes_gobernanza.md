@@ -144,6 +144,14 @@ El Consejo Superior de la MES ejerce la conducción de los algoritmos de la plat
 - **Asistente por Voz del PTF:** Interfaz en lenguaje natural para que el promotor territorial disuelva la brecha digital en el taller.
 - **Supremacía Humana Indeleble:** Ninguna IA puede aplicar sanciones ni exclusiones; la facultad punitiva o regulatoria reside exclusivamente en los miembros humanos de la MES.
 
+### 4.4. Portal Fiduciario y Operatoria Bancaria del Escrow (FDI / BAPRO)
+La ejecución financiera de las decisiones de la MES no ocurre por arte de magia ni recae en la tesorería de las marcas. Se canaliza institucionalmente a través del **Portal Fiduciario**, operado por oficiales de cuenta del Banco Provincia o entidad fiduciaria designada.
+
+- **Doble Lógica del ERP (El Sistema Dual):** La plataforma Indinopy diferencia estrictamente entre una *OP Privada Simple* (donde la Marca y el Taller se pagan por canales directos y tradicionales de derecho privado) y una *e-OP Federada* del RIGI, donde la plata queda bloqueada de antemano en el Escrow del FDI.
+- **Acceso del Oficial Bancario:** El Nodo MES cuenta con un endpoint y panel de control (`/mes/banco/`) exclusivo para usuarios con rol `FIDUCIARIO`.
+- **Operatoria Batch o Open Banking:** Cuando la Comisión de Crédito (o el Silencio Administrativo) aprueba un hito, el Oficial Bancario descarga el **Lote de Liquidación** (archivo TXT compatible con Interbanking/BAPRO Empresas) y ejecuta la transferencia masiva. Alternativamente, si el banco dispone de APIs B2B, el ERP Indinopy le dispara la orden de pago (webhook) atomizando los fondos instantáneamente: 98% al CBU personal del trabajador y 2% al fondo fiduciario territorial.
+- **Facturación Diferida Automática:** Inmediatamente después de que el BAPRO informa que la transferencia fue exitosa, el sistema invoca los webservices de AFIP, emite la factura electrónica correspondiente y cancela la posición de IVA diferido del tallerista, completando el circuito de blanqueo sin ninguna intervención burocrática del operario.
+
 ---
 ## 5. Protocolos Operativos y Plazos Duros con Silencio Administrativo Positivo
 El enemigo número uno del tallerista es la lentitud burocrática. Para que el sistema funcione en la trinchera, cada procedimiento tiene un **plazo máximo perentorio en horas**, tras el cual se activa el **Silencio Administrativo Positivo** por sistema informático centralizado:

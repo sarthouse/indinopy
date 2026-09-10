@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Documentación oficial del proyecto Indinopy ERP/MES y Canvas Industrial RIGI Conurbano 2026. Protocolos e-OP, Gobernanza MES, y Arquitectura Tecnológica para la industria soberana.">
     <title>Canvas Industrial RIGI Conurbano 2026 - Indinopy ERP/MES</title>
     <style>
         :root {
@@ -365,7 +366,7 @@
             <div class="stat-tag">⏱️ Timelock: <strong>48h Silencio Positivo</strong></div>
             <div class="stat-tag">🛡️ Resguardo: <strong>Inembargable CCCN</strong></div>
             <div class="stat-tag">🏦 Clearing: <strong>BAPRO / FDI</strong></div>
-            <a href="mockup_orden_produccion.pdf" target="_blank" class="btn-top-pdf">
+            <a href="modelo_orden_produccion.pdf" target="_blank" class="btn-top-pdf">
                 <span>📄</span> Abrir PDF Oficial
             </a>
         </div>
@@ -478,6 +479,17 @@
                         Algorética, Tutela e Inmunidad, y Arancel Cero.</div>
                 </li>
 
+                <li class="nav-item" data-id="roles" onclick="switchDoc('roles')">
+                    <div class="nav-header-row">
+                        <div class="nav-title-group">
+                            <span>👥</span>
+                            <span>Roles y Permisos</span>
+                        </div>
+                        <span class="nav-badge">Seguridad</span>
+                    </div>
+                    <div class="nav-desc">Matriz de permisos de infraestructura (Nodos), roles internos del ERP (SoD) y esquema de integración Headless.</div>
+                </li>
+
                 <li class="nav-item" data-id="manifiesto" onclick="switchDoc('manifiesto')">
                     <div class="nav-header-row">
                         <div class="nav-title-group">
@@ -530,7 +542,7 @@
         const DOCS = {
             mockup: {
                 title: "Modelo e-OP (Título de Crédito)",
-                file: "mockup_orden_produccion.html",
+                file: "modelo_orden_produccion.html",
                 icon: "🗎",
                 badge: "Título de Crédito",
                 isMockup: true
@@ -582,6 +594,13 @@
                 file: "explicacion_tecnica_proyecto.html",
                 icon: "💡",
                 badge: "Visión & Solución",
+                isMockup: false
+            },
+            roles: {
+                title: "Matriz de Roles y Permisos",
+                file: "roles.html",
+                icon: "👥",
+                badge: "Seguridad",
                 isMockup: false
             },
             manifiesto: {

@@ -74,6 +74,7 @@ Más allá de la emisión de la e-OP, el proyecto institucionaliza cinco disposi
 
 **El Puente SAS de Neutralización Patrimonial:** El sistema crea un circuito de reconversión gratuita y de oficio en la Ventanilla Única Municipal. La SAS escinde de forma inmediata las herramientas y el hogar del trabajador de los pasivos fiscales de la unidad productiva.
 *   **Doble Escala Anti-Fraude:** Para los *Prestadores Eventuales Individuales* (aparadores a destajo), el Monotributo Productivo de oficio tiene tope en la Categoría A. Para *Unidades Productivas Consolidadas (SAS)* de hasta 30 operarios, rige el límite de la Ley MiPyME para absorber nóminas formales.
+*   **Alta de Oficio vía API en la Primera e-OP:** El trabajador informal no debe ir a AFIP ni contratar contadores. Al aceptar su primera e-OP desde el celular, el software de Indinopy envía un payload a la MES que cruza biometría con RENAPER y dispara el webservice de ARCA, generando el alta fiscal automática. En el mismo acto se abre una **Cuenta de Clearing Bancaria (BAPRO) estrictamente inembargable**, operando bajo la cláusula de "no retroactividad" para blindar al trabajador y al taller gestor de pasivos o juicios de la etapa informal previa.
 *   **Cuenta de IVA Sectorial Diferida:** El IVA de la e-OP no se devenga mensualmente en abstracto: se retiene y liquida automáticamente por API en el milisegundo en que la Cuenta Custodia del FDI hace el clearing efectivo. Si la marca comitente no paga la orden, el tallerista jamás devenga la obligación fiscal.
 *   **Crédito Fiscal Presunto del 25%:** Las SAS pueden computar una deducción presunta de hasta el 25% del valor de la e-OP en Ganancias e IVA en concepto de mano de obra en transición territorial, corrigiendo de raíz la pérdida histórica de crédito fiscal.
 *   **Asesoría Contable y Administrativa Gratuita en CIFO:** Para que el tallerista no afronte costos de gestores ni contadores privados ($60.000-$100.000/mes), el CIFO de su distrito asume gratis el patrocinio contable y la carga de oficio, vinculando las e-OP y liquidando el IVA diferido.
@@ -133,6 +134,32 @@ El RIGI del gran capital ofrece estabilidad fiscal a 30 años a multinacionales 
 *   Rescatan la **capacidad manufacturera instalada** en los barrios industriales de San Martín, La Matanza, Lanús y Tres de Febrero.
 *   Permiten que las pymes de diseño produzcan en el país con costos transparentes y entregas a tiempo.
 *   Devuelven la **dignidad salarial al tallerista**, erradicando el trabajo precarizado mediante crédito al trabajo vivo y no a la especulación.
+
+## 6. Topología de Infraestructura PyME y Nodos
+La adopción de software libre suele fracasar en las PyMEs por la barrera técnica de la infraestructura. El dueño de una fábrica no tiene conocimientos para configurar IPs fijas, puertos de routers ni certificados SSL en un servidor propio. Por ello, la Red Federada Indinopy estandariza tres modelos de despliegue y una nomenclatura de dominios oficial para el RIGI Conurbano.
+
+### 6.1. Estructura Oficial de Dominios y Delegación DNS
+Toda la red opera bajo el paraguas criptográfico del dominio nacional soberano `.ar`, utilizando un esquema de **Delegación de Zona (Subzonas DNS)** que calca la estructura política del RIGI:
+*   **Nivel 1 (Autoridad Raíz):** `indinopy.ar` (Control del protocolo base).
+*   **Nivel 2 (Nodo de Gobernanza MES):** Adoptan la nomenclatura `{municipio}-mes.indinopy.ar` (Ej: `sanmartin-mes.indinopy.ar`). La Autoridad Raíz delega el control de este subdominio a la institución local (Municipio/Cámara). Concentran los servicios de validación de firmas y la CA (Autoridad Certificante) local.
+*   **Nivel 3 (Nodos Privados / Fábricas):** Las PyMEs y talleres acceden a su ERP SaaS mediante `{marca}.{municipio}-mes.indinopy.ar` (Ej: `perez.sanmartin-mes.indinopy.ar`). 
+*   **Ventaja Arquitectónica:** La Autoridad Raíz no administra el alta de miles de fábricas. La MES de cada municipio tiene autonomía total para crear los subdominios de Nivel 3 para sus afiliados locales, garantizando escalabilidad nacional infinita sin cuellos de botella administrativos.
+
+### 6.2. Modelos de Despliegue Tecnológico
+Para garantizar que el 100% de los actores pueda operar el software, Indinopy ofrece dos modalidades:
+
+#### A. El Servidor Comunitario / SaaS (Subdominio)
+Es el modelo sugerido para el **90% de las PyMEs y Talleres**. El software se aloja en un servidor robusto multi-tenant administrado por la Cámara de Comercio, el INTI o el CIFO local.
+*   **Sin Instalación:** La fábrica no instala nada. El titular ingresa desde Google Chrome a su subdominio (ej: `empresa.indinopy.ar`).
+*   **Segregación de Datos:** A nivel infraestructura física están en el mismo servidor de la cámara, pero el software Indinopy garantiza mediante criptografía que ninguna otra marca pueda leer sus costos o sus e-OPs.
+*   **Elasticidad ante Ventas (Efecto HotSale):** Para marcas que operan B2C con WooCommerce, el modelo SaaS está blindado con colas asincrónicas (Celery + Redis). Si la marca recibe 500 compras en un minuto durante un HotSale, el servidor ataja los webhooks en Redis (devolviendo status `200 OK` al instante para no caerse) y descuenta el stock gradualmente en segundo plano.
+
+#### B. El Nodo On-Premise en el Galpón (PC Local)
+Diseñado para la fábrica que desea mantener su base de datos físicamente en un disco rígido dentro de su galpón (por privacidad extrema o mala conexión a internet). 
+*   **Hardware Sencillo:** No se requieren servidores costosos. Cualquier PC de oficina moderna (Intel i5, 8GB RAM, SSD) tiene potencia excedente para correr el ERP completo para 15 operarios en la red local (LAN).
+*   **El Problema de Internet (Webhooks):** Como el router de la fábrica bloquea conexiones entrantes, la integración con la Red Federada y WooCommerce se soluciona de dos formas nativas:
+    1. **El Mecanismo de Polling (El "Cartero"):** La PC ejecuta un proceso silencioso (Celery Beat) que pregunta a la MES o a WooCommerce cada 5 minutos: *"¿Hay novedades/ventas nuevas para mi CUIT?"*. Así sortea las barreras de los firewalls domésticos sin configurar puertos.
+    2. **Túneles Inversos (Zero Trust):** Para flujos que exigen tiempo real estricto, Indinopy es compatible con Cloudflare Tunnels o Ngrok. Se establece un "tubo seguro" desde la PC hacia internet, permitiendo que el dominio `fabricaperez.indinopy.ar` impacte directo en la PC del galpón, totalmente encriptado y oculto de escaneos de hackers.
 
 ---
 Documento de Especificación Estratégica · Sistema de Gestión **Indinopy ERP/MES** para la Mesa de Enlace Sectorial (MES).
