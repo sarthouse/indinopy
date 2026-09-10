@@ -101,6 +101,16 @@ flowchart TD
     - Toda orden y remito de traslado emitido por Indinopy (`TRA-...`) debe instrumentar documentalmente la **Locación de Obra (Art. 1251 CCCN)** junto con el **Depósito en Custodia (Art. 1356 CCCN)**, dejando constancia de que la propiedad de los insumos permanece inalterable en el comitente.
     - El modelo de datos de `OrdenProduccion` queda parametrizado para admitir el régimen de façón bajo CCCN actual y la eventual adopción de la figura de Maquila Industrial ampliada.
 
+### 2.4. Contexto Político 2024-2026: Pragmatismo, Lobby Corporativo y Universidades
+
+- **Diagnóstico del Modelo (2024-2026):** El proyecto se inserta en un escenario de profunda recesión del mercado interno, caracterizado por un sesgo gubernamental anti-industrial (apertura importadora, tarifazos) y la negativa rotunda del oficialismo libertario a tratar proyectos de desendeudamiento para familias y PyMEs. Bajo la premisa de que la asfixia es un "contrato entre privados" y para no alterar el equilibrio fiscal, el Estado central retira todas las herramientas de fomento y crédito productivo, agravando las trabas burocráticas y tributarias municipales y provinciales.
+- **La Respuesta Doctrinaria (OLP y Pragmatismo de Trinchera):** Frente al bloqueo legislativo e institucional, Indinopy asume el pragmatismo de la doctrina de las **Organizaciones Libres del Pueblo (OLP)**. En lugar de esperar que el Estado central baje la tasa de interés o decrete rescates, el ecosistema transfiere la gobernanza a la *Mesa de Enlace Sectorial* (Municipios, Sindicatos, Talleristas) y desintermedia el crédito creando su propio instrumento de confianza: la e-OP. Es la comunidad organizada supliendo el vacío del Estado y defendiendo sus fuerzas productivas.
+- **El Rol de las Universidades Públicas:** Ante la desregulación extrema, el Dossier exhorta a las Universidades Públicas Nacionales (UNSAM, UNLaM, UNDAV, etc.) a asumir el rol de homologadores técnicos. Ellas deben auditar los algoritmos de precios justos, la criptografía de la red y el scoring de la Bolsa de Trabajo, aportando legitimidad y transparencia científica al régimen.
+- **Hipótesis de Resistencia y Lobby (Big Tech y Fintech):** Un protocolo ERP/MES abierto, descentralizado y gratuito que permite legalizar la economía informal y desintermediar el crédito sin comisiones usureras, representa una amenaza directa a los monopolios del software de gestión (ej. SAP, Tango/Bejerman) y corporaciones Fintech (ej. Mercado Pago, Ualá, bancos tradicionales). 
+  - *Lobby Regulatorio:* Es previsible que estos actores presionen a ARCA/AFIP y al Banco Central para declarar al protocolo "inseguro" e intentar proscribirlo, exigiendo que solo plataformas pagas y homologadas (cerradas) puedan interactuar con el fisco.
+  - *Boicot de Interoperabilidad:* Las fintechs podrían cortar APIs o negar el procesamiento de transacciones que provengan de la red federada para cercar financieramente al ecosistema.
+  - *Cooptación:* Las corporaciones lanzarán versiones "gratuitas" limitadas con subsidios cruzados para intentar extinguir la adopción temprana de Indinopy.
+
 ---
 
 ## 3. Matriz de Correspondencia: Dossier RIGI vs. Módulos Indinopy

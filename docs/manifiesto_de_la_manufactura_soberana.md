@@ -18,11 +18,13 @@ Treinta talleres cierran por día en la Argentina. No cierran por falta de ofici
 
 El eslabón más noble y sacrificado de la cadena —el aparador de barrio, la costurera a destajo, el cortador que aprendió el oficio de su padre— sobrevive hoy en la informalidad no como delito, sino como **legítima autodefensa**. Trabaja en la penumbra no para evadir, sino para que una boleta de luz confiscatoria o un embargo de cuenta no le quiten el pan a sus hijos. Para que ese taller trabaje, un diseñador o un pequeño industrial debe prestar su CUIT personal, arriesgando su casa y su familia en un "purgatorio fiscal" que tributa Ganancias sobre costos reales de mano de obra que el Estado se niega a reconocer porque no tienen factura formal.
 
-Mientras tanto, los bancos comerciales —alimentados por la renta de la deuda pública— le niegan un adelanto de $300.000 a quien tiene los cueros sobre la mesa y los pedidos listos para cortar, exigiéndole balances auditados y escrituras propietarias que jamás tendrá.
+Mientras tanto, los bancos comerciales —alimentados por la renta de la deuda pública— le niegan un adelanto de $300.000 a quien tiene los cueros sobre la mesa y los pedidos listos para cortar, exigiéndole balances auditados y escrituras propietarias que jamás tendrá. Al mismo tiempo, el oficialismo libertario bloquea sistemáticamente en el Congreso cualquier proyecto de desendeudamiento para las familias y las PyMEs, argumentando que la asfixia financiera es un mero "contrato entre privados" y priorizando un modelo extractivista que da la espalda al mercado interno.
 
-**Decimos basta.** No venimos a mendigar subsidios de supervivencia que perpetúan la miseria. No venimos a pedir dádivas a los escritorios de la burocracia centralizada. 
+**Decimos basta.** No venimos a mendigar subsidios de supervivencia que perpetúan la miseria, ni a esperar pasivamente que la "mano invisible" del mercado termine de rematar nuestros galpones. 
 
-Venimos a proclamar que **el trabajo real vale más que cualquier balance bancario** y que, organizados en nuestras comunidades, poseemos la fuerza moral, la capacidad técnica y las herramientas de software para fundar un **nuevo orden productivo soberano**.
+Inspirados en la doctrina justicialista de las **Organizaciones Libres del Pueblo (OLP)**, proclamamos que la salida a esta crisis no vendrá del individualismo financiero, sino de la articulación solidaria de los actores de la economía peronista. Organizados en nuestras comunidades, poseemos la fuerza moral, la capacidad técnica y las herramientas de software para fundar un **nuevo orden productivo soberano**. 
+
+Para lograrlo, **exhortamos a las Universidades Públicas Nacionales (UNSAM, UNLaM, UNDAV y demás casas de estudio del Conurbano)** a asumir su rol histórico: aportar sus ingenieros, economistas y cientistas sociales para diagramar y homologar técnica, legal y algorítmicamente las bases de este régimen. El saber del pueblo debe volver al pueblo en forma de tecnología liberadora.
 
 ---
 
