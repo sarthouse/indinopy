@@ -141,7 +141,7 @@ class ProduccionService:
         )
 
         from apps.documentos.models import DocumentoAdjunto
-        from django.core.files.base.ContentFile
+        from django.core.files.base import ContentFile
         payload_str = op.generar_payload_canonico()
         archivo_json = ContentFile(payload_str.encode("utf-8"), name=f"eOP_{op.numero}_canonical.json")
         DocumentoAdjunto.objects.create(

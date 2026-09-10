@@ -178,3 +178,139 @@ class TribunalArbitraje(TimeStampedModel):
     class Meta:
         verbose_name = _("Caso de Arbitraje")
         verbose_name_plural = _("Casos de Arbitraje")
+
+
+class PerfilPTF(TimeStampedModel):
+    """
+    Identidad digital y credencial del Promotor Territorial de Formalización (PTF).
+    Emitida por la ComisionCredito del distrito correspondiente.
+
+    El PTF es el auditor de campo que:
+    - Verifica físicamente que el trabajo se realizó en el taller declarado.
+    - Firma criptográficamente la liberación de los Hitos del Escrow.
+    - Su firma se valida contra su clave pública registrada aquí por la MES.
+
+    Hereda el patrón OneToOneField(User) de PerfilCriptografico (apps.base),
+    pero agrega los campos institucionales propios del rol PTF.
+    """
+
+    ROL_CHOICES = [
+        ("ptf_junior", _("PTF Junior (en formación)")),
+        ("ptf_senior", _("PTF Senior (habilitado para firmar)")),
+        ("ptf_coordinador", _("PTF Coordinador (supervisa zona)")),
+    ]
+
+    # Identidad
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="perfil_ptf",
+        verbose_name=_("Usuario del sistema"),
+    )
+
+    # Institución habilitante
+    comision = models.ForeignKey(
+        ComisionCredito,
+        on_delete=models.RESTRICT,
+        related_name="ptfs_habilitados",
+        verbose_name=_("Comisión que lo habilitó"),
+    )
+    rol = models.CharField(
+        max_length=30,
+        choices=ROL_CHOICES,
+        default="ptf_junior",
+        verbose_name=_("Nivel del PTF"),
+    )
+
+    # Identidad Criptográfica (emitida por la MES al homologar)
+    clave_publica_ed25519 = models.CharField(
+        max_length=64,
+        blank=True,
+        verbose_name=_("Clave Pública Ed25519"),
+        help_text=_(
+            "Generada en el dispositivo del PTF. La MES registra solo la clave PÚBLICA."
+        ),
+    )
+    certificado_mes_json = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name=_("Certificado Digital MES"),
+        help_text=_(
+            "JSON firmado por la MES que acredita la identidad y zona del PTF. "
+            "Cualquier nodo puede verificarlo offline con la clave pública de la MES."
+        ),
+    )
+
+    # Zona de cobertura geográfica (PostGIS)
+    zona_cobertura = models.MultiPolygonField(
+        srid=4326,
+        blank=True,
+        null=True,
+        verbose_name=_("Zona de Cobertura (Polígono GPS)"),
+        help_text=_(
+            "Municipios o partidos que el PTF puede auditar. "
+            "Las firmas de campo se validan contra este polígono."
+        ),
+    )
+    municipios_texto = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name=_("Municipios (referencia legible)"),
+        help_text=_("Ej: La Matanza, Merlo, Morón"),
+    )
+
+    # Vigencia de la credencial
+    fecha_emision_credencial = models.DateField(
+        verbose_name=_("Fecha de emisión de credencial"),
+    )
+    fecha_vencimiento_credencial = models.DateField(
+        verbose_name=_("Fecha de vencimiento de credencial"),
+        help_text=_("La credencial debe renovarse periódicamente ante la Comisión."),
+    )
+
+    # Estado y Reputación
+    activo = models.BooleanField(
+        default=True,
+        verbose_name=_("Activo"),
+        help_text=_("Desactivar equivale a revocar la credencial en todos los nodos."),
+    )
+    ucp_score_ptf = models.IntegerField(
+        default=0,
+        verbose_name=_("Score UCP del PTF"),
+        help_text=_(
+            "Reputación del PTF. Sube con auditorías correctas, "
+            "baja con auditorías fallidas o colusión detectada (Slashing)."
+        ),
+    )
+    auditorias_realizadas = models.IntegerField(
+        default=0,
+        verbose_name=_("Auditorías realizadas"),
+    )
+    auditorias_con_incidencia = models.IntegerField(
+        default=0,
+        verbose_name=_("Auditorías con incidencia"),
+    )
+
+    class Meta:
+        verbose_name = _("Perfil PTF")
+        verbose_name_plural = _("Perfiles PTF")
+        ordering = ["-ucp_score_ptf", "usuario__last_name"]
+
+    def __str__(self):
+        return (
+            f"PTF {self.usuario.get_full_name() or self.usuario.username} "
+            f"[{self.comision.region}] — {self.get_rol_display()}"
+        )
+
+    @property
+    def credencial_vigente(self):
+        """Devuelve True si la credencial no está vencida y el PTF está activo."""
+        from django.utils import timezone
+        return self.activo and self.fecha_vencimiento_credencial >= timezone.now().date()
+
+    @property
+    def tasa_incidencia(self):
+        """Porcentaje de auditorías con problemas sobre el total."""
+        if self.auditorias_realizadas == 0:
+            return 0.0
+        return round((self.auditorias_con_incidencia / self.auditorias_realizadas) * 100, 1)

@@ -25,12 +25,13 @@ class WooCommerceWebhookView(View):
             return HttpResponse("Firma ausente", status=401)
             
         raw_body = request.body
-        digest = hmac.new(
-            tienda.webhook_secret.encode('utf-8'),
-            raw_body,
-            hashlib.sha256
-        ).digest()
-        computed_signature = base64.b64encode(digest).decode('utf-8')
+        computed_signature = base64.b64encode(
+            hmac.new(
+                key=tienda.webhook_secret.encode('utf-8'),
+                msg=raw_body,
+                digestmod=hashlib.sha256
+            ).digest()
+        ).decode('utf-8')
         
         if not hmac.compare_digest(computed_signature, signature_header):
             return HttpResponse("Firma inválida", status=401)

@@ -1,4 +1,5 @@
 import requests
+from datetime import timedelta
 from requests.auth import HTTPBasicAuth
 from django.utils import timezone
 from .models import TiendaWooCommerce
@@ -24,7 +25,7 @@ class WooCommerceAPIClient:
         """
         Consulta las órdenes modificadas recientemente y las sincroniza con el ERP.
         """
-        after_date = (timezone.now() - timezone.timedelta(minutes=minutes_ago)).strftime('%Y-%m-%dT%H:%M:%S')
+        after_date = (timezone.now() - timedelta(minutes=minutes_ago)).strftime('%Y-%m-%dT%H:%M:%S')
         
         params = {
             'after': after_date,
@@ -52,7 +53,7 @@ class WooCommerceAPIClient:
         """
         Consulta los productos modificados recientemente (ej. último día).
         """
-        after_date = (timezone.now() - timezone.timedelta(minutes=minutes_ago)).strftime('%Y-%m-%dT%H:%M:%S')
+        after_date = (timezone.now() - timedelta(minutes=minutes_ago)).strftime('%Y-%m-%dT%H:%M:%S')
         params = {'after': after_date, 'per_page': 100}
         
         productos_json = self._get('products', params=params)

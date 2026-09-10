@@ -35,10 +35,10 @@ class EmitirAFIPActionView(LoginRequiredMixin, View):
         doc = get_object_or_404(DocumentoDeuda, pk=pk)
         
         try:
-            # TODO: Idealmente extraer a un ContabilidadService.emitir_factura(doc)
-            facturador = FacturadorAFIP(entorno='homologacion') # O leer de ConfiguracionEmpresa
-            facturador.emitir_factura_electronica(doc)
-            messages.success(request, f"Comprobante {doc.numero} emitido correctamente en AFIP con CAE {doc.afip_cae}.")
+            # El entorno (homologacion/produccion) se lee automáticamente de ConfiguracionEmpresa
+            facturador = FacturadorAFIP()
+            facturador.emitir_comprobante(doc)
+            messages.success(request, f"Comprobante {doc.numero} emitido en AFIP con CAE {doc.afip_cae}.")
         except Exception as e:
             messages.error(request, f"Error al emitir en AFIP: {str(e)}")
         
