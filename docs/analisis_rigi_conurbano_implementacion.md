@@ -113,6 +113,9 @@ flowchart TD
 | **Sección V / Plazos Aduana** | Tolerancia de Mermas (INTI) e Importación | `apps.produccion` / `apps.inventario` | Mermas calculadas solo post-cierre | Parámetros de tolerancia porcentual en `RecetaInsumo` y tracking de permanencia aduanera. |
 | **Sección VIII.M** | Sello QR de Trazabilidad Socioproductiva | `apps.ventas` / `apps.produccion` | Sin vista pública | Endpoint público `/trazabilidad/<lote>/` con desglose ético de costos y visualización QR. |
 | **Sección VIII.K** | IA Algorética y Pisos de Precios Justos | `produccion.services` | No implementado | Tabla de precios de referencia de mano de obra y alertas de subpago a talleristas. |
+| **Integración PyME** | Arquitectura Headless (SAP/Tango) | `apps.produccion` | Implementado | Endpoint API con `bom_headless` para inyectar e-OPs sin usar inventario local. |
+| **Topología Red** | Despliegue SaaS vs On-Premise y DNS | `Infraestructura` | Especificado | Enrutamiento jerárquico `{marca}.{nodo-mes}.indinopy.ar`. |
+| **Tributación** | Impuestos, Retenciones y DDJJ (ARCA) | `apps.contabilidad` | En Planificación | Modelado de Partida Doble, `FacturaImpuesto` y `CertificadoRetencion`. |
 
 ---
 
@@ -446,6 +449,20 @@ En `apps/produccion/services.py`, se incorporan los algoritmos de validación pr
 2. **Alerta de Capacidad y Cuello de Botella:**
    - Si al asignar una nueva OP a un tallerista, su `porcentaje_ocupacion` supera el 100% de su capacidad semanal para la fecha de entrega comprometida, el sistema sugiere reasignar o fragmentar el lote en un taller secundario registrado en la Bolsa.
 
+### 4.7. Topología de Red y Arquitectura Headless (ERP Gateway)
+
+Para garantizar la adopción masiva en PyMEs que ya poseen sistemas legacy (SAP, Tango, Odoo), Indinopy integra:
+1. **Gateway Criptográfico (API Headless):** Se habilitó el endpoint `POST /api/v1/headless/e-op/` en `apps.produccion`. Permite inyectar un JSON con la orden y un `bom_headless` (BOM externo), salteando la reserva de inventario local pero ejecutando el sellado de Merkle y el bloqueo de Escrow.
+2. **Delegación DNS Jerárquica:** El despliegue SaaS institucional se rutea vía `indinopy.ar` -> `{municipio}-mes.indinopy.ar` -> `{marca}.{municipio}-mes.indinopy.ar`.
+3. **Despliegue On-Premise con Polling:** Para fábricas con restricciones de NAT/Firewall, se utiliza un Celery worker que consulta asincrónicamente a la MES (Pulling), evitando exponer puertos locales.
+
+### 4.8. Módulo de Contabilidad y Cumplimiento ARCA (Ex-AFIP)
+
+La aplicación `apps.contabilidad` se reestructuró para operar bajo **Partida Doble Estricta** (Libro Diario, Mayor) integrando la mecánica tributaria argentina:
+*   **Percepciones vs. Retenciones:** Separación temporal exacta. Las Percepciones (IVA, IIBB) se atan a la `Factura` (`FacturaImpuesto`), mientras que las Retenciones (Ganancias, SUSS) se disparan en el `Pago` (`CertificadoRetencion`).
+*   **Liquidaciones y SICORE/SIFERE:** Entidad `LiquidacionImpuesto` para agrupar saldos mensuales y generar la deuda exigible (VEP) hacia el fisco.
+*   **Automatización sin Signals:** Toda generación de asientos desde facturas o e-OPs se delega al `ContabilidadService` mediante enlaces genéricos (`GenericForeignKey`).
+
 ---
 
 ## 5. Plan de Implementación por Fases (Roadmap)
@@ -468,6 +485,12 @@ gantt
     section Fase 4: Transparencia y Algorética
     Página Pública de Trazabilidad QR       :d1, 2026-11-10, 8d
     Alertas de Tarifas Mínimas y Pisos      :d2, after d1, 6d
+    section Fase 5: Headless & Topología
+    API Gateway ERP (SAP/Tango)             :e1, 2026-11-25, 5d
+    Delegación DNS y Polling Celery         :e2, after e1, 6d
+    section Fase 6: Contabilidad & ARCA
+    Asientos por Partida Doble              :f1, 2026-12-07, 10d
+    Módulo de Retenciones y VEPs            :f2, after f1, 8d
 ```
 
 ### Fase 1: Fundaciones Legales y Operativas (Inmediata)
@@ -500,6 +523,22 @@ gantt
 - **Entregables:**
   - Endpoint y template responsive para escaneo de QR (`/trazabilidad/<lote>/`).
   - Tabla de referencia de precios éticos y validación en carga de liquidaciones.
+
+### Fase 5: Integración Legacy y Topología Federada (Infraestructura)
+
+- **Objetivo:** Lograr que PyMEs con SAP/Odoo adopten la red sin abandonar sus ERPs.
+- **Entregables:**
+  - API Headless para inyección de e-OP externas (`bom_headless`).
+  - Celery workers para Polling en despliegues On-Premise.
+  - DNS Ruteador (`indinopy.ar`) para nodos SaaS multi-tenant.
+
+### Fase 6: Contabilidad Tributaria y Bimonetaria
+
+- **Objetivo:** Automatizar la partida doble y el cumplimiento normativo con ARCA.
+- **Entregables:**
+  - Modelos core `Cuenta`, `Asiento` y `Apunte`.
+  - Capa de `ContabilidadService` para automatizar asientos desde Facturas.
+  - Modelos de `FacturaImpuesto`, `CertificadoRetencion` y `LiquidacionImpuesto` (SICORE/DDJJ).
 
 ---
 
