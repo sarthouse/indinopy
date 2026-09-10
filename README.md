@@ -1,67 +1,112 @@
-# Indinopy — ERP & MES Industrial para Manufactura
+# Indinopy — ERP/MES & Gobernanza Industrial Soberana
 
-Sistema de Planificación de Recursos Empresariales (ERP) y Ejecución de Manufactura (MES) desarrollado con **Django**, especializado en producción manufacturera (calzado, indumentaria y marroquinería), control de talleres externos (fasón), inventario por partida doble estilo Odoo, compras, tesorería y comercio omnicanal.
+**Sitio Web Oficial y Documentación:** [https://indinopy.ar/](https://indinopy.ar/)
+
+> *"Indinopy es la infraestructura tecnológica de código abierto del RIGI Conurbano: un sistema ERP/MES que convierte el trabajo real en un activo financiero inmutable (e-OP), desintermediando la usura bancaria para formalizar a las PyMEs y transferir la gobernanza de toda la cadena de valor a la comunidad productiva organizada."*
+
+---
+
+## 📚 Documentación Oficial
+
+Toda la documentación arquitectónica, política y técnica (incluyendo el **Manifiesto Soberano**, el **Dossier RIGI Conurbano 2026** y los esquemas de la Mesa de Enlace Sectorial) se encuentra publicada de manera interactiva en nuestro portal oficial:
+
+👉 **[Ingresar al Portal Indinopy.ar](https://indinopy.ar/)**
+
+*(El código fuente de la página web y los documentos Markdown originales se encuentran en la carpeta `/docs/` de este repositorio).*
 
 ---
 
 ## 🚀 Arquitectura y Stack Tecnológico
 
-- **Backend**: Python 3.12+, Django 5+ (Server Side Rendering - MVT).
+Indinopy es un sistema de grado industrial preparado para despliegues SaaS, On-Premise y en topologías federadas (Nodos MES).
+
+- **Backend / Core**: Python 3.12+, Django 5+ (Server Side Rendering - MVT).
 - **Base de Datos**: PostgreSQL / SQLite (entorno local).
-- **Auditoría Integral**: `django-simple-history` para seguimiento histórico automático en todos los modelos.
-- **Inventario**: Motor de partida doble con ubicaciones físicas/virtuales, Quants en tiempo real y Lotes.
-- **Manufactura**: Fichas Técnicas (BOM) dinámicas con reglas de variantes (`variantes_destino`), Órdenes de Producción (OP) con tracking por etapas y liquidación de fasón.
-- **Asincronismo**: Celery + Redis para sincronización de stock con WooCommerce y reportes.
-
----
-
-## 📚 Documentación del Sistema
-
-Toda la documentación técnica, arquitectónica y operativa se encuentra centralizada e interconectada en la carpeta [`docs/`](docs/README.md):
-
-👉 **[Ver Centro de Documentación y Mapa de Navegación (`docs/README.md`)](docs/README.md)**
-
-### Accesos Rápidos
-- 📖 [**Glosario Industrial y Técnico**](docs/glosario.md): Analogías para principiantes sobre SKUs, Quants, BOM y Fasón.
-- 💡 [**Conceptos Generales**](docs/conceptos.md): Objetivos y filosofía de diseño.
-- 📂 [**Estructura del Proyecto**](docs/estructura.md): Árbol de aplicaciones (`apps/`).
-- 🧱 [**Modelos de Datos (ORM)**](docs/modelos.md): Catálogo completo de entidades y relaciones.
-- ⚙️ [**Lógica de Negocio y Fórmulas BOM**](docs/logica.md): Fórmulas de cálculo dinámico y reservas.
-- ⚡ [**Arquitectura de Señales**](docs/arquitectura_signals.md): Receptores atómicos para sincronización entre apps.
-- 🏭 [**Guía Rápida Operativa**](docs/manuales/guia_rapida_operativa.md): Simulación paso a paso de un lote real de 100 pares de borcegos.
-- 📋 [**Recopilación Integral del Sistema**](docs/recopilacion_sistema.md): Blueprint global y diagramas de secuencia.
+- **Inventario**: Motor de **partida doble** con ubicaciones físicas/virtuales, Quants en tiempo real, remitos y trazabilidad estricta.
+- **Manufactura**: Fichas Técnicas (BOM), **Órdenes de Producción Electrónicas (e-OP)** con firma criptográfica (SHA-256), tracking por etapas, Escrow y liquidación de fasón.
+- **Asincronismo**: Celery + Redis para sincronización de stock con WooCommerce (modo Headless) y procesamiento de hitos de producción (Timelocks de 48h).
+- **Contabilidad y Tributación**: Módulo de partida doble preparado para ARCA/AFIP (retenciones, percepciones y liquidaciones).
 
 ---
 
 ## 📁 Módulos del Sistema (`apps/`)
 
+El sistema está dividido en módulos atómicos interconectados:
+
 ```text
 indinopy/
 ├── apps/
-│   ├── base/          # Modelos abstractos: TimeStampedModel y DocumentoBase
-│   ├── documentos/    # GenericForeignKey para archivos adjuntos (hasta 25 MB)
-│   ├── contactos/     # Libreta unificada (Clientes, Proveedores, Talleristas, CUIT, IVA)
-│   ├── inventario/    # Stock por partida doble, UnidadMedida, Quants, Remitos
-│   ├── produccion/    # Recetas (BOM), OPs, variaciones de lote, etapas y fasón
+│   ├── base/          # Modelos abstractos y auditoría (HistoricalRecords)
+│   ├── mes/           # Gobernanza, PTF, Nodos de Mesa de Enlace Sectorial (MES)
+│   ├── documentos/    # Gestor de adjuntos, firmas criptográficas y Hash SHA-256
+│   ├── contactos/     # Libreta unificada (Clientes, Talleristas, CUIT, Condición IVA)
+│   ├── inventario/    # Stock por partida doble, Quants, Reservas y Remitos
+│   ├── produccion/    # Recetas (BOM), e-OPs (Activo Fiduciario), hitos y liquidación
+│   ├── contabilidad/  # Plan de cuentas, Libro Diario, Libro Mayor, Impuestos
+│   ├── tesoreria/     # Cajas duales (Escrow Digital), cobros, pagos a talleristas
 │   ├── compras/       # Órdenes de compra y recepción física de insumos
-│   ├── ventas/        # Pedidos B2C (WooCommerce) y B2B (Make to Order con seña)
-│   └── tesoreria/     # Cajas duales (oficial/planta), cobros y liquidación de talleristas
+│   └── ventas/        # Pedidos B2C (WooCommerce) y B2B, motor Headless ERP
 ```
 
 ---
 
-## 🛠️ Comandos de Desarrollo
+## ⚙️ Configuración y Variables de Entorno (`.env`)
 
+El sistema utiliza un archivo `.env` en la raíz del proyecto (basado en `core/settings.py`) para definir la base de datos y la topología de red. Creá un archivo `.env` con las siguientes variables:
+
+```ini
+# Configuración Básica
+SECRET_KEY=tu_clave_secreta_muy_segura
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost,tudominio.ar
+
+# Rol del Nodo (COMITENTE, TALLERISTA, MES, DEV)
+NODE_ROLE=COMITENTE
+
+# Conexión a Base de Datos (PostGIS)
+DB_NAME=indinopy
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+---
+
+## 🛠️ Instalación y Puesta en Marcha (Recomendado: `uv`)
+
+Indinopy es un proyecto moderno que utiliza [`uv`](https://docs.astral.sh/uv/) (el gestor ultrarrápido de paquetes en Rust) en lugar de `pip` tradicional para manejar dependencias.
+
+### 1. Preparar el Sistema Operativo
+Primero, instalá las dependencias de sistema (PostgreSQL, PostGIS, GDAL, compiladores) ejecutando el script incluido:
 ```bash
-# Activar entorno virtual
-source .venv/bin/activate
+chmod +x install_sys_deps.sh
+./install_sys_deps.sh
+```
 
-# Crear migraciones
-python manage.py makemigrations
+### 2. Instalar `uv`
+Si aún no tenés `uv` en tu sistema, podés instalarlo con:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
+### 3. Sincronizar Dependencias y Entorno
+Con `uv`, no hace falta crear el entorno virtual a mano. Simplemente ejecutá:
+```bash
+# uv creará el .venv e instalará todas las dependencias del pyproject.toml / uv.lock
+uv sync
+```
+
+### 4. Inicializar la Base de Datos y Correr el Servidor
+Usá `uv run` para ejecutar comandos directamente en el entorno aislado del proyecto:
+```bash
 # Aplicar migraciones
-python manage.py migrate
+uv run python manage.py makemigrations
+uv run python manage.py migrate
 
 # Iniciar servidor de desarrollo
-python manage.py runserver
+uv run python manage.py runserver
 ```
+
+---
+*Desarrollado en el territorio fabril del Conurbano Bonaerense para las Organizaciones Libres del Pueblo.*
