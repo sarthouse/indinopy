@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.doc-container');
     if (container) {
         const backBtn = document.createElement('a');
-        backBtn.href = './';
+        backBtn.href = '/';
         backBtn.className = 'btn-back-home';
         backBtn.innerHTML = '← Volver al Inicio';
         container.insertBefore(backBtn, container.firstChild);
