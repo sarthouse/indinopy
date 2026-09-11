@@ -64,6 +64,7 @@ ERP_APPS = [
     "apps.produccion",
     "apps.inventario",
     "apps.tesoreria",
+    "apps.nomina",
 ]
 
 # Apps específicas de la Mesa de Enlace Sectorial
@@ -74,6 +75,7 @@ MES_APPS = [
 THIRD_PARTY_APPS = [
     "simple_history",
     "rest_framework",
+    "import_export",
 ]
 
 # Carga dinámica según el rol

@@ -1,5 +1,7 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
+from import_export.admin import ImportExportModelAdmin
+from import_export import resources
 from .models import (
     CondicionPago,
     LineaCondicionPago,
@@ -9,7 +11,38 @@ from .models import (
     DocumentoDeuda,
     LineaDocumentoDeuda,
     AplicacionPago,
+    Cuenta,
+    Asiento,
+    Apunte,
 )
+
+# === IMPORT EXPORT PARA PLAN DE CUENTAS ===
+class CuentaResource(resources.ModelResource):
+    class Meta:
+        model = Cuenta
+        import_id_fields = ('codigo',)
+        skip_unchanged = True
+        report_skipped = False
+
+@admin.register(Cuenta)
+class CuentaAdmin(ImportExportModelAdmin):
+    resource_class = CuentaResource
+    list_display = ('codigo', 'nombre', 'padre', 'tipo', 'naturaleza', 'imputable')
+    list_filter = ('tipo', 'naturaleza', 'imputable')
+    search_fields = ('codigo', 'nombre')
+
+class ApunteInline(admin.TabularInline):
+    model = Apunte
+    extra = 0
+    readonly_fields = ('cuenta', 'debe', 'haber', 'contacto', 'descripcion_linea')
+
+@admin.register(Asiento)
+class AsientoAdmin(admin.ModelAdmin):
+    list_display = ('numero', 'fecha', 'diario', 'descripcion', 'estado')
+    list_filter = ('estado', 'diario', 'fecha')
+    search_fields = ('numero', 'descripcion')
+    inlines = [ApunteInline]
+    readonly_fields = ('numero', 'estado')
 
 
 @admin.register(Diario)

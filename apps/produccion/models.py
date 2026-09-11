@@ -245,7 +245,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         ),
     )
     # === Protocolo e-OP ===
-    # K_T: Tallerista / Custodio principal
     tallerista_principal = models.ForeignKey(
         "contactos.Contacto",
         on_delete=models.RESTRICT,
@@ -254,6 +253,15 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         related_name="ops_como_tallerista",
         verbose_name=_("Tallerista / Fasón Principal"),
         help_text=_("Responsable primario ante el protocolo de custodia y liquidación"),
+    )
+    ptf_asignado = models.ForeignKey(
+        "contactos.Contacto",
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True,
+        related_name="ops_fiscalizadas",
+        verbose_name=_("PTF Asignado (Fiscalizador)"),
+        help_text=_("Promotor Territorial que debe certificar los avances físicos de esta orden"),
     )
 
     # Vector C: Desglose Factorial de Costos Inmutable (en UCI o ARS indexado)
@@ -748,6 +756,15 @@ class OPInsumoRequerido(TimeStampedModel):
         null=True,
         verbose_name=_("Costo facturado por Fasón"),
     )
+    costo_unitario_congelado = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True,
+        verbose_name=_("Costo unitario (Congelado)"),
+        help_text=_("Snapshot del costo al emitir la e-OP (Garantiza inmutabilidad del Título de Crédito).")
+    )
+    subtotal_congelado = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True,
+        verbose_name=_("Subtotal insumo (Congelado)")
+    )
 
     class Meta:
         verbose_name = _("Insumo requerido de OP")
@@ -782,8 +799,17 @@ class OPParteProduccion(TimeStampedModel):
     op = models.ForeignKey(
         OrdenProduccion,
         on_delete=models.CASCADE,
-        related_name="partes_produccion",
+        related_name="partes_produccion_global",
         verbose_name=_("Orden de producción"),
+    )
+    etapa_tracking = models.ForeignKey(
+        "OPEtapaTracking",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="partes_produccion",
+        verbose_name=_("Etapa de Tracking Asociada"),
+        help_text=_("Permite imputar el avance físico directamente a una etapa específica (Ej: Aparado).")
     )
     numero_parte = models.CharField(
         max_length=50, blank=True, verbose_name=_("N° de Parte")
@@ -1079,3 +1105,44 @@ class OPEtapaLog(TimeStampedModel):
 
     def __str__(self):
         return f"{self.creado_en.strftime('%d/%m %H:%M')} - {self.usuario} -> {self.estado_nuevo}"
+
+class OPEscrowHito(TimeStampedModel):
+    """
+    Representa una línea del contrato inteligente de la e-OP.
+    Bloquea los fondos en fideicomiso (FDI) hasta que se cumpla la condición técnica,
+    permitiendo pagos escalonados de forma descentralizada.
+    """
+    op = models.ForeignKey(
+        OrdenProduccion, 
+        on_delete=models.CASCADE, 
+        related_name="escrow_hitos",
+        verbose_name=_("Orden de producción")
+    )
+    nombre_hito = models.CharField(max_length=100, verbose_name=_("Hito de Pago (Ej: Hito Cero, Corte)"))
+    condicion_disparo = models.CharField(max_length=200, verbose_name=_("Condición de Disparo Técnico"))
+    porcentaje_tramo = models.DecimalField(max_digits=5, decimal_places=2, verbose_name=_("% del Tramo"))
+    monto_bruto_retenido = models.DecimalField(max_digits=15, decimal_places=2, verbose_name=_("Monto Bruto Retenido"))
+    fecha_liberacion_estimada = models.DateField(null=True, blank=True, verbose_name=_("Fecha de Liberación Estimada"))
+    fecha_liberacion_real = models.DateField(null=True, blank=True, verbose_name=_("Fecha de Liberación Real"))
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ("retenido", _("Retenido en Escrow FDI")),
+            ("liberado", _("Acreditado (Liberado)")),
+            ("en_disputa", _("En Disputa / Congelado"))
+        ],
+        default="retenido",
+        verbose_name=_("Estado del Hito")
+    )
+    comprobante_bancario = models.CharField(
+        max_length=100, null=True, blank=True, 
+        verbose_name=_("Constancia Bancaria / BAPRO TX")
+    )
+
+    class Meta:
+        verbose_name = _("Hito de Escrow e-OP")
+        verbose_name_plural = _("Hitos de Escrow e-OP")
+        ordering = ["id"]
+
+    def __str__(self):
+        return f"{self.op.numero} - {self.nombre_hito} ({self.estado})"

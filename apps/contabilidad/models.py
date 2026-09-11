@@ -213,6 +213,7 @@ class DocumentoDeuda(TimeStampedModel):
         ("nota_debito_proveedor", "Nota de Débito (Proveedor)"),
         ("nota_credito_proveedor", "Nota de Crédito (Proveedor)"),
         ("liquidacion_fason", "Liquidación de Servicio (Fasón / Tallerista)"),
+        ("deuda_fiscal", "Deuda Fiscal / DDJJ (No Comercial)"),
     ]
 
     ESTADO_CHOICES = [
@@ -417,3 +418,202 @@ class AplicacionPago(TimeStampedModel):
         doc = self.documento_deuda
         super().delete(*args, **kwargs)
         doc.actualizar_estado_pago()
+
+# ==============================================================================
+# NÚCLEO CONTABLE (PARTIDA DOBLE ESTRICTA)
+# ==============================================================================
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+
+class Cuenta(TimeStampedModel):
+    """
+    Plan de Cuentas Jerárquico.
+    """
+    TIPO_CHOICES = [
+        ('activo', 'Activo'),
+        ('pasivo', 'Pasivo'),
+        ('patrimonio', 'Patrimonio Neto'),
+        ('resultado_positivo', 'Resultado Positivo (Ingresos)'),
+        ('resultado_negativo', 'Resultado Negativo (Gastos)'),
+    ]
+    NATURAL_CHOICES = [
+        ('deudora', 'Deudora (Suma al Debe)'),
+        ('acreedora', 'Acreedora (Suma al Haber)'),
+    ]
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código (Ej: 1.1.01)")
+    nombre = models.CharField(max_length=150, verbose_name="Nombre de la Cuenta")
+    padre = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcuentas')
+    
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, verbose_name="Clasificación")
+    naturaleza = models.CharField(max_length=15, choices=NATURAL_CHOICES, verbose_name="Naturaleza del Saldo")
+    imputable = models.BooleanField(
+        default=True, 
+        verbose_name="¿Es imputable?", 
+        help_text="Falso si es una cuenta agrupadora (Ej: 'Activo'). Solo las hojas reciben asientos."
+    )
+
+    class Meta:
+        verbose_name = "Cuenta Contable"
+        verbose_name_plural = "Cuentas Contables (Plan)"
+        ordering = ['codigo']
+
+    def __str__(self):
+        return f"{self.codigo} - {self.nombre}"
+
+
+class Asiento(TimeStampedModel):
+    """
+    Cabecera de un movimiento en el Libro Diario.
+    """
+    ESTADO_CHOICES = [
+        ('borrador', 'Borrador (Descuadrado o Pendiente)'),
+        ('asentado', 'Asentado (Cuadrado e Inmutable)'),
+        ('anulado', 'Anulado (Revertido)'),
+    ]
+
+    numero = models.CharField(max_length=50, unique=True, verbose_name="N° de Asiento")
+    fecha = models.DateField(verbose_name="Fecha Contable")
+    descripcion = models.CharField(max_length=255, verbose_name="Concepto / Leyenda")
+    
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='borrador')
+    
+    diario = models.ForeignKey(Diario, on_delete=models.RESTRICT, related_name="asientos")
+
+    # Enlace Universal Genérico (Relaciona el asiento con OP, Factura, Recibo, Liquidación Nomina)
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    documento_origen = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        verbose_name = "Asiento Contable"
+        verbose_name_plural = "Libro Diario (Asientos)"
+        ordering = ['-fecha', '-id']
+
+    def __str__(self):
+        return f"Asiento {self.numero} - {self.fecha} ({self.get_estado_display()})"
+
+
+class Apunte(models.Model):
+    """
+    Línea individual de un asiento contable.
+    Representa el movimiento monetario al Debe o al Haber de una cuenta.
+    """
+    asiento = models.ForeignKey(Asiento, on_delete=models.CASCADE, related_name='apuntes')
+    cuenta = models.ForeignKey(Cuenta, on_delete=models.RESTRICT, related_name='apuntes')
+    
+    debe = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    haber = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    
+    # Rastreabilidad auxiliar
+    contacto = models.ForeignKey('contactos.Contacto', on_delete=models.SET_NULL, null=True, blank=True)
+    descripcion_linea = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = "Apunte Contable"
+        verbose_name_plural = "Apuntes Contables (Líneas)"
+
+
+# ==============================================================================
+# GOBERNANZA FISCAL Y TRIBUTACIÓN (ARCA/ARBA)
+# ==============================================================================
+
+class FacturaImpuesto(TimeStampedModel):
+    """
+    Percepciones o recargos impositivos aplicados al momento de FACTURAR.
+    Ejemplo: Percepción de IIBB o IVA Adicional en una Factura de Venta.
+    """
+    documento = models.ForeignKey('contabilidad.DocumentoDeuda', on_delete=models.CASCADE, related_name='impuestos_aplicados')
+    impuesto = models.ForeignKey(Impuesto, on_delete=models.RESTRICT)
+    
+    base_imponible = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    monto_impuesto = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    
+    liquidado = models.BooleanField(default=False, help_text="¿Fue incluido en una DDJJ?")
+
+    class Meta:
+        verbose_name = "Impuesto de Factura"
+        verbose_name_plural = "Impuestos de Factura"
+
+    def __str__(self):
+        return f"{self.impuesto.nombre} s/ {self.documento.numero}"
+
+
+class CertificadoRetencion(TimeStampedModel):
+    """
+    Retenciones practicadas o sufridas al momento de PAGAR o COBRAR.
+    Ejemplo: Retención de Ganancias a un Tallerista, o que un Cliente nos retenga a nosotros.
+    Va atado al comprobante de Tesorería.
+    """
+    TIPO_RETENCION_CHOICES = [
+        ('emitida', 'Emitida (Retenemos a un Proveedor)'),
+        ('sufrida', 'Sufrida (Nos retiene un Cliente)'),
+    ]
+
+    comprobante_pago = models.ForeignKey('tesoreria.ComprobanteTesoreria', on_delete=models.CASCADE, related_name='retenciones')
+    impuesto = models.ForeignKey(Impuesto, on_delete=models.RESTRICT)
+    
+    tipo = models.CharField(max_length=20, choices=TIPO_RETENCION_CHOICES)
+    numero_certificado = models.CharField(max_length=50, blank=True, verbose_name="N° Certificado")
+    
+    base_imponible = models.DecimalField(max_digits=15, decimal_places=2)
+    monto_retenido = models.DecimalField(max_digits=15, decimal_places=2)
+    
+    fecha_retencion = models.DateField()
+    liquidado = models.BooleanField(default=False, help_text="¿Fue depositado en ARCA vía SICORE?")
+
+    class Meta:
+        verbose_name = "Certificado de Retención"
+        verbose_name_plural = "Certificados de Retención"
+
+    def __str__(self):
+        return f"Retención {self.impuesto.nombre} - {self.monto_retenido}"
+
+
+class LiquidacionImpuesto(TimeStampedModel):
+    """
+    Cabecera de Declaración Jurada Mensual (Ej. SICORE, SIFERE, F2002 IVA).
+    Agrupa percepciones y retenciones para pagarle al Fisco.
+    """
+    ESTADO_CHOICES = [
+        ('borrador', 'Borrador (Cálculo)'),
+        ('presentada', 'Presentada (Genera VEP / Deuda)'),
+        ('pagada', 'Pagada (VEP Cancelado)'),
+    ]
+
+    nombre = models.CharField(max_length=100, help_text="Ej: SICORE - Retenciones Ganancias Jun/2026")
+    periodo_mes = models.PositiveIntegerField()
+    periodo_anio = models.PositiveIntegerField()
+    
+    impuesto = models.ForeignKey(Impuesto, on_delete=models.RESTRICT, null=True, blank=True, help_text="Obligatorio si es DDJJ específica")
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='borrador')
+    
+    saldo_a_pagar = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    
+    # Cuando se presenta, se genera un DocumentoDeuda (Factura Proveedor a favor de AFIP)
+    deuda_generada = models.ForeignKey('contabilidad.DocumentoDeuda', on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Liquidación de Impuesto (DDJJ)"
+        verbose_name_plural = "Liquidaciones de Impuestos (DDJJ)"
+
+    def __str__(self):
+        return f"{self.nombre} ({self.get_estado_display()})"
+
+
+class LiquidacionDetalle(models.Model):
+    """
+    Tabla intermedia que marca exactamente qué FacturasImpuesto o CertificadosRetencion
+    fueron declarados en esta Liquidación Mensual, evitando que se declaren dos veces.
+    """
+    liquidacion = models.ForeignKey(LiquidacionImpuesto, on_delete=models.CASCADE, related_name='detalles')
+    
+    factura_impuesto = models.ForeignKey(FacturaImpuesto, on_delete=models.SET_NULL, null=True, blank=True)
+    certificado_retencion = models.ForeignKey(CertificadoRetencion, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    monto_computado = models.DecimalField(max_digits=15, decimal_places=2)
+
+    class Meta:
+        verbose_name = "Detalle de Liquidación"
+        verbose_name_plural = "Detalles de Liquidación"
+

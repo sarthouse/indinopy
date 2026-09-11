@@ -236,6 +236,36 @@ class ConfiguracionEmpresa(TimeStampedModel):
         help_text="Archivo .key",
     )
 
+    # Federación MES (RIGI Conurbano)
+    nodo_mes_identificador = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Identificador Nodo MES",
+        help_text="Ej: nodo-sur-lomas",
+    )
+    nodo_mes_endpoint = models.URLField(
+        blank=True,
+        verbose_name="Endpoint Subdominio MES",
+        help_text="Ej: https://api.sur.mes.indinopy.ar",
+    )
+
+    # Laboral / Nómina
+    art_nombre = models.CharField(
+        max_length=100, blank=True, null=True,
+        verbose_name="Nombre de la ART",
+        help_text="Aseguradora de Riesgos de Trabajo (Ej: Provincia ART, Galeno)"
+    )
+    art_porcentaje = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0.00,
+        verbose_name="Alícuota ART (%)",
+        help_text="Porcentaje variable aplicado sobre la masa salarial remunerativa."
+    )
+    art_fijo_por_empleado = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00,
+        verbose_name="Cuota fija ART ($)",
+        help_text="Monto fijo mensual a abonar por cada empleado (Fondo Fiduciario de Enfermedades Profesionales)."
+    )
+
     class Meta:
         verbose_name = "Configuración de Empresa"
         verbose_name_plural = "Configuración de Empresa"

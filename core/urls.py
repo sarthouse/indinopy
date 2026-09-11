@@ -33,6 +33,7 @@ if "apps.produccion" in settings.INSTALLED_APPS:
         path('compras/', include('apps.compras.urls', namespace='compras')),
         path('contabilidad/', include('apps.contabilidad.urls', namespace='contabilidad')),
         path('ventas/', include('apps.ventas.urls', namespace='ventas')),
+        path('nomina/', include('apps.nomina.urls', namespace='nomina')),
     ]
 
 # Si el nodo carga la app de Gobernanza (MES), exponemos sus URLs

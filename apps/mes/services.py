@@ -157,6 +157,21 @@ class PTFService:
 
         return perfil_ptf
 
+    @staticmethod
+    def consultar_ptfs_habilitados():
+        """
+        Consulta al Nodo MES configurado en el ERP (ej: api.sur.mes.indinopy.ar)
+        para traer la lista de PTFs habilitados en esa jurisdicción.
+        Esta lista alimenta el combo 'PTF Asignado' en la creación de la e-OP.
+        """
+        from apps.base.models import ConfiguracionEmpresa
+        config = ConfiguracionEmpresa.objects.first()
+        
+        # Si el ERP está desconectado del FDI o no tiene endpoint, retorna lista local
+        # TODO: En Fase 4, hacer requests.get(f"{config.nodo_mes_endpoint}/api/v1/ptfs/habilitados")
+        ptfs = PerfilPTF.objects.filter(activo=True, fecha_vencimiento_credencial__gte=timezone.now().date())
+        return ptfs
+
     # ─────────────────────────────────────────────────────────────────────
     # VERIFICACIÓN CRIPTOGRÁFICA
     # ─────────────────────────────────────────────────────────────────────

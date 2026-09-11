@@ -75,3 +75,49 @@ class TesoreriaService:
                 escrow.save(update_fields=["estado"])
             elif escrow.estado == "borrador":
                 EscrowService.fondear_escrow(escrow.id, comprobante.id)
+
+class UCIService:
+    """
+    Servicio conversor y cotizador para la Unidad de Cuenta Industrial (UCI).
+    Protege el Escrow contra fluctuaciones de inflación indexando a IPIM.
+    """
+    @staticmethod
+    def obtener_cotizacion_actual():
+        """Devuelve el valor actual de 1 UCI en ARS."""
+        from apps.tesoreria.models import IndiceUCI
+        cotizacion = IndiceUCI.objects.order_by('-fecha').first()
+        if not cotizacion:
+            return Decimal("1.00") # Fallback por defecto (1 UCI = 1 ARS)
+        return cotizacion.valor_ars
+
+    @staticmethod
+    def ars_a_uci(monto_ars, fecha=None):
+        """Convierte ARS a UCI usando la cotización a una fecha dada (o la más reciente)."""
+        from apps.tesoreria.models import IndiceUCI
+        if not monto_ars:
+            return Decimal("0.00")
+        
+        qs = IndiceUCI.objects.all()
+        if fecha:
+            qs = qs.filter(fecha__lte=fecha)
+            
+        cotizacion = qs.order_by('-fecha').first()
+        valor = cotizacion.valor_ars if cotizacion else Decimal("1.00")
+        
+        return round(Decimal(monto_ars) / valor, 2)
+
+    @staticmethod
+    def uci_a_ars(monto_uci, fecha=None):
+        """Convierte UCI a ARS usando la cotización a una fecha dada."""
+        from apps.tesoreria.models import IndiceUCI
+        if not monto_uci:
+            return Decimal("0.00")
+            
+        qs = IndiceUCI.objects.all()
+        if fecha:
+            qs = qs.filter(fecha__lte=fecha)
+            
+        cotizacion = qs.order_by('-fecha').first()
+        valor = cotizacion.valor_ars if cotizacion else Decimal("1.00")
+        
+        return round(Decimal(monto_uci) * valor, 2)

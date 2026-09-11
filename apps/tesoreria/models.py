@@ -75,6 +75,12 @@ class ComprobanteTesoreria(DocumentoFirmableMixin, DocumentoBase):
         verbose_name="Contrato Escrow asociado",
         help_text="Usado para Fondeo (FDI) o Repago (Marca)",
     )
+    referencia_bancaria_vep = models.CharField(
+        max_length=100, 
+        blank=True, 
+        verbose_name="N° VEP / Ref. Bancaria",
+        help_text="Útil para auditoría y conciliación de pagos de impuestos o transferencias agrupadas."
+    )
 
     class Meta:
         verbose_name = "Comprobante de Tesorería"
