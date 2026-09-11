@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Modelo e-OP: Instrumento legal-financiero y título de crédito digital para la industria manufacturera.">
+    <meta name="description"
+        content="Modelo e-OP: Instrumento legal-financiero y título de crédito digital para la industria manufacturera.">
     <title>Orden de Producción Electrónica (e-OP N° 2026-00842) - Original y Duplicado</title>
     <style>
         :root {
@@ -437,11 +438,12 @@
         .ejemplar-dropdown {
             margin: 0 auto 20px auto;
             max-width: 210mm;
-            background: rgba(255,255,255,0.02);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
         }
+
         .ejemplar-summary {
             padding: 15px 20px;
             background: #1e293b;
@@ -456,9 +458,11 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .ejemplar-summary:hover {
             background: #334155;
         }
+
         .btn-print-single {
             background-color: #3b82f6;
             color: white;
@@ -470,9 +474,11 @@
             cursor: pointer;
             transition: background 0.2s;
         }
+
         .btn-print-single:hover {
             background-color: #2563eb;
         }
+
         .btn-print {
             position: fixed;
             top: 20px;
@@ -490,6 +496,7 @@
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
         }
+
         .btn-print:hover {
             background-color: #047857;
             transform: translateY(-2px);
@@ -521,7 +528,8 @@
                 display: none;
             }
 
-            .btn-back-home, .btn-print {
+            .btn-back-home,
+            .btn-print {
                 display: none;
             }
 
@@ -583,22 +591,23 @@
         <div class="protocol-box">
             <div class="protocol-item">
                 <strong>Primitiva Criptográfica e-OP</strong>
-                <span>UUID: <span class="mono-text">e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</span></span><br>
-                <span>Merkle Root BOM: <span
+                <span><strong>UUID:</strong> <span
+                        class="mono-text">e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</span></span><br>
+                <span><strong>Merkle Root BOM:</strong> <span
                         class="mono-text">0x7f83b1657ff1fc53b92dc18148a1d65d...200126d</span></span><br>
-                <span>Contrato Timelock: <strong>48h Silencio Positivo (Art. 4.1)</strong></span>
+                <span><strong>Contrato Timelock:</strong> 48h Silencio Positivo (Art. 4.1)</span>
             </div>
             <div class="protocol-item">
                 <strong>Régimen Jurídico y Afectación</strong>
-                <span>Locación de Obra (Arts. 1251 y ss. CCCN)</span><br>
-                <span>Depósito Regular en Custodia (Art. 1356 CCCN)</span><br>
-                <span>Ref. Maquila Industrial (Ley 25.113)</span>
+                <span>Locación de Obra / Trabajo a Facón (Arts. 1251 y ss. CCCN)</span><br>
+                <span>Provisión de Insumos por Comitente (Art. 1262 CCCN)</span><br>
+                <span>Depósito Regular e Inembargabilidad (Arts. 1356 y 1358 CCCN)</span>
             </div>
             <div class="protocol-item">
                 <strong>Gobernanza Territorial MES</strong>
-                <span>Nodo: Conurbano Sur (Lanús / Lomas)</span><br>
-                <span>PTF Asignado: <strong>Juan M. Pereyra (Leg. 042)</strong></span><br>
-                <span>Estado: <strong>Hito 0 Liquidado (Anticipo 40%)</strong></span>
+                <span><strong>Nodo:</strong> Conurbano Sur (Lanús / Lomas)</span><br>
+                <span><strong>PTF Asignado:</strong> Juan M. Pereyra (Leg. 042)</span><br>
+                <span><strong>Estado:</strong> Hito 0 Liquidado (Anticipo 40%)</span>
             </div>
         </div>
 
@@ -651,55 +660,79 @@
         <table>
             <thead>
                 <tr>
-                    <th>Color / Variante</th>
-                    <th class="text-center">38</th>
-                    <th class="text-center">39</th>
-                    <th class="text-center">40</th>
-                    <th class="text-center">41</th>
-                    <th class="text-center">42</th>
-                    <th class="text-center">43</th>
-                    <th class="text-center">44</th>
-                    <th class="text-center">45</th>
-                    <th class="text-right">Total Pares</th>
+                    <th>Producto / Variación</th>
+                    <th class="text-right">Cantidad (Pares)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D</td>
-                    <td class="text-center">20</td>
-                    <td class="text-center">40</td>
-                    <td class="text-center">70</td>
-                    <td class="text-center">90</td>
-                    <td class="text-center">90</td>
-                    <td class="text-center">50</td>
-                    <td class="text-center">30</td>
-                    <td class="text-center">10</td>
-                    <td class="text-right"><strong>400</strong></td>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 38</td>
+                    <td class="text-right">20</td>
                 </tr>
                 <tr>
-                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote</td>
-                    <td class="text-center">5</td>
-                    <td class="text-center">10</td>
-                    <td class="text-center">20</td>
-                    <td class="text-center">25</td>
-                    <td class="text-center">20</td>
-                    <td class="text-center">10</td>
-                    <td class="text-center">8</td>
-                    <td class="text-center">2</td>
-                    <td class="text-right"><strong>100</strong></td>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 39</td>
+                    <td class="text-right">40</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 40</td>
+                    <td class="text-right">70</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 41</td>
+                    <td class="text-right">90</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 42</td>
+                    <td class="text-right">90</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 43</td>
+                    <td class="text-right">50</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 44</td>
+                    <td class="text-right">30</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 45</td>
+                    <td class="text-right">10</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 38</td>
+                    <td class="text-right">5</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 39</td>
+                    <td class="text-right">10</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 40</td>
+                    <td class="text-right">20</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 41</td>
+                    <td class="text-right">25</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 42</td>
+                    <td class="text-right">20</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 43</td>
+                    <td class="text-right">10</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 44</td>
+                    <td class="text-right">8</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 45</td>
+                    <td class="text-right">2</td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td>TOTAL LOTE COMPROMETIDO:</td>
-                    <td class="text-center">25</td>
-                    <td class="text-center">50</td>
-                    <td class="text-center">90</td>
-                    <td class="text-center">115</td>
-                    <td class="text-center">110</td>
-                    <td class="text-center">60</td>
-                    <td class="text-center">38</td>
-                    <td class="text-center">12</td>
+                    <td class="text-right">TOTAL LOTE COMPROMETIDO:</td>
                     <td class="text-right"><strong>500 Pares</strong></td>
                 </tr>
             </tfoot>
@@ -1212,7 +1245,8 @@
                 de Producción Electrónica (e-OP) han sido provistos exclusivamente para su transformación en el marco
                 del régimen de Locación de Obra (Arts. 1251 y ss. del Código Civil y Comercial de la Nación) y Depósito
                 Regular en Custodia (Arts. 1356 y ss. CCCN), con remisión a las disposiciones del Régimen de Fomento
-                Productivo Territorial (RIGI del Conurbano) y reforma de Maquila Industrial (Ley 25.113). La titularidad
+                Productivo Territorial (RIGI del Conurbano) y Locación de Obra Industrial con Insumos en Custodia (Arts.
+                1251, 1262 y 1356 CCCN). La titularidad
                 de los insumos corresponde exclusiva e inalterablemente a <strong>Borcegos Cruz del Sur S.R.L.</strong>,
                 actuando el taller ejecutor únicamente como depositario y transformador. En virtud del carácter tuitivo
                 del régimen, los bienes gozan de <strong>inembargabilidad absoluta de primer orden</strong> ante pasivos
@@ -1274,22 +1308,23 @@
         <div class="protocol-box">
             <div class="protocol-item">
                 <strong style="color: #2d3748;">Primitiva Criptográfica e-OP</strong>
-                <span>UUID: <span class="mono-text">e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</span></span><br>
-                <span>Merkle Root BOM: <span
+                <span><strong>UUID:</strong> <span
+                        class="mono-text">e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</span></span><br>
+                <span><strong>Merkle Root BOM:</strong> <span
                         class="mono-text">0x7f83b1657ff1fc53b92dc18148a1d65d...200126d</span></span><br>
-                <span>Contrato Timelock: <strong>48h Silencio Positivo (Art. 4.1)</strong></span>
+                <span><strong>Contrato Timelock:</strong> 48h Silencio Positivo (Art. 4.1)</span>
             </div>
             <div class="protocol-item">
                 <strong style="color: #2d3748;">Régimen Jurídico y Afectación</strong>
-                <span>Locación de Obra (Arts. 1251 y ss. CCCN)</span><br>
-                <span>Depósito Regular en Custodia (Art. 1356 CCCN)</span><br>
-                <span>Ref. Maquila Industrial (Ley 25.113)</span>
+                <span>Locación de Obra / Trabajo a Facón (Arts. 1251 y ss. CCCN)</span><br>
+                <span>Provisión de Insumos por Comitente (Art. 1262 CCCN)</span><br>
+                <span>Depósito Regular e Inembargabilidad (Arts. 1356 y 1358 CCCN)</span>
             </div>
             <div class="protocol-item">
                 <strong style="color: #2d3748;">Gobernanza Territorial MES</strong>
-                <span>Nodo: Conurbano Sur (Lanús / Lomas)</span><br>
-                <span>PTF Asignado: <strong>Juan M. Pereyra (Leg. 042)</strong></span><br>
-                <span>Estado: <strong>Hito 0 Liquidado (Anticipo 40%)</strong></span>
+                <span><strong>Nodo:</strong> Conurbano Sur (Lanús / Lomas)</span><br>
+                <span><strong>PTF Asignado:</strong> Juan M. Pereyra (Leg. 042)</span><br>
+                <span><strong>Estado:</strong> Hito 0 Liquidado (Anticipo 40%)</span>
             </div>
         </div>
 
@@ -1342,55 +1377,79 @@
         <table>
             <thead>
                 <tr>
-                    <th style="background-color: #f1f5f9; color: #475569;">Color / Variante</th>
-                    <th class="text-center" style="background-color: #f1f5f9; color: #475569;">38</th>
-                    <th class="text-center" style="background-color: #f1f5f9; color: #475569;">39</th>
-                    <th class="text-center" style="background-color: #f1f5f9; color: #475569;">40</th>
-                    <th class="text-center" style="background-color: #f1f5f9; color: #475569;">41</th>
-                    <th class="text-center" style="background-color: #f1f5f9; color: #475569;">42</th>
-                    <th class="text-center" style="background-color: #f1f5f9; color: #475569;">43</th>
-                    <th class="text-center" style="background-color: #f1f5f9; color: #475569;">44</th>
-                    <th class="text-center" style="background-color: #f1f5f9; color: #475569;">45</th>
-                    <th class="text-right" style="background-color: #f1f5f9; color: #475569;">Total Pares</th>
+                    <th style="background-color: #f1f5f9; color: #475569;">Producto / Variación</th>
+                    <th class="text-right" style="background-color: #f1f5f9; color: #475569;">Cantidad (Pares)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D</td>
-                    <td class="text-center">20</td>
-                    <td class="text-center">40</td>
-                    <td class="text-center">70</td>
-                    <td class="text-center">90</td>
-                    <td class="text-center">90</td>
-                    <td class="text-center">50</td>
-                    <td class="text-center">30</td>
-                    <td class="text-center">10</td>
-                    <td class="text-right"><strong>400</strong></td>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 38</td>
+                    <td class="text-right">20</td>
                 </tr>
                 <tr>
-                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote</td>
-                    <td class="text-center">5</td>
-                    <td class="text-center">10</td>
-                    <td class="text-center">20</td>
-                    <td class="text-center">25</td>
-                    <td class="text-center">20</td>
-                    <td class="text-center">10</td>
-                    <td class="text-center">8</td>
-                    <td class="text-center">2</td>
-                    <td class="text-right"><strong>100</strong></td>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 39</td>
+                    <td class="text-right">40</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 40</td>
+                    <td class="text-right">70</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 41</td>
+                    <td class="text-right">90</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 42</td>
+                    <td class="text-right">90</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 43</td>
+                    <td class="text-right">50</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 44</td>
+                    <td class="text-right">30</td>
+                </tr>
+                <tr>
+                    <td>Cuero Box Negro Hidrofugado + Cordura 1000D - Talle 45</td>
+                    <td class="text-right">10</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 38</td>
+                    <td class="text-right">5</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 39</td>
+                    <td class="text-right">10</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 40</td>
+                    <td class="text-right">20</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 41</td>
+                    <td class="text-right">25</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 42</td>
+                    <td class="text-right">20</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 43</td>
+                    <td class="text-right">10</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 44</td>
+                    <td class="text-right">8</td>
+                </tr>
+                <tr>
+                    <td>Cuero Engrasado Marrón Rústico + Cordura Coyote - Talle 45</td>
+                    <td class="text-right">2</td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td>TOTAL LOTE COMPROMETIDO:</td>
-                    <td class="text-center">25</td>
-                    <td class="text-center">50</td>
-                    <td class="text-center">90</td>
-                    <td class="text-center">115</td>
-                    <td class="text-center">110</td>
-                    <td class="text-center">60</td>
-                    <td class="text-center">38</td>
-                    <td class="text-center">12</td>
+                    <td class="text-right">TOTAL LOTE COMPROMETIDO:</td>
                     <td class="text-right"><strong>500 Pares</strong></td>
                 </tr>
             </tfoot>
@@ -1623,7 +1682,8 @@
                 de Producción Electrónica (e-OP) han sido provistos exclusivamente para su transformación en el marco
                 del régimen de Locación de Obra (Arts. 1251 y ss. del Código Civil y Comercial de la Nación) y Depósito
                 Regular en Custodia (Arts. 1356 y ss. CCCN), con remisión a las disposiciones del Régimen de Fomento
-                Productivo Territorial (RIGI del Conurbano) y reforma de Maquila Industrial (Ley 25.113). La titularidad
+                Productivo Territorial (RIGI del Conurbano) y Locación de Obra Industrial con Insumos en Custodia (Arts.
+                1251, 1262 y 1356 CCCN). La titularidad
                 de los insumos corresponde exclusiva e inalterablemente a <strong>Borcegos Cruz del Sur S.R.L.</strong>,
                 actuando el taller ejecutor únicamente como depositario y transformador. En virtud del carácter tuitivo
                 del régimen, los bienes gozan de <strong>inembargabilidad absoluta de primer orden</strong> ante pasivos
@@ -1654,10 +1714,10 @@
                 const details = document.createElement('details');
                 details.className = 'ejemplar-dropdown';
                 details.open = true; // Por defecto abierto
-                
+
                 const summary = document.createElement('summary');
                 summary.className = 'ejemplar-summary';
-                
+
                 const titleSpan = document.createElement('span');
                 titleSpan.innerHTML = '📁 ' + titleText;
                 summary.appendChild(titleSpan);
@@ -1670,13 +1730,13 @@
                 printSingleBtn.onclick = (e) => {
                     e.preventDefault(); // Evitar que el clic abra/cierre el desplegable
                     details.open = true;
-                    
+
                     // Activar el modo de impresión individual aislando este elemento
                     document.body.classList.add('print-single-mode');
                     details.classList.add('print-active');
-                    
+
                     window.print();
-                    
+
                     // Restaurar todo a la normalidad después de imprimir
                     setTimeout(() => {
                         document.body.classList.remove('print-single-mode');
@@ -1685,7 +1745,7 @@
                 };
                 summary.appendChild(printSingleBtn);
                 details.appendChild(summary);
-                
+
                 // Mover el container adentro del details
                 container.parentNode.insertBefore(details, container);
                 details.appendChild(container);
