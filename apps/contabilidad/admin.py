@@ -53,7 +53,7 @@ class DiarioAdmin(SimpleHistoryAdmin):
 
 
 @admin.register(TipoComprobanteAFIP)
-class TipoComprobanteAFIPAdmin(admin.ModelAdmin):
+class TipoComprobanteAFIPAdmin(ImportExportModelAdmin):
     list_display = (
         "codigo",
         "nombre",

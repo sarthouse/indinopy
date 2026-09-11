@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Recibo de Sueldo - Decreto 407/2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .print-area { max-width: 800px; margin: 20px auto; background: white; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        @media print {
+            body { background-color: white; }
+            .print-area { box-shadow: none; margin: 0; padding: 0; max-width: 100%; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="text-center my-4 no-print">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">Imprimir / Guardar PDF</button>
+    </div>
+
+    <div class="print-area border border-gray-300">
+        <!-- HEADER: DATOS EMPRESA Y EMPLEADO -->
+        <header class="border-b-2 border-gray-800 pb-4 mb-4">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h1 class="text-2xl font-bold uppercase">INDINOPY S.A.</h1>
+                    <p class="text-sm">CUIT: 30-71234567-8 | Domicilio: Calle Falsa 123</p>
+                </div>
+                <div class="text-right">
+                    <h2 class="text-xl font-bold">RECIBO DE HABERES</h2>
+                    <p class="text-sm">Decreto 407/2026 - LCT Art. 140</p>
+                    <p class="text-sm font-semibold mt-1">Liquidación: Septiembre 2026</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="grid grid-cols-2 gap-4 text-sm mb-6">
+            <div>
+                <p><strong>Empleado:</strong> Gómez, Juan Pérez</p>
+                <p><strong>CUIL:</strong> 20-35123456-7</p>
+                <p><strong>Categoría:</strong> Oficial Múltiple</p>
+            </div>
+            <div>
+                <p><strong>Fecha de Ingreso:</strong> 01/03/2024</p>
+                <p><strong>Sueldo Básico:</strong> $ 800,000.00</p>
+                <p><strong>Días Trabajados:</strong> 30</p>
+            </div>
+        </section>
+
+        <!-- NUEVO BLOQUE OBLIGATORIO: COSTO LABORAL DEL EMPLEADOR -->
+        <section class="bg-gray-100 p-4 border border-gray-300 rounded mb-6">
+            <h3 class="font-bold text-md mb-2 text-blue-800">BLOQUE I - COSTO TOTAL DEL EMPLEADOR (Contribuciones Patronales)</h3>
+            <p class="text-xs text-gray-600 mb-2">Este recuadro refleja los desembolsos reales que la empresa realiza por encima de su salario bruto para sostener su puesto de trabajo.</p>
+            <table class="w-full text-sm text-left">
+                <thead class="border-b border-gray-400">
+                    <tr>
+                        <th class="py-1">Concepto Patronal</th>
+                        <th class="py-1">Alícuota</th>
+                        <th class="py-1 text-right">Monto a cargo Empresa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Jubilación, PAMI y Asignaciones (SIPA)</td><td>18.00%</td><td class="text-right">$ 156,000.00</td></tr>
+                    <tr><td>Obra Social Patronal</td><td>6.00%</td><td class="text-right">$ 52,000.00</td></tr>
+                    <tr><td>Fondo de Cese Laboral (Ley Bases)</td><td>8.00%</td><td class="text-right">$ 69,333.33</td></tr>
+                    <tr><td>Aseguradora Riesgos de Trabajo (ART)</td><td>2.50% + Fijo</td><td class="text-right">$ 23,000.00</td></tr>
+                </tbody>
+                <tfoot class="font-bold border-t border-gray-400">
+                    <tr>
+                        <td colspan="2" class="py-1">TOTAL CONTRIBUCIONES PATRONALES</td>
+                        <td class="text-right py-1 text-red-600">$ 300,333.33</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="py-1">COSTO LABORAL TOTAL (Bruto + Contribuciones)</td>
+                        <td class="text-right py-1 text-blue-800 text-lg">$ 1,166,999.99</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </section>
+
+        <!-- BLOQUE TRADICIONAL: HABERES Y RETENCIONES -->
+        <section class="mb-6">
+            <h3 class="font-bold text-md mb-2">BLOQUE II - LIQUIDACIÓN DEL EMPLEADO</h3>
+            <table class="w-full text-sm text-left border border-gray-300">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="p-2 border-r border-gray-300">Cód.</th>
+                        <th class="p-2 border-r border-gray-300">Cód. AFIP</th>
+                        <th class="p-2 border-r border-gray-300">Concepto</th>
+                        <th class="p-2 border-r border-gray-300 text-right">Remunerativo</th>
+                        <th class="p-2 border-r border-gray-300 text-right">No Remunerativo</th>
+                        <th class="p-2 text-right">Retenciones (Descuentos)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-2 border-r border-gray-300 text-gray-500">SUELDO</td>
+                        <td class="p-2 border-r border-gray-300 text-gray-500">110000</td>
+                        <td class="p-2 border-r border-gray-300">Sueldo Básico</td>
+                        <td class="p-2 border-r border-gray-300 text-right">$ 800,000.00</td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 text-right"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-2 border-r border-gray-300 text-gray-500">PREST</td>
+                        <td class="p-2 border-r border-gray-300 text-gray-500">120000</td>
+                        <td class="p-2 border-r border-gray-300">Adicional Presentismo (8.33%)</td>
+                        <td class="p-2 border-r border-gray-300 text-right">$ 66,666.66</td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 text-right"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200 text-red-700">
+                        <td class="p-2 border-r border-gray-300 text-gray-500">JUB</td>
+                        <td class="p-2 border-r border-gray-300 text-gray-500">810000</td>
+                        <td class="p-2 border-r border-gray-300">Jubilación (11%)</td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 text-right">$ 95,333.33</td>
+                    </tr>
+                    <tr class="border-b border-gray-200 text-red-700">
+                        <td class="p-2 border-r border-gray-300 text-gray-500">OBSOC</td>
+                        <td class="p-2 border-r border-gray-300 text-gray-500">810002</td>
+                        <td class="p-2 border-r border-gray-300">Obra Social (3%)</td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 text-right">$ 26,000.00</td>
+                    </tr>
+                    <tr class="border-b border-gray-200 text-red-700">
+                        <td class="p-2 border-r border-gray-300 text-gray-500">INSSJP</td>
+                        <td class="p-2 border-r border-gray-300 text-gray-500">810001</td>
+                        <td class="p-2 border-r border-gray-300">INSSJP - Ley 19032 (3%)</td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 text-right">$ 26,000.00</td>
+                    </tr>
+                    <tr class="border-b border-gray-200 text-red-700">
+                        <td class="p-2 border-r border-gray-300 text-gray-500">SIND</td>
+                        <td class="p-2 border-r border-gray-300 text-gray-500">820000</td>
+                        <td class="p-2 border-r border-gray-300">Aporte Sindical (2.5%)</td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 border-r border-gray-300 text-right"></td>
+                        <td class="p-2 text-right">$ 21,666.66</td>
+                    </tr>
+                </tbody>
+                <tfoot class="bg-gray-100 font-bold">
+                    <tr>
+                        <td colspan="3" class="p-2 border-r border-gray-300 text-right">SUBTOTALES</td>
+                        <td class="p-2 border-r border-gray-300 text-right text-green-700">$ 866,666.66</td>
+                        <td class="p-2 border-r border-gray-300 text-right text-green-700">$ 0.00</td>
+                        <td class="p-2 text-right text-red-700">$ 168,999.99</td>
+                    </tr>
+                    <tr class="bg-gray-800 text-white text-lg">
+                        <td colspan="5" class="p-3 text-right">NETO A COBRAR (Sueldo de Bolsillo)</td>
+                        <td class="p-3 text-right">$ 697,666.67</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <p class="mt-2 text-xs uppercase text-gray-500">Son pesos: Seiscientos noventa y siete mil seiscientos sesenta y seis con 67/100.</p>
+        </section>
+
+        <!-- NUEVO GRÁFICO ESTADÍSTICO -->
+        <section class="border-t-2 border-gray-800 pt-6 mt-6 page-break-inside-avoid">
+            <h3 class="font-bold text-center text-lg mb-2">BLOQUE III - DISTRIBUCIÓN DEL COSTO LABORAL</h3>
+            <p class="text-center text-xs text-gray-500 mb-4">Representación visual requerida por el Decreto 407/2026 sobre el Costo Total del Empleador.</p>
+            
+            <div class="flex items-center justify-center">
+                <div style="width: 350px; height: 350px;">
+                    <canvas id="costoLaboralChart"></canvas>
+                </div>
+                <div class="ml-8 text-sm">
+                    <ul class="space-y-2">
+                        <li><span class="inline-block w-4 h-4 bg-green-500 mr-2"></span> <strong>Sueldo Neto:</strong> 59.8%</li>
+                        <li><span class="inline-block w-4 h-4 bg-red-500 mr-2"></span> <strong>Retenciones (Estado/Sindicato):</strong> 14.5%</li>
+                        <li><span class="inline-block w-4 h-4 bg-blue-600 mr-2"></span> <strong>Contribuciones (Cargas Patronales):</strong> 25.7%</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-12 flex justify-between px-10 text-center">
+            <div>
+                <div class="border-b border-gray-400 w-48 mb-2"></div>
+                <p class="text-sm">Firma Empleador</p>
+            </div>
+            <div>
+                <div class="border-b border-gray-400 w-48 mb-2"></div>
+                <p class="text-sm">Firma Empleado</p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Datos de ejemplo basados en los cálculos del HTML
+        const neto = 697666.67;
+        const aportesEmpleado = 168999.99;
+        const contribucionesPatronales = 300333.33;
+
+        const ctx = document.getElementById('costoLaboralChart').getContext('2d');
+        const costoLaboralChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Sueldo Neto de Bolsillo', 'Retenciones (Aportes del Empleado)', 'Contribuciones Patronales'],
+                datasets: [{
+                    data: [neto, aportesEmpleado, contribucionesPatronales],
+                    backgroundColor: [
+                        '#22c55e', // Green (Neto)
+                        '#ef4444', // Red (Retenciones)
+                        '#2563eb'  // Blue (Contribuciones)
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        display: false // Usamos la leyenda HTML manual al lado
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

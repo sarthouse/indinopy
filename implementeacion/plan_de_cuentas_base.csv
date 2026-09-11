@@ -1,0 +1,76 @@
+codigo,nombre,padre,tipo,naturaleza,imputable
+1,ACTIVO,,activo,deudora,False
+1.1,ACTIVO CORRIENTE,1,activo,deudora,False
+1.1.01,Caja y Bancos,1.1,activo,deudora,False
+1.1.01.01,Fondo Fijo (Caja),1.1.01,activo,deudora,True
+1.1.01.02,Banco Francés CC,1.1.01,activo,deudora,True
+1.1.01.03,Banco Galicia CC,1.1.01,activo,deudora,True
+1.1.01.04,Fondo Fiduciario Escrow,1.1.01,activo,deudora,True
+1.1.02,Inversiones,1.1,activo,deudora,False
+1.1.03,Créditos por Ventas,1.1,activo,deudora,False
+1.1.03.01,Deudores por Ventas,1.1.03,activo,deudora,True
+1.1.03.02,Documentos a Cobrar,1.1.03,activo,deudora,True
+1.1.03.03,Deudores Morosos,1.1.03,activo,deudora,True
+1.1.04,Otros Créditos,1.1,activo,deudora,False
+1.1.04.01,IVA Saldo a Favor,1.1.04,activo,deudora,True
+1.1.04.02,Anticipos de Impuestos,1.1.04,activo,deudora,True
+1.1.04.03,Anticipos a Proveedores,1.1.04,activo,deudora,True
+1.1.05,Bienes de Cambio,1.1,activo,deudora,False
+1.1.05.01,Mercaderías,1.1.05,activo,deudora,True
+1.1.05.02,Materias Primas,1.1.05,activo,deudora,True
+1.1.05.03,Productos en Proceso,1.1.05,activo,deudora,True
+1.1.05.04,Productos Terminados,1.1.05,activo,deudora,True
+1.2,ACTIVO NO CORRIENTE,1,activo,deudora,False
+1.2.01,Bienes de Uso,1.2,activo,deudora,False
+1.2.01.01,Maquinarias,1.2.01,activo,deudora,True
+1.2.01.02,Muebles y Útiles,1.2.01,activo,deudora,True
+1.2.01.03,Rodados,1.2.01,activo,deudora,True
+1.2.01.04,Equipos de Computación,1.2.01,activo,deudora,True
+1.2.01.99,Amortizaciones Acumuladas,1.2.01,activo,acreedora,True
+2,PASIVO,,pasivo,acreedora,False
+2.1,PASIVO CORRIENTE,2,pasivo,acreedora,False
+2.1.01,Deudas Comerciales,2.1,pasivo,acreedora,False
+2.1.01.01,Proveedores,2.1.01,pasivo,acreedora,True
+2.1.01.02,Talleristas a Pagar,2.1.01,pasivo,acreedora,True
+2.1.01.03,Documentos a Pagar,2.1.01,pasivo,acreedora,True
+2.1.02,Deudas Sociales y Remuneraciones,2.1,pasivo,acreedora,False
+2.1.02.01,Sueldos a Pagar,2.1.02,pasivo,acreedora,True
+2.1.02.02,Cargas Sociales a Pagar,2.1.02,pasivo,acreedora,True
+2.1.02.03,Sindicato a Pagar,2.1.02,pasivo,acreedora,True
+2.1.02.04,Fondo Cese Laboral a Pagar,2.1.02,pasivo,acreedora,True
+2.1.03,Cargas Fiscales,2.1,pasivo,acreedora,False
+2.1.03.01,IVA Saldo a Pagar,2.1.03,pasivo,acreedora,True
+2.1.03.02,Ingresos Brutos a Pagar,2.1.03,pasivo,acreedora,True
+2.1.03.03,Retenciones a Depositar,2.1.03,pasivo,acreedora,True
+2.1.03.04,Percepciones a Depositar,2.1.03,pasivo,acreedora,True
+2.1.04,Préstamos,2.1,pasivo,acreedora,False
+2.1.04.01,Préstamos Bancarios,2.1.04,pasivo,acreedora,True
+3,PATRIMONIO NETO,,patrimonio,acreedora,False
+3.1,Capital,3,patrimonio,acreedora,False
+3.1.01,Capital Social,3.1,patrimonio,acreedora,True
+3.2,Resultados Acumulados,3,patrimonio,acreedora,False
+3.2.01,Resultados No Asignados,3.2,patrimonio,acreedora,True
+3.2.02,Reservas Estatutarias,3.2,patrimonio,acreedora,True
+4,RESULTADOS NEGATIVOS,,resultado_negativo,deudora,False
+4.1,Gastos Operativos,4,resultado_negativo,deudora,False
+4.1.01,Sueldos y Jornales,4.1,resultado_negativo,deudora,True
+4.1.02,Cargas Sociales Patronales,4.1,resultado_negativo,deudora,True
+4.1.03,Gastos de Fabricación,4.1,resultado_negativo,deudora,True
+4.1.04,Servicios de Terceros (Fasón),4.1,resultado_negativo,deudora,True
+4.1.05,Amortizaciones Bienes de Uso,4.1,resultado_negativo,deudora,True
+4.1.06,Alquileres Pagados,4.1,resultado_negativo,deudora,True
+4.2,Gastos Comerciales,4,resultado_negativo,deudora,False
+4.2.01,Publicidad y Marketing,4.2,resultado_negativo,deudora,True
+4.2.02,Gastos de Venta,4.2,resultado_negativo,deudora,True
+4.3,Gastos Financieros,4,resultado_negativo,deudora,False
+4.3.01,Comisiones Bancarias,4.3,resultado_negativo,deudora,True
+4.3.02,Intereses Pagados,4.3,resultado_negativo,deudora,True
+4.4,Costo de Ventas,4,resultado_negativo,deudora,False
+4.4.01,Costo de Mercaderías Vendidas,4.4,resultado_negativo,deudora,True
+5,RESULTADOS POSITIVOS,,resultado_positivo,acreedora,False
+5.1,Ingresos Operativos,5,resultado_positivo,acreedora,False
+5.1.01,Ventas de Mercaderías,5.1,resultado_positivo,acreedora,True
+5.1.02,Servicios Prestados,5.1,resultado_positivo,acreedora,True
+5.2,Ingresos Financieros,5,resultado_positivo,acreedora,False
+5.2.01,Intereses Ganados,5.2,resultado_positivo,acreedora,True
+5.2.02,Diferencia de Cambio Positiva,5.2,resultado_positivo,acreedora,True

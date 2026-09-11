@@ -1,0 +1,103 @@
+codigo,codigo_afip,descripcion,tipo,porcentaje,monto_fijo,base_jubilacion,base_obra_social,base_ganancias,base_sac,activo
+A110000,110000,Sueldo,REMUNERATIVO,,,1,1,1,1,1
+A110001,110001,Preaviso,REMUNERATIVO,,,1,1,1,1,1
+A110002,110002,Remuneraciones en especie,REMUNERATIVO,,,1,1,1,1,1
+A110003,110003,Comida,REMUNERATIVO,,,1,1,1,1,1
+A110004,110004,Habitación,REMUNERATIVO,,,1,1,1,1,1
+A110005,110005,Licencias por estudio,REMUNERATIVO,,,1,1,1,1,1
+A110006,110006,Donación de sangre,REMUNERATIVO,,,1,1,1,1,1
+A110007,110007,Feriado,REMUNERATIVO,,,1,1,1,1,1
+A110008,110008,Prest. Dineraria Ley 24577 (primeros 10d),REMUNERATIVO,,,1,1,1,1,1
+A110009,110009,Prest. Dineraria Ley 24577 (a cargo de ART),REMUNERATIVO,,,1,1,1,1,1
+A110010,110010,Sueldo - Uso para aplicación RG 2252 - Actividades simultáneas,REMUNERATIVO,,,1,1,1,1,1
+A110011,110011,Incremento solidario - Dec. 14/2020,REMUNERATIVO,,,1,1,1,1,1
+A120000,120000,Sueldo anual complementario,REMUNERATIVO,,,1,1,1,1,1
+A120001,120001,SAC 1er semestre,REMUNERATIVO,,,1,1,1,1,1
+A120002,120002,SAC 2do semestre,REMUNERATIVO,,,1,1,1,1,1
+A120003,120003,SAC proporcional,REMUNERATIVO,,,1,1,1,1,1
+A120004,120004,SAC - Uso para aplicación RG 2252 - Actividades simultáneas,REMUNERATIVO,,,1,1,1,1,1
+A130000,130000,Horas extras,REMUNERATIVO,,,1,1,1,1,1
+A130001,130001,Horas extras al 50 %,REMUNERATIVO,,,1,1,1,1,1
+A130002,130002,Horas extras al 100 %,REMUNERATIVO,,,1,1,1,1,1
+A130003,130003,Horas extras al 200 %,REMUNERATIVO,,,1,1,1,1,1
+A130004,130004,Horas extras - Uso para aplicación RG 2252 - Actividades simultáneas,REMUNERATIVO,,,1,1,1,1,1
+A140000,140000,Zona desfavorable,REMUNERATIVO,,,1,1,1,1,1
+A140001,140001,Zona desfavorable - Uso para aplicación RG 2252 - Actividades simultáneas,REMUNERATIVO,,,1,1,1,1,1
+A150000,150000,Adelanto vacacional,REMUNERATIVO,,,1,1,1,1,1
+A150001,150001,Adelanto vacacional - Uso para aplicación RG 2252 - Actividades simultáneas,REMUNERATIVO,,,1,1,1,1,1
+A160000,160000,Adicionales,REMUNERATIVO,,,1,1,1,1,1
+A160001,160001,Adicional por antigüedad,REMUNERATIVO,,,1,1,1,1,1
+A160002,160002,Adicional por título,REMUNERATIVO,,,1,1,1,1,1
+A160003,160003,Adicional por tarea,REMUNERATIVO,,,1,1,1,1,1
+A160004,160004,Adicional por desarraigo,REMUNERATIVO,,,1,1,1,1,1
+A160005,160005,Adicionales - Uso para aplicación RG 2252 - Actividades simultáneas,REMUNERATIVO,,,1,1,1,1,1
+A170000,170000,Gratificaciones y/o Premios,REMUNERATIVO,,,1,1,1,1,1
+A170001,170001,Premio por presentismo,REMUNERATIVO,,,1,1,1,1,1
+A170002,170002,Premio por producción,REMUNERATIVO,,,1,1,1,1,1
+A170003,170003,Comisiones,REMUNERATIVO,,,1,1,1,1,1
+A170004,170004,Accesorios,REMUNERATIVO,,,1,1,1,1,1
+A170005,170005,Viáticos sin comprobante,REMUNERATIVO,,,1,1,1,1,1
+A170006,170006,Propinas habituales no prohibidas,REMUNERATIVO,,,1,1,1,1,1
+A170007,170007,Gratificaciones y/o Premios - Uso para aplicación RG 2252 - Actividades simultáneas,REMUNERATIVO,,,1,1,1,1,1
+A180000,180000,Rectificativa por remuneración Ley 27.742.,REMUNERATIVO,,,1,1,1,1,1
+A499999,499999,Redondeo (Remunerativo),REMUNERATIVO,,,1,1,1,1,1
+A510000,510000,Asignaciones Familiares,NO_REMUNERATIVO,,,0,0,1,0,1
+A510001,510001,Ayuda escolar,NO_REMUNERATIVO,,,0,0,1,0,1
+A510002,510002,Asignación por hijo/hijo con discapacidad,NO_REMUNERATIVO,,,0,0,1,0,1
+A510003,510003,Asignación por maternidad,NO_REMUNERATIVO,,,0,0,1,0,1
+A510004,510004,Asignación por maternidad down,NO_REMUNERATIVO,,,0,0,1,0,1
+A510005,510005,Asignación por matrimonio,NO_REMUNERATIVO,,,0,0,1,0,1
+A510006,510006,Asignación por nacimiento / adopción,NO_REMUNERATIVO,,,0,0,1,0,1
+A510007,510007,Asignación por prenatal,NO_REMUNERATIVO,,,0,0,1,0,1
+A520000,520000,Beneficios sociales,NO_REMUNERATIVO,,,0,0,1,0,1
+A520001,520001,Servicio de comedor,NO_REMUNERATIVO,,,0,0,1,0,1
+A520002,520002,Gastos médicos,NO_REMUNERATIVO,,,0,0,1,0,1
+A520003,520003,Provisión de ropa de trabajo,NO_REMUNERATIVO,,,0,0,1,0,1
+A520004,520004,Guardería,NO_REMUNERATIVO,,,0,0,1,0,1
+A520005,520005,Provisión de útiles escolares,NO_REMUNERATIVO,,,0,0,1,0,1
+A520006,520006,Gastos de sepelio,NO_REMUNERATIVO,,,0,0,1,0,1
+A520007,520007,Cursos de capacitación,NO_REMUNERATIVO,,,0,0,1,0,1
+A520008,520008,Becas (art. 7 Ley 24.241 y modif.),NO_REMUNERATIVO,,,0,0,1,0,1
+A520009,520009,Desempleo (art. 7 Ley 24.241 y modif.),NO_REMUNERATIVO,,,0,0,1,0,1
+A520010,520010,Gratificación por cese laboral (art. 7 Ley 24.241 y modif.),NO_REMUNERATIVO,,,0,0,1,0,1
+A520011,520011,Indemnización por extinción del contrato de trabajo (art. 7 Ley 24.241 y modif.),NO_REMUNERATIVO,,,0,0,1,0,1
+A520012,520012,Vacaciones no gozadas (art. 7 Ley 24.241 y modif.),NO_REMUNERATIVO,,,0,0,1,0,1
+A520013,520013,Incapacidad permanente (art. 7 Ley 24.241 y modif.),NO_REMUNERATIVO,,,0,0,1,0,1
+A520014,520014,Indemización por despido,NO_REMUNERATIVO,,,0,0,1,0,1
+A520015,520015,Indemización sustitutiva del preaviso,NO_REMUNERATIVO,,,0,0,1,0,1
+A520016,520016,Integración mes de despido,NO_REMUNERATIVO,,,0,0,1,0,1
+A520017,520017,SAC sobre integración o preaviso,NO_REMUNERATIVO,,,0,0,1,0,1
+A520018,520018,SAC sobre vacaciones no gozadas,NO_REMUNERATIVO,,,0,0,1,0,1
+A530000,530000,Incrementos no remunerativos (con aportes OS),NO_REMUNERATIVO,,,0,0,1,0,1
+A540000,540000,Incrementos no remunerativos (con aportes y contribuciones OS),NO_REMUNERATIVO,,,0,0,1,0,1
+A550000,550000,Importes no remunerativos especiales,NO_REMUNERATIVO,,,0,0,1,0,1
+A560000,560000,Mensual - PPC y CCT Especiales,NO_REMUNERATIVO,,,0,0,1,0,1
+A560001,560001,SAC - PPC y CCT Especiales,NO_REMUNERATIVO,,,0,0,1,0,1
+A560002,560002,SAC  Proporcional- PPC y CCT Especiales,NO_REMUNERATIVO,,,0,0,1,0,1
+A560003,560003,Vacaciones - PPC y CCT Especiales,NO_REMUNERATIVO,,,0,0,1,0,1
+A560004,560004,"Asign. dineraria progr. sociales, educativos o empleo - Dec. 551/2022",NO_REMUNERATIVO,,,0,0,1,0,1
+A560005,560005,Asign. No remunerativa Dec 841/2022,NO_REMUNERATIVO,,,0,0,1,0,1
+A560006,560006,Asignación no Remunerativa Dcto 438/2023,NO_REMUNERATIVO,,,0,0,1,0,1
+A570000,570000,Mensual - Remuneración No Contributiva al Régimen Nacional de Seguridad Social,NO_REMUNERATIVO,,,0,0,1,0,1
+A570001,570001,SAC - Remuneración No Contributiva al Régimen Nacional de Seguridad Socia,NO_REMUNERATIVO,,,0,0,1,0,1
+A570002,570002,SAC Proporcional - Remuneración No Contributiva al Régimen Nacional de Seguridad Social,NO_REMUNERATIVO,,,0,0,1,0,1
+A570003,570003,Vacaciones - Remuneración No Contributiva al Régimen Nacional de Seguridad Social,NO_REMUNERATIVO,,,0,0,1,0,1
+A799999,799999,Redondeo (No Remunerativo),NO_REMUNERATIVO,,,0,0,1,0,1
+A810000,810000,Sistema previsional,RETENCION,11.00,,1,1,1,1,1
+A810001,810001,INSSJyP,RETENCION,3.00,,1,1,1,1,1
+A810002,810002,Obra Social,RETENCION,3.00,,1,1,1,1,1
+A810003,810003,Fondo Solidario de Redistribución (ex ANSSAL),RETENCION,,,1,1,1,1,1
+A810004,810004,Cuota Sindical,RETENCION,2.50,,1,1,1,1,1
+A810005,810005,Seguro de Vida,RETENCION,,,1,1,1,1,1
+A810006,810006,RENATEA (ex RENATRE),RETENCION,,,1,1,1,1,1
+A810007,810007,Préstamos,RETENCION,,,1,1,1,1,1
+A810008,810008,Impuesto a las Ganancias,RETENCION,,,1,1,1,1,1
+A810009,810009,Obra Social - Adherentes,RETENCION,,,1,1,1,1,1
+A810010,810010,Fondo Solidario de Redistribución (ex ANSSAL) - Adherentes,RETENCION,,,1,1,1,1,1
+A810011,810011,Ajuste Aporte Dec. 561/2019,RETENCION,,,1,1,1,1,1
+A810012,810012,Salario complementario. Dec 332/2020,RETENCION,,,1,1,1,1,1
+A810013,810013,SAC - Ajuste Bases imponibles,RETENCION,,,1,1,1,1,1
+A810014,810014,"Pago a cuenta Asign. dineraria progr. sociales, educativos o empleo - Dec. 551/2022",RETENCION,,,1,1,1,1,1
+A810015,810015,Sistema previsional no nacional,RETENCION,,,1,1,1,1,1
+A810016,810016,Obra Social provincial,RETENCION,,,1,1,1,1,1
+A820000,820000,Otros descuentos,RETENCION,,,1,1,1,1,1
