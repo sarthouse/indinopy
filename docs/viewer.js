@@ -40,6 +40,12 @@ marked.use({
     }
 });
 
+// Activar extensión de notas al pie (marked-footnote)
+// La extensión convierte [^1] en <sup><a> y genera un <section class="footnotes"> al final
+if (typeof markedFootnote !== 'undefined') {
+    marked.use(markedFootnote({ prefixId: 'fn-' }));
+}
+
 function generateTOC(contentDiv) {
     const headings = contentDiv.querySelectorAll('h1, h2, h3');
     if (headings.length < 2) return; // Skip if too few headings
@@ -53,7 +59,7 @@ function generateTOC(contentDiv) {
     // Crear el panel lateral (Drawer)
     const sidebar = document.createElement('nav');
     sidebar.className = 'toc-sidebar';
-    
+
     const sidebarHeader = document.createElement('div');
     sidebarHeader.className = 'toc-sidebar-header';
     sidebarHeader.innerHTML = '<h3>Índice de Contenidos</h3><button class="toc-close-btn">✖</button>';
@@ -69,16 +75,16 @@ function generateTOC(contentDiv) {
 
         const li = document.createElement('li');
         li.className = 'toc-item toc-' + heading.tagName.toLowerCase();
-        
+
         const a = document.createElement('a');
         a.href = '#' + heading.id;
         a.textContent = heading.textContent;
-        
+
         // Cerrar el panel al hacer clic en un link
         a.addEventListener('click', () => {
             sidebar.classList.remove('open');
         });
-        
+
         li.appendChild(a);
         ul.appendChild(li);
     });
