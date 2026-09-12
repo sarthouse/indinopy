@@ -1,8 +1,15 @@
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from .models import OrdenProduccion
+from .models import (
+    OrdenProduccion,
+    OPEtapaTracking,
+    OPParteProduccion,
+    OPParteProduccionLinea,
+)
 from .services import ProduccionService
 
 class OPListView(LoginRequiredMixin, ListView):
@@ -74,8 +81,6 @@ class OPCancelarActionView(LoginRequiredMixin, View):
 # =====================================================================
 # PORTAL DE PROVEEDORES / TALLERISTAS EXTERNOS
 # =====================================================================
-from .models import OPEtapaTracking, OPParteProduccion
-from django.db import transaction
 
 class PortalTalleristaListView(LoginRequiredMixin, ListView):
     """
@@ -107,7 +112,6 @@ class DeclararParteActionView(LoginRequiredMixin, View):
         
         # Validar permisos: solo el tallerista asignado puede declarar
         if not hasattr(request.user, 'perfil_contacto') or etapa.tallerista_asignado != request.user.perfil_contacto:
-            from django.core.exceptions import PermissionDenied
             raise PermissionDenied("No tienes permisos para declarar avances en esta etapa.")
         
         cantidad_terminada = request.POST.get('cantidad', 0)
@@ -122,7 +126,6 @@ class DeclararParteActionView(LoginRequiredMixin, View):
             )
             
             # (Simplificación) Impactamos la primera variación de la OP
-            from .models import OPParteProduccionLinea
             variacion = etapa.op.variaciones.first()
             if variacion:
                 OPParteProduccionLinea.objects.create(

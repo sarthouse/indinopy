@@ -1,6 +1,16 @@
+import calendar
+import uuid
 from decimal import Decimal
 from django.db import transaction
-from .models import ConceptoLiquidacion, LiquidacionNomina, DetalleLiquidacion
+from django.utils import timezone
+
+from apps.base.models import ConfiguracionEmpresa
+from apps.contabilidad.models import Cuenta, Diario
+from apps.contabilidad.services import ContabilidadService
+from apps.contactos.models import Contacto
+from apps.tesoreria.models import Caja, ComprobanteTesoreria
+
+from .models import ConceptoLiquidacion, DetalleLiquidacion, LiquidacionNomina
 
 class NominaService:
     @staticmethod
@@ -140,7 +150,6 @@ class NominaService:
             total_patronal += monto_cese
 
         # 7. ART (Riesgos de Trabajo)
-        from apps.base.models import ConfiguracionEmpresa
         config_empresa = ConfiguracionEmpresa.objects.first()
         if config_empresa and (config_empresa.art_porcentaje > 0 or config_empresa.art_fijo_por_empleado > 0):
             conc_art = NominaService._get_or_create_concepto(
@@ -174,7 +183,7 @@ class NominaService:
         if liquidacion.estado != 'BORRADOR':
             raise ValueError("Solo se pueden solicitar aprobación desde BORRADOR.")
         
-        liquidacion.estado = 'REVISION_TESORERIA'
+        liquidacion.estado = 'REV_TESORERIA'
         liquidacion.save(update_fields=['estado'])
         return liquidacion
 
@@ -186,16 +195,10 @@ class NominaService:
         Aprueba la liquidación, genera el Asiento Contable (Partida Doble) y 
         crea la Orden de Pago en Tesorería.
         """
-        from django.utils import timezone
-        if liquidacion.estado != 'REVISION_TESORERIA':
+        if liquidacion.estado != 'REV_TESORERIA':
             raise ValueError("La liquidación debe ser enviada a Tesorería por RRHH primero.")
 
         liquidacion.aprobador_tesoreria = aprobador_user
-
-        from apps.contabilidad.services import ContabilidadService
-        from apps.contabilidad.models import Diario, Cuenta
-        from apps.tesoreria.models import ComprobanteTesoreria, Caja
-        from apps.contactos.models import Contacto
         
         # 1. CONTABILIDAD: Crear Asiento por Partida Doble
         diario_sueldos, _ = Diario.objects.get_or_create(codigo='SUELDOS', defaults={'nombre': 'Diario de Sueldos', 'tipo': 'varios'})
@@ -230,11 +233,10 @@ class NominaService:
         # 2. TESORERÍA: Crear la Orden de Pago (Borrador) para que Finanzas la cancele luego.
         # Asumimos que existe un contacto asociado al Empleado (creamos uno temporal si no existe)
         contacto_empleado, _ = Contacto.objects.get_or_create(
-            cuit=liquidacion.empleado.cuil, 
-            defaults={'nombre': liquidacion.empleado.nombre_completo, 'tipo': 'empleado'}
+            cuil=liquidacion.empleado.cuil, 
+            defaults={'codigo': f"EMP-{liquidacion.empleado.cuil}"[:20], 'nombre': liquidacion.empleado.nombre_completo, 'tipo': 'cliente'}
         )
         
-        import uuid
         op_tesoreria = ComprobanteTesoreria.objects.create(
             numero=f"OP-SUELDO-{liquidacion.id}",
             tipo='orden_pago',
@@ -322,8 +324,6 @@ class NominaService:
         Liquidación Extraordinaria por egreso.
         motivos: RENUNCIA, DESPIDO_SIN_CAUSA, MUTUO_ACUERDO
         """
-        import calendar
-        
         mes = fecha_egreso.month
         anio = fecha_egreso.year
         dias_mes_calendario = calendar.monthrange(anio, mes)[1]

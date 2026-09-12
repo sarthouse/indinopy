@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('contactos/', include('apps.contactos.urls', namespace='contactos')),
     path('documentos/', include('apps.documentos.urls', namespace='documentos')),
+    path('federacion/', include('apps.federacion.urls', namespace='federacion')),
 ]
 
 # Si el nodo carga las apps de ERP, exponemos sus URLs

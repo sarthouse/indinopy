@@ -56,6 +56,20 @@ class Tag(TimeStampedModel):
 
     def __str__(self):
         return self.nombre
+class TipoDocumentoAFIP(models.Model):
+    """
+    Tipos de Documento AFIP (80=CUIT, 86=CUIL, 96=DNI, etc.)
+    """
+    codigo = models.CharField(max_length=2, primary_key=True, verbose_name=_("Código AFIP"))
+    descripcion = models.CharField(max_length=100, verbose_name=_("Descripción"))
+
+    class Meta:
+        verbose_name = _("Tipo de Documento AFIP")
+        verbose_name_plural = _("Tipos de Documentos AFIP")
+        ordering = ["codigo"]
+
+    def __str__(self):
+        return f"{self.codigo} - {self.descripcion}"
 
 
 class Contacto(TimeStampedModel):
@@ -109,10 +123,18 @@ class Contacto(TimeStampedModel):
     )
 
     # Datos Fiscales (Argentina)
+    tipo_documento = models.ForeignKey(
+        TipoDocumentoAFIP,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name=_("Tipo de Documento"),
+        help_text=_("CUIT, DNI, etc."),
+    )
     cuil = models.CharField(
         max_length=13,
         blank=True,
-        verbose_name=_("CUIT / CUIL"),
+        verbose_name=_("Número de Documento"),
         help_text=_("Sin guiones o con formato 20-XXXXXXXX-X"),
     )
     condicion_iva = models.CharField(

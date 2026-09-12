@@ -1,6 +1,8 @@
+import uuid
+from datetime import date
 from django.db import transaction
 from django.contrib.contenttypes.models import ContentType
-from apps.compras.models import OrdenCompra
+from apps.compras.models import OrdenCompra, LineaOrdenCompra
 from apps.inventario.models import MovimientoStock
 from apps.inventario.services import StockService
 
@@ -38,3 +40,34 @@ class ComprasService:
             remito.save(update_fields=["estado"])
             for linea in remito.lineas.filter(estado__in=["borrador", "reservado"]):
                 StockService.cancelar_linea(linea)
+
+    @staticmethod
+    @transaction.atomic
+    def crear_oc_borrador(proveedor, producto, cantidad, ubicacion_destino):
+        """
+        Crea una Orden de Compra en estado borrador generada por el MRP.
+        """
+        # Generar código (en producción usaría una secuencia real)
+        numero_oc = f"OC-MRP-{str(uuid.uuid4())[:6].upper()}"
+        
+        oc = OrdenCompra.objects.create(
+            numero=numero_oc,
+            proveedor=proveedor,
+            fecha=date.today(),
+            estado="borrador",
+            observaciones="Generado automáticamente por el motor MRP (Regla de Abastecimiento)."
+        )
+        
+        # Buscar tarifa si existe
+        tarifa = producto.tarifas_proveedor.filter(proveedor=proveedor).first() if hasattr(producto, 'tarifas_proveedor') else None
+        precio = tarifa.precio if tarifa else 0.0
+        
+        LineaOrdenCompra.objects.create(
+            orden=oc,
+            producto=producto,
+            cantidad=cantidad,
+            precio_unitario=precio,
+            subtotal=cantidad * precio
+        )
+        
+        return oc

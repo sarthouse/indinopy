@@ -1,5 +1,6 @@
 from decimal import Decimal
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import TimeStampedModel
 
@@ -78,7 +79,6 @@ class Empleado(TimeStampedModel):
         return f"{self.nombre_completo} ({self.cuil})"
 
     def clean(self):
-        from django.core.exceptions import ValidationError
         if self.adherido_fondo_cese:
             # Check if there is any document attached (must have been saved first)
             # In Django, we can't check related objects on unsaved instances easily in clean() 
@@ -172,7 +172,7 @@ class LiquidacionNomina(TimeStampedModel):
 
     ESTADO_LIQUIDACION = [
         ('BORRADOR', _('Borrador (Calculado por RRHH)')),
-        ('REVISION_TESORERIA', _('Pendiente Firma Tesorería (SoD)')),
+        ('REV_TESORERIA', _('Pendiente Firma Tesorería (SoD)')),
         ('APROBADA', _('Aprobada (Contabilizada y a Pagar)')),
         ('PAGADA', _('Pagada / Cerrada')),
         ('ANULADA', _('Anulada')),

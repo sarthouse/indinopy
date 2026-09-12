@@ -1,7 +1,10 @@
+import datetime
+import hashlib
+import uuid
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericRelation
-import uuid
 from simple_history.models import HistoricalRecords
 
 
@@ -91,8 +94,6 @@ class DocumentoFirmableMixin(models.Model):
 
     def calcular_hash_documento(self):
         """Calcula el hash SHA-256 canónico del documento."""
-        import hashlib
-
         payload_str = self.generar_payload_canonico()
         return hashlib.sha256(payload_str.encode("utf-8")).hexdigest()
 
@@ -117,8 +118,6 @@ class DocumentoFirmableMixin(models.Model):
         Agrega una firma al JSONField. Al llamar a save(), simple-history
         tomará un snapshot con el documento exacto y las firmas presentes.
         """
-        import datetime
-
         firmas = dict(self.firmas_digitales)
         firmas[rol] = {
             "actor_id": actor_id,
@@ -275,8 +274,6 @@ class ConfiguracionEmpresa(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         """Asegura que solo exista un registro de configuración (Singleton)."""
-        from django.core.exceptions import ValidationError
-
         if self.__class__.objects.count() > 0 and not self.pk:
             raise ValidationError(
                 "No se puede crear más de una configuración de empresa en modo Single-Tenant."

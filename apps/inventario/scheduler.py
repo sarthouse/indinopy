@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 
-from apps.inventario.models import Producto, ReglaAbastecimiento, Ubicacion
+from apps.inventario.models import Producto, ReglaAbastecimiento, Ubicacion, StockQuant
 from apps.inventario.services import StockService
 
 # Intentar importar servicios de otros módulos para crear borradores
@@ -34,8 +34,6 @@ class SchedulerAbastecimientoService:
         En el futuro: sumar Movimientos de Recepción en estado 'borrador/confirmado'.
         """
         # Obtenemos los quants físicos y reservados en la ubicación exacta y sus hijas
-        from apps.inventario.models import StockQuant
-        
         quants = StockQuant.objects.filter(
             producto_id=producto_id, 
             ubicacion_id=ubicacion_id
@@ -101,7 +99,7 @@ class SchedulerAbastecimientoService:
                         
                         if proveedor:
                             # Se generaría un borrador de OC (Draft PO)
-                            # ComprasService.crear_oc_borrador(proveedor, regla.producto, qty_pedir, regla.ubicacion)
+                            ComprasService.crear_oc_borrador(proveedor, regla.producto, qty_pedir, regla.ubicacion)
                             compras_generadas += 1
                         else:
                             logger.warning(f"No hay proveedor configurado para comprar {regla.producto.nombre}.")
@@ -109,7 +107,7 @@ class SchedulerAbastecimientoService:
                 elif regla.tipo_ruta == 'fabricar':
                     if ProduccionService:
                         # Se generaría un borrador de Orden de Producción (Draft MO)
-                        # ProduccionService.crear_op_borrador(regla.producto, qty_pedir, regla.ubicacion)
+                        ProduccionService.crear_op_borrador(regla.producto, qty_pedir, regla.ubicacion)
                         producciones_generadas += 1
                         
                 elif regla.tipo_ruta == 'transferir':

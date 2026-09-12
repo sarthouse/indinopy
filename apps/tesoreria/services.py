@@ -1,6 +1,14 @@
+from decimal import Decimal
 from django.db import transaction
 from django.utils import timezone
-from apps.tesoreria.models import ContratoEscrow, HitoEscrow, ComprobanteTesoreria, MovimientoCaja, Caja
+from apps.tesoreria.models import (
+    ContratoEscrow,
+    HitoEscrow,
+    ComprobanteTesoreria,
+    MovimientoCaja,
+    Caja,
+    IndiceUCI,
+)
 from apps.produccion.models import OrdenProduccion
 
 class EscrowService:
@@ -42,11 +50,23 @@ class EscrowService:
         if op:
             monto_hito = (hito.contrato.monto_total_uci * hito.porcentaje) / 100
 
+            contacto_pago = None
+            if hasattr(op, "tracking_etapas"):
+                etapa_taller = op.tracking_etapas.filter(tallerista_asignado__isnull=False).first()
+                if etapa_taller:
+                    contacto_pago = etapa_taller.tallerista_asignado
+            elif hasattr(op, "etapas"):
+                etapa_taller = op.etapas.filter(tallerista_asignado__isnull=False).first()
+                if etapa_taller:
+                    contacto_pago = etapa_taller.tallerista_asignado
+            if not contacto_pago:
+                contacto_pago = getattr(op, "tallerista_principal", None)
+
             op_pago = ComprobanteTesoreria.objects.create(
                 numero=f"OPG-HITO-{hito.id}-{op.numero}",
                 tipo="orden_pago",
                 estado="borrador",
-                contacto=op.tallerista_principal,
+                contacto=contacto_pago,
                 observaciones=f"Pago liberado por PTF - {hito.nombre} - OP {op.numero}",
             )
             
@@ -84,7 +104,6 @@ class UCIService:
     @staticmethod
     def obtener_cotizacion_actual():
         """Devuelve el valor actual de 1 UCI en ARS."""
-        from apps.tesoreria.models import IndiceUCI
         cotizacion = IndiceUCI.objects.order_by('-fecha').first()
         if not cotizacion:
             return Decimal("1.00") # Fallback por defecto (1 UCI = 1 ARS)
@@ -93,7 +112,6 @@ class UCIService:
     @staticmethod
     def ars_a_uci(monto_ars, fecha=None):
         """Convierte ARS a UCI usando la cotización a una fecha dada (o la más reciente)."""
-        from apps.tesoreria.models import IndiceUCI
         if not monto_ars:
             return Decimal("0.00")
         
@@ -109,7 +127,6 @@ class UCIService:
     @staticmethod
     def uci_a_ars(monto_uci, fecha=None):
         """Convierte UCI a ARS usando la cotización a una fecha dada."""
-        from apps.tesoreria.models import IndiceUCI
         if not monto_uci:
             return Decimal("0.00")
             

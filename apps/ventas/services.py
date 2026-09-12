@@ -3,7 +3,7 @@ from django.utils import timezone
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from .models import OrdenVenta, TiendaWooCommerce, LineaOrdenVenta, LineaRecargoOrden
-from apps.inventario.models import MovimientoStock, LineaMovimientoStock, Ubicacion
+from apps.inventario.models import MovimientoStock, LineaMovimientoStock, Ubicacion, Producto
 from apps.inventario.services import StockService
 from apps.contactos.models import Contacto
 
@@ -30,17 +30,17 @@ class VentasService:
                 
         cliente = Contacto.objects.filter(email=email).first()
         if not cliente and cuit:
-            cliente = Contacto.objects.filter(numero_documento=cuit).first()
+            cliente = Contacto.objects.filter(cuil=cuit).first()
             
         if not cliente:
             cliente = Contacto.objects.create(
+                codigo=f"CLI-{cuit or email or '001'}"[:20],
                 nombre=f"{billing.get('first_name', '')} {billing.get('last_name', '')}".strip(),
                 email=email,
                 telefono=billing.get("phone", ""),
                 direccion=f"{billing.get('address_1', '')}, {billing.get('city', '')}",
-                numero_documento=cuit or "",
-                tipo_documento="CUIT" if cuit and len(str(cuit)) > 8 else "DNI",
-                es_cliente=True
+                cuil=cuit or "",
+                tipo="CLIENTE",
             )
 
         # 2. Upsert OrdenVenta
@@ -97,8 +97,6 @@ class VentasService:
         orden.save(update_fields=["total_recargos_fees"])
 
         # 6. Procesar Line Items (Productos)
-        from apps.inventario.models import Producto
-        
         orden.lineas.all().delete()
         for item in payload.get("line_items", []):
             sku = item.get("sku")
@@ -178,7 +176,6 @@ class VentasService:
     @transaction.atomic
     def procesar_producto_woocommerce(tienda_id, payload):
         """Sincroniza el CRUD de Productos desde Woo hacia el ERP."""
-        from apps.inventario.models import Producto
         sku = payload.get("sku")
         if not sku:
             return # Sin SKU no podemos cruzar la base de datos de manera fiable
@@ -198,7 +195,6 @@ class VentasService:
     @staticmethod
     @transaction.atomic
     def eliminar_producto_woocommerce(tienda_id, payload):
-        from apps.inventario.models import Producto
         sku = payload.get("sku")
         if sku:
             # En ERP no borramos, inactivamos.

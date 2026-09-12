@@ -35,10 +35,12 @@ class EmitirAFIPActionView(LoginRequiredMixin, View):
         doc = get_object_or_404(DocumentoDeuda, pk=pk)
         
         try:
-            # El entorno (homologacion/produccion) se lee automáticamente de ConfiguracionEmpresa
-            facturador = FacturadorAFIP()
-            facturador.emitir_comprobante(doc)
-            messages.success(request, f"Comprobante {doc.numero} emitido en AFIP con CAE {doc.afip_cae}.")
+            if not doc.diario.es_facturacion_electronica:
+                messages.info(request, f"El diario {doc.diario.codigo} no opera con AFIP. El comprobante se considera confirmado de forma interna.")
+            else:
+                facturador = FacturadorAFIP()
+                facturador.emitir_comprobante(doc)
+                messages.success(request, f"Comprobante {doc.numero} emitido en AFIP con CAE {doc.afip_cae}.")
         except Exception as e:
             messages.error(request, f"Error al emitir en AFIP: {str(e)}")
         

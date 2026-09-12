@@ -1,7 +1,9 @@
-from celery import shared_task
 import requests
+from celery import shared_task
 from django.conf import settings
 from apps.mes.models import RegistroEOP
+from apps.federacion.models import NodoFederado
+from apps.tesoreria.services import EscrowService
 
 @shared_task
 def notificar_tallerista_nueva_eop(uuid_str, tallerista_cuit, payload_original):
@@ -9,8 +11,6 @@ def notificar_tallerista_nueva_eop(uuid_str, tallerista_cuit, payload_original):
     Tarea Celery asincrónica que retransmite la e-OP hacia el servidor del Tallerista
     para que se genere su OP Espejo.
     """
-    from apps.federacion.models import NodoFederado
-    
     try:
         nodo_taller = NodoFederado.objects.get(cuit=tallerista_cuit)
         url_webhook = f"{nodo_taller.url_base.rstrip('/')}/api/v1/eop/espejo/"
@@ -39,8 +39,6 @@ def liberar_hito_escrow_async(uuid_str):
     Tarea Celery asincrónica que ejecuta el movimiento pesado de tesorería
     (liberar fondos del Smart Contract / Fideicomiso) sin bloquear el request web.
     """
-    from apps.tesoreria.services import EscrowService
-    
     try:
         registro = RegistroEOP.objects.get(uuid_identificador=uuid_str)
         # La MES ordena la liberación del dinero a los trabajadores

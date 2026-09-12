@@ -1,8 +1,10 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 
 from apps.base.models import DocumentoBase, TimeStampedModel
+from apps.inventario.models import MovimientoStock, LineaMovimientoStock, Ubicacion
 
 
 class TarifaProveedor(TimeStampedModel):
@@ -172,9 +174,6 @@ class OrdenCompra(DocumentoBase):
 
     def get_movimientos_stock(self):
         """Devuelve todos los movimientos de stock asociados a esta orden de compra."""
-        from apps.inventario.models import MovimientoStock
-        from django.contrib.contenttypes.models import ContentType
-
         ct = ContentType.objects.get_for_model(self)
         return MovimientoStock.objects.filter(
             models.Q(content_type_origen=ct, object_id_origen=self.id)
@@ -185,12 +184,6 @@ class OrdenCompra(DocumentoBase):
         """
         Crea o retorna el MovimientoStock entrante (Remito de recepción) en Almacén.
         """
-        from apps.inventario.models import (
-            Ubicacion,
-            MovimientoStock,
-            LineaMovimientoStock,
-        )
-
         if not almacen_destino:
             almacen_destino, _ = Ubicacion.objects.get_or_create(
                 tipo="interna", defaults={"nombre": "Almacén Principal", "activa": True}
@@ -200,8 +193,6 @@ class OrdenCompra(DocumentoBase):
             tipo="proveedor",
             defaults={"nombre": "Proveedores (Virtual)", "activa": True},
         )
-
-        from django.contrib.contenttypes.models import ContentType
 
         ct = ContentType.objects.get_for_model(self)
 
@@ -243,10 +234,6 @@ class OrdenCompra(DocumentoBase):
         (incluyendo remitos iniciales y sus backorders generados por recepciones parciales).
         Si todas las cantidades fueron recibidas y la orden estaba confirmada, pasa a finalizado.
         """
-        from apps.inventario.models import LineaMovimientoStock
-
-        from django.contrib.contenttypes.models import ContentType
-
         ct = ContentType.objects.get_for_model(self)
 
         for linea in self.lineas.all():
@@ -342,16 +329,12 @@ class LineaOrdenCompra(TimeStampedModel):
 
     @property
     def subtotal(self):
-        from decimal import Decimal, ROUND_HALF_UP
-
         return (self.cantidad * self.precio_unitario).quantize(
             Decimal("0.01"), rounding=ROUND_HALF_UP
         )
 
     @property
     def iva_monto(self):
-        from decimal import Decimal, ROUND_HALF_UP
-
         if self.impuesto:
             return (
                 self.subtotal * (self.impuesto.alicuota / Decimal("100.0"))

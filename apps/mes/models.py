@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import TimeStampedModel
 
@@ -306,8 +307,6 @@ class PerfilPTF(TimeStampedModel):
     @property
     def credencial_vigente(self):
         """Devuelve True si la credencial no está vencida y el PTF está activo."""
-        from django.utils import timezone
-
         return (
             self.activo and self.fecha_vencimiento_credencial >= timezone.now().date()
         )

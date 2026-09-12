@@ -1,3 +1,5 @@
+from django.contrib.gis.geos import Point
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -5,7 +7,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, View, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.shortcuts import get_object_or_404
 from apps.contactos.models import Contacto
 
 from .models import (
@@ -45,7 +46,6 @@ class RegistroEOPListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        from django.utils import timezone
 
         # Destacar e-OPs con Timelock próximo a vencer (próximas 6 horas)
         context["proximas_a_vencer"] = RegistroEOP.objects.filter(
@@ -218,8 +218,6 @@ class AprobarEOPActionView(LoginRequiredMixin, View):
 
         gps_point = None
         if lat and lon:
-            from django.contrib.gis.geos import Point
-
             try:
                 gps_point = Point(float(lon), float(lat), srid=4326)
             except (ValueError, TypeError):
@@ -308,7 +306,7 @@ class EstadoCreditoFDIAPIView(APIView):
             )
 
         # En el nodo MES, buscamos a la marca en nuestra tabla de Contactos
-        contacto = get_object_or_404(Contacto, cuit=cuit_marca)
+        contacto = get_object_or_404(Contacto, cuil=cuit_marca)
 
         # Buscamos su línea de crédito
         try:

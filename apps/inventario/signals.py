@@ -1,11 +1,11 @@
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
+from .models import UnidadMedida
 
 @receiver(post_migrate)
 def crear_unidades_medida_por_defecto(sender, **kwargs):
     """Crea las unidades de medida base del sistema industrial al migrar."""
     if sender.name == "apps.inventario":
-        from .models import UnidadMedida
 
         unidades_defecto = [
             {"nombre": "Unidades", "simbolo": "u", "tipo": "unidad"},

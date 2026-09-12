@@ -1,5 +1,5 @@
 from decimal import Decimal
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 
@@ -363,8 +363,6 @@ class MovimientoStock(DocumentoBase):
           2. Ajusta la cantidad de la línea actual a lo realmente efectuado.
           3. Pasa el movimiento actual y sus líneas procesadas a 'realizado'/'finalizado'.
         """
-        from django.db import transaction
-
         with transaction.atomic():
             hay_remanente = False
             lineas_remanentes = []

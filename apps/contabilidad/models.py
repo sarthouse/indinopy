@@ -1,5 +1,6 @@
-from django.db import models
-from django.db import transaction
+from decimal import Decimal
+from django.db import models, transaction
+from django.db.models import Sum
 from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -145,6 +146,11 @@ class Diario(TimeStampedModel):
         blank=True,
         verbose_name="Punto de Venta AFIP",
         help_text="Ej. 1, 2, 3. Obligatorio si se emiten comprobantes electrónicos.",
+    )
+    es_facturacion_electronica = models.BooleanField(
+        default=False,
+        verbose_name="¿Es Facturación Electrónica?",
+        help_text="Marcar si este diario conecta con los Web Services de AFIP.",
     )
     es_exportacion = models.BooleanField(
         default=False,
@@ -330,9 +336,6 @@ class DocumentoDeuda(TimeStampedModel):
     @property
     def saldo_pendiente(self):
         """Calcula el saldo restando los pagos aplicados al monto total."""
-        from django.db.models import Sum
-        from decimal import Decimal
-
         aplicado = self.aplicaciones_recibidas.aggregate(total=Sum("monto_aplicado"))[
             "total"
         ]
@@ -343,8 +346,6 @@ class DocumentoDeuda(TimeStampedModel):
 
     def actualizar_estado_pago(self):
         """Actualiza el estado de la deuda basado en el saldo pendiente."""
-        from decimal import Decimal
-
         saldo = self.saldo_pendiente
         if saldo <= Decimal("0.00"):
             self.estado = "pagado"
@@ -442,8 +443,6 @@ class AplicacionPago(TimeStampedModel):
             doc.actualizar_estado_pago()
 
     def delete(self, *args, **kwargs):
-        from django.db import transaction
-
         with transaction.atomic():
             doc = DocumentoDeuda.objects.select_for_update().get(
                 pk=self.documento_deuda_id

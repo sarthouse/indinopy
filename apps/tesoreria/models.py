@@ -1,7 +1,8 @@
+import json
+from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 from django.db.models import Sum
-from decimal import Decimal
 from apps.base.models import TimeStampedModel, DocumentoBase
 
 
@@ -105,8 +106,6 @@ class ComprobanteTesoreria(DocumentoFirmableMixin, DocumentoBase):
         """
         Genera el payload canónico para firma de la Orden de Pago/Recibo.
         """
-        import json
-
         payload = {
             "uuid": str(self.uuid_identificador),
             "numero": self.numero,
@@ -369,8 +368,6 @@ class HitoEscrow(DocumentoFirmableMixin, TimeStampedModel):
         return f"{self.nombre} ({self.porcentaje}%) - {self.get_estado_display()}"
 
     def generar_payload_canonico(self):
-        import json
-
         payload = {
             "uuid": str(self.uuid_identificador),
             "contrato_uuid": str(self.contrato.eop_uuid),

@@ -1,10 +1,24 @@
-from django.db import transaction
-from django.utils import timezone
-from django.contrib.contenttypes.models import ContentType
+from datetime import timedelta
 import hashlib
 import json
+from nacl.exceptions import BadSignatureError
+from nacl.signing import VerifyKey
 
-from .models import PerfilPTF, ComisionCredito, RegistroEOP, ResolucionOP
+from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
+from django.utils import timezone
+
+from apps.base.models import ConfiguracionEmpresa
+from apps.tesoreria.models import ContratoEscrow
+from apps.tesoreria.services import EscrowService
+
+from .models import (
+    ComisionCredito,
+    PerfilPTF,
+    RegistroEOP,
+    ResolucionOP,
+    TribunalArbitraje,
+)
 
 
 class PTFService:
@@ -33,8 +47,6 @@ class PTFService:
         El PTF queda en estado inicial sin clave pública — aún no puede firmar.
         La fecha de vencimiento por defecto es 1 año desde hoy.
         """
-        from datetime import timedelta
-
         comision = ComisionCredito.objects.get(pk=comision_id)
 
         if hasattr(usuario, "perfil_ptf"):
@@ -164,7 +176,6 @@ class PTFService:
         para traer la lista de PTFs habilitados en esa jurisdicción.
         Esta lista alimenta el combo 'PTF Asignado' en la creación de la e-OP.
         """
-        from apps.base.models import ConfiguracionEmpresa
         config = ConfiguracionEmpresa.objects.first()
         
         # Si el ERP está desconectado del FDI o no tiene endpoint, retorna lista local
@@ -219,9 +230,6 @@ class PTFService:
             return False
 
         try:
-            from nacl.signing import VerifyKey
-            from nacl.exceptions import BadSignatureError
-            
             # La clave pública se guarda en hex, la pasamos a bytes
             vk = VerifyKey(bytes.fromhex(perfil_ptf.clave_publica_ed25519))
             
@@ -419,9 +427,6 @@ class PTFService:
     @staticmethod
     def _liberar_escrow_por_eop(registro_eop):
         """Busca el ContratoEscrow asociado a la e-OP y libera el hito correspondiente."""
-        from apps.tesoreria.models import ContratoEscrow
-        from apps.tesoreria.services import EscrowService
-
         escrow = ContratoEscrow.objects.filter(
             eop_uuid=registro_eop.uuid_identificador
         ).first()
@@ -436,9 +441,6 @@ class PTFService:
     @staticmethod
     def _abrir_caso_arbitraje(registro_eop):
         """Abre un caso en el TribunalArbitraje cuando una e-OP es vetada."""
-        from datetime import timedelta
-        from .models import TribunalArbitraje
-
         TribunalArbitraje.objects.get_or_create(
             registro_eop=registro_eop,
             defaults={

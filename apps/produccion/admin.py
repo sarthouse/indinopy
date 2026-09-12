@@ -86,7 +86,6 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
     list_display = [
         "numero",
         "receta",
-        "tallerista_principal",
         "cantidad_total",
         "cantidad_producida",
         "estado_escrow",
@@ -105,7 +104,6 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
         "numero",
         "uuid_identificador",
         "hash_seguridad",
-        "tallerista_principal__nombre",
         "cliente__nombre",
     ]
     inlines = [
@@ -152,7 +150,6 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
             "Protocolo e-OP & RIGI",
             {
                 "fields": (
-                    "tallerista_principal",
                     "estado_escrow",
                     "fecha_fondeo_escrow",
                     "regimen_juridico",

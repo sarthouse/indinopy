@@ -22,7 +22,7 @@ class ContactoDetailView(LoginRequiredMixin, DetailView):
 class ContactoCreateView(LoginRequiredMixin, CreateView):
     model = Contacto
     template_name = "contactos/contacto_form.html"
-    fields = ['nombre', 'tipo_documento', 'numero_documento', 'email', 'telefono', 'direccion', 'es_cliente', 'es_proveedor', 'es_taller_homologado']
+    fields = ['nombre', 'cuil', 'email', 'telefono', 'direccion', 'tipo']
     
     def get_success_url(self):
         return reverse_lazy('contactos:contacto_detail', kwargs={'pk': self.object.pk})
@@ -31,7 +31,7 @@ class ContactoCreateView(LoginRequiredMixin, CreateView):
 class ContactoUpdateView(LoginRequiredMixin, UpdateView):
     model = Contacto
     template_name = "contactos/contacto_form.html"
-    fields = ['nombre', 'tipo_documento', 'numero_documento', 'email', 'telefono', 'direccion', 'es_cliente', 'es_proveedor', 'es_taller_homologado']
+    fields = ['nombre', 'cuil', 'email', 'telefono', 'direccion', 'tipo']
     
     def get_success_url(self):
         return reverse_lazy('contactos:contacto_detail', kwargs={'pk': self.object.pk})

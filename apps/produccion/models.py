@@ -2,11 +2,21 @@ import hashlib
 import json
 import uuid
 from decimal import Decimal
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import TimeStampedModel, DocumentoBase
-from apps.inventario.models import ProductoTemplate, Producto, AtributoValor
+from apps.inventario.models import (
+    ProductoTemplate,
+    Producto,
+    AtributoValor,
+    Ubicacion,
+    MovimientoStock,
+    LineaMovimientoStock,
+)
 
 
 class Receta(TimeStampedModel):
@@ -335,31 +345,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
 
     def clean(self):
         super().clean()
-        from django.core.exceptions import ValidationError
-        
-        # Validación de Crédito FDI solo para e-OPs financiadas
-        if self.es_eop_federada and self.estado_escrow == 'financiado_fdi':
-            from apps.federacion.services import FederacionCreditoService
-            try:
-                datos_fdi = FederacionCreditoService.consultar_cupo_mes()
-                
-                # Bloqueo por Mora
-                if datos_fdi.get('mora_activa'):
-                    raise ValidationError(
-                        "Bloqueo MES: Posees anticipos del FDI vencidos. Regulariza la situación."
-                    )
-                
-                # Bloqueo por Cupo (Se financia el servicio de confección: MOD + CS)
-                costo_financiar = (self.costo_mod or 0) + (self.costo_cs or 0)
-                cupo = datos_fdi.get('cupo_disponible', 0.0)
-                
-                if float(costo_financiar) > float(cupo):
-                    raise ValidationError(
-                        f"Bloqueo MES: Cupo insuficiente. Requieres ${costo_financiar}, pero dispones de ${cupo}."
-                    )
-            except ValueError as e:
-                # Falló la conexión o la marca no tiene línea asignada
-                raise ValidationError(str(e))
 
     @property
     def porcentaje_avance(self):
@@ -378,13 +363,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         Registra la finalización parcial de una tanda de la OP (Odoo MRP).
         - variaciones_cantidades: dict con {op_variacion_id: cantidad_producida}
         """
-        from django.db import transaction
-        from apps.inventario.models import (
-            Ubicacion,
-            MovimientoStock,
-            LineaMovimientoStock,
-        )
-
         with transaction.atomic():
             almacen, _ = Ubicacion.objects.get_or_create(
                 tipo="interna", defaults={"nombre": "Almacén Principal", "activa": True}
@@ -395,8 +373,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
             )
 
             num_parte = self.partes_produccion.count() + 1
-            from django.contrib.contenttypes.models import ContentType
-
             ct = ContentType.objects.get_for_model(self)
 
             remito_terminados = MovimientoStock.objects.create(
@@ -507,9 +483,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         Cierra la OP reconociendo mermas o scrap si no se alcanza la cantidad_total.
         Libera cualquier insumo reservado remanente en inventario.
         """
-        from django.db import transaction
-        from apps.inventario.models import MovimientoStock
-
         with transaction.atomic():
             remito_reserva = MovimientoStock.objects.filter(
                 numero=f"RES-{self.numero}"
@@ -589,14 +562,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         hacia el Almacén Principal.
         - insumos_cantidades: dict {insumo_sku_id: cantidad_a_devolver}
         """
-        from django.db import transaction
-        from apps.inventario.models import (
-            Ubicacion,
-            MovimientoStock,
-            LineaMovimientoStock,
-            Producto,
-        )
-
         with transaction.atomic():
             almacen, _ = Ubicacion.objects.get_or_create(
                 tipo="interna", defaults={"nombre": "Almacén Principal", "activa": True}
@@ -614,8 +579,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
                 ).count()
                 + 1
             )
-            from django.contrib.contenttypes.models import ContentType
-
             ct = ContentType.objects.get_for_model(self)
 
             remito_dev = MovimientoStock.objects.create(
@@ -1008,8 +971,6 @@ class OPEtapaTracking(TimeStampedModel):
         """
         Genera el remito de traslado físico de piezas semielaboradas hacia el tallerista externo.
         """
-        from apps.inventario.models import Ubicacion, MovimientoStock
-
         if not origen:
             origen, _ = Ubicacion.objects.get_or_create(
                 tipo="interna", defaults={"nombre": "Almacén Principal", "activa": True}
@@ -1032,8 +993,6 @@ class OPEtapaTracking(TimeStampedModel):
             "y Depósito Regular en Custodia (Arts. 1356 y ss. CCCN). Las materias primas y semielaborados son propiedad "
             "inembargable y exclusiva del comitente emisor. El receptor actúa únicamente como custodio y transformador del material."
         )
-
-        from django.contrib.contenttypes.models import ContentType
 
         ct = ContentType.objects.get_for_model(self.op)
 
@@ -1058,8 +1017,6 @@ class OPEtapaTracking(TimeStampedModel):
         """
         Genera el remito de reingreso físico de piezas semielaboradas desde el taller externo a planta.
         """
-        from apps.inventario.models import Ubicacion, MovimientoStock
-
         if not origen:
             origen, _ = Ubicacion.objects.get_or_create(
                 tipo="fason",
@@ -1075,8 +1032,6 @@ class OPEtapaTracking(TimeStampedModel):
             destino, _ = Ubicacion.objects.get_or_create(
                 tipo="interna", defaults={"nombre": "Almacén Principal", "activa": True}
             )
-
-        from django.contrib.contenttypes.models import ContentType
 
         ct = ContentType.objects.get_for_model(self.op)
 

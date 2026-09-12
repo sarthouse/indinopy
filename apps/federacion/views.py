@@ -1,19 +1,30 @@
 import datetime
-from django.utils import timezone
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, permissions
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from apps.produccion.models import OrdenProduccion
+from django.utils import timezone
+from rest_framework import permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from apps.contactos.models import Contacto
+from apps.inventario.models import MovimientoStock, ProductoTemplate, Ubicacion
+from apps.mes.models import RegistroEOP
+from apps.produccion.models import (
+    OPEtapaTracking,
+    OPParteProduccion,
+    OPParteProduccionLinea,
+    OrdenProduccion,
+    Receta,
+    RecetaEtapa,
+)
 
 from .models import NodoFederado, WebhookLog
 from .serializers import (
-    NodoFederadoSerializer,
     EntradaEOPSerializer,
     FirmaEtapaSerializer,
+    NodoFederadoSerializer,
 )
-from apps.mes.models import RegistroEOP
+from .tasks import liberar_hito_escrow_async, notificar_tallerista_nueva_eop
 
 
 class RegistroNodoView(APIView):
@@ -81,8 +92,6 @@ class RecepcionEOPView(APIView):
             log.save()
 
             # Tarea Celery Asincrónica: Notificar al Taller
-            from .tasks import notificar_tallerista_nueva_eop
-
             notificar_tallerista_nueva_eop.delay(
                 str(data["uuid_identificador"]), data["tallerista_cuit"], request.data
             )
@@ -140,8 +149,6 @@ class RecepcionFirmaEtapaView(APIView):
                 registro.save()
 
                 # Tarea Celery Asincrónica: Liberar Fondos del FDI
-                from .tasks import liberar_hito_escrow_async
-
                 liberar_hito_escrow_async.delay(str(registro.uuid_identificador))
 
             log.firma_verificada = True
@@ -177,10 +184,11 @@ class EOPWebhookReceiverAPIView(APIView):
 
         # 1. Buscamos/Creamos a la Marca en nuestra libreta de clientes
         cliente_marca, _ = Contacto.objects.get_or_create(
-            cuit=cuit_emisor,
+            cuil=cuit_emisor,
             defaults={
+                "codigo": f"CLI-{cuit_emisor}"[:20],
                 "nombre": payload.get("razon_social_comitente", "Marca Desconocida"),
-                "tipo": "cliente",
+                "tipo": "CLIENTE",
             },
         )
 
@@ -197,10 +205,14 @@ class EOPWebhookReceiverAPIView(APIView):
 
         # 3. Clonación de Etapas (Tracking)
         # La Marca manda un array de etapas (Aparado, Armado, etc.) que nos tocan.
-        from apps.produccion.models import OPEtapaTracking, RecetaEtapa, Receta
-        from apps.inventario.models import ProductoTemplate
-        
-        receta_espejo, _ = Receta.objects.get_or_create(codigo=f"REC-{op_espejo.numero}")
+        template_defecto, _ = ProductoTemplate.objects.get_or_create(
+            nombre=f"Producto Fason {op_espejo.numero}",
+            defaults={"tipo": "producto"},
+        )
+        receta_espejo, _ = Receta.objects.get_or_create(
+            producto_template=template_defecto,
+            nombre_version=f"ESP-{op_espejo.numero}",
+        )
         etapas_payload = payload.get("etapas", [])
         for i, etapa_data in enumerate(etapas_payload):
             servicio, _ = ProductoTemplate.objects.get_or_create(
@@ -221,9 +233,6 @@ class EOPWebhookReceiverAPIView(APIView):
             )
 
         # 4. Remito de Ingreso de Mercadería en Custodia
-        from apps.inventario.models import MovimientoStock, Ubicacion
-        from django.contrib.contenttypes.models import ContentType
-
         ubicacion_custodia, _ = Ubicacion.objects.get_or_create(
             nombre="Depósito Custodia (Comitentes)", tipo="interna"
         )
@@ -246,10 +255,6 @@ class EOPWebhookReceiverAPIView(APIView):
             {"status": "OP Espejo Creada", "op_local": op_espejo.numero},
             status=status.HTTP_201_CREATED,
         )
-
-
-from apps.produccion.models import OPParteProduccion, OPEtapaTracking
-from django.contrib.contenttypes.models import ContentType
 
 
 class ParteProduccionWebhookReceiverAPIView(APIView):
@@ -288,8 +293,6 @@ class ParteProduccionWebhookReceiverAPIView(APIView):
         )
 
         # 5. Replicar las líneas producidas
-        from apps.produccion.models import OPParteProduccionLinea
-
         lineas = payload.get("lineas", [])
         for linea_data in lineas:
             # Buscar la OPVariacion correspondiente

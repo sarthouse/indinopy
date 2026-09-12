@@ -486,16 +486,6 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 
 ---
 
-## Notas al Pie
-
-[^1]: El nombre **Proof-of-Productive-Work (PoPW)** es una elección terminológica deliberada por contraste con el *Proof-of-Work* (PoW) computacional de Bitcoin y sus derivados. Mientras que el PoW consume energía en cálculos matemáticos abstractos para lograr consenso distribuido, el PoPW ancla el flujo financiero a la verificación de trabajo manufacturero físico real. No se afirma equivalencia criptográfica con el PoW; el mecanismo es, en esencia, un protocolo de validación de hitos productivos con inspección física por el Promotor Territorial y respaldo de firma digital institucional (ver §4.2 para la descripción completa).
-
-[^2]: **Sarthou, T. G. (2026). *"RIGI del Conurbano 2026"*.** Documento de trabajo interno del proyecto e-OP/Indinopy, no publicado ni sometido a revisión externa. Este documento articula la propuesta de política sectorial (régimen fiscal, estructura del FDI, mecanismo de fondeo) que el presente paper formaliza como protocolo técnico. Se cita en §3.2 y §5 únicamente como referencia de los supuestos de diseño normativos propios del proyecto, no como validación independiente de las hipótesis del modelo matemático.
-
-[^3]: El ciclo de 30 días corresponde al período medio entre el despacho de insumos al taller y el cobro de la venta minorista en la temporada de calzado. Este parámetro es un supuesto de diseño del protocolo consistente con el comportamiento sectorial; la fuente externa más cercana es la serie de índices de producción industrial del INDEC (2026). Su validación empírica precisa con datos de campo del piloto (§9.1.1) es trabajo futuro.
-
----
-
 ## Referencias Bibliográficas
 
 * Akerlof, G. A. (1970). The Market for "Lemons": Quality Uncertainty and the Market Mechanism. *The Quarterly Journal of Economics*, 84(3), 488–500. https://doi.org/10.2307/1879431
@@ -534,3 +524,11 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 * Szabo, N. (1997). Formalizing and Securing Relationships on Public Networks. *First Monday*, 2(9). https://doi.org/10.5210/fm.v2i9.548
 * Williamson, O. E. (1979). Transaction-Cost Economics: The Governance of Contractual Relations. *The Journal of Law and Economics*, 22(2), 233–261. https://doi.org/10.1086/466942
 * Yunus, M. (1999). *Banker to the Poor: Micro-Lending and the Battle Against World Poverty*. PublicAffairs.
+
+---
+
+[^1]: El nombre **Proof-of-Productive-Work (PoPW)** es una elección terminológica deliberada por contraste con el *Proof-of-Work* (PoW) computacional de Bitcoin y sus derivados. Mientras que el PoW consume energía en cálculos matemáticos abstractos para lograr consenso distribuido, el PoPW ancla el flujo financiero a la verificación de trabajo manufacturero físico real. No se afirma equivalencia criptográfica con el PoW; el mecanismo es, en esencia, un protocolo de validación de hitos productivos con inspección física por el Promotor Territorial y respaldo de firma digital institucional (ver §4.2 para la descripción completa).
+
+[^2]: **Sarthou, T. G. (2026). "RIGI del Conurbano 2026".** Documento de trabajo interno del proyecto e-OP/Indinopy, no publicado ni sometido a revisión externa. Este documento articula la propuesta de política sectorial (régimen fiscal, estructura del FDI, mecanismo de fondeo) que el presente paper formaliza como protocolo técnico. Se cita en §3.2 y §5 únicamente como referencia de los supuestos de diseño normativos propios del proyecto, no como validación independiente de las hipótesis del modelo matemático.
+
+[^3]: El ciclo de 30 días corresponde al período medio entre el despacho de insumos al taller y el cobro de la venta minorista en la temporada de calzado. Este parámetro es un supuesto de diseño del protocolo consistente con el comportamiento sectorial; la fuente externa más cercana es la serie de índices de producción industrial del INDEC (2026). Su validación empírica precisa con datos de campo del piloto (§9.1.1) es trabajo futuro.

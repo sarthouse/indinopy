@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from .models import TiendaWooCommerce
 from .services import VentasService
+from .tasks import procesar_webhook_woo_async
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WooCommerceWebhookView(View):
@@ -45,7 +46,6 @@ class WooCommerceWebhookView(View):
             return HttpResponse("Payload inválido", status=400)
 
         # Procesamiento asincrónico vía Celery
-        from .tasks import procesar_webhook_woo_async
         procesar_webhook_woo_async.delay(tienda.id, topic, payload)
         
         # WooCommerce exige un HTTP 200 rápido para no deshabilitar el Webhook

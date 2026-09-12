@@ -46,7 +46,7 @@ BASE_APPS = [
 ]
 
 # Rol del Nodo en la Red Federada (MES, COMITENTE, TALLERISTA)
-NODE_ROLE = os.getenv("NODE_ROLE", "COMITENTE").upper()
+NODE_ROLE = (os.getenv("NODE_ROLE") or "DEV").upper()
 
 # Apps base obligatorias para todos los nodos
 CORE_APPS = [
@@ -134,9 +134,15 @@ DATABASES = {
 
 # Redis y celery
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_ACCEPT_CONTENT = ["json"]
+TIME_ZONE = "America/Argentina/Buenos_Aires"
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", REDIS_URL)
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", REDIS_URL)
 CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 
 # Password validation

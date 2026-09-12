@@ -81,6 +81,11 @@ class ContabilidadService:
             
         if total_debe == Decimal('0.00'):
             raise ValidationError("El asiento no tiene montos registrados.")
+            
+        if asiento.diario.es_facturacion_electronica and asiento.documento_origen:
+            doc = asiento.documento_origen
+            if hasattr(doc, 'afip_cae') and not doc.afip_cae:
+                raise ValidationError("No se puede asentar este asiento porque el diario es electrónico y el documento origen no tiene CAE autorizado.")
 
         asiento.estado = 'asentado'
         asiento.save(update_fields=['estado'])

@@ -1,6 +1,8 @@
+from datetime import datetime
 import logging
 from django.conf import settings
 from apps.base.models import ConfiguracionEmpresa
+from apps.contabilidad.contabilizacion import ContabilizacionDocumentoService
 from afip import Afip
 
 logger = logging.getLogger(__name__)
@@ -48,8 +50,8 @@ class FacturadorAFIP:
                 f"El documento {documento_deuda.numero} no tiene un Tipo de Comprobante AFIP."
             )
 
-        if not documento_deuda.tipo_comprobante_afip.es_electronico:
-            logger.info("El comprobante no requiere autorización electrónica.")
+        if not documento_deuda.diario.es_facturacion_electronica:
+            logger.info(f"El diario {documento_deuda.diario.codigo} opera en Circuito X. Se omite conexión con AFIP.")
             return True
 
         if documento_deuda.afip_cae:
@@ -146,8 +148,6 @@ class FacturadorAFIP:
             res_vencimiento = res["CAEFchVto"]  # Formato YYYYMMDD
 
             # Convertir YYYYMMDD a fecha para Django
-            from datetime import datetime
-
             fecha_vto_cae = datetime.strptime(res_vencimiento, "%Y%m%d").date()
 
             # Guardar en base de datos
@@ -162,7 +162,6 @@ class FacturadorAFIP:
             )
 
             # Generar Asiento Contable
-            from apps.contabilidad.contabilizacion import ContabilizacionDocumentoService
             try:
                 ContabilizacionDocumentoService.contabilizar_factura(documento_deuda)
             except Exception as accounting_error:
