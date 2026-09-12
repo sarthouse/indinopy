@@ -135,14 +135,24 @@ Al ingresar al sistema, los insumos y productos semielaborados quedan documentad
 
 > **⚠️ Nota:** Los mecanismos descritos en esta sección —el Crédito Fiscal Presunto y la Cuenta de IVA Sectorial Diferida— son **propuestas legislativas** incluidas en el Dossier RIGI Conurbano (2026) y el proyecto de Ley de Salvataje Nacional. No están vigentes en el derecho tributario argentino actual. La versión operativa del sistema bajo la ley vigente utiliza la deducción presunta transitoria del 35% sobre costos de mano de obra informal prevista en la propuesta como medida puente.
 
-Para modelar la absorción formal del eslabón manual sin fricción tributaria punitiva, el protocolo propone una función de clearing fiscal desacoplado:
+Para modelar la absorción formal del eslabón manual sin fricción tributaria punitiva, el protocolo desacopla la liquidación fiscal en dos funciones complementarias procesadas en el clearing del FDI:
 
-$$\tau(\mathcal{OP}) = \begin{cases} 
-\mu_{\text{Mono}} \cdot \mathcal{P}_{\text{MOD}} & \text{si Prestador Eventual Individual (Tope Cat. A)} \\
-\text{IVA}_{\text{Diferido}}(\text{Clearing}) - 0.25 \cdot \mathcal{P}_{\text{MOD}} & \text{si Unidad Productiva SAS (Tope MiPyME)}
-\end{cases}$$
+1. **Obligación Tributaria Neta del Taller / Prestador ($\tau_T$):**  
+   Determina la retención impositiva sobre el servicio de confección según la personería del ejecutor:
 
-Donde el término \$0.25 \cdot \mathcal{P}_{\text{MOD}}$ formaliza el **Crédito Fiscal Presunto del 25%** propuesto, mientras que la **Cuenta de IVA Sectorial Diferida** supedita la exigibilidad fiscal a la acreditación monetaria efectiva del clearing, eliminando el devengamiento sobre facturas impagas.
+   $$\tau_T(\mathcal{OP}) = \begin{cases} 
+   \mu_{\text{Mono}} \cdot \mathcal{P}_{\text{MOD}} & \text{si Prestador Eventual Individual (Tope Cat. A)} \\
+   \text{IVA}_{\text{Diferido}}(\text{Clearing}) & \text{si Unidad Productiva SAS (Tope MiPyME)}
+   \end{cases}$$
+
+   Donde $\mu_{\text{Mono}} \in [0.01, 0.02]$ formaliza la micro-retención automática por API, mientras que la **Cuenta de IVA Sectorial Diferida** supedita la exigibilidad fiscal de la SAS a la acreditación monetaria efectiva del clearing del FDI, eliminando el devengamiento sobre facturas impagas y evitando la asfixia financiera del taller.
+
+2. **Crédito Fiscal Presunto y Deducibilidad para la Marca Comitente ($\mathcal{CF}_M$):**  
+   Para subsanar el "purgatorio fiscal" en el que la marca formal no puede deducir la mano de obra contratada a prestadores no inscriptos o monotributistas, el sistema computa a favor de la comitente:
+
+   $$\mathcal{CF}_M(\mathcal{OP}) = 0.25 \cdot \mathcal{P}_{\text{MOD}}$$
+
+   Este valor opera como **Crédito Fiscal Presunto del 25%** reconocible por ARCA contra el Débito Fiscal del IVA y como gasto computable en el Impuesto a las Ganancias, neutralizando la tributación sobre utilidades ficticias al vender el bien terminado.
 
 ### 3.3. Modelo de Confianza y Auditoría Criptográfica
 
