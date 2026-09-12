@@ -156,7 +156,7 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
 
     ESTADO_ESCROW_CHOICES = [
         ("no_aplica", _("No Aplica (Interna)")),
-        ("fondeado", _("Escrow Fondeado (Pendiente MES)")),
+        ("financiado_fdi", _("Financiado por FDI (Comitente en Deuda)")),
         ("aprobado_silencio", _("Aprobado por Silencio (48h)")),
         ("vetado_mes", _("Vetado por la MES")),
         ("hito_cero_liberado", _("Hito Cero Liberado al Taller")),
@@ -245,15 +245,8 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         ),
     )
     # === Protocolo e-OP ===
-    tallerista_principal = models.ForeignKey(
-        "contactos.Contacto",
-        on_delete=models.RESTRICT,
-        null=True,
-        blank=True,
-        related_name="ops_como_tallerista",
-        verbose_name=_("Tallerista / Fasón Principal"),
-        help_text=_("Responsable primario ante el protocolo de custodia y liquidación"),
-    )
+    # NOTA: Tallerista_principal fue removido. La asignación de proveedores externos 
+    # se hace a nivel de Etapa (OPEtapaTracking) para soportar múltiples prestadores con CBU independiente.
     ptf_asignado = models.ForeignKey(
         "contactos.Contacto",
         on_delete=models.RESTRICT,
@@ -339,6 +332,34 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
             else "S/D"
         )
         return f"OP {self.numero} - {template_nombre}{cliente_nombre} ({self.cantidad_producida}/{self.cantidad_total})"
+
+    def clean(self):
+        super().clean()
+        from django.core.exceptions import ValidationError
+        
+        # Validación de Crédito FDI solo para e-OPs financiadas
+        if self.es_eop_federada and self.estado_escrow == 'financiado_fdi':
+            from apps.federacion.services import FederacionCreditoService
+            try:
+                datos_fdi = FederacionCreditoService.consultar_cupo_mes()
+                
+                # Bloqueo por Mora
+                if datos_fdi.get('mora_activa'):
+                    raise ValidationError(
+                        "Bloqueo MES: Posees anticipos del FDI vencidos. Regulariza la situación."
+                    )
+                
+                # Bloqueo por Cupo (Se financia el servicio de confección: MOD + CS)
+                costo_financiar = (self.costo_mod or 0) + (self.costo_cs or 0)
+                cupo = datos_fdi.get('cupo_disponible', 0.0)
+                
+                if float(costo_financiar) > float(cupo):
+                    raise ValidationError(
+                        f"Bloqueo MES: Cupo insuficiente. Requieres ${costo_financiar}, pero dispones de ${cupo}."
+                    )
+            except ValueError as e:
+                # Falló la conexión o la marca no tiene línea asignada
+                raise ValidationError(str(e))
 
     @property
     def porcentaje_avance(self):
@@ -1117,6 +1138,21 @@ class OPEscrowHito(TimeStampedModel):
         on_delete=models.CASCADE, 
         related_name="escrow_hitos",
         verbose_name=_("Orden de producción")
+    )
+    etapa_tracking = models.ForeignKey(
+        OPEtapaTracking,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="hitos_escrow",
+        verbose_name=_("Etapa Productiva Asignada")
+    )
+    beneficiario = models.ForeignKey(
+        "contactos.Contacto",
+        on_delete=models.RESTRICT,
+        null=True, blank=True,
+        related_name="hitos_escrow_cobrar",
+        verbose_name=_("Tallerista / Beneficiario del Hito"),
+        help_text=_("El CBU/CVU de este contacto recibirá el pago al liberarse el hito")
     )
     nombre_hito = models.CharField(max_length=100, verbose_name=_("Hito de Pago (Ej: Hito Cero, Corte)"))
     condicion_disparo = models.CharField(max_length=200, verbose_name=_("Condición de Disparo Técnico"))

@@ -13,4 +13,8 @@ urlpatterns = [
     
     # API Headless (Gateway Externo)
     path('api/v1/headless/e-op/', api_views.RecepcionHeadlessEOPView.as_view(), name='api_headless_eop'),
+
+    # Portal de Talleristas Externos
+    path('portal-tallerista/', views.PortalTalleristaListView.as_view(), name='portal_tallerista'),
+    path('portal-tallerista/etapa/<int:tracking_id>/declarar/', views.DeclararParteActionView.as_view(), name='declarar_parte'),
 ]

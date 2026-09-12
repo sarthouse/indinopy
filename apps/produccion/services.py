@@ -237,6 +237,80 @@ class ProduccionService:
             total_producido = sum(v.cantidad_producida for v in op.variaciones.all())
             OrdenProduccion.objects.filter(pk=op.pk).update(cantidad_producida=total_producido)
 
+        # Generar Deuda de Tesorería por Servicio (FDI o Talleristas Externos)
+        ProduccionService._liquidar_servicios_op(op)
+
+    @staticmethod
+    def _liquidar_servicios_op(op):
+        """
+        Calcula el costo del servicio (MOD + CS) de la OP y genera la deuda contable.
+        - Si es FDI (RIGI): Crea una deuda con el FDI a 60 días.
+        - Si es Privado: Crea una deuda con cada tallerista asignado en la OP.
+        """
+        from apps.contabilidad.models import DocumentoDeuda, LineaDocumentoDeuda
+        from apps.contactos.models import Contacto
+        from django.utils import timezone
+        
+        # Filtramos hitos liberados o etapas completadas para liquidar
+        hitos_completados = op.escrow_hitos.filter(estado='liberado') if op.es_eop_federada else None
+        
+        if op.es_eop_federada and op.estado_escrow == 'financiado_fdi':
+            # Paradigma RIGI: La Marca le debe al FDI
+            contacto_fdi = Contacto.objects.filter(tipo='fdi_mes').first()
+            if not contacto_fdi:
+                return # Si no hay FDI configurado, no liquidar
+                
+            deuda = DocumentoDeuda.objects.create(
+                tipo='deuda_fdi',
+                estado='publicado',
+                contacto=contacto_fdi,
+                fecha_emision=timezone.now().date(),
+                fecha_vencimiento=timezone.now().date() + timezone.timedelta(days=60), # Regla de plazo fijo a 60 días
+                moneda='ARS',
+                observaciones=f"Crédito FDI por OP {op.numero}"
+            )
+            
+            # El monto es el costo financiado
+            costo = (op.costo_mod or Decimal('0.00')) + (op.costo_cs or Decimal('0.00'))
+            LineaDocumentoDeuda.objects.create(
+                documento=deuda,
+                producto=None,
+                descripcion="Adelanto por Servicio de Confección RIGI",
+                cantidad=Decimal('1.0'),
+                precio_unitario=costo,
+                subtotal=costo
+            )
+            
+        elif op.tipo == 'fason':
+            # Paradigma Privado: La Marca le debe a cada Tallerista Externo por separado
+            # Buscamos todas las etapas finalizadas y sus talleristas asignados
+            for etapa in op.tracking_etapas.filter(estado='finalizada'):
+                if not etapa.tallerista_asignado:
+                    continue
+                    
+                costo_etapa = etapa.costo_servicio_total or Decimal('0.00')
+                if costo_etapa <= 0:
+                    continue
+                    
+                deuda_privada = DocumentoDeuda.objects.create(
+                    tipo='liquidacion_fason',
+                    estado='publicado',
+                    contacto=etapa.tallerista_asignado,
+                    fecha_emision=timezone.now().date(),
+                    fecha_vencimiento=timezone.now().date() + timezone.timedelta(days=15), # Plazo comercial típico de 15 días
+                    moneda='ARS',
+                    observaciones=f"Liquidación de Fasón - Etapa: {etapa.etapa_origen.servicio.nombre}"
+                )
+                
+                LineaDocumentoDeuda.objects.create(
+                    documento=deuda_privada,
+                    producto=None,
+                    descripcion=f"Servicio de {etapa.etapa_origen.servicio.nombre}",
+                    cantidad=Decimal('1.0'),
+                    precio_unitario=costo_etapa,
+                    subtotal=costo_etapa
+                )
+
     @staticmethod
     @transaction.atomic
     def cancelar_op(op):

@@ -70,3 +70,71 @@ class OPCancelarActionView(LoginRequiredMixin, View):
             messages.error(request, f"Error al cancelar la e-OP: {str(e)}")
         
         return redirect('produccion:op_detail', pk=op.pk)
+
+# =====================================================================
+# PORTAL DE PROVEEDORES / TALLERISTAS EXTERNOS
+# =====================================================================
+from .models import OPEtapaTracking, OPParteProduccion
+from django.db import transaction
+
+class PortalTalleristaListView(LoginRequiredMixin, ListView):
+    """
+    Portal web para el operario/tallerista que no tiene servidor propio.
+    Ve únicamente los lotes/etapas que la Marca le asignó a su Contacto.
+    """
+    model = OPEtapaTracking
+    template_name = "produccion/portal_tallerista_list.html"
+    context_object_name = "etapas_asignadas"
+    
+    def get_queryset(self):
+        # Filtramos por las etapas asignadas a su contacto
+        if not hasattr(self.request.user, 'perfil_contacto'):
+            return OPEtapaTracking.objects.none()
+            
+        contacto_usuario = self.request.user.perfil_contacto
+        return OPEtapaTracking.objects.filter(
+            tallerista_asignado=contacto_usuario, 
+            estado__in=['pendiente', 'en_curso']
+        )
+
+class DeclararParteActionView(LoginRequiredMixin, View):
+    """
+    Permite al tallerista declarar un avance físico de producción desde su celular.
+    """
+    @transaction.atomic
+    def post(self, request, tracking_id):
+        etapa = get_object_or_404(OPEtapaTracking, pk=tracking_id)
+        
+        # Validar permisos: solo el tallerista asignado puede declarar
+        if not hasattr(request.user, 'perfil_contacto') or etapa.tallerista_asignado != request.user.perfil_contacto:
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("No tienes permisos para declarar avances en esta etapa.")
+        
+        cantidad_terminada = request.POST.get('cantidad', 0)
+        
+        try:
+            # Crear el parte físico
+            parte = OPParteProduccion.objects.create(
+                op=etapa.op,
+                etapa_tracking=etapa,
+                numero_parte=f"WEB-{etapa.id}",
+                responsable=request.user
+            )
+            
+            # (Simplificación) Impactamos la primera variación de la OP
+            from .models import OPParteProduccionLinea
+            variacion = etapa.op.variaciones.first()
+            if variacion:
+                OPParteProduccionLinea.objects.create(
+                    parte=parte,
+                    variacion=variacion,
+                    cantidad_primera=cantidad_terminada
+                )
+                variacion.cantidad_producida += int(cantidad_terminada)
+                variacion.save()
+
+            messages.success(request, f"¡Excelente! Declaraste {cantidad_terminada} pares terminados.")
+        except Exception as e:
+            messages.error(request, f"Ocurrió un error al guardar el avance: {str(e)}")
+            
+        return redirect('produccion:portal_tallerista')

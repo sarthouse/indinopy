@@ -169,14 +169,28 @@ class NominaService:
 
     @staticmethod
     @transaction.atomic
-    def aprobar_liquidacion(liquidacion):
+    def solicitar_aprobacion_tesoreria(liquidacion):
+        """Paso 1 (SoD): RRHH termina el cálculo y lo envía a Tesorería."""
+        if liquidacion.estado != 'BORRADOR':
+            raise ValueError("Solo se pueden solicitar aprobación desde BORRADOR.")
+        
+        liquidacion.estado = 'REVISION_TESORERIA'
+        liquidacion.save(update_fields=['estado'])
+        return liquidacion
+
+    @staticmethod
+    @transaction.atomic
+    def aprobar_liquidacion_tesoreria(liquidacion, aprobador_user):
         """
+        Paso 2 (SoD): Tesorería valida y firma.
         Aprueba la liquidación, genera el Asiento Contable (Partida Doble) y 
         crea la Orden de Pago en Tesorería.
         """
         from django.utils import timezone
-        if liquidacion.estado != 'BORRADOR':
-            raise ValueError("Solo se pueden aprobar liquidaciones en estado BORRADOR.")
+        if liquidacion.estado != 'REVISION_TESORERIA':
+            raise ValueError("La liquidación debe ser enviada a Tesorería por RRHH primero.")
+
+        liquidacion.aprobador_tesoreria = aprobador_user
 
         from apps.contabilidad.services import ContabilidadService
         from apps.contabilidad.models import Diario, Cuenta
@@ -231,7 +245,7 @@ class NominaService:
         
         # 3. Marcar Liquidación como APROBADA
         liquidacion.estado = 'APROBADA'
-        liquidacion.save(update_fields=['estado'])
+        liquidacion.save(update_fields=['estado', 'aprobador_tesoreria'])
         
         return liquidacion, asiento, op_tesoreria
 

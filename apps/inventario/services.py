@@ -33,7 +33,7 @@ class StockService:
         linea.estado = "reservado"
         linea.save(update_fields=["estado"])
         
-        qty = linea.cantidad_hecha
+        qty = linea.cantidad  # BUG FIX: Reservar lo planeado, no lo hecho
         StockService._update_quant(
             linea.producto, 
             linea.ubicacion_origen, 
@@ -55,15 +55,16 @@ class StockService:
         
         qty = linea.cantidad_hecha
         
+        # Si venía de reservado, liberamos la reserva primero
+        if estado_anterior == "reservado":
+            StockService._update_quant(linea.producto, linea.ubicacion_origen, linea.lote, delta_fisica=0, delta_reservada=-linea.cantidad)
+            
         # Descuenta el físico del origen
         StockService._update_quant(linea.producto, linea.ubicacion_origen, linea.lote, delta_fisica=-qty, delta_reservada=0)
         
-        # Suma el físico al destino
+        # Aumenta el físico del destino
         StockService._update_quant(linea.producto, linea.ubicacion_destino, linea.lote, delta_fisica=qty, delta_reservada=0)
-        
-        # Si venía reservado, libera esa reserva
-        if estado_anterior == "reservado":
-            StockService._update_quant(linea.producto, linea.ubicacion_origen, linea.lote, delta_fisica=0, delta_reservada=-qty)
+
 
     @staticmethod
     @transaction.atomic

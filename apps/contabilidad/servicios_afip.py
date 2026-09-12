@@ -161,6 +161,13 @@ class FacturadorAFIP:
                 update_fields=["afip_cae", "afip_vencimiento_cae", "numero", "estado"]
             )
 
+            # Generar Asiento Contable
+            from apps.contabilidad.contabilizacion import ContabilizacionDocumentoService
+            try:
+                ContabilizacionDocumentoService.contabilizar_factura(documento_deuda)
+            except Exception as accounting_error:
+                logger.error(f"Error contabilizando comprobante {documento_deuda.numero}: {accounting_error}")
+
             logger.info(
                 f"CAE Autorizado: {res_cae}. Comprobante Número: {documento_deuda.numero}"
             )

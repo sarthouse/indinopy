@@ -69,6 +69,7 @@ class Contacto(TimeStampedModel):
         ("proveedor", _("Proveedor")),
         ("fabricante", _("Fabricante")),
         ("cliente_proveedor", _("Cliente y Proveedor")),
+        ("fdi_mes", _("Fideicomiso / Nodo MES (Autoridad)")),
     ]
 
     CONDICION_IVA_CHOICES = [
@@ -122,6 +123,13 @@ class Contacto(TimeStampedModel):
     )
 
     # Contacto comercial
+    usuario_asociado = models.OneToOneField(
+        'auth.User', 
+        on_delete=models.SET_NULL, 
+        null=True, blank=True, 
+        related_name="perfil_contacto",
+        verbose_name=_("Usuario de Acceso (Portal)")
+    )
     contacto_principal = models.CharField(
         max_length=200, blank=True, verbose_name=_("Persona de contacto")
     )

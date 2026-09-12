@@ -44,28 +44,9 @@ class WooCommerceWebhookView(View):
         except json.JSONDecodeError:
             return HttpResponse("Payload inválido", status=400)
 
-        # TODO: En producción, esto DEBE encolarse en Celery para responder en < 2 segs.
-        # Ej: procesar_webhook_async.delay(tienda.id, topic, payload)
+        # Procesamiento asincrónico vía Celery
+        from .tasks import procesar_webhook_woo_async
+        procesar_webhook_woo_async.delay(tienda.id, topic, payload)
         
-        try:
-            if topic in ['order.created', 'order.updated']:
-                VentasService.procesar_orden_woocommerce(tienda.id, payload)
-            
-            elif topic == 'order.deleted':
-                VentasService.eliminar_orden_woocommerce(tienda.id, payload)
-                
-            elif topic in ['product.created', 'product.updated']:
-                VentasService.procesar_producto_woocommerce(tienda.id, payload)
-                
-            elif topic == 'product.deleted':
-                VentasService.eliminar_producto_woocommerce(tienda.id, payload)
-                
-            elif topic in ['coupon.created', 'coupon.updated']:
-                VentasService.procesar_cupon_woocommerce(tienda.id, payload)
-                
-        except Exception as e:
-            # En producción, loguear el error, pero igual devolver 200 para que Woo no desactive el webhook
-            print(f"Error procesando webhook {topic}: {str(e)}")
-
-        # 3. ACK Rápido
-        return JsonResponse({"status": "ok"})
+        # WooCommerce exige un HTTP 200 rápido para no deshabilitar el Webhook
+        return JsonResponse({"status": "encolado", "topic": topic})

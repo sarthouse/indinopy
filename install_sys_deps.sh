@@ -34,6 +34,9 @@ install_debian() {
 
     echo "🐘 Instalando PostgreSQL y PostGIS..."
     sudo apt-get install -y postgresql postgresql-contrib postgis
+
+    echo "🔴 Instalando Redis Server (Message Broker)..."
+    sudo apt-get install -y redis-server
 }
 
 # Función para Fedora/RHEL/CentOS
@@ -57,6 +60,10 @@ install_fedora() {
         sudo postgresql-setup --initdb || true
         sudo systemctl enable --now postgresql
     fi
+
+    echo "🔴 Instalando Redis Server (Message Broker)..."
+    sudo dnf install -y redis
+    sudo systemctl enable --now redis
 }
 
 # Función para Arch Linux
@@ -79,6 +86,10 @@ install_arch() {
         sudo su - postgres -c "initdb -D /var/lib/postgres/data"
         sudo systemctl enable --now postgresql
     fi
+
+    echo "🔴 Instalando Redis Server (Message Broker)..."
+    sudo pacman -S --noconfirm redis
+    sudo systemctl enable --now redis
 }
 
 # Ejecutar la función correspondiente

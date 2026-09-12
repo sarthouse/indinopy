@@ -23,4 +23,7 @@ urlpatterns = [
     # ── Portal del PTF (uso personal en campo) ─────────────────────────
     path("ptf/portal/", views.PTFPortalView.as_view(), name="ptf_portal"),
     path("ptf/registrar-clave/", views.RegistrarClavePublicaActionView.as_view(), name="ptf_registrar_clave"),
+
+    # ── API FEDERADA ───────────────────────────────────────────────────
+    path("api/v1/fdi/estado-credito/", views.EstadoCreditoFDIAPIView.as_view(), name="api_estado_credito"),
 ]

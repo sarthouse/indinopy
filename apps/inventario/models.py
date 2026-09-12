@@ -512,3 +512,37 @@ class LineaMovimientoStock(TimeStampedModel):
 
     def __str__(self):
         return f"{self.cantidad} {self.producto} ({self.get_estado_display()})"
+
+
+class ReglaAbastecimiento(TimeStampedModel):
+    """
+    Reglas Pull / Puntos de Pedido (MTS - Make to Stock).
+    """
+    TIPO_RUTA_CHOICES = [
+        ('comprar', 'Comprar (Generar OC)'),
+        ('fabricar', 'Fabricar (Generar OP)'),
+        ('transferir', 'Transferir de otra Ubicación'),
+    ]
+
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='reglas_abastecimiento')
+    ubicacion = models.ForeignKey(Ubicacion, on_delete=models.CASCADE, related_name='reglas_abastecimiento', help_text="Ubicación donde se requiere el stock")
+    
+    tipo_ruta = models.CharField(max_length=20, choices=TIPO_RUTA_CHOICES, default='comprar')
+    ubicacion_origen_ruta = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True, blank=True, related_name='+', help_text="Para transferencias: de dónde sacar")
+    
+    # Parámetros matemáticos
+    cantidad_minima = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Punto de Reorden (ROP)")
+    cantidad_maxima = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Objetivo de inventario (Up to)")
+    multiplo_pedido = models.DecimalField(max_digits=10, decimal_places=2, default=1, help_text="Ej: Cajas de 50 (EOQ adaptado)")
+    
+    lead_time_dias = models.PositiveIntegerField(default=1, help_text="Tiempo de entrega en días (incluye Timelocks si aplica)")
+
+    activa = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Regla de Abastecimiento"
+        verbose_name_plural = "Reglas de Abastecimiento"
+        unique_together = ('producto', 'ubicacion')
+
+    def __str__(self):
+        return f"Regla {self.get_tipo_ruta_display()} - {self.producto.nombre}"

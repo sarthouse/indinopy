@@ -60,6 +60,15 @@ class Empleado(TimeStampedModel):
 
     activo = models.BooleanField(default=True, verbose_name=_("Empleado Activo"))
     fecha_egreso = models.DateField(null=True, blank=True, verbose_name=_("Fecha de Egreso"))
+    
+    # Generic relation to documents for contracts
+    from django.contrib.contenttypes.fields import GenericRelation
+    documentos_adjuntos = GenericRelation(
+        "documentos.DocumentoAdjunto",
+        content_type_field="content_type",
+        object_id_field="object_id",
+        related_query_name="empleado"
+    )
 
     class Meta:
         verbose_name = _("Empleado (Legajo)")
@@ -67,6 +76,17 @@ class Empleado(TimeStampedModel):
 
     def __str__(self):
         return f"{self.nombre_completo} ({self.cuil})"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.adherido_fondo_cese:
+            # Check if there is any document attached (must have been saved first)
+            # In Django, we can't check related objects on unsaved instances easily in clean() 
+            # without checking self.pk, but we can enforce it logically or via a flag.
+            if self.pk and not self.documentos_adjuntos.exists():
+                raise ValidationError({
+                    'adherido_fondo_cese': _('Riesgo Legal: No se puede adherir al Fondo de Cese Laboral (Ley Bases) sin un contrato firmado adjunto en el legajo.')
+                })
 
 
 class Licencia(TimeStampedModel):
@@ -151,13 +171,15 @@ class LiquidacionNomina(TimeStampedModel):
     ]
 
     ESTADO_LIQUIDACION = [
-        ('BORRADOR', _('Borrador (Pendiente de Revisión)')),
-        ('APROBADA', _('Aprobada (Lista para Pago)')),
+        ('BORRADOR', _('Borrador (Calculado por RRHH)')),
+        ('REVISION_TESORERIA', _('Pendiente Firma Tesorería (SoD)')),
+        ('APROBADA', _('Aprobada (Contabilizada y a Pagar)')),
         ('PAGADA', _('Pagada / Cerrada')),
         ('ANULADA', _('Anulada')),
     ]
 
     empleado = models.ForeignKey(Empleado, on_delete=models.RESTRICT, related_name="liquidaciones")
+    aprobador_tesoreria = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name="liquidaciones_aprobadas", verbose_name=_("Firma Dual (Tesorería)"))
     periodo_mes = models.IntegerField(verbose_name=_("Mes (1-12)"))
     periodo_anio = models.IntegerField(verbose_name=_("Año"))
     

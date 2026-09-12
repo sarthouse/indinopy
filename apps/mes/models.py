@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
@@ -306,11 +307,48 @@ class PerfilPTF(TimeStampedModel):
     def credencial_vigente(self):
         """Devuelve True si la credencial no está vencida y el PTF está activo."""
         from django.utils import timezone
-        return self.activo and self.fecha_vencimiento_credencial >= timezone.now().date()
+
+        return (
+            self.activo and self.fecha_vencimiento_credencial >= timezone.now().date()
+        )
 
     @property
     def tasa_incidencia(self):
         """Porcentaje de auditorías con problemas sobre el total."""
         if self.auditorias_realizadas == 0:
             return 0.0
-        return round((self.auditorias_con_incidencia / self.auditorias_realizadas) * 100, 1)
+        return round(
+            (self.auditorias_con_incidencia / self.auditorias_realizadas) * 100, 1
+        )
+
+
+class LineaCreditoFDI(TimeStampedModel):
+    """
+    Control centralizado del cupo de crédito otorgado por la MES a cada Marca (Comitente).
+    """
+
+    contacto_marca = models.OneToOneField(
+        "contactos.Contacto", on_delete=models.CASCADE, related_name="linea_credito_mes"
+    )
+    limite_otorgado = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        verbose_name=_("Límite de Crédito Otorgado (ARS)"),
+    )
+    deuda_viva = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        verbose_name=_("Deuda Viva (Saldo Pendiente)"),
+    )
+    mora_activa = models.BooleanField(
+        default=False, verbose_name=_("Mora Activa (Bloqueo)")
+    )
+
+    class Meta:
+        verbose_name = _("Línea de Crédito FDI")
+        verbose_name_plural = _("Líneas de Crédito FDI")
+
+    def __str__(self):
+        return f"{self.contacto_marca.nombre} - Cupo: ${self.limite_otorgado}"
