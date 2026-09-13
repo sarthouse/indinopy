@@ -158,11 +158,13 @@ Para modelar la absorción formal del eslabón manual sin fricción tributaria p
 2. **Crédito Fiscal Presunto y Deducibilidad para la Marca Comitente ($\mathcal{CF}_M$):**  
    Para subsanar el "purgatorio fiscal" en el que la marca formal no puede deducir la mano de obra contratada a prestadores no inscriptos o monotributistas, el sistema computa a favor de la comitente:
 
-   $$\mathcal{CF}_M(\mathcal{OP}) = 0.25 \cdot \mathcal{P}_{\text{MOD}}$$
+   $$\mathcal{CF}_M(\mathcal{OP}) = 0.35 \cdot \mathcal{P}_{\text{MOD}}$$
 
-   Este valor opera como **Crédito Fiscal Presunto del 25%** reconocible por ARCA contra el Débito Fiscal del IVA y como gasto computable en el Impuesto a las Ganancias, neutralizando la tributación sobre utilidades ficticias al vender el bien terminado.
+   Este valor opera como **Crédito Fiscal Presunto del 35%** reconocible por ARCA contra el Débito Fiscal del IVA y como gasto computable en el Impuesto a las Ganancias, neutralizando la tributación sobre utilidades ficticias al vender el bien terminado.
 
 ### 3.3. Modelo de Confianza y Auditoría Criptográfica
+
+Para que ARCA o cualquier autoridad tributaria nacional pueda reconocer el crédito fiscal presunto propuesto en §3.2 sin abrir la puerta al fraude masivo o al doble gasto, necesita apoyarse sobre un registro de órdenes que sea inmutable, auditable y no repudiable. Esta es la precondición técnica fundacional que resuelve el protocolo.
 
 A diferencia de los sistemas blockchain descentralizados (Bitcoin, Ethereum), el Protocolo e-OP utiliza un **modelo de confianza institucional centralizado con auditoría criptográfica**:
 
@@ -171,7 +173,7 @@ A diferencia de los sistemas blockchain descentralizados (Bitcoin, Ethereum), el
 * **Las firmas Ed25519** autentican a los firmantes ante la PKI institucional; las claves privadas son custodiadas por los titulares mediante tokens hardware o la billetera digital de ARCA.
 * **El árbol de Merkle de la BOM** garantiza la integridad de la receta de materiales: cualquier modificación post-firma resulta en un hash raíz diferente, detectable inmediatamente por el sistema.
 
-Este modelo sacrifica la descentralización de confianza (no se requiere consenso entre nodos independientes) a cambio de operabilidad bajo el marco legal argentino vigente, sin necesidad de infraestructura blockchain y con integración directa a las APIs de ARCA y Banco Provincia.
+Este modelo sacrifica la descentralización de confianza (no se requiere consenso entre nodos independientes) a cambio de operabilidad bajo el marco legal argentino vigente, sin necesidad de infraestructura blockchain y con integración directa a las APIs de ARCA y Banco Provincia. Cabe aclarar que, mientras no se apruebe la reforma tributaria de §3.2, la integración actual con ARCA opera exclusivamente para la constatación en tiempo real de identidad fiscal (validación de CUIT, categoría de Monotributo y estado registral) como filtro de acceso a la red.
 
 ---
 
@@ -243,6 +245,13 @@ Si $\Delta_{\text{Colusión}} < \epsilon$ donde $\epsilon$ es el umbral distrita
 
 La fundamentación ética de este mecanismo de auditoría algorítmica se basa en los principios de *accountability* y *transparencia* de los sistemas de decisión automatizada (Diakopoulos, 2016): el algoritmo no sanciona, sino que escala a revisión humana; ninguna suspensión es definitiva sin intervención de la Comisión.
 
+### 4.4. Bootstrapping de Confianza (Régimen de Primeras Operaciones)
+
+Todo sistema descentralizado enfrenta el problema de *Cold Start*: cómo asignar confianza inicial a actores sin historial. Dado que el protocolo prescinde del *scoring* bancario tradicional, la confianza se "mintea" (emite) progresivamente a través de un régimen de tutela para las primeras operaciones:
+
+1. **Oráculo Humano de Tutela (Talleristas):** Durante las primeras tres (3) e-OPs de un tallerista novato, la validación de Proof-of-Productive-Work (PoPW) no es $100\%$ autónoma. El Promotor Territorial (PTF) actúa como un oráculo de datos físico, acompañando la carga y certificando in situ la capacidad productiva. A partir de la cuarta e-OP exitosa, el tallerista genera su historial inmutable en la Bolsa de Trabajo, el cual sustituye al historial crediticio y le permite operar de forma autónoma.
+2. **Capping de Riesgo Inicial (Marcas):** Para mitigar ataques de Sybil o empresas fantasma, las marcas sin historial previo en el régimen tienen un tope duro (*hard-cap*) en el volumen de e-OPs financiables simultáneamente (acotado a 2 Salarios Mínimos, Vitales y Móviles por hito). Este techo de cristal financiero se rompe automáticamente tras completar con éxito sus primeras tres certificaciones físicas en territorio.
+
 ---
 
 ## 5. Arquitectura Financiera, Liquidez y Solvencia del FDI
@@ -265,7 +274,7 @@ flowchart TD
     end
 
     subgraph OUTFLOWS["Destinos de Financiamiento Productivo (Outflows)"]
-        P1["Hito Cero: Anticipo de Arranque al Taller (35-50%)"]
+        P1["Hito Cero: Anticipo de Arranque al Taller (35%)"]
         P2["Hitos de Avance contra PoPW Certificada"]
         P3["Compensación Tarifa Plana Energética Manufacturera"]
         P4["Banco Comunitario de Maquinaria y Red CIFO"]
@@ -356,8 +365,8 @@ En el régimen tradicional informal, la defección patronal ($D_M$) era frecuent
 - Congelamiento preventivo del último tramo de escrow (20%) durante 48h para el tallerista defector.
 
 **Penalizaciones post-laudo (tras resolución del Tribunal de Trinchera en 72h hábiles):**
-- Ejecución de la fianza líquida de resguardo depositada en el FDI.
-- Retención automática del $30\%$ sobre flujos futuros del taller hasta resarcir el daño.
+- Ejecución de la **Cláusula de Garantía Líquida por Continuidad Operativa**. **Nota de diseño:** Al no existir un depósito previo de capital inmovilizado, si la marca comitente entra en disputa y pretende retirar su stock del taller para no perder la temporada comercial, está obligada a depositar en el FDI el $100\%$ del monto reclamado como fianza de urgencia. La ejecución post-laudo recae sobre este depósito ad-hoc, sumado al bloqueo de fondeo para futuras e-OPs.
+- Retención automática del $30\%$ sobre flujos futuros del taller hasta resarcir el daño. La asimetría punitiva (exigencia de depósito en efectivo a la marca para liberar stock vs. descuento de ingresos futuros al taller) balancea la asimetría patrimonial intrínseca.
 - Publicación de la infracción en el Boletín Oficial Sectorial.
 
 Esta secuencia resuelve la aparente contradicción entre la ejecución "inmediata" y el proceso de arbitraje: el slashing de reputación (UCP) es instantáneo, mientras la ejecución patrimonial requiere el debido proceso del Tribunal.
@@ -378,9 +387,9 @@ La condición $V_M(C) \ge V_M(D)$ despejada en $\delta$ da:
 
 $$\delta^* = \frac{g_M - \beta \cdot \text{UCP}}{(\pi_M + \beta \cdot \text{UCP}) - \pi_{\text{Informal}}}$$
 
-Dado que los beneficios del RIGI ($\beta \cdot \text{UCP}$, que incluye arancel cero, exención de IIBB y prioridad aduanera) son sistemáticamente mayores que la ganancia unilateral $g_M$ (el saldo retenido de una sola orden), y el mercado informal ofrece $\pi_{\text{Informal}} < \pi_M$ por los sobrecostos impositivos de no deducibilidad, el numerador es negativo o cercano a cero, lo que implica $\delta^* \approx 0.35$–$0.40$ para parámetros típicos del sector.
+Dado que los beneficios del Régimen FIMCA ($\beta \cdot \text{UCP}$, que incluye arancel cero, exención de IIBB y prioridad aduanera) son sistemáticamente mayores que la ganancia unilateral $g_M$ (el saldo retenido de una sola orden), y el mercado informal ofrece $\pi_{\text{Informal}} < \pi_M$ por los sobrecostos impositivos de no deducibilidad, el numerador es negativo o cercano a cero, lo que implica $\delta^* \approx 0.35$–$0.40$ para parámetros típicos del sector.
 
-**Análisis de robustez:** Esta condición puede no cumplirse durante shocks macroeconómicos severos (devaluaciones que colapsen $\pi_{\text{Informal}}$ hacia cero) o en actores con costo de exclusión del sistema cercano a cero (informales plenos que no participan del RIGI). El protocolo mitiga estos escenarios mediante: (a) la indexación UCI-IPIM que preserva el valor real de los beneficios; (b) la cláusula de entrada gradual que requiere integrar reserva al FDI para acceder al régimen, elevando el costo de abandono.
+**Análisis de robustez:** Esta condición puede no cumplirse durante shocks macroeconómicos severos (devaluaciones que colapsen $\pi_{\text{Informal}}$ hacia cero) o en actores con costo de exclusión del sistema cercano a cero (informales plenos que no participan del Régimen FIMCA). El protocolo mitiga estos escenarios mediante: (a) la indexación UCI-IPIM que preserva el valor real de los beneficios; (b) la cláusula de entrada gradual que requiere integrar reserva al FDI para acceder al régimen, elevando el costo de abandono.
 
 **Limitación del modelo:** El análisis bilateral (dos jugadores) es una simplificación del juego real multilateral que incluye el sindicato, ARCA y otros talleristas que compiten por la misma marca. La extensión al juego multilateral es una línea de trabajo futuro (§9.1).
 
@@ -420,7 +429,7 @@ graph TD
         APP_PROD["apps.produccion: Motor e-OP, BOM Merkle y Etapas"]
         APP_INV["apps.inventario: Motor de Partida Doble, Quants y Remitos"]
         APP_TES["apps.tesoreria: Contratos de Escrow e Hitos de Pago"]
-        APP_MES["apps.mes: Gobernanza, Votaciones y Silencio Positivo"]
+        APP_MES["apps.mes: Gobernanza Federal/Municipal, Votaciones y Silencio Positivo"]
         APP_CONT["apps.contactos: Directorio Bolsa de Trabajo y Scoring UCP"]
     end
 
@@ -457,6 +466,7 @@ graph TD
 
 | Vector de ataque | Impacto potencial | Mitigación implementada |
 |:---|:---|:---|
+| Filtración de Datos Biométricos | Exposición de identidad de operarios vulnerables y violación a la Ley 25.326. | El protocolo no almacena imágenes faciales ni vectores crudos. Actúa únicamente como puente *pass-through* cifrado hacia la API del RENAPER. Los talleres deben firmar un consentimiento auditado por la Defensoría del Pueblo. |
 | GPS spoofing en declaración de hito | Falsa acreditación de ubicación del taller | Cruce catastral + inspección PTF obligatoria ante desvío > 500m |
 | DoS contra notificadores de la Comisión | Silencio positivo no deseado (aprobación por omisión) | Confirmación de recepción por ≥ 3/7 miembros + canal de veto de emergencia 24/7 |
 | Captura política de la Comisión de Crédito | Favoritismo en aprobación de e-OPs | Incompatibilidad absoluta por interés, parentesco o vínculo societario; registro público de votos |
@@ -494,7 +504,7 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 
 5. **Conectividad:** El sistema en su estado actual requiere conectividad a internet para la validación biométrica (RENAPER) y el clearing bancario (Banco Provincia). En zonas de baja cobertura, se requiere un modo offline con sincronización diferida, pendiente de implementación.
 
-6. **Escalabilidad a nivel federal:** La Proposición 1 analiza la solvencia de un solo nodo FDI. El análisis de solvencia del sistema federalizado multi-nodo con flujos inter-distritos es trabajo futuro.
+6. **Escalabilidad y gobernanza a nivel federal:** La Proposición 1 analiza la solvencia de un solo nodo FDI. A su vez, la estructura federal de dos niveles descripta en el Principio 8 de Ostrom (§7) no está reflejada aún en la arquitectura de software `apps.mes`; el piloto de Fase 1 opera exclusivamente en el nivel municipal (San Martín/La Matanza), y la implementación del Consejo Superior Federal —incluyendo el modelo de datos para apelaciones inter-distrito y la jerarquía normativa RGF/RGL, así como el análisis de solvencia multi-nodo con flujos inter-distritos— es trabajo futuro.
 
 ---
 
