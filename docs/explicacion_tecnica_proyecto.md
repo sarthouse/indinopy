@@ -28,7 +28,7 @@ Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su 
 
 ## 2. Cuadro Comparativo: Sistema Tradicional vs. Protocolo Indinopy
 
-| Dimensión | Sistema Tradicional / Banca Comercial | Protocolo Indinopy ERP/MES + RIGI Conurbano |
+| Dimensión | Sistema Tradicional / Banca Comercial | Protocolo Indinopy ERP/MES + FIMCA |
 |---|---|---|
 | **Garantía Exigida** | `Patrimonial` (Inmuebles, rodados, avales de terceros) | `Flujo Productivo` (e-OP colateralizada con insumos en custodia) |
 | **Plazo de Cobro Taller** | `60 a 90 días` (Diferido arbitrario por la marca) | `Inmediato` (Hito 0 al 30-40% + Avances contra pares certificados) |
@@ -65,7 +65,7 @@ Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su 
 *   **Endpoint Público sin Login:** Interfaz móvil ultra-liviana a la que accede el consumidor final al escanear la etiqueta del calzado.
 *   **Gráfico Dinámico de Participación:** Desglosa el 100% del precio de góndola en: mano de obra territorial del Conurbano, cuero y materias primas nacionales, carga fiscal neta y margen comercial.
 
-## 4. Los 5 Dispositivos de Trinchera del RIGI del Conurbano
+## 4. Los 5 Dispositivos de Trinchera del FIMCA
 
 Más allá de la emisión de la e-OP, el proyecto institucionaliza cinco dispositivos operativos de base territorial diseñados para extirpar la informalidad forzosa, desarmar la extorsión burocrática y garantizar la soberanía tecnológica de la manufactura:
 
@@ -132,13 +132,13 @@ El Artículo 22 de la Ley de Salvataje Nacional consagra el **arancel cero, IVA 
 
 ## 5. Síntesis de Impacto Territorial
 
-El RIGI del gran capital ofrece estabilidad fiscal a 30 años a multinacionales extractivas que exportan riqueza en bruto sin agregar valor. El **RIGI del Conurbano** y el software **Indinopy** construyen exactamente lo opuesto:
+El RIGI del gran capital ofrece estabilidad fiscal a 30 años a multinacionales extractivas que exportan riqueza en bruto sin agregar valor. El **FIMCA** y el software **Indinopy** construyen exactamente lo opuesto:
 *   Rescatan la **capacidad manufacturera instalada** en los barrios industriales de San Martín, La Matanza, Lanús y Tres de Febrero.
 *   Permiten que las pymes de diseño produzcan en el país con costos transparentes y entregas a tiempo.
 *   Devuelven la **dignidad salarial al tallerista**, erradicando el trabajo precarizado mediante crédito al trabajo vivo y no a la especulación.
 
 ## 6. Topología de Infraestructura PyME y Nodos
-La adopción de software libre suele fracasar en las PyMEs por la barrera técnica de la infraestructura. El dueño de una fábrica no tiene conocimientos para configurar IPs fijas, puertos de routers ni certificados SSL en un servidor propio. Por ello, la Red Federada Indinopy estandariza tres modelos de despliegue y una nomenclatura de dominios oficial para el RIGI Conurbano.
+La adopción de software libre suele fracasar en las PyMEs por la barrera técnica de la infraestructura. El dueño de una fábrica no tiene conocimientos para configurar IPs fijas, puertos de routers ni certificados SSL en un servidor propio. Por ello, la Red Federada Indinopy estandariza tres modelos de despliegue y una nomenclatura de dominios oficial para el FIMCA.
 
 ### 6.1. Estructura Oficial de Dominios y Delegación DNS
 Toda la red opera bajo el paraguas criptográfico del dominio nacional soberano `.ar`, utilizando un esquema de **Delegación de Zona (Subzonas DNS)** que calca la estructura política del RIGI:

@@ -7,7 +7,7 @@
 > **Lugar de emisión:** Ciudad de Buenos Aires, República Argentina  
 > **Fecha:** Septiembre de 2026  
 > **Destino:** A los talleristas, diseñadores, programadores de código abierto, sindicatos y fuerzas productivas de la Nación  
-> **Marco doctrinario:** [Dossier RIGI Conurbano 2026](dossier_rigi_conurbano_2026.html)  
+> **Marco doctrinario:** [Dossier Proyecto FIMCA](dossier_rigi_conurbano_2026.html)  
 > **Implementación de software:** **Indinopy** (ERP & MES de Soberanía Industrial)
 
 ---

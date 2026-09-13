@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dossier completo del RIGI Conurbano 2026. El documento matriz de la política industrial soberana.">
+    <title>Dossier RIGI Conurbano 2026 - Visor MD Nativo</title>
+    
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <!-- Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <!-- Marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- CSS Externo -->
+    <link rel="stylesheet" href="viewer.css">
+    <!-- Highlight.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark-reasonable.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+</head>
+<body>
+        <style>
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            background: #1f2937;
+            color: #94a3b8;
+            border: 1px solid #374151;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            background: #374151;
+            color: #fff;
+        }
+        .tab-btn.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #2563eb;
+        }
+    </style>
+    <script>
+        window.mdOverride = 'dossier_fimca_base.md';
+        
+        function switchTab(filename, btnElement) {
+            window.mdOverride = filename;
+            
+            // Update active styling
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            // Set loading state
+            document.getElementById('content').innerHTML = '<div class="loading">Cargando documento...</div>';
+            
+            // Call the global loadMarkdown function from viewer.js
+            if (typeof loadMarkdown === 'function') {
+                loadMarkdown();
+            }
+        }
+    </script>
+    <div class="doc-container">
+        <span class="doc-header-badge">📚 Visor Nativo Markdown</span>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dossier_fimca_base.md', this)">Documento Base</button>
+            <button class="tab-btn" onclick="switchTab('dossier_fimca_addenda1.md', this)">Addenda I</button>
+            <button class="tab-btn" onclick="switchTab('dossier_fimca_addenda2.md', this)">Addenda II</button>
+        </div>
+
+        <div id="content">
+            <div class="loading">Cargando documento original...</div>
+        </div>
+    </div>
+    
+    <!-- JS Externo -->
+    <script src="viewer.js"></script>
+</body>
+</html>

@@ -2,13 +2,13 @@
 
 **Sitio Web Oficial y Documentación:** [https://indinopy.ar/](https://indinopy.ar/)
 
-> *"Indinopy es la infraestructura tecnológica de código abierto del RIGI Conurbano: un sistema ERP/MES que convierte el trabajo real en un activo financiero inmutable (e-OP), desintermediando la usura bancaria para formalizar a las PyMEs y transferir la gobernanza de toda la cadena de valor a la comunidad productiva organizada."*
+> *"Indinopy es una infraestructura tecnológica de código abierto diseñada para el incentivo y la formalización de la manufactura del calzado argentino. Es un sistema ERP/MES que convierte el trabajo real en un activo financiero inmutable (e-OP), facilitando el acceso al crédito productivo, formalizando a las PyMEs y transfiriendo la gobernanza de toda la cadena de valor a la comunidad productiva organizada."*
 
 ---
 
 ## 📚 Documentación Oficial
 
-Toda la documentación arquitectónica, política y técnica (incluyendo el **Manifiesto Soberano**, el **Dossier RIGI Conurbano 2026** y los esquemas de la Mesa de Enlace Sectorial) se encuentra publicada de manera interactiva en nuestro portal oficial:
+Toda la documentación arquitectónica, política y técnica (incluyendo el **Manifiesto Soberano**, el **Dossier del Proyecto de Formalización e Incentivo** y los esquemas de la Mesa de Enlace Sectorial) se encuentra publicada de manera interactiva en nuestro portal oficial:
 
 👉 **[Ingresar al Portal Indinopy.ar](https://indinopy.ar/)**
 

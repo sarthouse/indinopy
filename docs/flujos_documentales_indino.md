@@ -1,6 +1,6 @@
 # Flujos Documentales en Indinopy ERP/MES
 
-Este documento detalla la estructura administrativa, los módulos operativos y los flujos documentales del ecosistema **Indinopy**, basándose en el protocolo del **Canvas Industrial RIGI Conurbano 2026**. Se enfoca en la formalización productiva, la criptografía federada y la gobernanza territorial.
+Este documento detalla la estructura administrativa, los módulos operativos y los flujos documentales del ecosistema **Indinopy**, basándose en el protocolo del **Canvas Industrial FIMCA 2026**. Se enfoca en la formalización productiva, la criptografía federada y la gobernanza territorial.
 
 ## 1. Módulos Operativos (Nodos del Ecosistema)
 
@@ -22,7 +22,7 @@ El eje del sistema abandona el esquema tradicional para adoptar instrumentos leg
 ### El Sistema Dual: OP Privada vs e-OP Federada
 Para no burocratizar innecesariamente a los actores que no requieren de los beneficios del RIGI (ej: Marcas que se autofinancian o producen internamente), Indinopy opera bajo un **Sistema Dual**:
 1. **OP Privada (Simple):** Es una orden de producción rápida y directa entre la Marca y el Taller. No requiere bloqueo de fondos en Escrow, no pasa por la Comisión de la MES ni requiere firmas criptográficas de los auditores (PTF). Es ágil y 100% de derecho privado.
-2. **e-OP Federada (RIGI):** Se activa marcando la opción `es_eop_federada = True`. Engancha automáticamente todo el ecosistema institucional: fondeo en el FDI, Timelock de 48h, auditoría PoPW por el PTF y beneficios fiscales del Puente SAS. Se utiliza cuando el Tallerista o la Marca necesitan seguridad de cobro, financiamiento o reducción impositiva.
+2. **e-OP Federada (FIMCA):** Se activa marcando la opción `es_eop_federada = True`. Engancha automáticamente todo el ecosistema institucional: fondeo en el FDI, Timelock de 48h, auditoría PoPW por el PTF y beneficios fiscales del Puente SAS. Se utiliza cuando el Tallerista o la Marca necesitan seguridad de cobro, financiamiento o reducción impositiva.
 
 ---
 

@@ -183,7 +183,7 @@ class Contacto(TimeStampedModel):
     es_taller_homologado = models.BooleanField(
         default=False,
         verbose_name=_("Homologado por INTI/Sindicato"),
-        help_text=_("Habilita recepción de e-OPs bajo régimen RIGI/Salvataje"),
+        help_text=_("Habilita recepción de e-OPs bajo régimen FIMCA/Salvataje"),
     )
     ucp_score = models.IntegerField(
         default=0,

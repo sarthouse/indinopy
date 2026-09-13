@@ -156,7 +156,7 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
 
     es_eop_federada = models.BooleanField(
         default=False,
-        verbose_name=_("Es e-OP Federada (RIGI)"),
+        verbose_name=_("Es e-OP Federada (FIMCA)"),
         help_text=_(
             "Sistema Dual: Si está marcado, la orden requiere certificación de la MES, "
             "Escrow en el FDI, auditoría de PTFs y está sujeta al Timelock de 48h. "

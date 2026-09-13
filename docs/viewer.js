@@ -1,4 +1,4 @@
-mermaid.initialize({
+﻿mermaid.initialize({
     startOnLoad: false,
     theme: 'dark',
     securityLevel: 'loose',
@@ -47,6 +47,7 @@ if (typeof markedFootnote !== 'undefined') {
 }
 
 function generateTOC(contentDiv) {
+    document.querySelectorAll('.toc-toggle-btn, .toc-sidebar').forEach(el => el.remove());
     const headings = contentDiv.querySelectorAll('h1, h2, h3');
     if (headings.length < 2) return; // Skip if too few headings
 
@@ -106,7 +107,7 @@ function generateTOC(contentDiv) {
 async function loadMarkdown() {
     try {
         // Hacemos el fetch() al archivo MD que está en la misma carpeta
-        const mdFileName = window.location.pathname.split('/').pop().replace('.html', '.md');
+        const mdFileName = window.mdOverride || window.location.pathname.split('/').pop().replace('.html', '.md');
         const response = await fetch(mdFileName);
 
         if (!response.ok) {
@@ -136,8 +137,55 @@ async function loadMarkdown() {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = htmlContent;
 
-        // Generar Índice de Contenidos Automático
+                // Generar Índice de Contenidos Automático
         generateTOC(contentDiv);
+        if (window.hljs) {
+            contentDiv.querySelectorAll('pre code').forEach((block) => {
+                if (!block.classList.contains('mermaid') && !block.parentElement.classList.contains('mermaid-wrapper')) {
+                    hljs.highlightElement(block);
+                }
+            });
+        }
+
+        // Highlight.js para bloques de código y Botón de Copiar
+        if (window.hljs) {
+            contentDiv.querySelectorAll('pre').forEach((pre) => {
+                const block = pre.querySelector('code');
+                if (block && !block.classList.contains('mermaid') && !pre.classList.contains('mermaid-wrapper')) {
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'code-wrapper';
+                    pre.parentNode.insertBefore(wrapper, pre);
+                    wrapper.appendChild(pre);
+                    
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-copy';
+                    btn.textContent = 'Copiar';
+                    
+                    btn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(block.innerText).then(() => {
+                            btn.textContent = '¡Copiado!';
+                            btn.classList.add('copied');
+                            setTimeout(() => {
+                                btn.textContent = 'Copiar';
+                                btn.classList.remove('copied');
+                            }, 2000);
+                        });
+                    });
+                    
+                    wrapper.appendChild(btn);
+                    hljs.highlightElement(block);
+                }
+            });
+        }
+        generateTOC(contentDiv);
+        if (window.hljs) {
+            contentDiv.querySelectorAll('pre code').forEach((block) => {
+                if (!block.classList.contains('mermaid') && !block.parentElement.classList.contains('mermaid-wrapper')) {
+                    hljs.highlightElement(block);
+                }
+            });
+        }
 
         // Renderizamos la sintaxis matemática de KaTeX ($ y $$)
         renderMathInElement(contentDiv, {
@@ -254,8 +302,55 @@ async function loadMarkdown() {
                 const contentDiv = document.getElementById('content');
                 contentDiv.innerHTML = htmlContent;
 
-                // Generar Índice de Contenidos Automático
+                        // Generar Índice de Contenidos Automático
+        generateTOC(contentDiv);
+        if (window.hljs) {
+            contentDiv.querySelectorAll('pre code').forEach((block) => {
+                if (!block.classList.contains('mermaid') && !block.parentElement.classList.contains('mermaid-wrapper')) {
+                    hljs.highlightElement(block);
+                }
+            });
+        }
+
+        // Highlight.js para bloques de código y Botón de Copiar
+        if (window.hljs) {
+            contentDiv.querySelectorAll('pre').forEach((pre) => {
+                const block = pre.querySelector('code');
+                if (block && !block.classList.contains('mermaid') && !pre.classList.contains('mermaid-wrapper')) {
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'code-wrapper';
+                    pre.parentNode.insertBefore(wrapper, pre);
+                    wrapper.appendChild(pre);
+                    
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-copy';
+                    btn.textContent = 'Copiar';
+                    
+                    btn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(block.innerText).then(() => {
+                            btn.textContent = '¡Copiado!';
+                            btn.classList.add('copied');
+                            setTimeout(() => {
+                                btn.textContent = 'Copiar';
+                                btn.classList.remove('copied');
+                            }, 2000);
+                        });
+                    });
+                    
+                    wrapper.appendChild(btn);
+                    hljs.highlightElement(block);
+                }
+            });
+        }
                 generateTOC(contentDiv);
+        if (window.hljs) {
+            contentDiv.querySelectorAll('pre code').forEach((block) => {
+                if (!block.classList.contains('mermaid') && !block.parentElement.classList.contains('mermaid-wrapper')) {
+                    hljs.highlightElement(block);
+                }
+            });
+        }
 
                 renderMathInElement(contentDiv, {
                     delimiters: [

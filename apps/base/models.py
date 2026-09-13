@@ -235,7 +235,7 @@ class ConfiguracionEmpresa(TimeStampedModel):
         help_text="Archivo .key",
     )
 
-    # Federación MES (RIGI Conurbano)
+    # Federación MES (FIMCA)
     nodo_mes_identificador = models.CharField(
         max_length=50,
         blank=True,

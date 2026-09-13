@@ -1,7 +1,7 @@
-<span class="doc-header-badge">⚙️ Especificación Técnica</span>
-# Análisis del Dossier "RIGI Conurbano 2026" e Integración Arquitectónica en Indinopy
+﻿<span class="doc-header-badge">⚙️ Especificación Técnica</span>
+# Análisis del Dossier Proyecto FIMCA e Integración Arquitectónica en Indinopy
 
-> **Referencia base:** [Dossier RIGI Conurbano 2026](dossier_rigi_conurbano_2026.html)  
+> **Referencia base:** [Dossier Proyecto FIMCA](dossier_rigi_conurbano_2026.html)  
 > **Sistema destino:** **Indinopy** — ERP & MES Industrial para Manufactura de Calzado, Cuero e Indumentaria  
 > **Fecha:** Septiembre de 2026  
 > **Estado:** Especificación Técnica y Plan de Implementación  
@@ -11,12 +11,12 @@
 ## ¿De qué estamos hablando? (Resumen Ejecutivo de Contexto)
 
 1. **El Problema Real:** En Argentina, la manufactura de calzado e indumentaria opera con un alto grado de tercerización en talleres periféricos familiares (aparadores, costureros, armadores a destajo). Históricamente, estos talleres viven en la informalidad o en el "purgatorio fiscal" (cobran en efectivo o usan CUITs prestados de familiares para no ahogarse en impuestos y ejecuciones bancarias). Al no haber facturas, la empresa formal (Indino) no puede deducir sus costos reales de mano de obra en Ganancias ni computar el crédito fiscal de IVA, tributando sobre utilidades ficticias.
-2. **El Documento Fuente (`Dossier RIGI Conurbano 2026.md`):** Es un proyecto de Ley de Salvataje Nacional y Régimen de Incentivo (RIGI del Conurbano) para micro y pequeñas fábricas (hasta 30 operarios). Plantea que en lugar de ahogar al taller con inspecciones o dejarlo a merced de la usura bancaria tradicional, se cree un **ecosistema de soberanía productiva**:
+2. **El Documento Fuente (`Dossier Proyecto FIMCA`):** Es el Proyecto de Formalización e Incentivo a la Manufactura del Calzado Argentino (FIMCA), el cual extiende el proyecto existente de Ley de Salvataje Nacional, adaptándolo para micro y pequeñas fábricas (hasta 30 operarios). Plantea que en lugar de ahogar al taller con inspecciones o dejarlo a merced de la usura bancaria tradicional, se cree un **ecosistema de soberanía productiva**:
 3. **Mesa de Enlace Sectorial (MES):** Órgano tripartito (Estado/INTI, Sindicatos, Cámaras, Talleristas) que gobierna la cadena.
 4. **Fideicomiso de Desarrollo Industrial (FDI):** Fondo de ahorro comunitario que reemplaza a los bancos comerciales.
 5. **La Orden de Producción como Título de Crédito (e-OP):** El banco o billetera no pide balances pasados al tallerista; financia el trabajo en curso tomando la OP registrada como garantía real de producción.
 6. **Hito Cero & Escrow Digital:** Anticipo automático de arranque (30% al 40%) al entregar los insumos al tallerista, y pagos posteriores liberados en custodia (*Escrow*) contra la certificación de hitos físicos cumplidos.
-7. **Régimen de Maquila y Façón (Propuesta de Reforma Ley 25.113 vs. CCCN Actual):** Actualmente en Argentina la **Ley 25.113 rige con exclusividad para el sector agroindustrial** (productores agropecuarios entregando materia prima con pago en especie y no sujeción tributaria). En el sector del calzado y la indumentaria rige la figura del **façón** (servicio de confección remunerado en dinero), la cual carece de ley propia y se apoya en la *Locación de Obra* (Arts. 1251 y ss. del CCCN) y *Depósito* (Arts. 1356 y ss. CCCN), lo que genera vulnerabilidad laboral (Art. 30 LCT) y riesgo de embargo sobre los insumos ante problemas del tallerista. El Dossier RIGI propone **reformar la Ley 25.113 para extender la figura a la "Maquila Industrial"**. Indinopy debe blindar documentalmente la propiedad inembargable de los insumos bajo el CCCN actual y dejar la arquitectura preparada para la eventual ampliación de la Ley 25.113.
+7. **Régimen de Maquila y Façón (Propuesta de Reforma Ley 25.113 vs. CCCN Actual):** Actualmente en Argentina la **Ley 25.113 rige con exclusividad para el sector agroindustrial** (productores agropecuarios entregando materia prima con pago en especie y no sujeción tributaria). En el sector del calzado y la indumentaria rige la figura del **façón** (servicio de confección remunerado en dinero), la cual carece de ley propia y se apoya en la *Locación de Obra* (Arts. 1251 y ss. del CCCN) y *Depósito* (Arts. 1356 y ss. CCCN), lo que genera vulnerabilidad laboral (Art. 30 LCT) y riesgo de embargo sobre los insumos ante problemas del tallerista. El Proyecto FIMCA propone **reformar la Ley 25.113 para extender la figura a la "Maquila Industrial"**. Indinopy debe blindar documentalmente la propiedad inembargable de los insumos bajo el CCCN actual y dejar la arquitectura preparada para la eventual ampliación de la Ley 25.113.
 8. **Monotributo Productivo Automatizado:** Alta simplificada con la primera e-OP, retención de 1-2% por cobro efectivo, y "Suspensión Activa de Oficio" (carga fiscal cero pesos si no hay órdenes activas, sin acumular deudas cíclicas).
 9. **Sello QR de Trazabilidad Socioproductiva:** Código escaneable en el calzado para que el consumidor final vea el desglose ético real: cuánto va al tallerista, cuánto a materiales, cuánto a impuestos y cuánto a la marca.
 10. **El Rol de Indinopy:** Indinopy es el ERP/MES de calzado de este repositorio. Ya cuenta con inventario por partida doble estilo Odoo (`apps/inventario`), fichas técnicas dinámicas BOM (`apps/produccion`), y seguimiento de etapas a fasón (`OPEtapaTracking`). **Este documento detalla exactamente qué clases, campos y migraciones deben agregarse en Django** para implementar los puntos del Dossier.
@@ -25,9 +25,9 @@
 
 ## 1. Introducción y Encuadre Doctrinario-Técnico
 
-El **Dossier de Reconstrucción Industrial "RIGI del Conurbano 2026"** y el proyecto de **Ley de Salvataje para la Cadena de Valor del Calzado** sintetizan la realidad de un entramado productivo bajo severo estrés macroeconómico. Frente a la apertura importadora, la caída del consumo interno y la asfixia por costos fijos y presión fiscal, el documento propone una salida basada en la **Comunidad Organizada**: articular al Estado, los sindicatos, las marcas comitentes, los diseñadores y los talleristas periféricos bajo una gobernanza común (la **Mesa de Enlace Sectorial - MES**) y un fondo financiero desintermediado (el **Fideicomiso de Desarrollo Industrial - FDI**).
+El **Proyecto de Formalización e Incentivo a la Manufactura del Calzado Argentino (FIMCA)** —como extensión del proyecto de **Ley de Salvataje Nacional**— sintetiza la realidad de un entramado productivo bajo severo estrés macroeconómico. Frente a la apertura importadora, la caída del consumo interno y la asfixia por costos fijos y presión fiscal, el documento propone una salida basada en la **Comunidad Organizada**: articular al Estado, los sindicatos, las marcas comitentes, los diseñadores y los talleristas periféricos bajo una gobernanza común (la **Mesa de Enlace Sectorial - MES**) y un fondo financiero desintermediado (el **Fideicomiso de Desarrollo Industrial - FDI**).
 
-**Indinopy** no es un ERP administrativo abstracto; fue concebido para resolver la operación real, física y dual de las fábricas de calzado en Argentina. Su motor de inventario por partida doble, su desglose de fichas técnicas dinámicas (BOM) y su módulo de tracking de etapas a fasón lo posicionan como la **plataforma tecnológica natural** para digitalizar, transparentar e implementar los principios del RIGI del Conurbano.
+**Indinopy** no es un ERP administrativo abstracto; fue concebido para resolver la operación real, física y dual de las fábricas de calzado en Argentina. Su motor de inventario por partida doble, su desglose de fichas técnicas dinámicas (BOM) y su módulo de tracking de etapas a fasón lo posicionan como la **plataforma tecnológica natural** para digitalizar, transparentar e implementar los principios del FIMCA.
 
 El presente documento analiza cada eje del Dossier y define las especificaciones de ingeniería de software requeridas para transformar las directivas de política industrial en **modelos de datos, servicios, validaciones y flujos operativos concretos** dentro de Indinopy.
 
@@ -53,7 +53,7 @@ flowchart TD
 
     subgraph BLOQUE_B["EJE 2: RÉGIMEN ESTRUCTURAL Y LEGAL"]
         direction TB
-        subgraph P3["3. RIGI Conurbano & Tecnología"]
+        subgraph P3["3. FIMCA & Tecnología"]
             C1["Estabilidad Fiscal por 10 Años"]
             C2["Filtro de Tecnología Conveniente (INTI)"]
             C3["Aportes Patronales Financiados"]
@@ -94,7 +94,7 @@ flowchart TD
   - A diferencia de la maquila agropecuaria, el façón se remunera en dinero (tarifa por par/servicio) y está plenamente gravado por IVA e Ingresos Brutos. Esto expone a las empresas a dos contingencias críticas:
     1. *Solidaridad Laboral (Art. 30 LCT):* Riesgo de que la justicia laboral presuma relación de dependencia o fraude laboral si el tallerista es informal.
     2. *Embargos Judiciales sobre Materia Prima:* Si el tallerista es embargado por deudas particulares o fiscales, los oficiales de justicia suelen secuestrar el cuero, suelas y cortes hallados en el taller bajo la presunción de que pertenecen a quien tiene la tenencia física.
-- **La Propuesta del Dossier RIGI:**
+- **La Propuesta del Proyecto FIMCA:**
   - Plantea la **reforma de la Ley 25.113** para extender su alcance a la manufactura no agropecuaria ("Maquila Industrial"), otorgándole rango de ley a la inembargabilidad de los insumos y desarticulando la presunción de dependencia laboral cuando medie una e-OP registrada ante la MES.
 - **Respuesta en el Sistema (Cómo opera Indinopy hoy):**
   - Mientras dicha reforma legislativa sea un proyecto, Indinopy debe blindar a la empresa bajo las herramientas más sólidas del CCCN actual:
@@ -113,9 +113,9 @@ flowchart TD
 
 ---
 
-## 3. Matriz de Correspondencia: Dossier RIGI vs. Módulos Indinopy
+## 3. Matriz de Correspondencia: Proyecto FIMCA vs. Módulos Indinopy
 
-| Eje del Dossier RIGI | Concepto Operativo | Aplicación / Módulo Indinopy | Estado Actual | Requerimiento de Desarrollo |
+| Eje del Proyecto FIMCA | Concepto Operativo | Aplicación / Módulo Indinopy | Estado Actual | Requerimiento de Desarrollo |
 | :--- | :--- | :--- | :--- | :--- |
 | **Sección II / Anexo II** | Orden de Producción como activo (e-OP) | `apps.produccion` | Implementado como OP fabril interna | Incorporar hash único, UUID, metadata legal de façón/maquila y esquema multitaller. |
 | **Sección II.B / Anexo II.C** | Hito Cero (Anticipo) y Escrow Digital | `apps.tesoreria` | Modelos pendientes de diseño | Crear modelos `HitoPago`, `LiquidacionServicioFason` y lógica de anticipos por hito. |
@@ -142,35 +142,44 @@ En `apps/produccion/models.py`, enriquecer el modelo `OrdenProduccion`:
 ```python
 import uuid
 
+
 class OrdenProduccion(DocumentoBase):
     # Campos existentes heredados...
 
-    # --- Extensión RIGI / Maquila ---
+    # --- Extensión FIMCA / Maquila ---
     uuid_identificador = models.UUIDField(
-        default=uuid.uuid4, 
-        editable=False, 
+        default=uuid.uuid4,
+        editable=False,
         unique=True,
-        verbose_name=_("Identificador Único e-OP")
+        verbose_name=_("Identificador Único e-OP"),
     )
     regimen_juridico = models.CharField(
         max_length=40,
         choices=[
-            ("fason_locacion_obra", _("Façón / Locación de Obra (Arts. 1251 CCCN - Insumos Propios)")),
-            ("maquila_industrial", _("Maquila Industrial (Proyecto Reforma Ley 25.113)")),
+            (
+                "fason_locacion_obra",
+                _("Façón / Locación de Obra (Arts. 1251 CCCN - Insumos Propios)"),
+            ),
+            (
+                "maquila_industrial",
+                _("Maquila Industrial (Proyecto Reforma Ley 25.113)"),
+            ),
             ("produccion_propia", _("Producción Integrada en Planta")),
         ],
         default="fason_locacion_obra",
-        verbose_name=_("Régimen Jurídico")
+        verbose_name=_("Régimen Jurídico"),
     )
     clausula_inembargabilidad = models.BooleanField(
         default=True,
         verbose_name=_("Amparado bajo Inembargabilidad de Stock"),
-        help_text=_("Declara las materias primas y semielaborados como activos intangibles de afectación productiva territorial.")
+        help_text=_(
+            "Declara las materias primas y semielaborados como activos intangibles de afectación productiva territorial."
+        ),
     )
     es_sello_buen_diseno = models.BooleanField(
         default=False,
         verbose_name=_("Distinción Sello Buen Diseño (SBD)"),
-        help_text=_("Habilita anticipo preferencial de Hito Cero hasta el 50%.")
+        help_text=_("Habilita anticipo preferencial de Hito Cero hasta el 50%."),
     )
 ```
 
@@ -224,8 +233,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import TimeStampedModel, DocumentoBase
 
+
 class CuentaTesoreria(TimeStampedModel):
     """Cajas físicas, cuentas bancarias de clearing o billeteras virtuales."""
+
     TIPO_CUENTA = [
         ("banco", _("Cuenta Bancaria / Clearing Oficial")),
         ("billetera", _("Billetera Digital / CVU")),
@@ -236,7 +247,9 @@ class CuentaTesoreria(TimeStampedModel):
     tipo = models.CharField(max_length=20, choices=TIPO_CUENTA, default="banco")
     cbu_cvu = models.CharField(max_length=22, blank=True, null=True)
     alias = models.CharField(max_length=100, blank=True, null=True)
-    saldo = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    saldo = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal("0.00")
+    )
     activa = models.BooleanField(default=True)
 
     def __str__(self):
@@ -245,21 +258,24 @@ class CuentaTesoreria(TimeStampedModel):
 
 class LiquidacionFason(DocumentoBase):
     """Documento paraguas de liquidación de mano de obra para un tallerista en una OP."""
+
     etapa_tracking = models.OneToOneField(
         "produccion.OPEtapaTracking",
         on_delete=models.CASCADE,
         related_name="liquidacion",
-        verbose_name=_("Etapa de Producción")
+        verbose_name=_("Etapa de Producción"),
     )
     tallerista = models.ForeignKey(
         "contactos.Contacto",
         on_delete=models.RESTRICT,
-        related_name="liquidaciones_fason"
+        related_name="liquidaciones_fason",
     )
     monto_total_pactado = models.DecimalField(max_digits=15, decimal_places=2)
     porcentaje_hito_cero = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal("35.00"),
-        help_text=_("Porcentaje de anticipo inicial (ej: 35% o 50% con SBD)")
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("35.00"),
+        help_text=_("Porcentaje de anticipo inicial (ej: 35% o 50% con SBD)"),
     )
     saldo_pendiente = models.DecimalField(max_digits=15, decimal_places=2)
 
@@ -269,6 +285,7 @@ class LiquidacionFason(DocumentoBase):
 
 class HitoLiquidacion(TimeStampedModel):
     """Tramos individuales de pago liberados contra eventos físicos."""
+
     TIPO_HITO = [
         ("hito_cero", _("Hito Cero: Anticipo de Arranque")),
         ("avance_parcial", _("Hito de Avance: Entrega Parcial")),
@@ -291,7 +308,7 @@ class HitoLiquidacion(TimeStampedModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text=_("Parte físico que certifica el cumplimiento del hito")
+        help_text=_("Parte físico que certifica el cumplimiento del hito"),
     )
     fecha_liberacion = models.DateTimeField(blank=True, null=True)
     comprobante_transferencia = models.CharField(max_length=100, blank=True, null=True)
@@ -308,12 +325,11 @@ Enriquecer `apps/contactos/models.py` para transformar la libreta de direcciones
 ```python
 class PerfilTallerista(TimeStampedModel):
     """Metadatos industriales y socioproductivos para prestadores de fasón."""
+
     contacto = models.OneToOneField(
-        "contactos.Contacto", 
-        on_delete=models.CASCADE, 
-        related_name="perfil_taller"
+        "contactos.Contacto", on_delete=models.CASCADE, related_name="perfil_taller"
     )
-    # Clasificación jurídica del RIGI
+    # Clasificación jurídica del FIMCA
     figura_tributaria = models.CharField(
         max_length=30,
         choices=[
@@ -322,7 +338,7 @@ class PerfilTallerista(TimeStampedModel):
             ("responsable_inscripto", _("Responsable Inscripto Humano")),
             ("cooperativa", _("Cooperativa de Trabajo")),
         ],
-        default="monotributo_productivo"
+        default="monotributo_productivo",
     )
     estado_fiscal_dinamico = models.CharField(
         max_length=20,
@@ -331,54 +347,68 @@ class PerfilTallerista(TimeStampedModel):
             ("suspension_activa", _("Suspensión Activa de Oficio (Carga Cero)")),
             ("irregular", _("Requiere Tutoría PTF")),
         ],
-        default="activo"
+        default="activo",
     )
 
     # Capacidad operativa auditada
     capacidad_semanal_pares = models.PositiveIntegerField(
         verbose_name=_("Capacidad Nominal (Pares/Semana)"),
-        help_text=_("Capacidad física reportada para evitar cuellos de botella")
+        help_text=_("Capacidad física reportada para evitar cuellos de botella"),
     )
     especialidades = models.ManyToManyField(
         "inventario.ProductoTemplate",
         limit_choices_to={"tipo_producto": "servicio"},
         related_name="talleres_especializados",
-        verbose_name=_("Servicios que realiza (Corte, Aparado, etc.)")
+        verbose_name=_("Servicios que realiza (Corte, Aparado, etc.)"),
     )
 
     # Métricas de confiabilidad comunitaria
     score_cumplimiento = models.DecimalField(
-        max_digits=4, decimal_places=2, default=Decimal("5.00"),
-        verbose_name=_("Calificación Comunitaria (1 a 5)")
+        max_digits=4,
+        decimal_places=2,
+        default=Decimal("5.00"),
+        verbose_name=_("Calificación Comunitaria (1 a 5)"),
     )
     total_ops_cumplidas = models.PositiveIntegerField(default=0)
     dias_promedio_desvio = models.DecimalField(
-        max_digits=5, decimal_places=1, default=Decimal("0.0"),
-        verbose_name=_("Desvío de Entrega (Días Promedio)")
+        max_digits=5,
+        decimal_places=1,
+        default=Decimal("0.0"),
+        verbose_name=_("Desvío de Entrega (Días Promedio)"),
     )
 
     # Tutoría y Territorio
     municipio = models.CharField(max_length=100, blank=True)
     promotor_territorial_asignado = models.CharField(
-        max_length=150, blank=True, null=True,
-        verbose_name=_("Promotor Territorial (PTF) de Enlace")
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name=_("Promotor Territorial (PTF) de Enlace"),
     )
 
     @property
     def carga_activa_pares(self):
         """Calcula la cantidad de pares actualmente en proceso en el taller."""
         from apps.produccion.models import OPEtapaTracking
-        return OPEtapaTracking.objects.filter(
-            tallerista_asignado=self.contacto,
-            estado__in=["en_curso", "pendiente"]
-        ).aggregate(
-            total=models.Sum("op__cantidad_total")
-        )["total"] or 0
+
+        return (
+            OPEtapaTracking.objects.filter(
+                tallerista_asignado=self.contacto, estado__in=["en_curso", "pendiente"]
+            ).aggregate(total=models.Sum("op__cantidad_total"))["total"]
+            or 0
+        )
 
     @property
     def porcentaje_ocupacion(self):
         if self.capacidad_semanal_pares > 0:
-            return round((Decimal(self.carga_activa_pares) / Decimal(self.capacidad_semanal_pares)) * Decimal("100.0"), 1)
+            return round(
+                (
+                    Decimal(self.carga_activa_pares)
+                    / Decimal(self.capacidad_semanal_pares)
+                )
+                * Decimal("100.0"),
+                1,
+            )
         return Decimal("0.0")
 ```
 
@@ -392,9 +422,13 @@ En `apps/produccion/models.py`:
 * Incorporar el campo:
   ```python
   porcentaje_merma_tolerada = models.DecimalField(
-      max_digits=5, decimal_places=2, default=Decimal("10.00"),
+      max_digits=5,
+      decimal_places=2,
+      default=Decimal("10.00"),
       verbose_name=_("Merma técnica tolerable (%)"),
-      help_text=_("Estándar INTI de descarte tolerable en corte y matricería (hasta 10% sin sanción).")
+      help_text=_(
+          "Estándar INTI de descarte tolerable en corte y matricería (hasta 10% sin sanción)."
+      ),
   )
   ```
 * **Lógica de Validación:** Al registrar mermas reales en `OPInsumoRequerido.cantidad_consumida_real` o scrap en `OPParteProduccionLinea.cantidad_descarte`:
@@ -409,8 +443,11 @@ En `apps/inventario/models.py`, en el modelo `Lote`:
   despacho_aduanero = models.CharField(max_length=50, blank=True, null=True)
   fecha_ingreso_pais = models.DateField(blank=True, null=True)
   fecha_vencimiento_permanencia = models.DateField(
-      blank=True, null=True,
-      help_text=_("Plazo duro de 360 días corridos para su transformación y re-expedición.")
+      blank=True,
+      null=True,
+      help_text=_(
+          "Plazo duro de 360 días corridos para su transformación y re-expedición."
+      ),
   )
   ```
 * Se programará una tarea periódica en Celery (`verificar_vencimientos_temporarios`) que notifique a Compras y Producción con 60 y 30 días de antelación si un lote de cuero o avíos importados corre riesgo de vencimiento aduanero.
@@ -479,7 +516,7 @@ La aplicación `apps.contabilidad` se reestructuró para operar bajo **Partida D
 
 ```mermaid
 gantt
-    title Plan de Implementación RIGI Conurbano en Indinopy
+    title Plan de Implementación FIMCA en Indinopy
     dateFormat  YYYY-MM-DD
     section Fase 1: Fundaciones Legales
     Leyendas de Maquila en Remitos          :a1, 2026-09-15, 7d

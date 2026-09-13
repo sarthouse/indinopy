@@ -2,7 +2,7 @@
 ## Proyecto Programático de Gobernanza Industrial, Comunidad Organizada y Soberanía Productiva
 
 > **Documento rector:** Proyecto Programático de Política Industrial y Arquitectura de Sistemas  
-> **Marco doctrinario:** [Dossier RIGI Conurbano 2026](dossier_rigi_conurbano_2026.html)  
+> **Marco doctrinario:** [Dossier Proyecto FIMCA](dossier_rigi_conurbano_2026.html)  
 > **Plataforma destino:** **Indinopy** (Módulo `apps/mes` / `apps/gobernanza`)  
 > **Fecha:** Septiembre de 2026  
 > **Estado:** Especificación Programática, Institucional y Técnica  
@@ -482,4 +482,4 @@ gantt
 3. **Fase 3 — Integración Financiera con el FDI:**
    Conexión mediante API de las órdenes de pago validadas con las cuentas de clearing del Banco Provincia, automatizando la liquidación del Hito Cero en milisegundos. Publicación de la Edición N° 1 del Boletín Oficial Sectorial.
 4. **Fase 4 — Escalamiento al Consejo Superior Federal:**
-   Promulgación formal de la Ley de Salvataje Nacional y el RIGI del Conurbano en el Congreso Nacional, habilitando la personería de derecho público del Consejo Federal y la interoperabilidad en todo el país.
+   Promulgación formal de la Ley de Salvataje Nacional y el FIMCA en el Congreso Nacional, habilitando la personería de derecho público del Consejo Federal y la interoperabilidad en todo el país.

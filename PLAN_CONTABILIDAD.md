@@ -1,6 +1,6 @@
 # Plan de Implementación: Módulo de Contabilidad y Tributación Argentina
 **Versión:** 1.0.0 | **Estado:** Aprobado para Desarrollo
-**Contexto:** Ecosistema Indinopy (ERP/MES - RIGI Conurbano 2026)
+**Contexto:** Ecosistema Indinopy (ERP/MES - FIMCA 2026)
 
 Este documento detalla la arquitectura de la aplicación `apps.contabilidad`, diseñada a partir de la investigación cruzada entre un Arquitecto ERP y un Especialista Tributario para el cumplimiento normativo de ARCA (ex-AFIP) y agencias provinciales (ARBA/AGIP).
 

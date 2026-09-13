@@ -63,4 +63,4 @@ Indinopy está diseñado arquitectónicamente para funcionar en **Modo Headless 
 4. **Indinopy como Firma y Escrow:** Indinopy recibe la orden, la formatea en el estándar e-OP, pide la validación biométrica del Apoderado Legal en su celular, hashea el documento y se encarga exclusivamente de rutearlo hacia la MES y bloquear los fondos en el Escrow.
 5. **Retorno al Legacy:** Cuando la MES o el PTF aprueban el hito y el Banco gira la plata, Indinopy devuelve un Webhook a SAP avisando: *"El lote 123 está terminado y pagado, ya podés dar ingreso al stock físico en tu sistema"*.
 
-Esta flexibilidad garantiza que la adopción del RIGI Conurbano 2026 no implique la traumática migración de sistemas legacy ("vendor lock-in") para empresas que ya invirtieron años en su software contable privado.
+Esta flexibilidad garantiza que la adopción del FIMCA 2026 no implique la traumática migración de sistemas legacy ("vendor lock-in") para empresas que ya invirtieron años en su software contable privado.

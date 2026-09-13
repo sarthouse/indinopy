@@ -211,7 +211,7 @@ Tribunal arbitral perentorio constituido en la MES local, integrado por: (a) El 
 
 ### **Mecanismo de Slashing (Penalización Algorítmica)**
 Castigo informático automático ante faltas graves o reincidencia en prácticas predatorias:
-* **Para Marcas Defectoras:** Quita inmediata de Unidades de Crédito Productivo (UCP), pérdida del beneficio de arancel cero y, a la tercera condena firme, **exclusión total del RIGI del Conurbano**.
+* **Para Marcas Defectoras:** Quita inmediata de Unidades de Crédito Productivo (UCP), pérdida del beneficio de arancel cero y, a la tercera condena firme, **exclusión total del FIMCA**.
 * **Para Talleres Defectores:** Retención del 30% en liquidaciones de e-OPs futuras para resarcir cuero dañado y degradación de la insignia en la Bolsa de Trabajo.
 
 ---

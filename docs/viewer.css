@@ -1,4 +1,4 @@
-:root {
+﻿:root {
             --bg-body: #0a0e17;
             --bg-card: #111827;
             --border-color: #1f2937;
@@ -246,7 +246,7 @@
         }
 
         pre {
-            background-color: #030712;
+            background-color: #000000 !important;
             border: 1px solid var(--border-color);
             padding: 14px;
             border-radius: 6px;
@@ -254,14 +254,14 @@
         }
 
         pre code {
-            background-color: transparent;
+            background-color: #000000 !important;
             padding: 0;
             border-radius: 0;
         }
 
         /* MERMAID INTERACTIVE WRAPPER */
         .mermaid-wrapper {
-            background-color: #030712;
+            background-color: #000000 !important;
             border: 1px solid #1f2937;
             border-radius: 8px;
             margin: 24px 0;
@@ -505,4 +505,35 @@
             border-radius: 6px;
             padding: 6px 10px;
             margin-left: -10px;
+        }
+        /* COPY BUTTON */
+        .code-wrapper {
+            position: relative;
+        }
+        .btn-copy {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #1f2937;
+            color: #cbd5e1;
+            border: 1px solid #374151;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, background 0.2s;
+            z-index: 10;
+        }
+        .code-wrapper:hover .btn-copy {
+            opacity: 1;
+        }
+        .btn-copy:hover {
+            background: #374151;
+            color: #fff;
+        }
+        .btn-copy.copied {
+            background: #10b981;
+            color: #fff;
+            border-color: #059669;
         }

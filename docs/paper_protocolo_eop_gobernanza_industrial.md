@@ -1,4 +1,4 @@
-# Protocolo e-OP: Un Sistema de Crédito Productivo con Auditoría Criptográfica, Custodia en Escrow y Gobernanza Policéntrica para Cadenas de Valor Manufactureras
+﻿# Protocolo e-OP: Un Sistema de Crédito Productivo con Auditoría Criptográfica, Custodia en Escrow y Gobernanza Policéntrica para Cadenas de Valor Manufactureras
 
 ### *e-OP Protocol: A Cryptographically Audited Industrial Credit, Milestone Escrow, and Polycentric Governance System for Real-World Manufacturing Value Chains*
 
@@ -41,6 +41,7 @@ graph TD
     E & F & G --> H["Colapso Productivo Territorial\n(24.180 unidades cerradas nov. 2023 – ene. 2026)\nFuente: SRT/Fundar, 2026"]
 ```
 
+> **Figura 1.** *Árbol de causas de la crisis manufacturera y el colapso territorial según las fallas de Stiglitz-Weiss, Coase y De Soto.* Este diagrama modela la triple falla de coordinación que asfixia a la base productiva: (1) El racionamiento crediticio excluye al tallerista informal del capital de trabajo, obligando a las marcas a financiar sus operaciones a expensas de retrasar los pagos al eslabón más débil. (2) Los elevados costos de transacción generan un mercado desconfiado donde predomina el trabajo a destajo sin trazabilidad ni calidad asegurada. (3) El marco legal actual criminaliza la unidad de baja escala, forzándola a operar en la clandestinidad y generando pasivos fiscales insostenibles para la marca contratante.
 1. **La Falla de Racionamiento Crediticio (Stiglitz & Weiss, 1981):**  
    El sistema bancario comercial opera mediante algoritmos de *scoring* patrimonial basados en activos físicos (inmuebles, vehículos) y balances contables históricos. El micro-taller manufacturero (aparador, cortador, armador) carece de dicho colateral. La banca responde racionando el crédito a tasa cero de disponibilidad: no le presta al taller a ninguna tasa de interés, estrangulando su capital de trabajo operativo. Un antecedente relevante de instrumentos alternativos es la **Factura de Crédito Electrónica MiPyME** (Ley 27.440, 2018), que reconoció la factura comercial como instrumento de descuento; el Protocolo e-OP extiende esa lógica al ciclo productivo previo a la facturación.
 
@@ -48,7 +49,7 @@ graph TD
    La descentralización productiva en talleres externos a façón genera costos prohibitivos de búsqueda, redacción contractual y monitoreo de entregas. La falta de confianza conduce a relaciones predatorias: las marcas imponen plazos de pago a 60-90 días (utilizando al tallerista como financista forzoso de su capital de giro), mientras que los talleres responden con demoras estacionales y desvíos de stock.
 
 3. **El Purgatorio Fiscal y el Capital Muerto (De Soto, 2000; Kosacoff, 2000):**  
-   La presión tributaria sobre alícuotas planas y regímenes informativos mensuales crea un umbral prohibitivo para la formalización. Los talleres operan en la informalidad como mecanismo de autodefensa. Esto genera el fenómeno de la **identidad fiscal prestada** (uso de CUITs de familiares para eludir recategorizaciones) y priva a la PyME comitente formal de deducir entre el 30% y el 50% de sus costos reales de producción en el Impuesto a las Ganancias y computar crédito fiscal de IVA, tributando sobre ganancias ficticias (Dossier RIGI Conurbano, 2026, §IV.B).
+   La presión tributaria sobre alícuotas planas y regímenes informativos mensuales crea un umbral prohibitivo para la formalización. Los talleres operan en la informalidad como mecanismo de autodefensa. Esto genera el fenómeno de la **identidad fiscal prestada** (uso de CUITs de familiares para eludir recategorizaciones) y priva a la PyME comitente formal de deducir entre el 30% y el 50% de sus costos reales de producción en el Impuesto a las Ganancias y computar crédito fiscal de IVA, tributando sobre ganancias ficticias (Dossier Proyecto FIMCA, 2026, §IV.B).
 
 Frente a este colapso, los subsidios asistenciales tradicionales perpetúan la indigencia productiva, mientras que la desregulación liberal acelera la extranjerización. El **Protocolo e-OP** propone una alternativa de ingeniería institucional y económica: construir una **infraestructura digital con auditoría institucional** donde la capacidad de trabajo físico en curso se reconozca como colateral autónomo verificable.
 
@@ -123,6 +124,7 @@ classDiagram
     e_OP *-- HitosEscrow
 ```
 
+> **Figura 2.** *Estructura de clases y jerarquía de la Orden de Producción Electrónica (e-OP) y el Árbol de Merkle para la receta de materiales (BOM).* La e-OP deja de ser un simple formulario administrativo para convertirse en un objeto financiero (tupla inmutable). Contiene las firmas criptográficas (Ed25519) del comitente y tallerista, y encapsula la receta técnica (Bill of Materials) dentro de un Árbol de Merkle. Esta estructura de datos garantiza que si un solo miligramo de consumo teórico de adhesivo o centímetro de cuero es adulterado tras la firma, el hash raíz cambiará drásticamente, haciendo matemáticamente imposible la alteración unilateral de la orden sin el consentimiento de la contraparte.
 ### 3.1. Inembargabilidad Estructural y Custodia de Façón
 
 El protocolo formaliza la disociación legal de activos bajo el CCCN vigente:
@@ -133,7 +135,7 @@ Al ingresar al sistema, los insumos y productos semielaborados quedan documentad
 
 ### 3.2. Puente de Transición Fiscal (Propuesta Normativa)
 
-> **⚠️ Nota:** Los mecanismos descritos en esta sección —el Crédito Fiscal Presunto y la Cuenta de IVA Sectorial Diferida— son **propuestas legislativas** incluidas en el Dossier RIGI Conurbano (2026) y el proyecto de Ley de Salvataje Nacional. No están vigentes en el derecho tributario argentino actual. La versión operativa del sistema bajo la ley vigente utiliza la deducción presunta transitoria del 35% sobre costos de mano de obra informal prevista en la propuesta como medida puente.
+> **⚠️ Nota:** Los mecanismos descritos en esta sección —el Crédito Fiscal Presunto y la Cuenta de IVA Sectorial Diferida— son **propuestas legislativas** incluidas en el Dossier Proyecto FIMCA (2026) como extensión al proyecto de Ley de Salvataje Nacional. No están vigentes en el derecho tributario argentino actual. La versión operativa del sistema bajo la ley vigente utiliza la deducción presunta transitoria del 35% sobre costos de mano de obra informal prevista en la propuesta como medida puente.
 
 Para modelar la absorción formal del eslabón manual sin fricción tributaria punitiva, el protocolo desacopla la liquidación fiscal en dos funciones complementarias procesadas en el clearing del FDI:
 
@@ -195,6 +197,7 @@ stateDiagram-v2
     SETTLED --> [*]
 ```
 
+> **Figura 3.** *Máquina de estados finita determinista (FSM) que regula el ciclo de vida del colateral productivo y la liberación de hitos en Escrow.* El ciclo transita desde la creación del borrador hasta la liquidación total o resolución de disputas. Un mecanismo crítico es la transición `HITO0_UNLOCKED`, regulada por el *Timelock* de 48 horas (Silencio Administrativo Positivo): si la autoridad no veta la operación, el algoritmo libera automáticamente el anticipo del 30-40%. Durante la ejecución física, el avance de etapa a etapa exige la auditoría mediante Prueba de Trabajo Productivo (PoPW) para desarmar el colateral escalonadamente, evitando parálisis y sobrepagos.
 ### 4.1. Formalización Matemática del Silencio Administrativo Positivo (Timelock)
 
 Para neutralizar la parálisis por captura burocrática, la función de transición de estado hacia el desembolso del **Hito Cero** ($\mathcal{H}_0$) se modela como un contrato de bloqueo temporal (Andrychowicz et al., 2014):
@@ -230,7 +233,7 @@ $$\Delta_{\text{Colusión}}(\mathcal{OP}_i, \mathcal{OP}_j) = \|\vec{x}_i - \vec
 
 Donde $\lambda \, [\text{m/h}]$ es el **factor de ponderación espacio-temporal**, calibrado por la Comisión de Homologación Técnica (INTI) para cada distrito mediante resolución de la MES, considerando la densidad urbana local y el radio de acción típico del tallerista de barrio. El valor inicial de referencia es $\lambda = 200 \, \text{m/h}$ (equivalente a considerar sospechosa la coincidencia de OPs a menos de 200 metros y menos de 1 hora de diferencia entre CUITs distintos).
 
-Si $\Delta_{\text{Colusión}} < \epsilon$ donde $\epsilon$ es el umbral distrital fijado por la MES, el sistema clasifica la transacción como **Fragmentación Artificial**, suspende el Fast-Track y requiere inspección in situ del PTF y tutela sindical para preservar el convenio de rama (Dossier RIGI, 2026, §VIII).
+Si $\Delta_{\text{Colusión}} < \epsilon$ donde $\epsilon$ es el umbral distrital fijado por la MES, el sistema clasifica la transacción como **Fragmentación Artificial**, suspende el Fast-Track y requiere inspección in situ del PTF y tutela sindical para preservar el convenio de rama (Proyecto FIMCA, 2026, §VIII).
 
 La fundamentación ética de este mecanismo de auditoría algorítmica se basa en los principios de *accountability* y *transparencia* de los sistemas de decisión automatizada (Diakopoulos, 2016): el algoritmo no sanciona, sino que escala a revisión humana; ninguna suspensión es definitiva sin intervención de la Comisión.
 
@@ -238,7 +241,7 @@ La fundamentación ética de este mecanismo de auditoría algorítmica se basa e
 
 ## 5. Arquitectura Financiera, Liquidez y Solvencia del FDI
 
-El **Fideicomiso de Desarrollo Industrial (FDI)** opera como una bóveda de compensación y liquidación (*Clearing*) independiente de la banca comercial de reserva fraccionaria (Dossier RIGI, 2026, §II; Hofmann & Belin, 2011).
+El **Fideicomiso de Desarrollo Industrial (FDI)** opera como una bóveda de compensación y liquidación (*Clearing*) independiente de la banca comercial de reserva fraccionaria (Proyecto FIMCA, 2026, §II; Hofmann & Belin, 2011).
 
 ```mermaid
 flowchart TD
@@ -267,6 +270,7 @@ flowchart TD
     ESCROW --> OUTFLOWS
 ```
 
+> **Figura 4.** *Arquitectura de flujos de capital, capitalización recurrente (Inflows) y destinos productivos (Outflows) del Fideicomiso de Desarrollo Industrial (FDI).* El fideicomiso funciona como un pulmón de compensación y liquidez alternativo al circuito bancario de reserva fraccionaria. Muestra cómo los ingresos provenientes de retenciones macroeconómicas (por ejemplo, exportaciones extractivas) y reservas de las marcas se canalizan hacia la bóveda central del fondo. Desde allí, el capital se pulveriza en bóvedas estancas individuales (Escrows) por cada e-OP activa, permitiendo inyectar anticipos al Hito Cero del taller, financiar tecnología comunitaria (CIFO) y sostener la tarifa manufacturera plana, sin riesgo de corrida especulativa.
 ### 5.1. Dinámica de Solvencia del Fondo
 
 La masa fiduciaria $V_{\text{FDI}}(t)$ en un instante $t$ se describe mediante la ecuación de balances:
@@ -336,6 +340,7 @@ graph TD
     end
 ```
 
+> **Figura 5.** *Árbol de decisiones y matriz de incentivos estratégicos en el juego repetido entre la Marca Comitente y el Tallerista.* Este modelo teórico formaliza los incentivos para sostener la cooperación a largo plazo, demostrando por qué la colusión o defección patronal deja de ser rentable. Si la Marca defecta (ej: reteniendo pagos indebidamente), se expone al sistema automático de *Slashing* (quita de Unidades de Crédito Productivo) y eventual ejecución de la fianza. Si el Taller defecta (ej: desvío de insumos), sufre la retención punitiva sobre órdenes futuras y la suspensión de prioridad territorial en la Bolsa de Trabajo. Bajo el diseño del FIMCA, el juego converge hacia un Equilibrio de Nash Cooperativo.
 ### 6.2. Mecanismo de Slashing y Secuencia de Penalizaciones
 
 En el régimen tradicional informal, la defección patronal ($D_M$) era frecuente porque el costo de litigar para el tallerista era prohibitivo. En el **Protocolo e-OP**, las penalizaciones operan en dos velocidades:
@@ -431,6 +436,7 @@ graph TD
     ASYNC --> PERSISTENCE
 ```
 
+> **Figura 6.** *Arquitectura de sistemas, capas lógicas y despliegue asíncrono del sistema Indinopy (ERP/MES) como implementación de referencia.* El ecosistema técnico del FIMCA no requiere de complejas infraestructuras de blockchain descentralizada, sino que reposa sobre un marco centralizado con auditoría criptográfica. Presenta cuatro capas operativas: la Capa de Presentación (aplicaciones ligeras y vista pública QR), la Capa de Negocio o Core en Django (gestión de partida doble, hitos y gobernanza), la Capa Asíncrona (workers de Celery para validación del timelock 48h y monitoreo anti-colusión) y la Capa de Persistencia, conectada mediante interfaces seguras (APIs) con los sistemas estatales (ARCA) y el Banco de la Provincia para el clearing automatizado.
 ### 8.1. Componentes Técnicos Implementados
 
 1. **Motor de Partida Doble Industrial (`apps.inventario`):**  
@@ -497,7 +503,7 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 * Buterin, V. (2014). *Ethereum: A Next-Generation Smart Contract and Decentralized Application Platform*. White Paper, Ethereum Foundation. https://ethereum.org/en/whitepaper/
 * Caniato, F., Gelsomino, L. M., Perego, A., & Ronchi, S. (2019). Does finance solve the supply chain financing problem? *Supply Chain Management: An International Journal*, 24(1), 52–65. https://doi.org/10.1108/SCM-12-2017-0436
 * Coase, R. H. (1937). The Nature of the Firm. *Economica*, 4(16), 386–405. https://doi.org/10.1111/j.1468-0335.1937.tb00002.x
-* Sarthou, T. G. (2026). *"RIGI del Conurbano 2026": Propuesta de Ley de Salvataje Nacional para la Cadena de Valor del Calzado*. Documento de trabajo interno del proyecto e-OP/Indinopy, Buenos Aires. [No publicado ni sometido a revisión externa. Se cita como referencia de la propuesta de política sectorial propia del proyecto; véase nota [^2].]
+* Sarthou, T. G. (2026). *"FIMCA 2026": Proyecto de Formalización e Incentivo a la Manufactura del Calzado Argentino*. Documento de trabajo interno del proyecto e-OP/Indinopy, Buenos Aires. [No publicado ni sometido a revisión externa. Se cita como referencia de la propuesta de política sectorial que extiende la Ley de Salvataje Nacional; véase nota [^2].]
 * Coraggio, J. L. (2011). *Economía social y solidaria: El trabajo antes que el capital*. Abya-Yala / FLACSO Ecuador.
 * De Soto, H. (2000). *The Mystery of Capital: Why Capitalism Triumphs in the West and Fails Everywhere Else*. Basic Books.
 * Diakopoulos, N. (2016). Accountability in Algorithmic Decision Making. *Communications of the ACM*, 59(2), 56–62. https://doi.org/10.1145/2844110
@@ -529,6 +535,6 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 
 [^1]: El nombre **Proof-of-Productive-Work (PoPW)** es una elección terminológica deliberada por contraste con el *Proof-of-Work* (PoW) computacional de Bitcoin y sus derivados. Mientras que el PoW consume energía en cálculos matemáticos abstractos para lograr consenso distribuido, el PoPW ancla el flujo financiero a la verificación de trabajo manufacturero físico real. No se afirma equivalencia criptográfica con el PoW; el mecanismo es, en esencia, un protocolo de validación de hitos productivos con inspección física por el Promotor Territorial y respaldo de firma digital institucional (ver §4.2 para la descripción completa).
 
-[^2]: **Sarthou, T. G. (2026). "RIGI del Conurbano 2026".** Documento de trabajo interno del proyecto e-OP/Indinopy, no publicado ni sometido a revisión externa. Este documento articula la propuesta de política sectorial (régimen fiscal, estructura del FDI, mecanismo de fondeo) que el presente paper formaliza como protocolo técnico. Se cita en §3.2 y §5 únicamente como referencia de los supuestos de diseño normativos propios del proyecto, no como validación independiente de las hipótesis del modelo matemático.
+[^2]: **Sarthou, T. G. (2026). "FIMCA 2026".** Documento de trabajo interno del proyecto e-OP/Indinopy, no publicado ni sometido a revisión externa. Este documento articula la propuesta de política sectorial (régimen fiscal, estructura del FDI, mecanismo de fondeo) que el presente paper formaliza como protocolo técnico. Se cita en §3.2 y §5 únicamente como referencia de los supuestos de diseño normativos propios del proyecto, no como validación independiente de las hipótesis del modelo matemático.
 
 [^3]: El ciclo de 30 días corresponde al período medio entre el despacho de insumos al taller y el cobro de la venta minorista en la temporada de calzado. Este parámetro es un supuesto de diseño del protocolo consistente con el comportamiento sectorial; la fuente externa más cercana es la serie de índices de producción industrial del INDEC (2026). Su validación empírica precisa con datos de campo del piloto (§9.1.1) es trabajo futuro.
