@@ -346,14 +346,18 @@
             cursor: grab;
         }
 
-        /* Fuerza al contenedor interno de Mermaid a no achicarse y centrarse */
+        /* Fuerza al contenedor interno de Mermaid a expandirse */
         .mermaid {
-            display: inline-block;
-            min-width: min-content;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
         }
 
         .mermaid svg {
-            max-width: none !important;
+            width: 100% !important;
+            max-width: 900px !important; /* To prevent it from looking absurdly huge on ultrawide monitors */
+            height: auto !important;
         }
 
         .mermaid-viewport:active {

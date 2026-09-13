@@ -1,4 +1,4 @@
-﻿mermaid.initialize({
+mermaid.initialize({
     startOnLoad: false,
     theme: 'dark',
     securityLevel: 'loose',
@@ -114,7 +114,10 @@ async function loadMarkdown() {
             throw new Error(`HTTP Error: ${response.status} - No se pudo cargar el archivo.`);
         }
 
-        const markdownText = await response.text();
+        let markdownText = await response.text();
+        
+        // Strip YAML frontmatter si existe
+        markdownText = markdownText.replace(/^---\r?\n[\s\S]*?\n---\r?\n/, '');
 
         // 1. Extraer bloques matemáticos (inline y block) para protegerlos de Marked
         const mathBlocks = [];
@@ -295,7 +298,8 @@ async function loadMarkdown() {
 
             const reader = new FileReader();
             reader.onload = function (e) {
-                const markdownText = e.target.result;
+                let markdownText = e.target.result;
+                markdownText = markdownText.replace(/^---\r?\n[\s\S]*?\n---\r?\n/, '');
 
                 // Parsear y renderizar (misma lógica que el try)
                 const htmlContent = marked.parse(markdownText);

@@ -1,6 +1,12 @@
+---
+title: Proyecto de Formalización e Incentivo a la Manufactura del Calzado Argentino
+author: Tiago Gabriel Sarthou
+date: Septiembre 2026
+---
+
 # Proyecto FIMCA: Formalización e Incentivo a la Manufactura del Calzado Argentino
 
-**Complemento Estratégico a la Ley de Salvataje Nacional para la Inclusión de la Cadena de Valor del Calzado**
+*Complemento Estratégico a la Ley de Salvataje Nacional para la Inclusión de la Cadena de Valor del Calzado*
 
 ## Resumen Ejecutivo
 
@@ -13,6 +19,29 @@ La presente propuesta articula una respuesta integral ante la crisis de la manuf
 3. **Régimen FIMCA (Motor de Despegue):** Régimen de incentivo productivo para unidades de hasta 30 trabajadores con estabilidad fiscal por 10 años, administrado y validado exclusivamente por la **MES**. El acceso al beneficio es condicionado: la MES audita la adhesión al Plan Sectorial y aplica el filtro de "Tecnología Conveniente". Incluye una Cláusula Federal de Adhesión para articular con la Provincia y Municipios la exención coordinada de tasas locales.  
 4. **Protección de la Identidad Fiscal y Formalización Segmentada:** Resuelve la informalidad estructural mediante la adopción de la **Sociedad por Acciones Simplificada** (SAS) y un **Régimen de Alta Automatizada** (Monotributo Productivo) vinculado a las **Órdenes de Producción** sectoriales.  
 5. **Reforma de Maquila y Régimen Aduanero:** Propone la modificación de la Ley 25.113 para extender el régimen de maquila a todos los sectores manufactureros, permitiendo una clara distinción entre el servicio de transformación (tallerista) y la propiedad de los insumos (comitente). Se implementa un régimen de importación temporaria con arancel cero para materias primas, bajo estrictos controles de trazabilidad.
+
+
+```mermaid
+flowchart LR
+    subgraph Fase 1: Escudo de Resistencia
+        A[Ley de Salvataje Nacional]
+        A -->|50% Tarifas| B(Alivio Costos Fijos)
+        A -->|Amnistía Fiscal| C(Condonación Deudas)
+        A -->|Freno a Ejecuciones| D(Protección Maquinaria)
+    end
+    
+    subgraph Fase 2: Motor de Despegue
+        E[Proyecto FIMCA]
+        B & C & D -->|Taller vivo y formalizable| E
+        E -->|Fideicomiso FDI| F(Capital de Trabajo)
+        E -->|e-OP| G(Trazabilidad)
+        E -->|10 Años| H(Estabilidad Fiscal)
+    end
+    
+    style A fill:#ef4444,stroke:#7f1d1d,color:#fff
+    style E fill:#3b82f6,stroke:#1e3a8a,color:#fff
+```
+> **Figura 1.** Esquema de Dos Velocidades: La Ley de Salvataje asegura la supervivencia inmediata, constituyendo el piso necesario para que el Proyecto FIMCA traccione la inversión y formalización.
 
 ## Introducción: La Emergencia Real del Sector
 
@@ -61,14 +90,33 @@ Como herramienta complementaria al escudo de protección que propone la Ley de S
 **El diagnóstico: ¿Por qué estos instrumentos son hoy inaccesibles?**  
 En la lógica bancaria tradicional, el financiamiento depende de la confianza en el comprador y no en el valor del trabajo del vendedor. Un tallerista o una pyme de barrio enfrentan hoy tres 'muros' que los excluyen del sistema financiero formal:
 
-* **1\. El Muro de la Documentación:** La banca exige instrumentos con 'fuerza ejecutiva' (como la Factura de Crédito Electrónica o cheques). La informalidad estructural, caracterizada por remitos simples o acuerdos verbales, deja al tallerista sin documentos válidos para el sistema financiero.  
-* **2\. El Muro del Perfil de Riesgo:** Los bancos utilizan algoritmos de 'scoring' que requieren balances, declaraciones juradas e historial de ventas. Al no poseer este 'traje' formal, el tallerista es invisible para el algoritmo o catalogado como riesgo máximo, cerrándole las puertas de entrada.  
-* **3\. El Muro del Costo Transaccional:** Las comisiones, gastos de mantenimiento y tasas de las operaciones tradicionales están diseñadas para grandes volúmenes. Para un taller de barrio, los costos fijos de estas operaciones absorben el margen de ganancia, haciendo el financiamiento financieramente suicida.
+* **1. El Muro de la Documentación:** La banca exige instrumentos con 'fuerza ejecutiva' (como la Factura de Crédito Electrónica o cheques). La informalidad estructural, caracterizada por remitos simples o acuerdos verbales, deja al tallerista sin documentos válidos para el sistema financiero.  
+* **2. El Muro del Perfil de Riesgo:** Los bancos utilizan algoritmos de 'scoring' que requieren balances, declaraciones juradas e historial de ventas. Al no poseer este 'traje' formal, el tallerista es invisible para el algoritmo o catalogado como riesgo máximo, cerrándole las puertas de entrada.  
+* **3. El Muro del Costo Transaccional:** Las comisiones, gastos de mantenimiento y tasas de las operaciones tradicionales están diseñadas para grandes volúmenes. Para un taller de barrio, los costos fijos de estas operaciones absorben el margen de ganancia, haciendo el financiamiento financieramente suicida.
 
 **Nuestra propuesta: La Orden de Producción como Activo**  
 El Sistema de Adelantos Productivos rompe este paradigma al institucionalizar la **Orden de Producción (OP)** como un instrumento de valor legal. Al registrar la OP en una plataforma pública, transformamos un papel que antes no servía para nada en un título con valor crediticio. Dejamos de depender de la confianza ciega del banco en el 'perfil crediticio' del tallerista (que es informal) para basarnos en la garantía del registro estatal de la producción.
 
-### El Fideicomiso de Desarrollo Industrial (FDI): Capital de Trabajo de la Comunidad
+```mermaid
+sequenceDiagram
+    participant M as Marca Comitente
+    participant E as Escrow (Smart Contract)
+    participant MES as Mesa de Enlace Sectorial
+    participant T as Tallerista
+    
+    M->>MES: Carga la e-OP y solicita homologación
+    MES-->>M: Audita "Precio Justo" y Homologa
+    M->>E: Fondea el 100% del pago (Fiat/Token)
+    Note over E: Fondos Bloqueados Inmutables
+    E-->>T: Notifica: "Fondos Asegurados. Inicie Producción"
+    T->>MES: Entrega Lote Terminado y Verificado
+    MES->>E: Emite Certificado de Hito Productivo
+    E->>T: Libera Fondos Automáticamente (Clearing)
+    E->>M: Transfiere Propiedad Legal del Lote
+```
+> **Figura 2.** Arquitectura Transaccional del Fideicomiso de Desarrollo Industrial (FDI). El contrato *Escrow* garantiza que el taller no asuma riesgo de impago y que la marca no pague hasta que el trabajo esté auditado.
+
+## El Fideicomiso de Desarrollo Industrial (FDI): Capital de Trabajo de la Comunidad
 
 Para superar la dependencia de una banca que prioriza la usura sobre la producción, el sistema se apoya en un Fideicomiso de Desarrollo Industrial (FDI). Siguiendo la doctrina de la economía social, el capital no es aquí un fin en sí mismo, sino una herramienta subordinada al desarrollo de la economía real y al bienestar social. El FDI funciona como un fondo de inversión comunitario donde el ahorro se canaliza hacia la capacidad productiva nacional:
 
@@ -154,7 +202,7 @@ El segundo fenómeno es el del proveedor informal: el aparador de barrio, el cor
 
 El resultado es que el emprendedor formal tributa sobre una utilidad ficticia, considerablemente mayor a la real, porque el sistema impositivo no reconoce los costos que estructuralmente no se pueden documentar. Paga Ganancias e IVA no correspondidos, subsidiando con su carga fiscal la informalidad de un sistema que él mismo no eligió.
 
-**Ejemplo ilustrativo:** una pyme de diseño vende $1.000.000 en calzado. Su costo real de producción es $700.000, de los cuales $300.000 corresponden a servicios de aparado y cortado que el proveedor cobra en efectivo sin facturar. Ante el fisco, el costo computable es solo $400.000: la empresa declara una utilidad bruta de $600.000 en lugar de $300.000, duplicando la base imponible de Ganancias. En IVA, pierde $63.000 de crédito fiscal (21% sobre $300.000) que debería haber podido computar. En términos concretos, el emprendedor financia con su propia carga fiscal la informalidad estructural de su proveedor.
+**Ejemplo ilustrativo:** una pyme de diseño vende <span>$</span>1.000.000 en calzado. Su costo real de producción es <span>$</span>700.000, de los cuales <span>$</span>300.000 corresponden a servicios de aparado y cortado que el proveedor cobra en efectivo sin facturar. Ante el fisco, el costo computable es solo <span>$</span>400.000: la empresa declara una utilidad bruta de <span>$</span>600.000 en lugar de <span>$</span>300.000, duplicando la base imponible de Ganancias. En IVA, pierde <span>$</span>63.000 de crédito fiscal (21% sobre <span>$</span>300.000) que debería haber podido computar. En términos concretos, el emprendedor financia con su propia carga fiscal la informalidad estructural de su proveedor.
 
 ### C. La Sociedad por Acciones Simplificada (SAS) como Solución Estructural
 
@@ -255,14 +303,14 @@ La **Mesa de Enlace Sectorial** (MES) se constituye no como un foro de consulta,
 
 La MES funciona como un organismo de acompañamiento, cuya misión es nivelar las asimetrías históricas del sistema productivo. Su lógica es la **Comunidad Organizada**: si el eslabón más débil (el tallerista) no prospera, la cadena se rompe. Por lo tanto, la MES interviene para garantizar que la carga de trabajo sea previsible y que el capital financiero no absorba al trabajador, sino que lo potencie.
 
-**1\. Dinámica de Acompañamiento**
+**1. Dinámica de Acompañamiento**
 
 * **Los Diseñadores Industriales (Nodo Creativo)**: Aportan la innovación y la identidad, planificando la demanda para evitar el desperdicio.  
 * **Los Talleristas de Barrio (Nodo Productivo)**: Son la columna vertebral. Su voz es vinculante en la MES para determinar la viabilidad real de los procesos; su experiencia impone el "ritmo de lo posible" frente a las exigencias abstractas del mercado.  
 * **Los Comercializadores de Marcas (Nodo de Mercado)**: Garantizan la salida comercial, bajo el compromiso de reinversión en el FDI.  
 * **El Rol Tutelar (INTI y Sindicato)**:  El INTI garantiza la soberanía tecnológica (la "Tecnología Conveniente"). El Sindicato actúa como garante del empleo digno y de la capacitación, asegurando que el trabajador calificado reciba la justa retribución por su oficio.
 
-**2\. La MES como Motor del "Saber Hacer"**
+**2. La MES como Motor del "Saber Hacer"**
 
 La MES es la respuesta organizativa a la fragmentación. Su rol principal es **acompañar la transición de la informalidad a la soberanía**. La MES audita la viabilidad de la Orden de Producción (OP), media en conflictos de cumplimiento y, fundamentalmente, **valida la liberación de los fondos del FDI**. Al descentralizar la decisión financiera de la banca comercial hacia la MES, el proyecto se blinda contra la especulación. No se le pide permiso al mercado para producir; se organiza la producción para que el mercado encuentre un producto de valor. La MES es, en última instancia, el garante institucional de que el esfuerzo individual del trabajador se transforme en una potencia industrial colectiva.
 
@@ -308,11 +356,11 @@ Junio de 2026
 
 **"Régimen Federal Manufacturero y Red de Despliegue de la Comunidad Organizada"**
 
-### 1\. Objeto del Anexo
+### 1. Objeto del Anexo
 
 El presente anexo establece los lineamientos técnicos, jurídicos y operativos para la extensión progresiva del Régimen de Incentivo Productivo ("Proyecto FIMCA") y el Sistema de Adelantos Productivos al conjunto de las provincias de la República Argentina y a las diversas ramas de la industria manufacturera nacional, garantizando la preservación del empleo real y la soberanía tecnológica bajo el principio de equidad distributiva territorial.
 
-### 2\. Gobernanza Rediseñada: La Mesa de Enlace Sectorial Federal (MES Federal)
+### 2. Gobernanza Rediseñada: La Mesa de Enlace Sectorial Federal (MES Federal)
 
 Para absorber el volumen operativo de una escala nacional sin burocratizar la toma de decisiones ni perder el control del fraude documental, se instituye un esquema de gobernanza en red de dos niveles:
 
@@ -321,7 +369,7 @@ Para absorber el volumen operativo de una escala nacional sin burocratizar la to
 * **B. Nodos Regionales y Sectoriales (MES Locales):** Unidades territoriales con voz vinculante encargadas del acompañamiento en la trinchera productiva. Se constituirán mesas específicas atendiendo a la especialización real de cada territorio (ej. Nodo Metalmecánica \- Región Centro, Nodo Maderas y Muebles \- NEA, Nodo Textil y Calzado \- Conurbano Bonaerense).  
   * *Funciones:* Auditoría directa y validación de viabilidad de las Órdenes de Producción (OP) locales, mediación de cumplimiento y certificación digital de hitos productivos para la liberación de fondos.
 
-### 3\. Matriz de Segmentación Industrial para la Inclusión al Régimen Federal
+### 3. Matriz de Segmentación Industrial para la Inclusión al Régimen Federal
 
 A fin de respetar las asimetrías de escala, uso de mano de obra y densidad de capital de las distintas industrias manufactureras, los criterios de acceso a la estabilidad fiscal de 10 años, arancel cero para bienes de capital y financiamiento patronal se segmentan bajo la siguiente matriz regulatoria:
 
@@ -349,7 +397,7 @@ A fin de respetar las asimetrías de escala, uso de mano de obra y densidad de c
 * **Filtro de "Tecnología Conveniente" Homologable por INTI:** Secaderos automatizados, pantógrafos computarizados e inyectoras de polímeros eficientes.  
 * **Condición de Encadenamiento Forzoso hacia el Territorio:** Integración de diseño industrial nacional (Universidades) y matricería local.
 
-### 4\. Arquitectura Financiera Federal del FDI: Compartimentos Estancos y "e-OP"
+### 4. Arquitectura Financiera Federal del FDI: Compartimentos Estancos y "e-OP"
 
 Para federalizar el Sistema de Adelantos Productivos sin centralizar los recursos en una "caja negra" bancaria, el Fideicomiso de Desarrollo Industrial (FDI) operará mediante una estructura descentralizada:
 
@@ -357,20 +405,20 @@ Para federalizar el Sistema de Adelantos Productivos sin centralizar los recurso
 * **Sub-Fideicomisos Provinciales de Inversión:** El "Ahorro Patriótico" (pequeños ahorristas, cooperativas, cajas profesionales locales) y las reservas de marcas comitentes se integrarán en cuentas regionales específicas. De este modo, el ahorro generado en una provincia se canaliza de forma directa y transparente hacia la capacidad productiva de su propio tejido industrial real.  
 * **Tokenización e interoperabilidad de la Orden de Producción ("e-OP"):** La Orden de Producción digital estandarizada y regulada por el BCRA funcionará como un activo financiero interoperable nacional ("e-OP"). Cualquier entidad de la banca pública o billetera digital habilitada a lo largo del país actuará estrictamente como agente de clearing técnico automatizado, liberando el adelanto de fondos contra la validación digital de la MES Regional del sector correspondiente.
 
-### 5\. Articulación Normativa: El Pacto Fiscal Productivo Federal
+### 5. Articulación Normativa: El Pacto Fiscal Productivo Federal
 
 A los efectos de garantizar la estabilidad fiscal absoluta por 10 años respecto a los tributos nacionales, y resguardar en simultáneo las autonomías provinciales consagradas por el artículo 121 de la Constitución Nacional, el Poder Ejecutivo Nacional promoverá la suscripción de un "Pacto Fiscal Productivo Federal". Las Provincias y Municipios que adhieran voluntariamente mediante ley provincial y ordenanza local se comprometerán a:
 
-* 1\. Eximir del Impuesto sobre los Ingresos Brutos a las cuentas operativas de los talleristas e industrias alcanzadas.  
-* 2\. Eliminar tasas locales de abasto, circulación o inspección sobre las unidades productivas integradas en el régimen.
+* 1. Eximir del Impuesto sobre los Ingresos Brutos a las cuentas operativas de los talleristas e industrias alcanzadas.  
+* 2. Eliminar tasas locales de abasto, circulación o inspección sobre las unidades productivas integradas en el régimen.
 
 **Cláusula de Compensación Federal:** Como contrapartida por la resignación de recursos fiscales locales, el Estado Nacional garantizará a las jurisdicciones firmantes la prioridad absoluta en la asignación de los Fondos Fiduciarios de fomento, créditos para la transformación digital y partidas presupuestarias para infraestructura de parques industriales.
 
-### 6\. Propuesta de Artículo de Extensión Legislativa (Para ser incluido en el cuerpo principal del Proyecto de Ley)
+### 6. Propuesta de Artículo de Extensión Legislativa (Para ser incluido en el cuerpo principal del Proyecto de Ley)
 
 **Artículo X.- Facultades de Extensión y Progresividad Multisectorial.** Facúltese al Poder Ejecutivo Nacional, a propuesta de la Mesa de Enlace Sectorial Federal (MES Federal) y en coordinación con los gobiernos provinciales que suscriban el "Pacto Fiscal Productivo Federal", a extender de manera gradual los beneficios del presente Régimen de Incentivo y el Sistema de Adelantos Productivos a las diversas ramas de la industria manufacturera nacional. A tal efecto, la autoridad de aplicación queda facultada para redefinir los límites de dotación de personal registrado, los criterios de "Tecnología Conveniente" y las condiciones de "Encadenamiento Forzoso" estipuladas en el Anexo I del presente marco normativo, atendiendo con especificidad técnica a la densidad de capital, la escala territorial y la productividad media de cada cadena de valor, priorizando aquellos sectores que presenten altos índices de informalidad estructural o emergencia sociolaboral.
 
 ### Notas y Referencias
 
 [^1]: INDEC, Utilización de la Capacidad Instalada en la Industria, enero 2026; CIAI citando INDEC, publicado en ANDigital, marzo 2026.
-[^2]: SRT / Fundar, abril 2026\. Confirmado por Infobae, 16/04/2026, y BAE Negocios, mayo 2026.
+[^2]: SRT / Fundar, abril 2026. Confirmado por Infobae, 16/04/2026, y BAE Negocios, mayo 2026.

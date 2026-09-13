@@ -2,7 +2,7 @@
 ## Proyecto Programático de Gobernanza Industrial, Comunidad Organizada y Soberanía Productiva
 
 > **Documento rector:** Proyecto Programático de Política Industrial y Arquitectura de Sistemas  
-> **Marco doctrinario:** [Dossier Proyecto FIMCA](dossier_rigi_conurbano_2026.html)  
+> **Marco doctrinario:** [Dossier Proyecto FIMCA](dossier_proyecto_fimca_2026.html)  
 > **Plataforma destino:** **Indinopy** (Módulo `apps/mes` / `apps/gobernanza`)  
 > **Fecha:** Septiembre de 2026  
 > **Estado:** Especificación Programática, Institucional y Técnica  
@@ -291,8 +291,10 @@ from apps.base.models import TimeStampedModel, DocumentoBase
 # 1. TOPOLOGÍA INSTITUCIONAL Y PADRÓN
 # ==========================================
 
+
 class JurisdiccionMES(TimeStampedModel):
     """Nodos territoriales: Federal (Nacional) o Municipal (Distritos)."""
+
     TIPO_CHOICES = [
         ("federal", "Consejo Superior Federal"),
         ("municipal", "Nodo MES Municipal"),
@@ -310,6 +312,7 @@ class JurisdiccionMES(TimeStampedModel):
 
 class MiembroMesa(TimeStampedModel):
     """Integrantes con banca formal en el plenario de la MES."""
+
     NODO_CHOICES = [
         ("taller_mono", "Silla 1: Tallerista Monotributo Productivo"),
         ("taller_sas", "Silla 2: Tallerista Unidad Consolidada (SAS)"),
@@ -319,9 +322,13 @@ class MiembroMesa(TimeStampedModel):
         ("sindicato", "Silla 6: Tutela Laboral (Sindicato)"),
         ("municipio", "Silla 7: Árbitro Jurisdiccional (Secretaría Producción)"),
     ]
-    jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE, related_name="miembros")
+    jurisdiccion = models.ForeignKey(
+        JurisdiccionMES, on_delete=models.CASCADE, related_name="miembros"
+    )
     usuario = models.ForeignKey(User, on_delete=models.RESTRICT)
-    contacto = models.ForeignKey("contactos.Contacto", on_delete=models.SET_NULL, null=True, blank=True)
+    contacto = models.ForeignKey(
+        "contactos.Contacto", on_delete=models.SET_NULL, null=True, blank=True
+    )
     nodo = models.CharField(max_length=30, choices=NODO_CHOICES)
     es_titular = models.BooleanField(default=True)
     es_presidente = models.BooleanField(default=False)
@@ -340,15 +347,21 @@ class MiembroMesa(TimeStampedModel):
 # 2. PROCESOS DELIBERATIVOS Y VOTACIONES
 # ==========================================
 
+
 class SesionPlenaria(TimeStampedModel):
     """Asambleas periódicas donde se debate normativa y aprueba el giro institucional."""
-    jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE, related_name="sesiones")
+
+    jurisdiccion = models.ForeignKey(
+        JurisdiccionMES, on_delete=models.CASCADE, related_name="sesiones"
+    )
     numero_acta = models.CharField(max_length=50, unique=True)
     fecha = models.DateTimeField()
     orden_del_dia = models.TextField()
     asistentes = models.ManyToManyField(MiembroMesa, related_name="asistencias")
     quorum_verificado = models.BooleanField(default=False)
-    acta_firmada_digitalmente = models.FileField(upload_to="mes/actas/", blank=True, null=True)
+    acta_firmada_digitalmente = models.FileField(
+        upload_to="mes/actas/", blank=True, null=True
+    )
 
     def __str__(self):
         return f"Acta {self.numero_acta} - {self.jurisdiccion.nombre} ({self.fecha.strftime('%d/%m/%Y')})"
@@ -356,9 +369,13 @@ class SesionPlenaria(TimeStampedModel):
 
 class ProyectoResolucion(TimeStampedModel):
     """Iniciativas normativas sometidas a votación en el plenario."""
+
     TIPO_MATERIA = [
         ("ordinaria", "Materia Ordinaria (Mayoría Simple)"),
-        ("reservada", "Materia Reservada (Mayoría Agravada 5 votos + Concurrencia Taller)"),
+        (
+            "reservada",
+            "Materia Reservada (Mayoría Agravada 5 votos + Concurrencia Taller)",
+        ),
     ]
     ESTADO = [
         ("borrador", "En Redacción"),
@@ -368,10 +385,14 @@ class ProyectoResolucion(TimeStampedModel):
         ("vetado", "Vetado por Alzada Federal"),
     ]
     jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE)
-    sesion = models.ForeignKey(SesionPlenaria, on_delete=models.SET_NULL, null=True, blank=True)
+    sesion = models.ForeignKey(
+        SesionPlenaria, on_delete=models.SET_NULL, null=True, blank=True
+    )
     numero = models.CharField(max_length=50, unique=True)
     titulo = models.CharField(max_length=255)
-    tipo_materia = models.CharField(max_length=20, choices=TIPO_MATERIA, default="ordinaria")
+    tipo_materia = models.CharField(
+        max_length=20, choices=TIPO_MATERIA, default="ordinaria"
+    )
     considerandos = models.TextField()
     articulado = models.TextField()
     estado = models.CharField(max_length=20, choices=ESTADO, default="borrador")
@@ -389,9 +410,15 @@ class ProyectoResolucion(TimeStampedModel):
 # 3. CONTROL OPERATIVO, PLAZOS Y ARBITRAJE
 # ==========================================
 
+
 class ValidacionOrdenProduccion(TimeStampedModel):
     """Bitácora de validación de 48 horas para la e-OP con disparador de Silencio Positivo."""
-    op = models.OneToOneField("produccion.OrdenProduccion", on_delete=models.CASCADE, related_name="validacion_mes")
+
+    op = models.OneToOneField(
+        "produccion.OrdenProduccion",
+        on_delete=models.CASCADE,
+        related_name="validacion_mes",
+    )
     jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.RESTRICT)
     es_fast_track = models.BooleanField(default=False)
     fecha_ingreso = models.DateTimeField(auto_now_add=True)
@@ -403,6 +430,7 @@ class ValidacionOrdenProduccion(TimeStampedModel):
     def verificar_silencio_positivo(self):
         """Tarea Celery periódica ejecuta este método para liberar fondos si expiró el plazo."""
         from django.utils import timezone
+
         if not self.aprobada_formalmente and not self.aprobada_por_silencio_positivo:
             if timezone.now() >= self.fecha_limite_48h:
                 self.aprobada_por_silencio_positivo = True
@@ -415,6 +443,7 @@ class ValidacionOrdenProduccion(TimeStampedModel):
 
 class DisputaArbitrajeTrinchera(TimeStampedModel):
     """Gestión de controversias de calidad o precios ante el Tribunal Local."""
+
     ESTADO = [
         ("ingresada", "Denuncia Radicada"),
         ("audiencia_fijada", "En Período de Audiencia (72h)"),
@@ -424,10 +453,20 @@ class DisputaArbitrajeTrinchera(TimeStampedModel):
     ]
     jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE)
     op = models.ForeignKey("produccion.OrdenProduccion", on_delete=models.RESTRICT)
-    parte_reclamante = models.ForeignKey("contactos.Contacto", on_delete=models.RESTRICT, related_name="reclamos_mes_iniciados")
-    parte_demandada = models.ForeignKey("contactos.Contacto", on_delete=models.RESTRICT, related_name="reclamos_mes_recibidos")
+    parte_reclamante = models.ForeignKey(
+        "contactos.Contacto",
+        on_delete=models.RESTRICT,
+        related_name="reclamos_mes_iniciados",
+    )
+    parte_demandada = models.ForeignKey(
+        "contactos.Contacto",
+        on_delete=models.RESTRICT,
+        related_name="reclamos_mes_recibidos",
+    )
     monto_en_disputa = models.DecimalField(max_digits=15, decimal_places=2)
-    fianza_depositada = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    fianza_depositada = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal("0.00")
+    )
     motivo_reclamo = models.TextField()
     laudo_resolucion = models.TextField(blank=True, null=True)
     estado = models.CharField(max_length=25, choices=ESTADO, default="ingresada")
@@ -438,8 +477,10 @@ class DisputaArbitrajeTrinchera(TimeStampedModel):
 # 4. BOLETÍN OFICIAL SECTORIAL
 # ==========================================
 
+
 class EdicionBoletinSectorial(TimeStampedModel):
     """Publicación periódica oficial con resoluciones, tarifas y balances."""
+
     jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE)
     numero_edicion = models.PositiveIntegerField()
     fecha_publicacion = models.DateField()

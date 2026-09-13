@@ -1,8 +1,12 @@
-# Addenda I: Versión Consolidada
+---
+title: Addenda I: Complemento Estratégico al Proyecto FIMCA y a la Ley de Salvataje Nacional
+author: Tiago Gabriel Sarthou
+date: Septiembre 2026
+---
 
-**Complemento Estratégico al Proyecto FIMCA y a la Ley de Salvataje Nacional**
+# Addenda I: Complemento Estratégico al Proyecto FIMCA y a la Ley de Salvataje Nacional
 
-*Secciones Reforzadas con Incorporación de Reformas Complementarias — Junio de 2026*
+*Secciones Reforzadas con Incorporación de Reformas Complementarias*
 
 > **Nota de uso:** Este documento consolida la Addenda I original y todas las reformas complementarias incorporadas a las comisiones especializadas de la MES, el FDI, la Bolsa de Trabajo, la Red CIFO y el Banco de Maquinaria. El orden de secciones sigue el reordenamiento normativo acordado. El estilo y la doctrina son continuación directa del texto base.
 
@@ -64,7 +68,7 @@ Toda propuesta de gasto público que no cuantifica su costo es atacable como irr
 | :---- | :---- | :---- |
 | Talleres activos en la cadena (Conurbano) | 15.000 unidades | CIAI / SRT / estimación sectorial |
 | Tasa de adhesión al régimen (primer año) | 30% | Proyección conservadora sobre regímenes similares |
-| Unidades adheridas (año 1\) | 4.500 talleres | — |
+| Unidades adheridas (año 1) | 4.500 talleres | — |
 | Trabajadores regularizados por taller (promedio) | 1,5 | Estimación sectorial |
 | Total de relaciones laborales alcanzadas | 6.750 | — |
 
@@ -72,26 +76,26 @@ Toda propuesta de gasto público que no cuantifica su costo es atacable como irr
 
 | Concepto | Valor estimado |
 | :---- | :---- |
-| Salario bruto promedio convenio textil/calzado | $650.000 mensuales (a junio 2026\) |
+| Salario bruto promedio convenio textil/calzado | <span>$</span>650.000 mensuales (a junio 2026) |
 | Alícuota de aportes patronales | 27% del salario bruto |
-| Costo patronal mensual por trabajador | $175.500 |
-| Costo patronal anual por trabajador | $2.106.000 |
+| Costo patronal mensual por trabajador | <span>$</span>175.500 |
+| Costo patronal anual por trabajador | <span>$</span>2.106.000 |
 | Duración del beneficio | 24 meses |
-| Costo total por trabajador durante el período | $4.212.000 |
+| Costo total por trabajador durante el período | <span>$</span>4.212.000 |
 
 ### C. Costo Total del Programa (Año 1 — Adhesión Parcial)
 
 | Escenario | Trabajadores alcanzados | Costo total 24 meses |
 | :---- | :---- | :---- |
-| Conservador (30% adhesión) | 6.750 | $28.431 millones |
-| Moderado (50% adhesión) | 11.250 | $47.385 millones |
-| Optimista (70% adhesión) | 15.750 | $66.339 millones |
+| Conservador (30% adhesión) | 6.750 | <span>$</span>28.431 millones |
+| Moderado (50% adhesión) | 11.250 | <span>$</span>47.385 millones |
+| Optimista (70% adhesión) | 15.750 | <span>$</span>66.339 millones |
 
 ### D. Fuente de Financiamiento y Sustentabilidad
 
-El escenario conservador ($28.431 millones en 24 meses, equivalente a $1.185 millones mensuales) representa aproximadamente el 0,03% del PBI y puede financiarse mediante:
+El escenario conservador (<span>$</span>28.431 millones en 24 meses, equivalente a <span>$</span>1.185 millones mensuales) representa aproximadamente el 0,03% del PBI y puede financiarse mediante:
 
-* Afectación del 0,5% de los Derechos de Exportación sobre hidrocarburos y litio (flujo mensual estimado: superior a $3.000 millones a valores corrientes).
+* Afectación del 0,5% de los Derechos de Exportación sobre hidrocarburos y litio (flujo mensual estimado: superior a <span>$</span>3.000 millones a valores corrientes).
 
 * Reasignación de partidas de fondos fiduciarios de fomento productivo nacional con baja ejecución.
 
@@ -103,17 +107,41 @@ La combinación de ambas fuentes supera con holgura el costo del programa en el 
 
 La Mesa de Enlace Sectorial es el órgano de conducción y tutela de toda la cadena de valor. Su eficacia depende de que su arquitectura institucional sea tan sólida como su mandato político. Una comunidad organizada que no define con precisión cómo toma decisiones, cómo resuelve sus conflictos internos y cómo protege al eslabón más débil de su propia concentración de poder, reproduce en su interior las asimetrías que denuncia hacia afuera. Esta sección establece el estatuto mínimo de la MES.
 
+
+```mermaid
+graph TD
+    MES[Mesa de Enlace Sectorial Federal]
+    
+    EST[Estado / Municipios]
+    SIND[Sindicatos / Gremios]
+    CAM[Cámaras Empresarias]
+    INTI[INTI / Árbitros Técnicos]
+    
+    EST --> MES
+    SIND --> MES
+    CAM --> MES
+    INTI -->|Presidencia Técnica| MES
+    
+    MES --> C1(Comisión de Homologación Tecnológica)
+    MES --> C2(Comisión de Disciplina y Arbitraje)
+    MES --> C3(Comisión de Precios y Costos)
+    
+    style MES fill:#3b82f6,stroke:#1e3a8a,color:#fff
+    style INTI fill:#10b981,stroke:#047857,color:#fff
+```
+> **Figura 3.** Gobernanza Cuatripartita de la MES. El modelo de conducción compartida asegura la legitimidad de las reglas sectoriales y previene el dominio monopolístico de un solo actor.
+
 ### A. Composición y Representación
 
 La Mesa de Enlace Sectorial se integrará con siete (7) miembros titulares con mandato de dos (2) años renovable, con la siguiente representación:
 
 | Nodo | Representantes | Designación |
 | :---- | :---- | :---- |
-| Talleristas y aparadores | 2 titulares \+ 2 suplentes | Elección directa por padrón sectorial |
-| Marcas y comitentes | 2 titulares \+ 2 suplentes | Designación por cámara sectorial adherida |
-| INTI | 1 titular \+ 1 suplente | Designación institucional |
-| Sindicato | 1 titular \+ 1 suplente | Designación por organización gremial con personería |
-| Municipio/Provincia | 1 titular \+ 1 suplente | Designación por autoridad jurisdiccional adherida |
+| Talleristas y aparadores | 2 titulares + 2 suplentes | Elección directa por padrón sectorial |
+| Marcas y comitentes | 2 titulares + 2 suplentes | Designación por cámara sectorial adherida |
+| INTI | 1 titular + 1 suplente | Designación institucional |
+| Sindicato | 1 titular + 1 suplente | Designación por organización gremial con personería |
+| Municipio/Provincia | 1 titular + 1 suplente | Designación por autoridad jurisdiccional adherida |
 
 * **Nodo Productivo (Talleristas, Aparadores y Diseñadores):** Dos (2) representantes titulares y dos (2) suplentes, elegidos por voto directo de los empadronados sectoriales del distrito. A los efectos de garantizar una representación equilibrada que contemple las asimetrías de escala de la cadena, las bancas se dividirán de forma obligatoria mediante dos sub-padrones concurrentes:  
   * Un (1) representante titular y un (1) suplente en representación exclusiva del sub-padrón de **Prestadores Eventuales Individuales** (trabajadores bajo modalidad de Monotributo Productivo Automatizado).  
@@ -176,11 +204,11 @@ Ante incumplimientos recurrentes al Código de Conducta Comunitario, retrasos in
 
 ### E. Del Régimen de Previsibilidad de Entrega y Responsabilidad Productiva del Taller
 
-#### 1\. Garantía de Cumplimiento de Plazos de Entrega
+#### 1. Garantía de Cumplimiento de Plazos de Entrega
 
 Los talleristas, SAS y unidades productivas registradas en la Bolsa de Trabajo Sectorial asumen el compromiso vinculante de cumplimiento de los cronogramas de entrega estipulados en la Orden de Producción digital (e-OP), considerándose el factor tiempo como un elemento crítico de la competitividad del régimen.
 
-#### 2\. Causales de Exclusión por Fuerza Mayor
+#### 2. Causales de Exclusión por Fuerza Mayor
 
 No se aplicará penalización ni quita de incentivos cuando la demora responda a causales de fuerza mayor debidamente acreditadas y homologadas por el Promotor Territorial de Formalización (PTF) ante la MES local, tales como:
 
@@ -188,7 +216,7 @@ No se aplicará penalización ni quita de incentivos cuando la demora responda a
 
 2. **Siniestros o contingencias de infraestructura:** Cortes del suministro energético, roturas fortuitas de maquinaria pesada sin repuestos inmediatos, o razones de fuerza mayor de carácter socio-ambiental o de salud pública en el núcleo productivo del taller.
 
-#### 3\. Protocolo de Alerta de Asistencia Recíproca ante Cuellos de Botella
+#### 3. Protocolo de Alerta de Asistencia Recíproca ante Cuellos de Botella
 
 Si el tallerista detecta de forma anticipada una imposibilidad técnica o de capacidad instalada para cumplir con el vencimiento del hito, deberá activar la Alerta de Asistencia Recíproca en la plataforma digital con una antelación mínima de setenta y dos (72) horas.
 
@@ -196,7 +224,7 @@ Si el tallerista detecta de forma anticipada una imposibilidad técnica o de cap
 
 * **Liquidación Proporcional:** El pago final de la e-OP se liquidará de forma estrictamente proporcional a la cantidad de pares o prendas terminadas y certificadas por cada taller participante, preservando la paz social del territorio.
 
-#### 4\. Penalidades por Negligencia de Entrega o Desvío de Stock
+#### 4. Penalidades por Negligencia de Entrega o Desvío de Stock
 
 Ante incumplimientos por negligencia manifiesta, impericia grave o desvío de materias primas fiscalizadas, la MES aplicará de forma inmediata:
 
@@ -206,7 +234,7 @@ Ante incumplimientos por negligencia manifiesta, impericia grave o desvío de ma
 
 3. **Pérdida de Visibilidad Prioritaria:** El tallerista sancionado sufrirá la baja automática de su insignia de destaque en la Bolsa por noventa (90) días en la primera infracción, y la exclusión definitiva del régimen ante la segunda reincidencia comprobada.
 
-#### 5\. Cláusula de Salvaguarda Financiera y Acción Civil por Dolo
+#### 5. Cláusula de Salvaguarda Financiera y Acción Civil por Dolo
 
 Ante la comprobación fehaciente de fraude documental, desvío deliberado de materias primas fiscalizadas o simulación reiterada de e-OP con el objeto de vaciar los adelantos financieros del Hito Cero, y si el tallerista o unidad productiva suspendiera de forma permanente su actividad en la Bolsa para evadir el repago mediante retenciones automáticas, la MES local procederá de inmediato:
 
@@ -216,13 +244,13 @@ Ante la comprobación fehaciente de fraude documental, desvío deliberado de mat
 
 ### F. Red de Centros de Innovación y Formación de Oficios (CIFO)
 
-#### 1\. Objeto, Financiamiento y Acceso Comunitario
+#### 1. Objeto, Financiamiento y Acceso Comunitario
 
 Se crea la Red de Centros de Innovación y Formación de Oficios (CIFO) con el objeto de calificar recursos humanos e instituir una política de seguridad ciudadana preventiva mediante la inclusión sociolaboral de la juventud. Su financiamiento operativo provendrá del tres por ciento (3%) de los recursos del FDI local, constituyendo un fondo de afectación específica e inembargable.
 
 * **Principio de Acceso Popular sin Prerrequisitos:** Los CIFOs tendrán carácter de puente comunitario irrestricto. Queda taxativamente prohibida la exigencia de acreditaciones educativas previas —como el ciclo secundario completo— para el ingreso. El único requisito de admisión es la voluntad de inserción productiva.
 
-#### 2\. Gobernanza Co-Gestionada: Trípode Institucional
+#### 2. Gobernanza Co-Gestionada: Trípode Institucional
 
 La dirección y operación de cada CIFO regional se articulará de forma obligatoria mediante un esquema tripartito:
 
@@ -232,41 +260,41 @@ La dirección y operación de cada CIFO regional se articulará de forma obligat
 
 3. **El Soporte Técnico e Infraestructura Pública:** El Municipio cederá en comodato los espacios físicos para las aulas, mientras que el INTI aportará la homologación tecnológica y certificará los títulos oficiales de Idoneidad en el Oficio.
 
-#### 3\. Beca de Estímulo y Lote Escuela
+#### 3. Beca de Estímulo y Lote Escuela
 
 Los alumnos percibirán una Beca de Estímulo Productivo del FDI desde el primer día. Los Lotes Escuela —prendas o calzados resultantes de sus prácticas— contarán con el Sello de Buen Diseño y se canalizarán a través de la Bolsa de Trabajo para compras del Estado o marcas aliadas. El cincuenta por ciento (50%) de la renta neta se distribuirá entre los estudiantes como premio directo al cumplimiento.
 
-#### 4\. Bolsa de Inserción Automatizada
+#### 4. Bolsa de Inserción Automatizada
 
 Los egresados de los CIFO obtendrán de forma automática su alta en el Monotributo Productivo o el Puente SAS y se incorporarán con rango de Prioridad 1 (Destacado de Oficio) en el directorio digital de la Bolsa de Trabajo. Las PyMEs o marcas comitentes que contraten a estos egresados mediante el registro de una e-OP obtendrán una bonificación de prioridad técnica en el sistema de asignación de fondos del FDI, reduciendo en un diez por ciento (10%) el plazo máximo de acreditación horaria de sus certificados de hito productivo en la cuenta de clearing, garantizando la liberación de la liquidez de la orden en un entorno prioritario de la jornada financiera 
 
 ### G. Banco Comunitario de Maquinaria y Bienes de Capital
 
-#### 1\. Objeto de Movilización de Activos Productivos
+#### 1. Objeto de Movilización de Activos Productivos
 
 Se crea el Banco Comunitario de Maquinaria y Bienes de Capital para relevar, reacondicionar y asignar en comodato productivo las maquinarias industriales —inyectoras, aparadoras, cortadoras y afines— que se encuentren fuera del circuito operativo, acelerando la capitalización de unidades productivas emergentes y optimizando el uso de los recursos del FDI.
 
-#### 2\. Censo, Cesión Voluntaria e Incentivo Fiscal
+#### 2. Censo, Cesión Voluntaria e Incentivo Fiscal
 
 * **Relevamiento por Promotores (PTF):** Los PTF, en coordinación con las Secretarías de Producción Municipal y las Cámaras Sectoriales, confeccionarán el padrón distrital de maquinaria industrial en desuso o paralizada.
 
 * **Incentivo de Extinción de Pasivos Preexistentes:** Los titulares de bienes ociosos que los cedan en comodato obligatorio por treinta y seis (36) meses a la Red CIFO o a SAS registradas en la Bolsa, accederán a la condonación total de sus pasivos tributarios y multas preexistentes de ARCA vinculados a la actividad industrial anterior.
 
-#### 3\. Puesta a Punto y Calibración Soberana
+#### 3. Puesta a Punto y Calibración Soberana
 
 Las maquinarias ingresadas al Banco serán derivadas a los talleres-escuela de los CIFO de cercanía. Su reparación y puesta a punto constituirá el módulo práctico fundamental de los alumnos avanzados, con supervisión del INTI y los maestros del Sindicato. Los insumos requeridos serán financiados por el fondo operativo de fomento del FDI local.
 
-#### 4\. Asignación por Récord de Cumplimiento
+#### 4. Asignación por Récord de Cumplimiento
 
 Una vez certificada la aptitud técnica por el INTI, el Banco de Maquinaria asignará el equipamiento en comodato con opción a transferencia definitiva de dominio a los egresados Prioridad 1 de los CIFO y a los talleres de la Bolsa que demuestren un récord impecable de entrega en sus primeras tres (3) e-OP, erradicando el scoring patrimonial bancario como limitante del crecimiento.
 
 ### H. Régimen de Licenciamiento, Garantías y Mantenimiento de Tecnología Conveniente
 
-#### 1\. Criterio de Homologación
+#### 1. Criterio de Homologación
 
 Los bienes de capital incorporados al régimen mediante financiamiento del FDI o asignación del Banco de Maquinarias deberán responder estrictamente al estándar de Tecnología Conveniente, priorizando aquella maquinaria cuya ingeniería permita el mantenimiento soberano, la sustitución local de componentes y la operabilidad intensiva en mano de obra, rechazando tecnologías con bloqueos de software o patentes restrictivas de reparación externa.
 
-#### 2\. Apertura de Licencias y Planos de Despiece
+#### 2. Apertura de Licencias y Planos de Despiece
 
 Los proveedores de maquinaria homologados deberán entregar junto al equipamiento:
 
@@ -274,11 +302,11 @@ Los proveedores de maquinaria homologados deberán entregar junto al equipamient
 
 2. Los planos de despiece mecánico, diagramas electrónicos y manuales de mantenimiento preventivo completamente traducidos y pesificados.
 
-#### 3\. Red de Servicios Técnicos Comunitarios mediante los CIFO
+#### 3. Red de Servicios Técnicos Comunitarios mediante los CIFO
 
 Las garantías contractuales, la calibración técnica periódica y el mantenimiento correctivo de la totalidad del parque industrial adherido a FIMCA será ejercida de forma descentralizada por la Red CIFO de cada distrito. Los talleres y SAS adheridos abonarán un canon de mantenimiento pesificado y unificado de forma directa a la cuenta de fomento del FDI local, eliminando los sobrecostos de la intermediación corporativa privada.
 
-#### 4\. Cobertura por Parálisis Productiva Fortuita
+#### 4. Cobertura por Parálisis Productiva Fortuita
 
 Ante una avería crítica que paralice el taller y cuya resolución demande más de cuarenta y ocho (48) horas hábiles:
 
@@ -296,7 +324,7 @@ Una herramienta financiera sin parámetros es una intención sin sustento. El FD
 
 | Parámetro | Valor propuesto | Fundamento |
 | :---- | :---- | :---- |
-| Capital inicial del FDI | $15.000 millones (pesos) | Reasignación de fondos fiduciarios nacionales existentes |
+| Capital inicial del FDI | <span>$</span>15.000 millones (pesos) | Reasignación de fondos fiduciarios nacionales existentes |
 | Adelanto máximo por unidad | Equivalente a 3 meses de facturación promedio declarada | Alineado al ciclo productivo del calzado (temporada) |
 | Ratio de apalancamiento | 1:3 (1 peso garantiza hasta 3 pesos de adelanto) | Estándar de fondos de garantía de segundo piso en Argentina |
 | Tasa de incobrabilidad sostenible | Hasta 8% anual sin capitalización extraordinaria | Margen conservador con garantía de hitos productivos |
@@ -313,7 +341,7 @@ El FDI no depende de una asignación presupuestaria única. Su sustentabilidad d
 
 3. **Ahorro Patriótico:** Cooperativas, cajas de profesionales y pequeños ahorristas pueden suscribir participaciones en los Sub-Fideicomisos Provinciales con un monto mínimo equivalente a un (1) Salario Mínimo, Vital y Móvil. La rentabilidad está vinculada al volumen de producción certificada por la MES regional.
 
-4. **Emisión de Títulos de Deuda Fiduciaria ("Bonos de Infraestructura Productiva \- BIP"):**
+4. **Emisión de Títulos de Deuda Fiduciaria ("Bonos de Infraestructura Productiva - BIP"):**
 
    * **Objeto de Captación de Gran Escala:** Autorízase al fiduciario del FDI, bajo propuesta del Consejo Superior de la MES Federal, a emitir valores representativos de deuda fiduciaria y certificados de participación denominados *Bonos de Infraestructura Productiva (BIP)*, destinados a la captura de capitales provenientes de inversores institucionales, fondos de inversión privados, compañías de seguros y entidades financieras reguladas.  
    * **Asignación de Fondos Específica:** Los recursos obtenidos por la colocación de los BIP se dividirán en compartimentos estancos, destinándose un cincuenta por ciento (50%) al robustecimiento del Fondo de Garantía de Segunda Línea para el apalancamiento del clearing de las e-OP, y el cincuenta por ciento (50%) restante de forma directa a planes de capitalización, adquisición de bienes de capital para el Banco de Maquinarias y el sostenimiento de la Red CIFO.  
@@ -375,12 +403,25 @@ El Monotributo Productivo se activa por el trabajo, no por la burocracia:
 
 4. El sistema sustituye la cuota plana mensual por micro-retenciones automáticas del 1% o 2% sobre cada cobro digital. No hay deuda acumulada ni declaraciones juradas.
 
+
+```mermaid
+flowchart TD
+    A([Pago Liberado desde Escrow]) --> B{Clearing Automático FDI}
+    B -->|7% al 10%| C[Cuota de Repago FDI]
+    B -->|Aportes y Cargas| D[ARCA / AFIP - Cuenta Única]
+    B -->|1%| E[Fondo de Mantenimiento CIFO]
+    B -->|Remanente Neto| F((Billetera Virtual del Tallerista))
+    
+    style B fill:#8b5cf6,stroke:#5b21b6,color:#fff
+    style F fill:#10b981,stroke:#047857,color:#fff
+```
+> **Figura 4.** Arquitectura de Formalización "Sin Estrés" (Alta Automatizada). El trabajador no debe destinar tiempo ni esfuerzo mental a la liquidación fiscal; el contrato inteligente debita las cargas y deposita el neto de libre disponibilidad.
+
 ### B. Período de Gracia y No Acumulación de Deuda Retroactiva
 
 Los primeros seis (6) meses desde el alta automática, la micro-retención es la única obligación del prestador. Sin categorización, sin declaraciones juradas, sin ningún trámite adicional.
 
-| *Cláusula de no retroactividad: el alta en el Monotributo Productivo no genera deudas por períodos anteriores no registrados. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen.* |
-| :---- |
+*Cláusula de no retroactividad: el alta en el Monotributo Productivo no genera deudas por períodos anteriores no registrados. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen.*
 
 Esta cláusula debe comunicarse con la misma jerarquía que el beneficio principal y figurar en los primeros 100 caracteres de cualquier pieza dirigida al sector.
 
@@ -399,8 +440,3 @@ Para resolver este cuello de botella estructural, el presente régimen instituci
 * **Gatillo por Inactividad de e-OP:** Si transcurren quince (15) días corridos desde la finalización y liquidación definitiva de la última Orden de Producción Digital (e-OP) vinculada al CUIL del prestador del servicio manual, sin que el sistema registre la asignación de un nuevo lote activo, la plataforma procesará de oficio y de forma inmediata la mutación de su estado fiscal hacia la condición de Suspensión Activa.  
 * **Congelamiento Absoluto de la Carga Tributaria:** Mientras el trabajador permanezca en estado de Suspensión Activa, se interrumpe de pleno derecho la exigencia de cualquier tipo de régimen informativo, declaración jurada o cuota regulatoria. El mantenimiento del CUIT en este estado no generará bajo ningún concepto deudas fiscales, previsionales, recargos ni intereses resarcitorios ante los organismos de recaudación. La obligación fiscal se reduce a cero (0) si la producción física es cero (0).  
 * **Reactivación de Oficio en Milisegundos:** El estado de suspensión se levantará automáticamente en el instante exacto en que cualquier MiPyME o SAS registrada en el sistema ingrese una nueva e-OP que incorpore el CUIL del trabajador. La reactivación se ejecuta por flujo informático, devolviendo al aportante la plena capacidad de emisión de comprobantes sectoriales sin requerir trámites presenciales, claves fiscales ni nuevas validaciones biométricas.
-
-*Addenda I — Versión Consolidada elaborada como complemento del proyecto "Proyecto FIMCA" y Ley de Salvataje Nacional.*
-
-*Junio de 2026*
-

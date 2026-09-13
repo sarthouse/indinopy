@@ -1,4 +1,10 @@
-﻿# Protocolo e-OP: Un Sistema de Crédito Productivo con Auditoría Criptográfica, Custodia en Escrow y Gobernanza Policéntrica para Cadenas de Valor Manufactureras
+---
+title: Protocolo Orden de Producción Electrónica
+author: Tiago Gabriel Sarthou
+date: Septiembre 2026
+---
+
+# Protocolo e-OP: Un Sistema de Crédito Productivo con Auditoría Criptográfica, Custodia en Escrow y Gobernanza Policéntrica para Cadenas de Valor Manufactureras
 
 ### *e-OP Protocol: A Cryptographically Audited Industrial Credit, Milestone Escrow, and Polycentric Governance System for Real-World Manufacturing Value Chains*
 
