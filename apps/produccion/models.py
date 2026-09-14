@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from apps.base.models import TimeStampedModel, DocumentoBase
+from apps.base.models import TimeStampedModel, DocumentoBase, DocumentoFirmableMixin
 from apps.inventario.models import (
     ProductoTemplate,
     Producto,
@@ -117,6 +117,13 @@ class RecetaEtapa(TimeStampedModel):
             "Observaciones que viajarán al tallerista en el duplicado de la OP"
         ),
     )
+    porcentaje_hito_pago = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        default=0.00,
+        verbose_name=_("% de Pago al finalizar etapa"),
+        help_text=_("Define el cronograma de liberación de fondos (Ej: 20% al terminar Corte)")
+    )
 
     class Meta:
         verbose_name = _("Etapa de receta")
@@ -130,9 +137,6 @@ class RecetaEtapa(TimeStampedModel):
 # ==========================================
 # MODELOS DE EJECUCIÓN (PRODUCCIÓN REAL)
 # ==========================================
-
-
-from apps.base.models import TimeStampedModel, DocumentoBase, DocumentoFirmableMixin
 
 
 class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
@@ -182,13 +186,15 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         on_delete=models.RESTRICT,
         related_name="ordenes_produccion",
         verbose_name=_("Receta base"),
-        null=True, blank=True,
-        help_text=_("Opcional en Modo Headless (cuando el BOM viene del ERP legacy)")
+        null=True,
+        blank=True,
+        help_text=_("Opcional en Modo Headless (cuando el BOM viene del ERP legacy)"),
     )
     bom_headless = models.JSONField(
-        null=True, blank=True,
+        null=True,
+        blank=True,
         verbose_name=_("BOM Externo (Headless)"),
-        help_text=_("Guarda la lista de materiales teórica inyectada por API externa")
+        help_text=_("Guarda la lista de materiales teórica inyectada por API externa"),
     )
     cliente = models.ForeignKey(
         "contactos.Contacto",
@@ -255,7 +261,7 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         ),
     )
     # === Protocolo e-OP ===
-    # NOTA: Tallerista_principal fue removido. La asignación de proveedores externos 
+    # NOTA: Tallerista_principal fue removido. La asignación de proveedores externos
     # se hace a nivel de Etapa (OPEtapaTracking) para soportar múltiples prestadores con CBU independiente.
     ptf_asignado = models.ForeignKey(
         "contactos.Contacto",
@@ -264,7 +270,9 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         blank=True,
         related_name="ops_fiscalizadas",
         verbose_name=_("PTF Asignado (Fiscalizador)"),
-        help_text=_("Promotor Territorial que debe certificar los avances físicos de esta orden"),
+        help_text=_(
+            "Promotor Territorial que debe certificar los avances físicos de esta orden"
+        ),
     )
 
     # Vector C: Desglose Factorial de Costos Inmutable (en UCI o ARS indexado)
@@ -741,13 +749,21 @@ class OPInsumoRequerido(TimeStampedModel):
         verbose_name=_("Costo facturado por Fasón"),
     )
     costo_unitario_congelado = models.DecimalField(
-        max_digits=15, decimal_places=2, null=True, blank=True,
+        max_digits=15,
+        decimal_places=2,
+        null=True,
+        blank=True,
         verbose_name=_("Costo unitario (Congelado)"),
-        help_text=_("Snapshot del costo al emitir la e-OP (Garantiza inmutabilidad del Título de Crédito).")
+        help_text=_(
+            "Snapshot del costo al emitir la e-OP (Garantiza inmutabilidad del Título de Crédito)."
+        ),
     )
     subtotal_congelado = models.DecimalField(
-        max_digits=15, decimal_places=2, null=True, blank=True,
-        verbose_name=_("Subtotal insumo (Congelado)")
+        max_digits=15,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name=_("Subtotal insumo (Congelado)"),
     )
 
     class Meta:
@@ -793,7 +809,9 @@ class OPParteProduccion(TimeStampedModel):
         blank=True,
         related_name="partes_produccion",
         verbose_name=_("Etapa de Tracking Asociada"),
-        help_text=_("Permite imputar el avance físico directamente a una etapa específica (Ej: Aparado).")
+        help_text=_(
+            "Permite imputar el avance físico directamente a una etapa específica (Ej: Aparado)."
+        ),
     )
     numero_parte = models.CharField(
         max_length=50, blank=True, verbose_name=_("N° de Parte")
@@ -1082,52 +1100,72 @@ class OPEtapaLog(TimeStampedModel):
     def __str__(self):
         return f"{self.creado_en.strftime('%d/%m %H:%M')} - {self.usuario} -> {self.estado_nuevo}"
 
+
 class OPEscrowHito(TimeStampedModel):
     """
     Representa una línea del contrato inteligente de la e-OP.
     Bloquea los fondos en fideicomiso (FDI) hasta que se cumpla la condición técnica,
     permitiendo pagos escalonados de forma descentralizada.
     """
+
     op = models.ForeignKey(
-        OrdenProduccion, 
-        on_delete=models.CASCADE, 
+        OrdenProduccion,
+        on_delete=models.CASCADE,
         related_name="escrow_hitos",
-        verbose_name=_("Orden de producción")
+        verbose_name=_("Orden de producción"),
     )
     etapa_tracking = models.ForeignKey(
         OPEtapaTracking,
         on_delete=models.SET_NULL,
-        null=True, blank=True,
+        null=True,
+        blank=True,
         related_name="hitos_escrow",
-        verbose_name=_("Etapa Productiva Asignada")
+        verbose_name=_("Etapa Productiva Asignada"),
     )
     beneficiario = models.ForeignKey(
         "contactos.Contacto",
         on_delete=models.RESTRICT,
-        null=True, blank=True,
+        null=True,
+        blank=True,
         related_name="hitos_escrow_cobrar",
         verbose_name=_("Tallerista / Beneficiario del Hito"),
-        help_text=_("El CBU/CVU de este contacto recibirá el pago al liberarse el hito")
+        help_text=_(
+            "El CBU/CVU de este contacto recibirá el pago al liberarse el hito"
+        ),
     )
-    nombre_hito = models.CharField(max_length=100, verbose_name=_("Hito de Pago (Ej: Hito Cero, Corte)"))
-    condicion_disparo = models.CharField(max_length=200, verbose_name=_("Condición de Disparo Técnico"))
-    porcentaje_tramo = models.DecimalField(max_digits=5, decimal_places=2, verbose_name=_("% del Tramo"))
-    monto_bruto_retenido = models.DecimalField(max_digits=15, decimal_places=2, verbose_name=_("Monto Bruto Retenido"))
-    fecha_liberacion_estimada = models.DateField(null=True, blank=True, verbose_name=_("Fecha de Liberación Estimada"))
-    fecha_liberacion_real = models.DateField(null=True, blank=True, verbose_name=_("Fecha de Liberación Real"))
+    nombre_hito = models.CharField(
+        max_length=100, verbose_name=_("Hito de Pago (Ej: Hito Cero, Corte)")
+    )
+    condicion_disparo = models.CharField(
+        max_length=200, verbose_name=_("Condición de Disparo Técnico")
+    )
+    porcentaje_tramo = models.DecimalField(
+        max_digits=5, decimal_places=2, verbose_name=_("% del Tramo")
+    )
+    monto_bruto_retenido = models.DecimalField(
+        max_digits=15, decimal_places=2, verbose_name=_("Monto Bruto Retenido")
+    )
+    fecha_liberacion_estimada = models.DateField(
+        null=True, blank=True, verbose_name=_("Fecha de Liberación Estimada")
+    )
+    fecha_liberacion_real = models.DateField(
+        null=True, blank=True, verbose_name=_("Fecha de Liberación Real")
+    )
     estado = models.CharField(
         max_length=20,
         choices=[
             ("retenido", _("Retenido en Escrow FDI")),
             ("liberado", _("Acreditado (Liberado)")),
-            ("en_disputa", _("En Disputa / Congelado"))
+            ("en_disputa", _("En Disputa / Congelado")),
         ],
         default="retenido",
-        verbose_name=_("Estado del Hito")
+        verbose_name=_("Estado del Hito"),
     )
     comprobante_bancario = models.CharField(
-        max_length=100, null=True, blank=True, 
-        verbose_name=_("Constancia Bancaria / BAPRO TX")
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name=_("Constancia Bancaria / BAPRO TX"),
     )
 
     class Meta:

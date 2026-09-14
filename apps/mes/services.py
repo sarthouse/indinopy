@@ -503,6 +503,15 @@ class PTFService:
         for registro in pendientes:
             tiene_veto = registro.resoluciones.filter(es_veto=True).exists()
             if not tiene_veto:
+                # Regla de Negocio: El silencio positivo NO aplica a marcas sin historial.
+                tiene_historial = RegistroEOP.objects.filter(
+                    comitente_cuit=registro.comitente_cuit,
+                    estado__in=["aprobado_silencio", "aprobado_expres"]
+                ).exclude(uuid_identificador=registro.uuid_identificador).exists()
+                
+                if not tiene_historial:
+                    continue
+
                 registro.estado = "aprobado_silencio"
                 registro.save(update_fields=["estado"])
                 PTFService._liberar_escrow_por_eop(registro)
@@ -510,8 +519,6 @@ class PTFService:
 
         return aprobadas
 
-    # ─────────────────────────────────────────────────────────────────────
-    # MÉTODOS PRIVADOS
     # ─────────────────────────────────────────────────────────────────────
 
     @staticmethod

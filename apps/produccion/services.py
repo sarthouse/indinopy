@@ -13,14 +13,12 @@ from apps.documentos.models import DocumentoAdjunto
 from apps.federacion.services import FederacionCreditoService
 from apps.inventario.models import LineaMovimientoStock, MovimientoStock, Ubicacion
 from apps.inventario.services import StockService
-from apps.mes.models import RegistroEOP
 from apps.produccion.models import (
     OPEtapaTracking,
     OPInsumoRequerido,
     OPVariacion,
     OrdenProduccion,
 )
-from apps.tesoreria.models import ContratoEscrow, HitoEscrow
 
 
 def _obtener_ubicaciones_base():
@@ -161,48 +159,6 @@ class ProduccionService:
 
         # === Lógica del Sistema Dual (RIGI / e-OP Federada) ===
         if op.es_eop_federada:
-            escrow = ContratoEscrow.objects.create(
-                eop_uuid=op.uuid_identificador,
-                monto_total_uci=op.costo_total_fason,
-                estado="borrador",
-            )
-            HitoEscrow.objects.create(
-                contrato=escrow,
-                nombre="Hito Final - Entrega Completa",
-                porcentaje=Decimal("100.00"),
-                estado="bloqueado",
-            )
-
-            etapa_taller = None
-            if hasattr(op, "tracking_etapas"):
-                etapa_taller = op.tracking_etapas.filter(
-                    tallerista_asignado__isnull=False
-                ).first()
-            elif hasattr(op, "etapas"):
-                etapa_taller = op.etapas.filter(
-                    tallerista_asignado__isnull=False
-                ).first()
-            tallerista = (
-                etapa_taller.tallerista_asignado
-                if etapa_taller
-                else getattr(op, "tallerista_principal", None)
-            )
-            tallerista_cuit = (
-                tallerista.cuil
-                if (tallerista and getattr(tallerista, "cuil", None))
-                else "00000000000"
-            )
-
-            RegistroEOP.objects.create(
-                uuid_identificador=op.uuid_identificador,
-                hash_seguridad=op.hash_seguridad,
-                comitente_cuit=op.cliente.cuil if op.cliente else "00000000000",
-                tallerista_cuit=tallerista_cuit,
-                monto_total_uci=op.costo_total_fason,
-                timelock_vencimiento=timezone.now() + datetime.timedelta(hours=48),
-                estado="en_revision",
-            )
-
             ct_doc = ContentType.objects.get_for_model(op)
             payload_str = op.generar_payload_canonico()
             archivo_json = ContentFile(
@@ -216,6 +172,11 @@ class ProduccionService:
                 mimetype="application/json",
                 descripcion="Payload canónico inmutable con hash SHA-256 de la Orden de Producción.",
             )
+            
+            # TODO: Aquí el ERP Producción (Nodo Marca) debe disparar un Webhook
+            # o llamada HTTP hacia la URL del Nodo MES usando el payload generado.
+            # No debe acceder directamente a la BD de la MES ni Tesorería.
+
 
     @staticmethod
     @transaction.atomic

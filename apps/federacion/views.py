@@ -5,20 +5,37 @@ from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from apps.contactos.models import Contacto
-from apps.inventario.models import MovimientoStock, ProductoTemplate, Ubicacion
-from apps.mes.models import RegistroEOP
-from apps.produccion.models import (
-    OPEtapaTracking,
-    OPParteProduccion,
-    OPParteProduccionLinea,
-    OrdenProduccion,
-    Receta,
-    RecetaEtapa,
-)
+from django.conf import settings
+from decimal import Decimal
 
-from .models import NodoFederado, WebhookLog
+_ROLE = getattr(settings, "NODE_ROLE", "DEV")
+
+# Módulos del Nodo MES (Gobernanza y FDI)
+if _ROLE in ["MES", "DEV"]:
+    from apps.mes.models import RegistroEOP, ScoringTallerista
+    from apps.mes.services import PTFService
+    from apps.tesoreria.models import ContratoEscrow, HitoEscrow
+else:
+    RegistroEOP = ScoringTallerista = PTFService = ContratoEscrow = HitoEscrow = None
+
+# Módulos de Nodos ERP (Comitente / Tallerista)
+if _ROLE in ["COMITENTE", "TALLERISTA", "DEV"]:
+    from apps.inventario.models import MovimientoStock, ProductoTemplate, Ubicacion
+    from apps.produccion.models import (
+        OPEtapaTracking,
+        OPParteProduccion,
+        OPParteProduccionLinea,
+        OrdenProduccion,
+        Receta,
+        RecetaEtapa,
+    )
+else:
+    MovimientoStock = ProductoTemplate = Ubicacion = None
+    OPEtapaTracking = OPParteProduccion = OPParteProduccionLinea = None
+    OrdenProduccion = Receta = RecetaEtapa = None
+
+from .models import NodoFederado, NovedadFederada, WebhookLog
 from .serializers import (
     EntradaEOPSerializer,
     FirmaEtapaSerializer,
@@ -62,6 +79,15 @@ class RecepcionEOPView(APIView):
         permissions.AllowAny
     ]  # En producción usaríamos un Custom Permission basado en IP/Firma
 
+    def dispatch(self, request, *args, **kwargs):
+        if _ROLE not in ["MES", "DEV"]:
+            from django.http import HttpResponseForbidden
+
+            return HttpResponseForbidden(
+                "Esta vista de gobernanza solo está habilitada para el Nodo MES."
+            )
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request):
         # Guardamos log de la petición (No Repudio)
         log = WebhookLog.objects.create(
@@ -75,16 +101,68 @@ class RecepcionEOPView(APIView):
         if serializer.is_valid():
             data = serializer.validated_data
 
-            # 1. Crear el Registro en la Gobernanza (MES)
-            RegistroEOP.objects.create(
+            # 1. Consultar ScoringTallerista local (Nodo MES)
+            tallerista_cuit = data["tallerista_cuit"]
+            posee_sbd = False
+            score_global = Decimal("0.00")
+
+            try:
+                tallerista = Contacto.objects.get(cuil=tallerista_cuit)
+                scoring = ScoringTallerista.objects.filter(
+                    tallerista=tallerista
+                ).first()
+                if scoring:
+                    posee_sbd = scoring.posee_sbd
+                    score_global = scoring.score_global_calculado
+            except Contacto.DoesNotExist:
+                pass
+
+            # 2. Evaluación de Fast-Track
+            es_score_alto = score_global > Decimal("90.00")
+            if es_score_alto:
+                estado_inicial = "aprobado_expres"
+                timelock = timezone.now() + datetime.timedelta(hours=2)
+            else:
+                estado_inicial = "en_revision"
+                timelock = timezone.now() + datetime.timedelta(hours=48)
+
+            # 3. Crear el Registro en la Gobernanza (MES)
+            registro = RegistroEOP.objects.create(
                 uuid_identificador=data["uuid_identificador"],
                 hash_seguridad=data["hash_seguridad"],
                 comitente_cuit=data["comitente_cuit"],
-                tallerista_cuit=data["tallerista_cuit"],
+                tallerista_cuit=tallerista_cuit,
                 monto_total_uci=data["monto_total_uci"],
-                timelock_vencimiento=timezone.now() + datetime.timedelta(hours=48),
-                estado="en_revision",
+                timelock_vencimiento=timelock,
+                estado=estado_inicial,
             )
+
+            # 4. Crear Contrato Escrow en el FDI (Nodo MES/Tesorería)
+            escrow = ContratoEscrow.objects.create(
+                eop_uuid=data["uuid_identificador"],
+                monto_total_uci=data["monto_total_uci"],
+                estado="borrador",
+            )
+
+            porcentaje_hito_cero = Decimal("50.00") if posee_sbd else Decimal("35.00")
+            HitoEscrow.objects.create(
+                contrato=escrow,
+                nombre="Hito Cero / Adelanto Operativo",
+                porcentaje=porcentaje_hito_cero,
+                estado="bloqueado",
+                requiere_auditoria_ptf=False,
+            )
+            HitoEscrow.objects.create(
+                contrato=escrow,
+                nombre="Hito Final - Entrega Completa",
+                porcentaje=(Decimal("100.00") - porcentaje_hito_cero),
+                estado="bloqueado",
+                requiere_auditoria_ptf=True,
+            )
+
+            # 5. Ejecutar Adelanto si aplicó Fast-Track
+            if estado_inicial == "aprobado_expres":
+                PTFService._liberar_escrow_por_eop(registro)
 
             # Actualizamos el log indicando que la firma criptográfica pasó la prueba matemática
             log.firma_verificada = True
@@ -98,8 +176,8 @@ class RecepcionEOPView(APIView):
 
             return Response(
                 {
-                    "mensaje": "e-OP recibida e inyectada en la MES",
-                    "estado": "en_revision",
+                    "mensaje": "e-OP recibida, Escrow creado e inyectada en la MES",
+                    "estado": estado_inicial,
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -117,6 +195,12 @@ class RecepcionFirmaEtapaView(APIView):
     """
 
     permission_classes = [permissions.AllowAny]
+
+    def dispatch(self, request, *args, **kwargs):
+        if _ROLE not in ["MES", "DEV"]:
+            from django.http import HttpResponseForbidden
+            return HttpResponseForbidden("Esta vista de gobernanza solo está habilitada para el Nodo MES.")
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, uuid):
         log = WebhookLog.objects.create(
@@ -171,6 +255,12 @@ class EOPWebhookReceiverAPIView(APIView):
     en este Nodo (Taller).
     """
 
+    def dispatch(self, request, *args, **kwargs):
+        if _ROLE not in ["COMITENTE", "TALLERISTA", "DEV"]:
+            from django.http import HttpResponseForbidden
+            return HttpResponseForbidden("Esta vista ERP solo está habilitada para Nodos Comitente o Tallerista.")
+        return super().dispatch(request, *args, **kwargs)
+
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         payload = request.data
@@ -217,19 +307,19 @@ class EOPWebhookReceiverAPIView(APIView):
         for i, etapa_data in enumerate(etapas_payload):
             servicio, _ = ProductoTemplate.objects.get_or_create(
                 nombre=etapa_data.get("servicio_nombre", "Servicio Genérico"),
-                tipo='servicio'
+                tipo="servicio",
             )
             receta_etapa, _ = RecetaEtapa.objects.get_or_create(
                 receta=receta_espejo,
-                servicio=servicio, 
-                defaults={'orden_ejecucion': i+1}
+                servicio=servicio,
+                defaults={"orden_ejecucion": i + 1},
             )
-            
+
             OPEtapaTracking.objects.create(
                 op=op_espejo,
                 etapa_origen=receta_etapa,
-                tallerista_asignado=None, # Somos nosotros mismos, o nuestros empleados
-                estado='pendiente'
+                tallerista_asignado=None,  # Somos nosotros mismos, o nuestros empleados
+                estado="pendiente",
             )
 
         # 4. Remito de Ingreso de Mercadería en Custodia
@@ -262,6 +352,12 @@ class ParteProduccionWebhookReceiverAPIView(APIView):
     Recibe un "Parte de Producción" (avance físico) emitido por el Nodo Taller
     y replica el progreso en el Nodo Marca.
     """
+
+    def dispatch(self, request, *args, **kwargs):
+        if _ROLE not in ["COMITENTE", "TALLERISTA", "DEV"]:
+            from django.http import HttpResponseForbidden
+            return HttpResponseForbidden("Esta vista ERP solo está habilitada para Nodos Comitente o Tallerista.")
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
@@ -328,32 +424,48 @@ class PollingNovedadesAPIView(APIView):
     si hay Webhooks/Eventos pendientes en su bandeja de entrada.
     Requiere que el nodo envíe su CUIT en el Header X-CUIT.
     """
+
     permission_classes = [permissions.AllowAny]
 
+    def dispatch(self, request, *args, **kwargs):
+        if _ROLE not in ["COMITENTE", "TALLERISTA", "DEV"]:
+            from django.http import HttpResponseForbidden
+            return HttpResponseForbidden("Esta vista de polling está habilitada para Nodos ERP (Comitente/Taller).")
+        return super().dispatch(request, *args, **kwargs)
+
     def get(self, request):
-        from .models import NovedadFederada, NodoFederado
         cuit = request.headers.get("X-CUIT")
         if not cuit:
-            return Response({"error": "Header X-CUIT requerido"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Header X-CUIT requerido"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             nodo = NodoFederado.objects.get(cuit=cuit)
         except NodoFederado.DoesNotExist:
-            return Response({"error": "Nodo no registrado en la red"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Nodo no registrado en la red"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         # Buscar novedades no leídas para este nodo
         novedades = NovedadFederada.objects.filter(nodo_destino=nodo, leido=False)
-        
+
         payloads = []
         for nov in novedades:
-            payloads.append({
-                "novedad_id": nov.id,
-                "tipo_evento": nov.tipo_evento,
-                "timestamp": nov.creado_en.isoformat(),
-                "payload": nov.payload
-            })
-            
-        return Response({"pendientes": len(payloads), "novedades": payloads}, status=status.HTTP_200_OK)
+            payloads.append(
+                {
+                    "novedad_id": nov.id,
+                    "tipo_evento": nov.tipo_evento,
+                    "timestamp": nov.creado_en.isoformat(),
+                    "payload": nov.payload,
+                }
+            )
+
+        return Response(
+            {"pendientes": len(payloads), "novedades": payloads},
+            status=status.HTTP_200_OK,
+        )
 
     def post(self, request):
         """
@@ -361,20 +473,25 @@ class PollingNovedadesAPIView(APIView):
         así no se le envían de nuevo en el próximo GET.
         """
         from .models import NovedadFederada, NodoFederado
+
         cuit = request.headers.get("X-CUIT")
         if not cuit:
-            return Response({"error": "Header X-CUIT requerido"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Header X-CUIT requerido"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             nodo = NodoFederado.objects.get(cuit=cuit)
         except NodoFederado.DoesNotExist:
-            return Response({"error": "Nodo no registrado en la red"}, status=status.HTTP_404_NOT_FOUND)
-            
+            return Response(
+                {"error": "Nodo no registrado en la red"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         novedades_ids = request.data.get("novedades_ids", [])
         if novedades_ids:
             NovedadFederada.objects.filter(
-                id__in=novedades_ids, 
-                nodo_destino=nodo
+                id__in=novedades_ids, nodo_destino=nodo
             ).update(leido=True, fecha_lectura=timezone.now())
-            
+
         return Response({"status": "ok"}, status=status.HTTP_200_OK)
