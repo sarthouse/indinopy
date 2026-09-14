@@ -113,6 +113,12 @@ Siempre usar `ProduccionService.confirmar_op(op)`.
 - `Contacto` con `ubicacion_catastral` (GPS), `es_taller_homologado`, `ucp_score`, `clave_publica_ed25519`
 - `RegistroEOP` — Copia canónica en el nodo MES con Timelock
 
+#### Gobernanza y Criptografía (Módulo MES)
+- `ComisionCredito`, `PerfilPTF`, `ResolucionOP`, `TribunalArbitraje` — Modelos de gobernanza.
+- `PTFService` — Motor criptográfico de validación Ed25519 (`PyNaCl`), verificación de firmas en campo y certificados canónicos.
+- `PTFService` — Control espacial Point-in-Polygon (PostGIS) de zonas de cobertura.
+- `PTFService` — Lógica de aprobación exprés, veto de e-OPs y Silencio Positivo (Timelock 48h).
+
 #### Capa de Servicios
 - `StockService.reservar_linea()` / `realizar_linea()` / `cancelar_linea()`
 - `ProduccionService.confirmar_op()` / `finalizar_op()` / `cancelar_op()`
@@ -275,6 +281,15 @@ GET  /federacion/banco/clearing/pendientes/  ← Lotes de pago a ejecutar
 POST /federacion/banco/clearing/confirmar/   ← Webhook del BAPRO tras pagar
 ```
 
+### Oráculo de Precios y Nomenclador Sectorial (Vector C)
+
+Para garantizar que el cálculo de la mano de obra y las cargas sociales (Vector C de la e-OP) se actualice automáticamente sin acoplar la MES a los inventarios privados de cada marca, se utilizará un patrón de **Nomenclador Sectorial (Mapping)**:
+
+1. **Catálogo Abstracto (Nodo MES):** El nodo central mantiene un modelo `TarifaConvenio` utilizando un código universal (ej: `MES-SRV-APARADO-BOTA`). Define los costos base de mano de obra y los porcentajes de cargas sociales, sin dependencias con `ProductoTemplate`.
+2. **Mapeo Local (Nodo Marca):** En el ERP de cada marca (`apps.inventario`), el servicio interno (ej: "Costura de mi Borcego") tiene un campo `codigo_homologado_mes` donde el usuario enlaza su servicio privado con la nomenclatura de la MES.
+3. **Sincronización (Federación):** La MES dispara webhooks firmados criptográficamente cada vez que hay una actualización paritaria. Los nodos de las marcas reciben el JSON, validan la firma de la MES y actualizan su caché local de tarifas.
+4. **Snapshot Inmutable (Producción):** Al crear una e-OP, el motor busca el `codigo_homologado_mes`, extrae la tarifa vigente del caché y guarda los montos calculados en `costo_mod` y `costo_cs` de la e-OP. Si las tarifas cambian al día siguiente, el contrato inteligente de la OP ya firmada permanece inalterable.
+
 ---
 
 ## 6. Flujo del PTF (Promotor Territorial de Formalización)
@@ -354,43 +369,24 @@ POLLING API (Fallback — Pull)
 
 ---
 
-## 8. Roadmap de Implementación
+## 8. Roadmap de Implementación (Pendientes)
 
-### Fase 1 — Estabilización (Completada ✅)
-- [x] Refactorización a Capa de Servicios (Service Layer)
-- [x] Corrección de 5 bugs críticos (HMAC, imports, timedelta)
-- [x] CBVs base en todos los módulos
-- [x] Integración WooCommerce (Webhooks + API REST)
-- [x] Stub AFIP operativo
+### Fase A — Frontend, UX y Portales (En curso)
+- [ ] Template base (`base.html`) con sistema de diseño portado de los mockups HTML.
+- [ ] Formularios dinámicos de alta de e-OP en Django.
+- [ ] Dashboard de producción (OPs activas, stock, alertas).
+- [ ] Panel de Escrow y Hitos para el Comitente.
+- [ ] Panel del Tallerista (OPs asignadas, partes de producción).
+- [ ] Portal web del PTF (`/mes/ptf/portal/`) con WebCrypto API para firmas en navegador.
 
-### Fase 2 — Frontend y UX (Siguiente)
-- [ ] Template base (`base.html`) con sistema de diseño
-- [ ] Dashboard de producción (OPs activas, stock, alertas)
-- [ ] Formularios de alta de e-OP
-- [ ] Panel de Escrow y Hitos para el Comitente
-- [ ] Panel del Tallerista (OPs asignadas, partes de producción)
-- [ ] Portal web del PTF (`/mes/ptf/portal/`) con WebCrypto API
-
-### Fase 3 — Criptografía Completa
-- [x] Modelo `PerfilPTF` con zona de cobertura (MultiPolygon PostGIS)
-- [x] `PTFService.registrar_ptf()` — Alta de PTF por la ComisionCredito
-- [x] `PTFService.registrar_clave_publica()` — El PTF sube su clave pública
-- [x] `PTFService.emitir_certificado()` — Certificado canónico firmado por la MES
-- [x] `PTFService.revocar_ptf()` — Revocación con versionado del certificado
-- [x] `PTFService.verificar_certificado_offline()` — Verificación sin conectar a la MES
-- [x] `PTFService.verificar_gps_en_zona()` — PostGIS point-in-polygon
-- [x] `PTFService.aprobar_eop()` — Flujo completo de aprobación exprés
-- [x] `PTFService.vetar_eop()` — Veto que abre TribunalArbitraje automáticamente
-- [x] `PTFService.aplicar_silencio_positivo()` — Worker para Celery Beat (Timelock 48h)
-- [x] Instalar `PyNaCl` y activar verificación matemática Ed25519 real
-- [ ] Flujo completo de generación de par de claves via WebCrypto API en browser
-- [ ] Verificación GPS en `OPParteProduccion` (PoPW)
-### Fase 4 — Red Federada (MES)
-- [ ] Endpoints de federación del Nodo MES
-- [ ] Emisión y distribución de certificados PTF
-- [ ] Lista de Revocación (CRL)
-- [ ] Receptor de e-OPs entrantes desde nodos externos
-- [ ] Worker Celery para Timelock de 48h (Silencio Positivo)
+### Fase B — Red Federada (Módulo MES)
+- [ ] **Oráculo de Precios Federado**: Modelo `TarifaConvenio` con nomenclatura universal (ej: `MES-SRV-APARADO`) desacoplada.
+- [ ] Sincronización descentralizada de matriz de costos hacia nodos de Marcas (Webhooks).
+- [ ] Mapeo local de `ProductoTemplate.codigo_homologado_mes` en `apps.inventario` (Puente de cálculo).
+- [ ] Endpoints de federación del Nodo MES (Receptor de e-OPs entrantes).
+- [ ] Emisión, distribución y Lista de Revocación (CRL) de certificados PTF.
+- [ ] Worker Celery para Timelock de 48h (Silencio Positivo) en red.
+- [ ] Verificación GPS en `OPParteProduccion` (PoPW).
 
 ### Fase 5 — Integración Headless (API Gateway e-OP)
 - [ ] Implementar flag `MODO_HEADLESS` en `ConfiguracionEmpresa` / `settings.py`

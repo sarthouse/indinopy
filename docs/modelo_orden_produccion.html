@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -54,8 +54,8 @@
         }
 
         .container {
-            max-width: 210mm;
-            /* Formato estándar A4 */
+            max-width: 216mm;
+            /* Formato Oficio / Legal */
             margin: 0 auto;
             background-color: #fff;
             padding: 24px 28px;
@@ -414,76 +414,19 @@
             width: 76px;
         }
 
-        .page-break {
-            page-break-after: always;
-            margin: 40px 0;
-            border-bottom: 3px dashed #a0aec0;
-            text-align: center;
-            color: #a0aec0;
-            font-size: 14px;
-            font-weight: bold;
-            position: relative;
-        }
-
-        .page-break::after {
-            content: "✂️ LÍNEA DE CORTE (IMPRESIÓN) ✂️";
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #edf2f7;
-            padding: 0 15px;
-        }
-
-        .ejemplar-dropdown {
-            margin: 0 auto 20px auto;
-            max-width: 210mm;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-        }
-
-        .ejemplar-summary {
-            padding: 15px 20px;
-            background: #1e293b;
-            color: #f8fafc;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            outline: none;
-            user-select: none;
-            transition: background 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .ejemplar-summary:hover {
-            background: #334155;
-        }
-
-        .btn-print-single {
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-print-single:hover {
-            background-color: #2563eb;
-        }
-
         .btn-print {
             position: fixed;
             top: 20px;
             right: 20px;
             background-color: #059669;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            wg background-color: #059669;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -500,50 +443,6 @@
         .btn-print:hover {
             background-color: #047857;
             transform: translateY(-2px);
-        }
-
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-
-            body.print-single-mode .ejemplar-dropdown:not(.print-active) {
-                display: none !important;
-            }
-
-            .container {
-                box-shadow: none;
-                border: 1px solid #cbd5e0;
-                margin-bottom: 0;
-            }
-
-            .page-break {
-                margin: 0;
-                border: none;
-                page-break-after: always;
-            }
-
-            .page-break::after {
-                display: none;
-            }
-
-            .btn-back-home,
-            .btn-print {
-                display: none;
-            }
-
-            .ejemplar-dropdown {
-                display: block;
-                border: none;
-                margin: 0;
-                background: transparent;
-                max-width: none;
-            }
-
-            .ejemplar-summary {
-                display: none;
-            }
         }
 
         @media screen and (max-width: 768px) {
@@ -626,20 +525,90 @@
                 padding: 15px 10px;
             }
         }
+
+        @media print {
+            @page {
+                size: legal;
+                margin: 10mm;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .internal-page-break {
+                page-break-before: always;
+            }
+
+            .btn-back-home,
+            .btn-print,
+            .tabs {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+                border: 1px solid #cbd5e0;
+                margin-bottom: 0;
+            }
+        }
+
+        /* TABS CSS RESTORED */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: #1f2937;
+            color: #94a3b8;
+            border: 1px solid #374151;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-btn:hover {
+            background: #374151;
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #2563eb;
+        }
     </style>
-    <!-- Highlight.js -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark-reasonable.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
 </head>
 
 <body>
     <a href="index.html" class="btn-back-home">← Volver al Inicio</a>
 
+    <div class="tabs" style="justify-content: center; margin-top: 60px; border-bottom: none;">
+        <button class="tab-btn active" onclick="switchEjemplar('ejemplar1', this)">Ejemplar 1 (Original)</button>
+        <button class="tab-btn" onclick="switchEjemplar('ejemplar2', this)">Ejemplar 2 (Duplicado)</button>
+    </div>
+
+    <script>
+        function switchEjemplar(id, btnElement) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById('ejemplar1').style.display = (id === 'ejemplar1') ? 'block' : 'none';
+            document.getElementById('ejemplar2').style.display = (id === 'ejemplar2') ? 'block' : 'none';
+        }
+    </script>
+
+
     <!-- ========================================================================= -->
     <!-- EJEMPLAR 1: ADMINISTRATIVO / CRÉDITO (CON COSTOS)                        -->
     <!-- ========================================================================= -->
-    <div class="container">
+    <div id="ejemplar1" class="container">
         <div class="ejemplar-label">
             EJEMPLAR 1: ORIGINAL (Uso Administrativo / Título de Crédito) - CONTIENE INFORMACIÓN CLASIFICADA DE COSTOS
         </div>
@@ -823,6 +792,7 @@
             </tfoot>
         </table>
 
+        <div class="internal-page-break"></div>
         <!-- 3. INSUMOS Y MATERIAS PRIMAS (BOM) -->
         <div class="section-title">
             <span>3. Matriz de Insumos y Materias Primas (BOM Inmutable)</span>
@@ -1042,6 +1012,7 @@
             </tfoot>
         </table>
 
+        <div class="internal-page-break"></div>
         <!-- 6. MATRIZ DE COSTOS ÍTEM POR ÍTEM (INSTRUMENTO CREDITICIO) -->
         <div class="section-title" style="background-color: #feebc8; border-color: #dd6b20;">
             <span style="color: #7b341e;">6. Desglose Factorial Integral de Costos (Liquidación Homologada MES)</span>
@@ -1350,13 +1321,12 @@
     </div>
 
 
-    <div class="page-break"></div>
 
 
     <!-- ========================================================================= -->
     <!-- EJEMPLAR 2: TALLER / FÁBRICA (SIN COSTOS)                                -->
     <!-- ========================================================================= -->
-    <div class="container">
+    <div id="ejemplar2" class="container" style="display: none;">
         <div class="ejemplar-label ejemplar-duplicado-label">
             EJEMPLAR 2: DUPLICADO (Para Taller / Fábrica) - DOCUMENTO DE TRABAJO Y TRACKING FÍSICO
         </div>
@@ -1540,6 +1510,7 @@
             </tfoot>
         </table>
 
+        <div class="internal-page-break"></div>
         <!-- 3. INSUMOS Y MATERIAS PRIMAS (BOM) -->
         <div class="section-title">
             <span>3. Matriz de Insumos y Materias Primas (BOM Inmutable)</span>
@@ -1677,7 +1648,6 @@
             la cuenta fiduciaria del FDI hasta la resolución perentoria del Tribunal de Arbitraje de Trinchera (plazo
             perentorio: 72 horas).
         </div>
-
         <!-- 6. BLOQUE MULTIFIRMA Y FE PÚBLICA -->
         <div class="section-title">
             <span>5. Bloque Multifirma (2 de 3), Certificación Territorial y Sello QR</span>
@@ -1788,60 +1758,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Envolver los contenedores en desplegables <details>
-            document.querySelectorAll('.container').forEach((container) => {
-                const label = container.querySelector('.ejemplar-label');
-                let titleText = "EJEMPLAR";
-                if (label) {
-                    titleText = label.textContent.trim().split(' (')[0];
-                }
-
-                const details = document.createElement('details');
-                details.className = 'ejemplar-dropdown';
-                details.open = true; // Por defecto abierto
-
-                const summary = document.createElement('summary');
-                summary.className = 'ejemplar-summary';
-
-                const titleSpan = document.createElement('span');
-                titleSpan.innerHTML = '📁 ' + titleText;
-                summary.appendChild(titleSpan);
-
-                // Botón de impresión individual
-                const printSingleBtn = document.createElement('button');
-                printSingleBtn.className = 'btn-print-single';
-                printSingleBtn.innerHTML = '🖨️ Imprimir';
-                printSingleBtn.title = 'Imprimir solo este ejemplar';
-                printSingleBtn.onclick = (e) => {
-                    e.preventDefault(); // Evitar que el clic abra/cierre el desplegable
-                    details.open = true;
-
-                    // Activar el modo de impresión individual aislando este elemento
-                    document.body.classList.add('print-single-mode');
-                    details.classList.add('print-active');
-
-                    window.print();
-
-                    // Restaurar todo a la normalidad después de imprimir
-                    setTimeout(() => {
-                        document.body.classList.remove('print-single-mode');
-                        details.classList.remove('print-active');
-                    }, 1000);
-                };
-                summary.appendChild(printSingleBtn);
-                details.appendChild(summary);
-
-                // Mover el container adentro del details
-                container.parentNode.insertBefore(details, container);
-                details.appendChild(container);
-            });
-
-            // 2. Crear botón generador de impresión global (Todos)
+            // 2. Crear botón generador de impresión global
             const printBtn = document.createElement('button');
             printBtn.className = 'btn-print';
-            printBtn.innerHTML = '🖨️ Imprimir TODOS';
+            printBtn.innerHTML = '🖨️ Imprimir Ejemplares';
             printBtn.onclick = () => {
-                document.querySelectorAll('.ejemplar-dropdown').forEach(d => d.open = true);
                 window.print();
             };
             document.body.appendChild(printBtn);
