@@ -19,6 +19,14 @@ class NodoFederado(TimeStampedModel):
 
     id_nodo = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name=_("ID de Nodo"))
     nombre = models.CharField(max_length=150, verbose_name=_("Nombre / Razón Social del Nodo"))
+    cuit = models.CharField(
+        max_length=20, 
+        unique=True, 
+        null=True, 
+        blank=True, 
+        verbose_name=_("CUIT del Propietario"),
+        help_text=_("Usado como clave de enrutamiento principal para enviar webhooks.")
+    )
     tipo_nodo = models.CharField(max_length=20, choices=TIPO_NODO_CHOICES, verbose_name=_("Rol en la Red"))
     url_base = models.URLField(
         verbose_name=_("URL Base del API del Nodo"),
@@ -63,3 +71,23 @@ class WebhookLog(TimeStampedModel):
 
     def __str__(self):
         return f"{self.metodo} {self.endpoint} - Valid: {self.firma_verificada}"
+
+
+class NovedadFederada(TimeStampedModel):
+    """
+    Bandeja de entrada (Inbox) para Nodos On-Premise que operan con Polling (Pull).
+    La MES encola los mensajes aquí si el nodo de destino no tiene URL pública para Webhooks.
+    """
+    nodo_destino = models.ForeignKey(NodoFederado, on_delete=models.CASCADE, related_name="novedades_pendientes")
+    tipo_evento = models.CharField(max_length=50, verbose_name=_("Tipo de Evento"))
+    payload = models.JSONField(verbose_name=_("Payload (JSON)"))
+    leido = models.BooleanField(default=False, verbose_name=_("¿Fue consumido por el nodo?"))
+    fecha_lectura = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("Novedad Federada")
+        verbose_name_plural = _("Novedades Federadas")
+        ordering = ["creado_en"]
+
+    def __str__(self):
+        return f"Novedad {self.tipo_evento} para {self.nodo_destino.nombre} ({'Leído' if self.leido else 'Pendiente'})"

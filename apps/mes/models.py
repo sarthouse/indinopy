@@ -2,6 +2,8 @@ import uuid
 from decimal import Decimal
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import TimeStampedModel
@@ -34,12 +36,15 @@ class MiembroComision(TimeStampedModel):
     rol = models.CharField(
         max_length=50,
         choices=[
-            ("presidente", "Presidente (INTI)"),
-            ("vocal", "Vocal"),
-            ("sindical", "Rep. Sindical"),
-            ("marca", "Rep. Marcas"),
+            ("inti", "Presidente (INTI)"),
+            ("sindicato", "Representante Sindical"),
+            ("taller_mono", "Representante Talleristas (Monotributo)"),
+            ("taller_sas", "Representante Talleristas (SAS)"),
+            ("marcas", "Representante Marcas (Comitentes)"),
+            ("municipio", "Representante Municipio (Desarrollo Local)"),
+            ("fdi", "Representante Fiduciario (FDI/Banco)"),
         ],
-        default="vocal",
+        default="inti",
     )
 
     class Meta:
@@ -351,3 +356,108 @@ class LineaCreditoFDI(TimeStampedModel):
 
     def __str__(self):
         return f"{self.contacto_marca.nombre} - Cupo: ${self.limite_otorgado}"
+
+
+class VotacionComision(TimeStampedModel):
+    """
+    Sesión de votación polimórfica de la ComisionCredito.
+    Puede usarse para habilitar PTFs, aprobar créditos, sancionar talleres, etc.
+    """
+    comision = models.ForeignKey(ComisionCredito, on_delete=models.CASCADE)
+    
+    # Asunto Polimórfico (El objeto que se está votando: Un Usuario, Una Línea de Crédito, etc.)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    asunto = GenericForeignKey("content_type", "object_id")
+    
+    tipo_asunto = models.CharField(
+        max_length=50,
+        choices=[
+            ("habilitacion_ptf", "Habilitación de PTF"),
+            ("aprobacion_credito", "Aprobación de Línea de Crédito FDI"),
+            ("sancion_taller", "Sanción a Tallerista"),
+        ]
+    )
+
+    fecha_apertura = models.DateTimeField(auto_now_add=True)
+    fecha_cierre = models.DateTimeField(null=True, blank=True)
+    estado = models.CharField(
+        max_length=20,
+        choices=[("abierta", "Abierta"), ("aprobada", "Aprobada"), ("rechazada", "Rechazada")],
+        default="abierta"
+    )
+
+    class Meta:
+        verbose_name = _("Votación de Comisión")
+        verbose_name_plural = _("Votaciones de Comisión")
+
+
+class VotoComision(TimeStampedModel):
+    votacion = models.ForeignKey(VotacionComision, on_delete=models.CASCADE, related_name="votos")
+    miembro = models.ForeignKey(MiembroComision, on_delete=models.CASCADE)
+    aprueba = models.BooleanField()
+    fundamento = models.TextField(blank=True, null=True)
+    firma_digital = models.CharField(max_length=128, blank=True, null=True)
+
+    class Meta:
+        unique_together = ("votacion", "miembro")
+        verbose_name = _("Voto de Comisión")
+        verbose_name_plural = _("Votos de Comisión")
+
+
+class BolsaTrabajo(TimeStampedModel):
+    """
+    Bolsa de Trabajo Productivo (Talleristas ofreciendo capacidad).
+    """
+    tallerista = models.OneToOneField("contactos.Contacto", on_delete=models.CASCADE, related_name="bolsa_trabajo")
+    capacidad_mensual_pares = models.IntegerField(default=0)
+    maquinas_disponibles = models.JSONField(default=list, blank=True)
+    operarios_activos = models.IntegerField(default=1)
+    buscando_trabajo = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name = _("Perfil Bolsa de Trabajo")
+        verbose_name_plural = _("Perfiles Bolsa de Trabajo")
+
+
+class Denuncia(TimeStampedModel):
+    """
+    Portal de Denuncias y Reclamos de la Comunidad Organizada (FIMCA - Addenda II).
+    """
+    denunciante = models.ForeignKey("contactos.Contacto", on_delete=models.CASCADE, related_name="denuncias_realizadas")
+    denunciado = models.ForeignKey("contactos.Contacto", on_delete=models.CASCADE, related_name="denuncias_recibidas")
+    
+    motivo = models.CharField(
+        max_length=50,
+        choices=[
+            ("precio_bajo_convenio", "Precio por debajo del convenio"),
+            ("retencion_pagos", "Retención indebida de pagos (Escrow)"),
+            ("coima_funcionario", "Extorsión/Dádiva de Funcionario Público (AFIP/ARCA)"),
+            ("amenaza_rescision", "Amenaza de rescisión de contratos"),
+            ("colusion_marca", "Colusión o Simulación por parte de la Marca"),
+        ]
+    )
+    descripcion = models.TextField()
+    evidencia_digital = models.JSONField(
+        default=list, blank=True, help_text="URLs a audios, capturas, o geolocalización"
+    )
+    
+    # Beneficios tuitivos automáticos
+    inmunidad_fiscal_otorgada = models.BooleanField(default=False)
+    fecha_fin_inmunidad = models.DateField(null=True, blank=True)
+    
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ("ingresada", "Ingresada (Medidas Cautelares Activas)"),
+            ("en_mediacion", "En Mediación (MES Local)"),
+            ("elevada_federal", "Elevada al Consejo Superior"),
+            ("resuelta", "Resuelta"),
+            ("desestimada", "Desestimada")
+        ],
+        default="ingresada"
+    )
+    
+    class Meta:
+        verbose_name = _("Denuncia")
+        verbose_name_plural = _("Denuncias")

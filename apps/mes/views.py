@@ -17,8 +17,11 @@ from .models import (
     ComisionCredito,
     PerfilPTF,
     LineaCreditoFDI,
+    Denuncia,
+    VotacionComision,
+    VotoComision,
 )
-from .services import PTFService
+from .services import PTFService, ComisionService, DenunciaService
 
 
 # =====================================================================
@@ -330,3 +333,68 @@ class EstadoCreditoFDIAPIView(APIView):
                 else 0.0,
             }
         )
+
+# =====================================================================
+# GOBERNANZA — Votaciones de la Comisión y Denuncias
+# =====================================================================
+
+class EmitirVotoActionView(LoginRequiredMixin, View):
+    """
+    Un miembro de la Comisión emite su voto sobre un asunto.
+    """
+    def post(self, request, votacion_id):
+        aprueba = request.POST.get("aprueba") == "true"
+        fundamento = request.POST.get("fundamento", "")
+        firma_hex = request.POST.get("firma_hex", "")
+        
+        # Obtenemos el MiembroComision vinculado al usuario logueado
+        # asumiendo que User tiene una relacion 1 a 1 con MiembroComision
+        if not hasattr(request.user, "miembro_comision"):
+            messages.error(request, "No sos miembro de la Comisión de Crédito.")
+            return redirect("mes:eop_list")
+            
+        try:
+            ComisionService.emitir_voto(
+                votacion_id=votacion_id,
+                miembro_id=request.user.miembro_comision.id,
+                aprueba=aprueba,
+                fundamento=fundamento,
+                firma_hex=firma_hex
+            )
+            messages.success(request, "Voto registrado exitosamente.")
+        except Exception as e:
+            messages.error(request, f"Error al emitir voto: {str(e)}")
+            
+        return redirect("mes:eop_list")
+
+class RadicarDenunciaActionView(LoginRequiredMixin, View):
+    """
+    Un tallerista radica una denuncia contra una marca o funcionario.
+    Gatilla la inmunidad de oficio y el congelamiento preventivo.
+    """
+    def post(self, request):
+        denunciado_id = request.POST.get("denunciado_id")
+        motivo = request.POST.get("motivo")
+        descripcion = request.POST.get("descripcion")
+        
+        # El denunciante es el Contacto vinculado al usuario (Tallerista)
+        if not hasattr(request.user, "contacto"):
+            messages.error(request, "Solo los talleristas registrados pueden denunciar.")
+            return redirect("mes:eop_list")
+            
+        denunciante = request.user.contacto
+        denunciado = get_object_or_404(Contacto, pk=denunciado_id)
+        
+        try:
+            denuncia = DenunciaService.radicar_denuncia(
+                denunciante=denunciante,
+                denunciado=denunciado,
+                motivo=motivo,
+                descripcion=descripcion,
+                evidencia_digital=[] # Podría venir de archivos en el request
+            )
+            messages.success(request, f"Denuncia {denuncia.id} radicada. Tenés Inmunidad Fiscal por 180 días.")
+        except Exception as e:
+            messages.error(request, f"Error al procesar la denuncia: {str(e)}")
+            
+        return redirect("mes:eop_list")

@@ -319,3 +319,62 @@ class ParteProduccionWebhookReceiverAPIView(APIView):
             {"status": "Parte de Producción sincronizado con éxito"},
             status=status.HTTP_201_CREATED,
         )
+
+
+class PollingNovedadesAPIView(APIView):
+    """
+    Endpoint para el paradigma On-Premise con Polling (Pull).
+    Permite que un nodo (Tallerista o Marca sin IP pública) consulte a la MES
+    si hay Webhooks/Eventos pendientes en su bandeja de entrada.
+    Requiere que el nodo envíe su CUIT en el Header X-CUIT.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        from .models import NovedadFederada, NodoFederado
+        cuit = request.headers.get("X-CUIT")
+        if not cuit:
+            return Response({"error": "Header X-CUIT requerido"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            nodo = NodoFederado.objects.get(cuit=cuit)
+        except NodoFederado.DoesNotExist:
+            return Response({"error": "Nodo no registrado en la red"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Buscar novedades no leídas para este nodo
+        novedades = NovedadFederada.objects.filter(nodo_destino=nodo, leido=False)
+        
+        payloads = []
+        for nov in novedades:
+            payloads.append({
+                "novedad_id": nov.id,
+                "tipo_evento": nov.tipo_evento,
+                "timestamp": nov.creado_en.isoformat(),
+                "payload": nov.payload
+            })
+            
+        return Response({"pendientes": len(payloads), "novedades": payloads}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """
+        El Nodo llama a este endpoint para marcar como recibidas las novedades (ACK),
+        así no se le envían de nuevo en el próximo GET.
+        """
+        from .models import NovedadFederada, NodoFederado
+        cuit = request.headers.get("X-CUIT")
+        if not cuit:
+            return Response({"error": "Header X-CUIT requerido"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            nodo = NodoFederado.objects.get(cuit=cuit)
+        except NodoFederado.DoesNotExist:
+            return Response({"error": "Nodo no registrado en la red"}, status=status.HTTP_404_NOT_FOUND)
+            
+        novedades_ids = request.data.get("novedades_ids", [])
+        if novedades_ids:
+            NovedadFederada.objects.filter(
+                id__in=novedades_ids, 
+                nodo_destino=nodo
+            ).update(leido=True, fecha_lectura=timezone.now())
+            
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)

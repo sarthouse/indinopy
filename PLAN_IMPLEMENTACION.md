@@ -388,29 +388,29 @@ POLLING API (Fallback — Pull)
 - [ ] Worker Celery para Timelock de 48h (Silencio Positivo) en red.
 - [ ] Verificación GPS en `OPParteProduccion` (PoPW).
 
-### Fase 5 — Integración Headless (API Gateway e-OP)
+### Fase C — Integración Headless (API Gateway e-OP)
 - [ ] Implementar flag `MODO_HEADLESS` en `ConfiguracionEmpresa` / `settings.py`
 - [ ] Desacople de `ProduccionService`: Saltear `StockService` si es headless (inventario gestionado por SAP)
 - [ ] Relajar restricción de `Receta` (BOM local) en `OrdenProduccion` usando `JSONField` (BOM dinámico externo)
 - [ ] Endpoints DRF en `apps/produccion/` para recibir OPs crudas (`POST /api/v1/interna/e-op/`)
 - [ ] Webhooks de retorno al ERP Legacy para informar liberación de hitos del Escrow
 
-### Fase 6 — Gobernanza Institucional
-- [ ] Completar `ComisionCredito` con las 7 sillas correctas
-- [ ] Flujo de votación para habilitación de PTFs
-- [ ] Bolsa de Trabajo Productivo
-- [ ] Score UCP y sistema de Slashing
-- [ ] Tribunal de Arbitraje (72h)
-- [ ] Alertas de Colusión (`AlertaColusion` con Celery)
+### Fase D — Gobernanza Institucional (COMPLETADA)
+- [x] Completar `ComisionCredito` con las 7 sillas correctas
+- [x] Flujo de votación polimórfico (Habilitación PTFs y Crédito)
+- [x] Bolsa de Trabajo Productivo
+- [x] Tribunal de Arbitraje (72h)
+- [x] Alertas de Colusión (`AlertaColusion` con Celery)
+- [x] Portal de Denuncias de la Comunidad Organizada (Addenda II)
 
-### Fase 7 — Integración Fiscal Completa
+### Fase E — Integración Fiscal Completa
 - [ ] Implementación completa WSFE (Factura A, B, C)
 - [ ] WSFEX (Facturas de Exportación)
 - [ ] Factura de Crédito Electrónica (FCE / MiPyME)
 - [ ] Liquidaciones de Fasón (Monotributo Productivo)
 - [ ] Integración ARCA (ex-AFIP) para seguimiento tributario
 
-### Fase 8 — App Móvil PTF (Fuera del scope Django)
+### Fase F — App Móvil PTF (Fuera del scope Django)
 - [ ] App Flutter/React Native
 - [ ] Generación de par de claves en Secure Enclave del dispositivo
 - [ ] Firma Ed25519 con desbloqueo biométrico (FaceID / Huella)

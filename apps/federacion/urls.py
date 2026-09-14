@@ -5,6 +5,7 @@ from .views import (
     RecepcionFirmaEtapaView,
     EOPWebhookReceiverAPIView,
     ParteProduccionWebhookReceiverAPIView,
+    PollingNovedadesAPIView,
 )
 
 app_name = "federacion"
@@ -19,6 +20,9 @@ urlpatterns = [
         name="eop_firma_etapa",
     ),
     # ── API FEDERADA ───────────────────────────────────────────────────
+    path(
+        "api/v1/novedades/", PollingNovedadesAPIView.as_view(), name="api_polling_novedades"
+    ),
     path(
         "api/v1/eop/espejo/", EOPWebhookReceiverAPIView.as_view(), name="api_eop_espejo"
     ),

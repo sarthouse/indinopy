@@ -383,7 +383,7 @@ El régimen general actual castiga la transición del microemprendimiento hacia 
 * Prohibición de Denuncia Fiscal: Queda taxativamente prohibido el uso de los datos relevados en territorio para iniciar fiscalizaciones retroactivas, labrar actas de infracción o cursar intimaciones de oficio por vías administrativas o judiciales respecto a deudas tributarias devengadas en la etapa informal.  
 * Inmunidad por el Pasado Informal: Consistente con el principio de irretroactividad del programa, la información contenida en el legajo tiene como único objeto habilitar el puente hacia la formalidad digitalizada, rigiendo un secreto profesional absoluto para el PTF y los miembros de la Mesa. La estructura comunitaria tiene vedada por ley cualquier función de juzgamiento, penalización o delación ante los organismos de recaudación centralizados."
 
-### ### J. De la Administración Estratégica del Comercio y las Unidades de Crédito Productivo ("Score Solidario")
+### J. De la Administración Estratégica del Comercio y las Unidades de Crédito Productivo ("Score Solidario")
 
 #### 1. Criterio de Administración Estratégica del Comercio Exterior
 

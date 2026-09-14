@@ -15,6 +15,10 @@ urlpatterns = [
     path("tribunal/", views.TribunalArbitrajeListView.as_view(), name="tribunal_list"),
     path("tribunal/<int:pk>/", views.TribunalArbitrajeDetailView.as_view(), name="tribunal_detail"),
 
+    # ── Gobernanza: Votaciones y Denuncias ─────────────────────────────
+    path("votacion/<int:votacion_id>/votar/", views.EmitirVotoActionView.as_view(), name="emitir_voto"),
+    path("denuncia/radicar/", views.RadicarDenunciaActionView.as_view(), name="radicar_denuncia"),
+
     # ── Gestión de PTFs (por la Comisión) ──────────────────────────────
     path("ptf/", views.PTFListView.as_view(), name="ptf_list"),
     path("ptf/<int:pk>/", views.PTFDetailView.as_view(), name="ptf_detail"),
