@@ -1,4 +1,4 @@
-﻿<span class="doc-header-badge">⚙️ Especificación Técnica</span>
+<span class="doc-header-badge">⚙️ Especificación Técnica</span>
 # Análisis del Dossier Proyecto FIMCA e Integración Arquitectónica en Indinopy
 
 > **Referencia base:** [Dossier Proyecto FIMCA](dossier_rigi_conurbano_2026.html)  
@@ -214,8 +214,8 @@ sequenceDiagram
     Adm->>OP: Confirma asignación de etapa a Tallerista
     OP->>Tes: Genera Liquidación en estado "Borrador"
     OP->>Inv: Emite Remito Traslado (Insumos a Taller)
-    Note over Tes: Disparo Hito Cero (30-40%)
-    Tes->>Tal: Libera Anticipo de Arranque (Hito Cero)
+    Note over Tes: Disparo Anticipo (30-40%)
+    Tes->>Tal: Libera Anticipo (Hito Cero o Adelanto Operativo)
     Tal->>OP: Declara Entrega Parcial (OPParteProduccion)
     OP->>Inv: Registra ingreso de pares a Planta (Control Calidad)
     Note over Tes: Disparo Hitos de Avance
@@ -287,7 +287,7 @@ class HitoLiquidacion(TimeStampedModel):
     """Tramos individuales de pago liberados contra eventos físicos."""
 
     TIPO_HITO = [
-        ("hito_cero", _("Hito Cero: Anticipo de Arranque")),
+        ("anticipo_arranque", _("Anticipo de Arranque (Hito Cero / Adelanto Operativo)")),
         ("avance_parcial", _("Hito de Avance: Entrega Parcial")),
         ("cierre_final", _("Hito Final: Conformidad de Lote")),
     ]

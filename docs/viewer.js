@@ -16,10 +16,9 @@ marked.use({
         code(tokenOrCode) {
             const codeText = typeof tokenOrCode === 'object' ? tokenOrCode.text : arguments[0];
             const lang = typeof tokenOrCode === 'object' ? tokenOrCode.lang : arguments[1];
-
             if (lang === 'mermaid') {
                 return `
-                <div class="mermaid-wrapper">
+                <div class="mermaid-wrapper" data-code="${encodeURIComponent(codeText)}">
                     <div class="mermaid-header">
                         <div class="mermaid-title">📊 Diagrama Mermaid</div>
                         <div class="mermaid-controls">

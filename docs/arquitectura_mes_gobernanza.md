@@ -167,10 +167,10 @@ sequenceDiagram
 
     Marca->>SIS: Carga e-OP digital (Insumos, Tallerista, Precio pactado)
     SIS->>SIS: ¿Es réplica idéntica de orden anterior?
-    alt Sí: Protocolo Fast-Track (Duplicación Express)
+    alt Sí: Protocolo Fast-Track (Duplicación Express o Score Alto)
         SIS->>SIS: Validación automática en 2 Horas
-        SIS->>BAN: Orden de liberación de Hito Cero
-    else No: Circuito Ordinario
+        SIS->>BAN: Orden de liberación de Adelanto Operativo
+    else No: Circuito Ordinario (Hito Cero para Talleres sin Historial)
         SIS->>COM: Notifica a la Comisión de Crédito (Plazo duro: 48h)
         alt Comisión aprueba formalmente en <48h
             COM->>SIS: Dictamen favorable registrado
@@ -179,7 +179,7 @@ sequenceDiagram
         end
         SIS->>BAN: Autorización de clearing para Hito Cero
     end
-    BAN->>Taller: Acreditación de Hito Cero (35% o 50% con SBD)
+    BAN->>Taller: Acreditación de Anticipo (Hito Cero o Adelanto Operativo)
     Taller->>SIS: Notificación de Hito Cumplido vía App móvil
     SIS->>COM: Plazo de certificación técnica: 24 Horas
     COM->>BAN: Certificación OK -> Liberación del siguiente tramo Escrow

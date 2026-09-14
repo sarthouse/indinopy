@@ -115,6 +115,35 @@ Dentro de la Bolsa de Trabajo Sectorial se crea una sección específica destina
 
 * **Mapa de Oficios del Conurbano:** la MES publica y actualiza trimestralmente un mapa georreferenciado de las especialidades disponibles en cada municipio, identificando los oficios con menor densidad de oferta y mayor riesgo de extinción.
 
+```mermaid
+graph LR
+    subgraph Demanda
+        M1[Comitente A]
+        M2[Comitente B]
+    end
+
+    subgraph Bolsa de Trabajo Sectorial
+        BT((Score Solidario))
+    end
+
+    subgraph Oferta
+        T1[Tallerista 1]
+        T2[Tallerista 2]
+        MA[Maestro Artesano]
+    end
+
+    M1 -->|Busca Capacidad| BT
+    M2 -->|Busca Capacidad| BT
+    T1 -->|Publica Capacidad| BT
+    T2 -->|Publica Capacidad| BT
+    MA -->|Ofrece Pasantía| BT
+    
+    BT -.->|Califica Calidad| T1
+    BT -.->|Califica Puntualidad| T2
+    BT -.->|Califica Pago a Término| M1
+```
+**Figura 5: Ecosistema de la Bolsa de Trabajo Sectorial.** *Grafo que representa la interacción del mercado de la Comunidad Organizada. Oferta y demanda se cruzan mediadas por el "Score Solidario", un sistema de evaluación bidireccional donde tanto las marcas como los talleristas se auditan mutuamente, premiando el cumplimiento y aislando los abusos.*
+
 ### C. Articulación con las Organizaciones Libres del Pueblo
 
 #### Fundamento Doctrinario
@@ -154,6 +183,29 @@ Los sindicatos con personería gremial son reconocidos como garantes de la digni
 4. **Protección del Taller y Reasignación de Capacidad:** Si la marca comitente decide rescindir de forma persecutoria o retaliativa los contratos futuros con el tallerista damnificado, el sindicato tendrá la facultad de exigir a la MES la reasignación prioritaria de nuevas e-OP provenientes de marcas cumplidoras inscritas en la Bolsa de Trabajo, utilizando los mecanismos del algoritmo de asignación solidaria.
 
 5. **Periodo de Liquidación de Stock en Curso:** La exclusión de FIMCA no implicará la rescisión automática de las e-OP en curso. La empresa excluida deberá completar el ciclo productivo bajo estricta auditoría presencial del PTF, pero se le prohibirá la emisión de nuevas e-OP hasta la regularización total de los pasivos que motivaron la sanción.
+
+```mermaid
+sequenceDiagram
+    participant T as Tallerista
+    participant S as Sindicato
+    participant M as MES (Arbitraje)
+    participant E as FDI (Escrow)
+    participant C as Marca Comitente
+
+    S->>M: 1. Ingresa Acción de Tutela (Fraude/Abuso)
+    M->>E: 2. Alerta: Congelamiento Preventivo (48hs)
+    E-->>C: 3. Bloqueo de fondos y stock de Maquila
+    C->>E: 4. Deposita Fianza de Urgencia (100%)
+    E-->>T: 5. Libera stock para retirar/comercializar
+    M->>C: 6. Audiencia de Conciliación
+    M->>T: 6. Audiencia de Conciliación
+    alt Resuelve a favor del Taller
+        M->>E: 7a. Ejecuta Fianza a favor del Taller
+    else Resuelve a favor de la Marca
+        M->>E: 7b. Libera Fianza a la Marca
+    end
+```
+**Figura 6: Acción de Tutela de Urgencia y Veto Ex-Post.** *Diagrama de secuencia que detalla la intervención sindical ante abusos. El mecanismo garantiza que el conflicto no frene la logística productiva de la marca, obligándola a inmovilizar una fianza líquida (Escrow) para poder retirar su mercadería mientras el Tribunal de Arbitraje resuelve la disputa de fondo.*
 
 **Como socios de la formalización:**
 
@@ -206,6 +258,20 @@ Durante las primeras tres (3) e-OP operadas por el tallerista novato, el PTF eje
 #### 5. Consolidación del Historial de Confianza Comunitaria
 
 La entrega a término de los lotes de las primeras e-OP generará un récord positivo de cumplimiento dentro de la Bolsa de Trabajo. Este historial sustituirá de manera permanente al scoring financiero clásico, habilitando al tallerista —a partir de la cuarta operación exitosa— a aplicar de forma autónoma a las líneas de crédito de capitalización de la MES para la adquisición de bienes de capital y maquinaria pesada.
+
+```mermaid
+flowchart TD
+    A[Tallerista Informal] -->|Visita territorial| B(Promotor PTF)
+    B -->|Asistencia en carga| C{Firma 1ra e-OP}
+    C -->|API| D[ARCA / RENAPER]
+    D -->|Alta Automática| E(Monotributo Productivo)
+    D -->|Apertura de Oficio| F(Caja Ahorro BAPRO)
+    C -->|Validación MES| G[FDI - Escrow]
+    G -->|Adelanto sin historial| H((HITO CERO <br> 30-40%))
+    H --> F
+    F -->|Ciclo completado| I[Historial Positivo en Bolsa de Trabajo]
+```
+**Figura 7: El Camino de la Confianza (PTF e Hito Cero).** *Diagrama de flujo que ilustra la rampa de inclusión financiera y fiscal. El Promotor Territorial (PTF) actúa como puente humano para que el tallerista obtenga el alta automática, la cuenta bancaria y el desembolso del Hito Cero, construyendo su primer historial crediticio comunitario.*
 
 ### E. Idoneidad y Elección del Promotor Territorial de Formalización (PTF)
 
