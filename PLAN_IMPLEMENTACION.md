@@ -528,11 +528,11 @@ class PerfilPTF(TimeStampedModel):
 
 ## 7. Integración WooCommerce Multitienda
 
-### Arquitectura
+### 7.1. Arquitectura
 
 Cada tienda WooCommerce es un `TiendaWooCommerce` vinculado a la `ConfiguracionEmpresa`. Las credenciales son por tienda (no globales).
 
-### Flujo de Sincronización (Híbrido)
+### 7.2. Flujo de Sincronización (Híbrido)
 
 ```
 WEBHOOKS (Tiempo Real — Push)
@@ -549,16 +549,69 @@ POLLING API (Fallback — Pull)
   ↓ Delega al mismo VentasService (código DRY)
 ```
 
-### Mapeo de Campos Críticos para Argentina
+### 7.3. Mapeo de Campos Críticos para Argentina
 
 | Campo WooCommerce | Campo ERP | Nota |
 |---|---|---|
-| `meta_data._billing_cuit` | `Contacto.cuil` | Vital para AFIP |
+| `billing.billing_dni` / `meta_data._billing_dni` / `_billing_cuit` | `Contacto.cuil` | Clave unívoca primaria de cliente (AFIP) |
 | `meta_data._billing_condicion_iva` | `Contacto.condicion_iva` | Para Factura A/B/C |
-| `meta_data._mercadopago_payment_id` | `OrdenVenta.transaccion_id` | Conciliación |
-| `fee_lines[]` | `LineaRecargoOrden` | Recargo MercadoPago, etc. |
-| `shipping_lines[0].method_id` | `OrdenVenta.metodo_envio_id` | Para remito |
-| `coupon_lines[]` | `OrdenVenta.cupones_aplicados` | JSONField |
+| `meta_data._Mercado_Pago_Payment_IDs` / `transaction_id` | `OrdenVenta.transaccion_id` | Conciliación de cobranzas MP |
+| `fee_lines[]` | `LineaRecargoOrden` | Recargos MP / Descuentos por transferencia |
+| `shipping_lines[0].method_id` | `OrdenVenta.metodo_envio_id` | Para remito de logística |
+| `coupon_lines[]` | `OrdenVenta.cupones_aplicados` | JSONField de cupones aplicados |
+
+### 7.4. Secuencia Estricta de Procesamiento de Órdenes (Pipeline de Ingesta)
+
+El servicio `VentasService.procesar_orden_woocommerce(tienda_id, payload)` ejecuta de manera transaccional (`@transaction.atomic`) el siguiente pipeline ordenado:
+
+1. **`get_or_create` de Cliente (`Contacto`) con Clave en DNI/CUIL:**
+   * **Extracción de Identidad Fiscal:** Extrae `billing_dni` directamente de `payload["billing"]` o, en su defecto, busca `_billing_dni` / `_billing_cuit` dentro de `payload["meta_data"]`.
+   * **Búsqueda por DNI/CUIL:** Se busca primeramente `Contacto.objects.filter(cuil=cuit).first()`.
+   * **Fallback por Email:** Si no hay DNI/CUIL disponible, se busca por `Contacto.objects.filter(email=email).first()`.
+   * **Creación:** Si no existe, se crea el contacto con `tipo="CLIENTE"`, `cuil=cuit`, `nombre`, `email`, `telefono` y `direccion` provistos en el bloque `billing`.
+
+2. **Creación o Actualización de `OrdenVenta` (Cabecera):**
+   * Vincula la `tienda` y el `wc_order_id` (upsert idempotente vía `update_or_create`).
+   * Asigna número interno concatenado (`{tienda.codigo_prefijo}-{wc_order_number}`).
+   * Determina estado de la orden en el ERP:
+     * `processing` o `completed` ➔ `estado = "confirmado"`.
+     * `cancelled`, `failed` o `refunded` ➔ `estado = "cancelado"`.
+     * Otros estados (`pending`, `on-hold`) ➔ `estado = "borrador"`.
+   * Persiste importes totales (`monto_total`, `total_descuentos`, `total_envio`, `total_impuestos`), método de pago y el ID de transacción de Mercado Pago.
+
+3. **Obtención de Productos y Generación de `LineaOrdenVenta`:**
+   * Itera sobre `payload["line_items"]`.
+   * **Validación por SKU:** Busca en el catálogo `Producto.objects.filter(sku=item["sku"]).first()`. Si el SKU no existe, la línea se excluye y se registra advertencia de conciliación de catálogo.
+   * Inserta cada `LineaOrdenVenta` con `cantidad`, `precio_unitario`, calculando subtotal y total de línea.
+
+4. **Registro de Logística y Envío (`shipping_lines`):**
+   * Extrae la línea principal de envío (`shipping_lines[0]`), mapeando `metodo_envio_titulo` y `metodo_envio_id` (ej: retiro en sucursal, envío a domicilio).
+
+5. **Registro de Cupones de Descuento (`coupon_lines`):**
+   * Itera sobre `payload["coupon_lines"]` y registra los cupones utilizados en `OrdenVenta.cupones_aplicados` (`code` y `discount`).
+
+6. **Ingesta de Recargos y Descuentos de Pasarela (`fee_lines`):**
+   * Itera sobre `payload["fee_lines"]` y crea registros en `LineaRecargoOrden(orden, nombre, monto, impuesto)`.
+   * Actualiza el acumulador global `OrdenVenta.total_recargos_fees` con la suma neta de los fees.
+
+7. **Disparo de Remito de Salida y Reserva de Stock:**
+   * Si la orden resulta con estado `"confirmado"` y es creada por primera vez (`created=True`):
+     * Invoca `VentasService.generar_remito_salida(orden)`.
+     * Genera un `MovimientoStock` de tipo `entrega` (`REM-OV-{orden.id}`) desde el almacén de la tienda hacia la ubicación del cliente.
+     * Reserva el stock correspondiente en el inventario mediante `StockService.reservar_linea(lms)`.
+
+### 7.5. Semántica y Tratamiento de `fee_lines` en el Sistema
+
+Las `fee_lines` corresponden a conceptos monetarios que **no son productos de inventario** ni corresponden a la **tarifa base de flete** (`shipping_lines`):
+
+* **Recargos Financieros o de Servicio (Monto Positivo):**
+  * *Ejemplos:* Recargos por financiación de Mercado Pago en cuotas, costo de empaque especial, seguro extendido.
+  * *Impacto ERP:* Se computan como un ingreso accesorio o recupero de costo operativo, aumentando el importe total de la orden.
+* **Descuentos Comerciales por Medio de Pago (Monto Negativo):**
+  * *Ejemplos:* Descuento del 20% por abonar con Transferencia Bancaria o Efectivo.
+  * *Impacto ERP:* Actúan como una bonificación o deducción global sobre la orden de venta.
+* **Impacto Contable y Fiscal (AFIP):**
+  * Al momento de facturar la orden (`apps.contabilidad`), las `fee_lines` positivas se imputan como cargos adicionales afectos a la alícuota correspondiente o no gravados según su naturaleza, mientras que las negativas reducen la base imponible neta de la Factura de Venta.
 
 ---
 
