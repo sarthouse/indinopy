@@ -65,7 +65,7 @@ Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su 
 *   **Endpoint Público sin Login:** Interfaz móvil ultra-liviana a la que accede el consumidor final al escanear la etiqueta del calzado.
 *   **Gráfico Dinámico de Participación:** Desglosa el 100% del precio de góndola en: mano de obra territorial del Conurbano, cuero y materias primas nacionales, carga fiscal neta y margen comercial.
 
-## 4. Los 5 Dispositivos de Trinchera del FIMCA
+## 4. Los 5 Dispositivos Territoriales del FIMCA
 
 Más allá de la emisión de la e-OP, el proyecto institucionaliza cinco dispositivos operativos de base territorial diseñados para extirpar la informalidad forzosa, desarmar la extorsión burocrática y garantizar la soberanía tecnológica de la manufactura:
 
@@ -84,7 +84,7 @@ Más allá de la emisión de la e-OP, el proyecto institucionaliza cinco disposi
 ### 4.2. Tutelaje Administrativo, Inmunidad de 180 Días y Canal Tuitivo de Denuncias
 **🛡️ Blindaje Territorial frente a la Extorsión Burocrática y Comercial**
 
-El tallerista de barrio no confía en un folleto estatal; teme que registrarse sea la puerta de entrada a la coima o la inspección extorsiva. El régimen implementa un blindaje tuitivo de trinchera:
+El tallerista de barrio no confía en un folleto estatal; teme que registrarse sea la puerta de entrada a la coima o la inspección extorsiva. El régimen implementa un blindaje tuitivo territorial:
 *   **Ventanilla Única Municipal en 48 Horas:** Al registrarse la primera e-OP, el Municipio emite de oficio la Habilitación Simplificada del taller y la Exención de Tasas Locales por 10 años.
 *   **El PTF como Puente Humano y Tutor Técnico:** Un par del propio oficio actúa como oráculo en el territorio. Disuelve la brecha digital, labra el *Dictamen de Transición Asistida* y tutela al tallerista en sus primeras e-OPs para lograr el alta automática y bancarización sin gestores.
 *   **Canal de Denuncias Criptográfico y Buzón Lacrado:** Terminales descentralizadas para denunciar aprietes, coimas o imposición de precios de miseria.

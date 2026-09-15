@@ -13,12 +13,12 @@
 La reconstrucción de la industria manufacturera no se logra mediante la imposición de decretos burocráticos ni mediante el abandono del mercado desregulado. El proyecto programático de la MES se sustenta en tres principios rectores:
 
 1. **La Comunidad Organizada frente a la Atomización:** La cadena de valor del calzado, el cuero y la indumentaria no puede operar como un campo de batalla de intereses individuales donde la gran marca comercial impone precios de miseria y el tallerista familiar sobrevive en la informalidad. Quienes diseñan, quienes producen, quienes financian y quienes fiscalizan se integran en una **institución paritaria de conducción estratégica**.
-2. **El Estado como Facilitador y Árbitro, no como Patrón Policial:** La burocracia estatal suele llegar al taller solo para fiscalizar, clausurar o cobrar tasas. En la MES, el Estado asume roles técnicos específicos: el **INTI** garantiza la soberanía tecnológica neutral y el **Municipio** actúa como garante del arraigo territorial y árbitro imparcial ante conflictos de trinchera.
+2. **El Estado como Facilitador y Árbitro, no como Patrón Policial:** La burocracia estatal suele llegar al taller solo para fiscalizar, clausurar o cobrar tasas. En la MES, el Estado asume roles técnicos específicos: el **INTI** garantiza la soberanía tecnológica neutral y el **Municipio** actúa como garante del arraigo territorial y árbitro imparcial ante conflictos territoriales.
 3. **Subordinación del Capital a la Producción Real:** La banca usurera y los algoritmos de scoring patrimonial quedan desplazados. El corazón del sistema financiero es el **Fideicomiso de Desarrollo Industrial (FDI)**, donde la Orden de Producción digital ("e-OP") es el activo colateral y la MES es el tribunal técnico que valida la liberación de fondos contra hitos físicos de trabajo.
 
 ---
 ## 2. Topología Federal Multinivel
-La gobernanza se estructura en una jerarquía descentralizada de dos velocidades: el **Consejo Superior Federal** (macroestrategia y tablas marco) y los **Nodos Municipales** (operación diaria de trinchera en cada distrito productivo).
+La gobernanza se estructura en una jerarquía descentralizada de dos velocidades: el **Consejo Superior Federal** (macroestrategia y tablas marco) y los **Nodos Municipales** (operación diaria en planta en cada distrito productivo).
 
 ```mermaid
 flowchart TD
@@ -36,7 +36,7 @@ flowchart TD
         LM_MESA["Mesa Local de Conducción (7 Miembros Titulares)\nPresidida por la Secretaría de Producción Municipal"]
         LM_TEC["Comisión de Homologación Técnica\n(Perito INTI Local + Delegado Sindical de Rama)"]
         LM_CRE["Comisión de Crédito y Riesgo\n(Representantes de Talleristas + Marcas + Municipio)"]
-        LM_ARB["Tribunal de Arbitraje de Trinchera\n(Conciliación Obligatoria en 72 horas)"]
+        LM_ARB["Tribunal Arbitral Territorial\n(Conciliación Obligatoria en 72 horas)"]
         LM_BOL["Bolsa de Trabajo Distrital y Padrón de Talleres"]
     end
 
@@ -58,7 +58,7 @@ flowchart TD
 - Autorización de desembolsos del FDI (Hito Cero e Hitos de Avance) mediante la Comisión de Crédito.
 - Emisión automática de la **Habilitación Simplificada de Oficio** y exención de tasas municipales en 48 horas.
 - Conducción de la **Bolsa de Trabajo Distrital** (monitoreo de capacidad instalada y cuellos de botella).
-- Resolución de controversias mediante el **Tribunal de Arbitraje de Trinchera**.
+- Resolución de controversias mediante el **Tribunal Arbitral Territorial**.
 
 ---
 ## 3. Composición de la Mesa Local y Equilibrio de Fuerzas
@@ -154,7 +154,7 @@ La ejecución financiera de las decisiones de la MES no ocurre por arte de magia
 
 ---
 ## 5. Protocolos Operativos y Plazos Duros con Silencio Administrativo Positivo
-El enemigo número uno del tallerista es la lentitud burocrática. Para que el sistema funcione en la trinchera, cada procedimiento tiene un **plazo máximo perentorio en horas**, tras el cual se activa el **Silencio Administrativo Positivo** por sistema informático centralizado:
+El enemigo número uno del tallerista es la lentitud burocrática. Para que el sistema funcione en la práctica del taller, cada procedimiento tiene un **plazo máximo perentorio en horas**, tras el cual se activa el **Silencio Administrativo Positivo** por sistema informático centralizado:
 
 ```mermaid
 sequenceDiagram
@@ -203,7 +203,7 @@ Para no burocratizar el arranque de la producción, el sindicato no frena la ord
 2. **Efecto Inmediato (Alerta de Escrow):** Se congela preventivamente la liberación del último 20% del pago en la cuenta fiduciaria del FDI por un plazo máximo de 48 horas. **Bajo ningún concepto se interrumpe el trabajo físico del taller ni se anula su derecho al cobro de lo realizado**.
 3. **Fianza de Continuidad:** Para evitar que la mercadería quede trabada y la marca pierda la temporada comercial, la empresa puede depositar una fianza en garantía líquida por el monto salarial en litigio, permitiendo el retiro inmediato de los lotes terminados mientras el Tribunal de Arbitraje sustancia el fondo de la cuestión.
 
-### 6.2. El Tribunal de Arbitraje de Trinchera
+### 6.2. El Tribunal Arbitral Territorial
 Órgano local de mediación de conflictos rápidos integrado por:
 * **Presidencia:** El perito del INTI (neutralidad técnica).
 * **Vocales:** 2 representantes del sector privado desinsaculados por sorteo trimestral del padrón de la Bolsa (un tallerista y una marca ajenos al conflicto).
@@ -251,7 +251,7 @@ classDiagram
         +String maquinaria_o_merma
         +Boolean elegible_arancel_cero
     }
-    class ActaConciliacionTrinchera {
+    class ActaConciliacionTerritorial {
         +String numero_acta
         +String op_referencia
         +Decimal monto_acordado
@@ -266,7 +266,7 @@ classDiagram
 
     ResolucionGeneralFederal <|-- ResolucionGeneralLocal : Subordinada a
     DictamenTecnicoHomologacion --> ResolucionGeneralFederal : Alimenta tablas de
-    ActaConciliacionTrinchera --> AlertaTutelaSindical : Resuelve conflicto de
+    ActaConciliacionTerritorial --> AlertaTutelaSindical : Resuelve conflicto de
 ```
 
 ### 7.1. El Boletín Oficial Sectorial (Estructura Semanal)
@@ -441,7 +441,7 @@ class ValidacionOrdenProduccion(TimeStampedModel):
         return False
 
 
-class DisputaArbitrajeTrinchera(TimeStampedModel):
+class DisputaArbitrajeTerritorial(TimeStampedModel):
     """Gestión de controversias de calidad o precios ante el Tribunal Local."""
 
     ESTADO = [
@@ -516,7 +516,7 @@ gantt
     Interoperabilidad Federal Multidistrito :p8, 2027-02-01, 30d
 ```
 
-1. **Fase 1 — Piloto Territorial de Trinchera:**
+1. **Fase 1 — Piloto Territorial en Planta:**
    Firma del acuerdo intersectorial en los municipios con mayor densidad de calzado (San Martín y La Matanza). Puesta en producción del software Indinopy con la máquina de validación de 48 horas y silencio positivo para las primeras 20 marcas comitentes.
 2. **Fase 2 — Integración Técnica y Arbitraje:**
    Incorporación formal de la delegación local del INTI y gremio de rama. Funcionamiento del Tribunal de Arbitraje y publicación de las primeras tablas de mermas y tecnología.

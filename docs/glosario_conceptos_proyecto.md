@@ -1,6 +1,6 @@
 <span class="doc-header-badge">📖 Glosario</span>
 # Glosario de Conceptos del Proyecto: Indinopy, Protocolo e-OP y Gobernanza FIMCA
-### *Guía Taxonómica de Términos Legales, Criptográficos, Técnicos, Financieros y de Trinchera*
+### *Guía Taxonómica de Términos Legales, Criptográficos, Técnicos, Financieros y Operativos*
 
 **Sistema de Gestión Indinopy ERP/MES · Mesa de Enlace Sectorial (MES Federal / Nodo Conurbano)**
 
@@ -14,9 +14,9 @@ El presente glosario constituye el cuerpo conceptual unificado de **Indinopy ERP
 
 La arquitectura del proyecto se sostiene sobre cuatro pilares vertebrales cuyos términos se detallan a lo largo de este documento:
 
-1. **Sustitución de Burocracia por Confianza Matemática:** La relación entre marcas comitentes y talleres no depende de expedientes analógicos ni de la discrecionalidad estatal. A través de primitivas criptográficas deterministas (hashing SHA-256 de payloads canónicos, árboles de Merkle para recetas BOM y firmas asimétricas Ed25519 en hardware seguro), el sistema garantiza la inmutabilidad de los compromisos y la trazabilidad de los costos sin vulnerar secretos industriales.
+1. **Sustitución de Discrecionalidad por Auditoría Criptográfica e Institucional:** La relación entre marcas comitentes y talleres no depende de expedientes analógicos ni de la discrecionalidad estatal. A través de primitivas criptográficas deterministas (hashing SHA-256 de payloads canónicos, árboles de Merkle para recetas BOM y firmas asimétricas Ed25519 en hardware seguro), el sistema garantiza la inmutabilidad de los compromisos y la trazabilidad de los costos sin vulnerar secretos industriales.
 2. **La e-OP como Activo Financiero y Colateral:** La Orden de Producción Electrónica deja de ser una simple planilla de fábrica para constituirse en un título ejecutivo de crédito fiduciario. Su convalidación institucional en la Mesa de Enlace Sectorial (MES) habilita el fondeo inmediato del **Hito Cero** (anticipo del 35% al 40% del capital de trabajo) mediante el Fideicomiso de Desarrollo Industrial (FDI), desintermediando el crédito usurario y protegiendo el poder adquisitivo del tallerista mediante la indexación en Unidades de Cuenta Industrial (UCI).
-3. **Auditoría de Trinchera y Prueba de Trabajo Productivo (PoPW):** Para evitar fraudes informáticos o aprobaciones de escritorio, el protocolo exige la verificación física y presencial en el taller. La figura del Promotor Territorial de Formalización (PTF) —un par del propio oficio— constata los lotes mediante geocercado satelital (PostGIS < 150m) y biometría RENAPER, activando la liquidación inmediata de hitos en cuentas inembargables del Banco Provincia (BAPRO).
+3. **Auditoría Territorial y Prueba de Trabajo Productivo (PoPW):** Para evitar fraudes informáticos o aprobaciones de escritorio, el protocolo exige la verificación física y presencial en el taller. La figura del Promotor Territorial de Formalización (PTF) —un par del propio oficio— constata los lotes mediante geocercado satelital (PostGIS < 150m) y biometría RENAPER, activando la liquidación inmediata de hitos en cuentas inembargables del Banco Provincia (BAPRO).
 4. **Descompresión Fiscal y Blindaje Jurídico:** El régimen desarma el "purgatorio fiscal" que condena a los talleristas a la informalidad. Mediante la figura del Monotributo Productivo con micro-retención automática en clearing (1.5%), la Cláusula de No Retroactividad, la Cuenta de IVA Sectorial Diferida y el Crédito Fiscal Presunto del 25%, el sistema permite a las marcas deducir el 100% de sus costos de mano de obra en Ganancias e IVA sin asfixiar la liquidez del tallerista de base, blindando a su vez las materias primas contra embargos bajo el régimen de Locación de Obra (CCCN 1251) y Custodia (CCCN 1356).
 
 ---
@@ -41,7 +41,7 @@ Plataforma de software libre (bajo licencia abierta) diseñada específicamente 
 Primitiva digital que transforma la orden de fabricación tradicional en un **título de afectación productiva, colateral crediticio fiduciario e instrumento de pago en custodia (*Escrow*)**. No es un simple comprobante interno; al ser convalidada por la MES, adquiere fuerza ejecutiva crediticia ante el Fondo Fiduciario (FDI) y valor probatorio de gasto computable ante las autoridades fiscales.
 
 ### **Mesa de Enlace Sectorial (MES Federal y Local)**
-Órgano colegiado de gobernanza policéntrica paritaria integrado por 7 sillas representativas de la cadena: (1) Cámaras de Marcas Comitentes; (2) Cámaras de Fabricantes Integrados; (3) Talleres Consolidados (SAS/Cooperativas); (4) Talleres Individuales (Monotributo Productivo); (5) Estado Municipal/Provincial (Árbitro de Crédito); (6) Sindicato de Rama (UTICRA/SETIA); y (7) Organismo Tecnológico Neutral (INTI). Articula a nivel macro (**MES Federal**) y en la trinchera operativa (**MES Municipal / Nodos Regionales**).
+Órgano colegiado de gobernanza policéntrica paritaria integrado por 7 sillas representativas de la cadena: (1) Cámaras de Marcas Comitentes; (2) Cámaras de Fabricantes Integrados; (3) Talleres Consolidados (SAS/Cooperativas); (4) Talleres Individuales (Monotributo Productivo); (5) Estado Municipal/Provincial (Árbitro de Crédito); (6) Sindicato de Rama (UTICRA/SETIA); y (7) Organismo Tecnológico Neutral (INTI). Articula a nivel macro (**MES Federal**) y en el territorio operativo (**MES Municipal / Nodos Regionales**).
 
 ### **Fideicomiso de Desarrollo Industrial (FDI)**
 Fondo fiduciario de segundo piso administrado con la participación del **Banco de la Provincia de Buenos Aires (BAPRO)** y cajas de crédito cooperativo. Desintermedia el crédito bancario comercial operando con un ratio de apalancamiento prudencial ($K=3$), financiando el capital de trabajo de los talleres contra el colateral de las e-OPs activas.
@@ -109,7 +109,7 @@ Persona física titular, socio gerente o director real de la marca comitente, id
 * **Doctrina contra Quiebras Fraudulentas:** Si la marca quiebra una razón social ("Calzados Fantasma S.R.L.") dejando pasivos salariales, la penalización (*Slashing*) y la pérdida de score no quedan en la persona jurídica vaciada, sino que **se heredan en el DNI del titular real**, exigiéndole 100% de fianza líquida si intenta operar con una nueva sociedad.
 
 ### **Tallerista Ejecutor / Unidad Productiva Territorial**
-Microempresa, taller familiar o consorcio barrial (cortadores, aparadores, armadores) que aporta la capacidad de trabajo físico y la maquinaria de trinchera. Opera adherido a la Bolsa de Trabajo bajo la figura de Monotributo Productivo o Sociedad por Acciones Simplificada (SAS).
+Microempresa, taller familiar o consorcio barrial (cortadores, aparadores, armadores) que aporta la capacidad de trabajo físico y la maquinaria de taller. Opera adherido a la Bolsa de Trabajo bajo la figura de Monotributo Productivo o Sociedad por Acciones Simplificada (SAS).
 
 ### **Promotor Territorial de Formalización (PTF)**
 Trabajador de base del oficio con antigüedad mínima comprobable de 12 meses y aval de 5 talleres vecinos, designado por la MES local y rentado con honorario de 2 Salarios Mínimos, Vitales y Móviles financiados por el FDI. Opera como un **Puente Humano y Tutor Técnico**; actúa como agente fiduciario de proximidad: inspecciona talleres, constata avances de lote, asiste digitalmente a los talleres en la plataforma y da fe ante la MES para la liberación de los hitos del Escrow digital.
@@ -247,7 +247,7 @@ Gatillo informático activado por el sindicato si detecta precios de mano de obr
 ### **Fianza Líquida de Continuidad Operativa**
 Mecanismo de resguardo que impide que la mercadería quede secuestrada y la marca pierda la temporada comercial. La empresa comitente puede depositar en garantía el **100% del monto salarial en litigio en la cuenta del FDI**; una vez acreditada la fianza, retira los bultos para su venta mientras el diferendo continúa sustanciándose por la vía arbitral.
 
-### **Tribunal de Arbitraje de Trinchera**
+### **Tribunal Arbitral Territorial**
 Tribunal arbitral perentorio constituido en la MES local, integrado por: (a) El perito técnico neutral del INTI (que ejerce la presidencia); (b) Dos vocales sorteados de la Bolsa de Trabajo (un tallerista y una marca ajenos al litigio). Dicta laudo inapelable en un plazo duro de **72 horas hábiles**, ordenando la readecuación retroactiva de tarifas o desestimando la queja.
 
 ### **Mecanismo de Slashing (Penalización Algorítmica)**

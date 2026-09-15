@@ -123,6 +123,190 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Inicializador de controles interactivos (Zoom, Pan táctil y Mouse, Fullscreen) para Mermaid
+function initMermaidInteractivity() {
+    document.querySelectorAll('.mermaid-wrapper').forEach(wrapper => {
+        if (wrapper.dataset.interactiveInitialized === 'true') return;
+        wrapper.dataset.interactiveInitialized = 'true';
+
+        const viewport = wrapper.querySelector('.mermaid-viewport');
+        const mermaidDiv = wrapper.querySelector('.mermaid');
+        const btnZoomIn = wrapper.querySelector('.btn-zoom-in');
+        const btnZoomOut = wrapper.querySelector('.btn-zoom-out');
+        const btnReset = wrapper.querySelector('.btn-reset');
+        const btnFullscreen = wrapper.querySelector('.btn-fullscreen');
+        const btnCollapse = wrapper.querySelector('.btn-collapse');
+
+        let scale = 1, translateX = 0, translateY = 0;
+        let isMouseDragging = false, mouseStartX = 0, mouseStartY = 0;
+
+        const updateTransform = () => {
+            mermaidDiv.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        };
+
+        if (btnZoomIn) {
+            btnZoomIn.onclick = (e) => {
+                e.stopPropagation();
+                scale = Math.min(scale * 1.25, 4.5);
+                mermaidDiv.style.transition = 'transform 0.15s ease-out';
+                updateTransform();
+            };
+        }
+        if (btnZoomOut) {
+            btnZoomOut.onclick = (e) => {
+                e.stopPropagation();
+                scale = Math.max(scale / 1.25, 0.4);
+                mermaidDiv.style.transition = 'transform 0.15s ease-out';
+                updateTransform();
+            };
+        }
+        if (btnReset) {
+            btnReset.onclick = (e) => {
+                e.stopPropagation();
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                mermaidDiv.style.transition = 'transform 0.2s ease-out';
+                updateTransform();
+            };
+        }
+
+        if (btnCollapse) {
+            btnCollapse.onclick = (e) => {
+                e.stopPropagation();
+                wrapper.classList.toggle('collapsed');
+                btnCollapse.textContent = wrapper.classList.contains('collapsed') ? '▶' : '▼';
+            };
+        }
+
+        if (btnFullscreen) {
+            btnFullscreen.onclick = (e) => {
+                e.stopPropagation();
+                wrapper.classList.toggle('fullscreen');
+                if (wrapper.classList.contains('fullscreen')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            };
+        }
+
+        // --- Eventos de Mouse (Desktop) ---
+        viewport.addEventListener('mousedown', (e) => {
+            isMouseDragging = true;
+            mouseStartX = e.clientX - translateX;
+            mouseStartY = e.clientY - translateY;
+            viewport.style.cursor = 'grabbing';
+            mermaidDiv.style.transition = 'none';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isMouseDragging) return;
+            translateX = e.clientX - mouseStartX;
+            translateY = e.clientY - mouseStartY;
+            updateTransform();
+        });
+
+        const stopMouseDrag = () => {
+            if (isMouseDragging) {
+                isMouseDragging = false;
+                viewport.style.cursor = 'grab';
+                mermaidDiv.style.transition = 'transform 0.1s ease-out';
+            }
+        };
+
+        window.addEventListener('mouseup', stopMouseDrag);
+        window.addEventListener('mouseleave', stopMouseDrag);
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const factor = e.deltaY < 0 ? 1.15 : 0.88;
+            scale = Math.min(Math.max(scale * factor, 0.4), 4.5);
+            mermaidDiv.style.transition = 'transform 0.08s ease-out';
+            updateTransform();
+        }, { passive: false });
+
+        // --- Eventos Táctiles (Mobile & Tablets) ---
+        let isTouchDragging = false;
+        let isPanning = false;
+        let touchStartX = 0, touchStartY = 0;
+        let touchStartTranslateX = 0, touchStartTranslateY = 0;
+        let initialPinchDist = 0;
+        let initialScale = 1;
+
+        viewport.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isTouchDragging = true;
+                isPanning = false;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchStartTranslateX = translateX;
+                touchStartTranslateY = translateY;
+            } else if (e.touches.length === 2) {
+                isTouchDragging = false;
+                isPanning = true;
+                initialPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialScale = scale;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialPinchDist > 0) {
+                // Pellizco para zoom (Pinch-to-zoom)
+                if (e.cancelable) e.preventDefault();
+                const currentDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const factor = currentDist / initialPinchDist;
+                scale = Math.min(Math.max(initialScale * factor, 0.4), 4.5);
+                mermaidDiv.style.transition = 'none';
+                updateTransform();
+            } else if (e.touches.length === 1 && isTouchDragging) {
+                const curX = e.touches[0].clientX;
+                const curY = e.touches[0].clientY;
+                const dx = curX - touchStartX;
+                const dy = curY - touchStartY;
+
+                if (!isPanning) {
+                    // Si ya está ampliado o en pantalla completa, arrastre directo
+                    if (scale > 1.05 || wrapper.classList.contains('fullscreen')) {
+                        isPanning = true;
+                    } else if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+                        // Desplazamiento horizontal evidente dentro del diagrama
+                        isPanning = true;
+                    } else if (Math.abs(dy) > 12) {
+                        // Desplazamiento vertical: el usuario quiere hacer scroll en la página
+                        isTouchDragging = false;
+                        return;
+                    }
+                }
+
+                if (isPanning) {
+                    if (e.cancelable) e.preventDefault();
+                    translateX = touchStartTranslateX + dx;
+                    translateY = touchStartTranslateY + dy;
+                    mermaidDiv.style.transition = 'none';
+                    updateTransform();
+                }
+            }
+        }, { passive: false });
+
+        const endTouch = () => {
+            isTouchDragging = false;
+            isPanning = false;
+            initialPinchDist = 0;
+            mermaidDiv.style.transition = 'transform 0.1s ease-out';
+        };
+
+        window.addEventListener('touchend', endTouch);
+        window.addEventListener('touchcancel', endTouch);
+    });
+}
+
 async function loadMarkdown() {
     try {
         // Hacemos el fetch() al archivo MD que está en la misma carpeta
@@ -224,72 +408,7 @@ async function loadMarkdown() {
         const mermaidElements = document.querySelectorAll('.mermaid');
         if (mermaidElements.length > 0) {
             await mermaid.run({ nodes: mermaidElements });
-
-            // Inicializar interactividad (Zoom, Pan, Fullscreen)
-            document.querySelectorAll('.mermaid-wrapper').forEach(wrapper => {
-                const viewport = wrapper.querySelector('.mermaid-viewport');
-                const mermaidDiv = wrapper.querySelector('.mermaid');
-                const btnZoomIn = wrapper.querySelector('.btn-zoom-in');
-                const btnZoomOut = wrapper.querySelector('.btn-zoom-out');
-                const btnReset = wrapper.querySelector('.btn-reset');
-                const btnFullscreen = wrapper.querySelector('.btn-fullscreen');
-                const btnCollapse = wrapper.querySelector('.btn-collapse');
-
-                let scale = 1, translateX = 0, translateY = 0;
-                let isDragging = false, startX, startY;
-
-                const updateTransform = () => {
-                    mermaidDiv.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-                };
-
-                btnZoomIn.onclick = () => { scale *= 1.2; updateTransform(); };
-                btnZoomOut.onclick = () => { scale /= 1.2; updateTransform(); };
-                btnReset.onclick = () => { scale = 1; translateX = 0; translateY = 0; updateTransform(); };
-
-                btnCollapse.onclick = () => {
-                    wrapper.classList.toggle('collapsed');
-                    btnCollapse.textContent = wrapper.classList.contains('collapsed') ? '▶' : '▼';
-                };
-
-                btnFullscreen.onclick = () => {
-                    wrapper.classList.toggle('fullscreen');
-                };
-
-                viewport.addEventListener('mousedown', (e) => {
-                    isDragging = true;
-                    startX = e.clientX - translateX;
-                    startY = e.clientY - translateY;
-                    viewport.style.cursor = 'grabbing';
-                });
-
-                window.addEventListener('mousemove', (e) => {
-                    if (!isDragging) return;
-                    translateX = e.clientX - startX;
-                    translateY = e.clientY - startY;
-                    mermaidDiv.style.transition = 'none';
-                    updateTransform();
-                });
-
-                window.addEventListener('mouseup', () => {
-                    isDragging = false;
-                    viewport.style.cursor = 'grab';
-                    mermaidDiv.style.transition = 'transform 0.1s ease-out';
-                });
-
-                window.addEventListener('mouseleave', () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        viewport.style.cursor = 'grab';
-                        mermaidDiv.style.transition = 'transform 0.1s ease-out';
-                    }
-                });
-
-                viewport.addEventListener('wheel', (e) => {
-                    e.preventDefault();
-                    scale *= e.deltaY < 0 ? 1.1 : 0.9;
-                    updateTransform();
-                }, { passive: false });
-            });
+            initMermaidInteractivity();
         }
 
         // Si la URL vino con un hash (#), hacer scroll suave hasta el elemento
@@ -325,7 +444,7 @@ async function loadMarkdown() {
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function (e) {
+            reader.onload = async function (e) {
                 let markdownText = e.target.result;
                 markdownText = markdownText.replace(/^---\r?\n[\s\S]*?\n---\r?\n/, '');
 
@@ -396,7 +515,8 @@ async function loadMarkdown() {
 
                 const mermaidElements = document.querySelectorAll('.mermaid');
                 if (mermaidElements.length > 0) {
-                    mermaid.run({ nodes: mermaidElements });
+                    await mermaid.run({ nodes: mermaidElements });
+                    initMermaidInteractivity();
                 }
             };
             reader.readAsText(file);

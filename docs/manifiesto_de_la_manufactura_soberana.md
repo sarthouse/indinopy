@@ -2,144 +2,121 @@
 
 # Manifiesto de la Manufactura Soberana y la Comunidad Organizada
 
-## Proclama del Trabajo Vivo, la Orden de Producción Descentralizada y la Tecnología de Trinchera
+## Proclama del Trabajo Real, la Producción Descentralizada y la Tecnología al Servicio del Oficio
 
 > **Lugar de emisión:** Ciudad de Buenos Aires, República Argentina  
 > **Fecha:** Septiembre de 2026  
 > **Destino:** A los talleristas, diseñadores, programadores de código abierto, sindicatos y fuerzas productivas de la Nación  
-> **Marco doctrinario:** [Dossier Proyecto FIMCA](dossier_rigi_conurbano_2026.html)  
+> **Marco doctrinario:** [Dossier Proyecto FIMCA](dossier_proyecto_fimca_2026.html)  
 > **Implementación de software:** **Indinopy** (ERP & MES de Soberanía Industrial)
 
 ---
 
-## I. Preámbulo: La Rebelión del Taller frente a la Muerte Industrial
+## I. Preámbulo: La Realidad del Taller y el Rescate del Oficio
 
-Treinta talleres cierran por día en la Argentina. No cierran por falta de oficio, ni por falta de vocación, ni porque la sociedad haya dejado de necesitar calzado o abrigo. Cierran porque sobre sus espaldas pesa un régimen perverso: una macroeconomía que subsidia la timba financiera y abre las compuertas a la importación desleal, mientras una estructura fiscal arcaica trata al tallerista de tres máquinas con el mismo rigor punitivo que a un conglomerado multinacional.
+Cualquiera que haya caminado los barrios manufactureros del Conurbano Bonaerense conoce el pulso de nuestra industria: el sonido rítmico y constante de la máquina de coser de doble arrastre, el olor penetrante del adhesivo de contacto, la mesa de corte con la tabla de polietileno marcada a trincheta y las manos curtidas por el cuero y la anilina. En esos galpones familiares y fondos de casa no hay criminales ni especuladores: hay dos y tres generaciones de oficio, de maestras costureras y cortadores que aprendieron de sus padres el arte noble de transformar una pieza de cuero en un calzado resistente que camina la calle.
 
-El eslabón más noble y sacrificado de la cadena —el aparador de barrio, la costurera a destajo, el cortador que aprendió el oficio de su padre— sobrevive hoy en la informalidad no como delito, sino como **legítima autodefensa**. Trabaja en la penumbra no para evadir, sino para que una boleta de luz confiscatoria o un embargo de cuenta no le quiten el pan a sus hijos. Para que ese taller trabaje, un diseñador o un pequeño industrial debe prestar su CUIT personal, arriesgando su casa y su familia en un "purgatorio fiscal" que tributa Ganancias sobre costos reales de mano de obra que el Estado se niega a reconocer porque no tienen factura formal.
+Sin embargo, treinta talleres cierran por día en la Argentina. No cierran por falta de capacidad técnica, ni por desinterés, ni porque a nuestra sociedad le sobren zapatos o abrigo. Cierran porque sobre sus espaldas pesa un sistema desquiciado: una macroeconomía que premia la timba financiera y abre las puertas a la importación desleal, mientras una estructura impositiva y bancaria asfixia al que produce con las manos.
 
-Mientras tanto, los bancos comerciales —alimentados por la renta de la deuda pública— le niegan un adelanto de $300.000 a quien tiene los cueros sobre la mesa y los pedidos listos para cortar, exigiéndole balances auditados y escrituras propietarias que jamás tendrá. Al mismo tiempo, el oficialismo libertario bloquea sistemáticamente en el Congreso cualquier proyecto de desendeudamiento para las familias y las PyMEs, argumentando que la asfixia financiera es un mero "contrato entre privados" y priorizando un modelo extractivista que da la espalda al mercado interno.
+El tallerista de barrio —el aparador a destajo, la costurera, el armador— vive hoy en la informalidad no por deshonestidad, sino por **legítima autodefensa**. Trabaja en la penumbra para que una boleta de luz confiscatoria o un embargo de cuenta no le quiten la comida a sus hijos. Y para que ese taller pueda cortar y coser, un modelista, un diseñador o un pequeño industrial tiene que salir a poner la cara, arriesgando su casa y su patrimonio personal en un esquema donde el Estado le cobra impuestos sobre utilidades ficticias porque se niega a reconocer el costo real del trabajo artesanal si no media una factura formal.
 
-**Decimos basta.** No venimos a mendigar subsidios de supervivencia que perpetúan la miseria, ni a esperar pasivamente que la "mano invisible" del mercado termine de rematar nuestros galpones. 
+Mientras tanto, los bancos comerciales —alimentados por la renta fácil de la deuda pública— le niegan un anticipo básico a quien tiene los rollos de cuero sobre la mesa y los pedidos listos para fabricar, exigiéndole balances auditados y garantías propietarias que una pequeña unidad productiva jamás tendrá.
 
-Inspirados en la doctrina justicialista de las **Organizaciones Libres del Pueblo (OLP)**, proclamamos que la salida a esta crisis no vendrá del individualismo financiero, sino de la articulación solidaria de los actores de la economía peronista. Organizados en nuestras comunidades, poseemos la fuerza moral, la capacidad técnica y las herramientas de software para fundar un **nuevo orden productivo soberano**. 
+**Decimos basta.** No venimos a pedir dádivas que perpetúan la precariedad, ni a resignarnos a que el remate de nuestras máquinas sea el único horizonte.
 
-Para lograrlo, **exhortamos a las Universidades Públicas Nacionales (UNSAM, UNLaM, UNDAV y demás casas de estudio del Conurbano)** a asumir su rol histórico: aportar sus ingenieros, economistas y cientistas sociales para diagramar y homologar técnica, legal y algorítmicamente las bases de este régimen. El saber del pueblo debe volver al pueblo en forma de tecnología liberadora.
+Creemos profundamente en la **Comunidad Organizada**: en la articulación solidaria entre quien corta, quien cose, quien diseña, quien programa y las universidades públicas de nuestro territorio. Cuando los actores del trabajo nos unimos y compartimos herramientas, tenemos la fuerza moral, la capacidad técnica y el saber acumulado para ordenar la producción desde abajo hacia arriba y fundar un **nuevo orden productivo soberano**.
 
----
-
-## II. Nuestra Declaración de Valores: Qué Defendemos y Qué Descartamos
-
-A través de la experiencia forjada en las mesas de corte y en las terminales de código, establecemos los siguientes principios irrenunciables:
-
-```text
-    EL TRABAJO VIVO Y VERIFICADO  por sobre  EL SCORING PATRIMONIAL BANCARIO
- LA ORDEN DE PRODUCCIÓN SOBERANA  por sobre  LA INTERMEDIACIÓN FINANCIERA
-LA TECNOLOGÍA CONVENIENTE Y ABIERTA  por sobre  LA PATENTE CORPORATIVA CERRADA
-   LA RED DE TALLERES FEDERADOS  por sobre  LA BUROCRACIA CENTRALIZADA
-   LA TRANSPARENCIA ANTE EL PUEBLO  por sobre  LA RENTA PARÁSITA DE MARCA
-```
-
-1. **El trabajo vivo por sobre el scoring bancario:** El valor del crédito no nace de cuánto capital acumulaste en el pasado, sino de tu capacidad real de transformar cuero en calzado hoy. La garantía del crédito es la producción en marcha.
-2. **La Orden de Producción por sobre la intermediación:** La orden de trabajo no es un papel descartable; es un título legítimo de valor. El dinero debe seguir al trabajo, no el trabajo arrodillarse ante el dinero.
-3. **La tecnología conveniente por sobre la patente cerrada:** Rechazamos la maquinaria con bloqueos de software corporativo y repuestos dolarizados inaccesibles. Abrazamos la tecnología que puede ser reparada, despiezada y mantenida por los torneros y metalúrgicos de nuestros propios distritos.
-4. **La red federada por sobre la burocracia:** La planificación no desciende de funcionarios iluminados; emerge de la *Mesa de Enlace Sectorial*, donde quien corta, quien diseña y quien cose se sientan en paridad de condiciones con el Estado como árbitro.
-5. **La verdad radical de costos ante el consumidor:** El pueblo tiene derecho a saber qué compra. Defendemos el precio justo: que el comprador sepa cuánto del calzado pagó el trabajo del tallerista, cuánto los materiales, cuánto los impuestos y cuánto la ganancia comercial.
+Convocamos a las Universidades Públicas Nacionales (UNSAM, UNLaM, UNDAV, Lanús y demás casas de estudio) a sumar a sus docentes, ingenieros y estudiantes para acompañar este proceso en el territorio, auditando los algoritmos y poniendo el conocimiento científico donde más se necesita: en las mesas de corte de nuestro pueblo.
 
 ---
 
-## III. El Decálogo de Trinchera: Las 10 Cláusulas de la Comunidad Organizada
+## II. Nuestra Declaración de Principios: Qué Cuidamos y Qué Rechazamos
 
-Para gobernar nuestra producción sin patrones usureros ni inspectores extorsionadores, declaramos las siguientes diez reglas operativas:
+A través de la experiencia compartida entre el taller de calzado y el desarrollo de software, establecemos cinco principios fundamentales:
 
-### 1. La Orden de Producción es nuestro dinero y nuestro título de dignidad
-
-La **e-OP digital** es un contrato inviolable y un título crediticio de descuento automático. Quien tiene una e-OP registrada ante la Mesa de Enlace tiene un activo de valor preferente ante cualquier entidad financiera o fiduciaria del país.
-
-### 2. El Hito Cero es sagrado: nadie enciende un motor sin anticipo
-
-Se terminó la costumbre patronal de entregar materiales y esperar 60 días para cobrar. Al firmarse la e-OP y despacharse los insumos, el **Fideicomiso de Desarrollo Industrial (FDI)** libera de forma automática entre el 30% y el 40% del valor del servicio (o 50% con Sello de Buen Diseño) a la cuenta del tallerista. El trabajo se arranca con capital en el bolsillo.
-
-### 3. El cuero es del comitente; las manos son del taller (Doctrina de Maquila)
-
-La mercadería que viaja y reposa en el taller de barrio está blindada por el régimen de Maquila y Locación de Obra (Arts. 1251 y 1356 CCCN). Es **estrictamente inembargable**. Si la marca quiebra o el taller tiene litigios, los cueros, suelas y cortes no se tocan: son activos de afectación productiva territorial.
-
-### 4. El Estado tiene 48 horas: si calla, la producción avanza (Silencio Positivo)
-
-La burocracia no tiene derecho a frenar la rueda. Si la Mesa de Crédito no objeta formalmente una e-OP en 48 horas hábiles, el sistema informático activa el **Silencio Administrativo Positivo** y libera los fondos. Ninguna interna partidaria ni desidia administrativa congelará la comida de una familia trabajadora.
-
-### 5. Si la máquina se detiene, el impuesto es cero (Suspensión Activa de Oficio)
-
-El impuesto debe seguir a la producción física, no al calendario del burócrata. Si transcurren 15 días sin que un tallerista reciba un nuevo lote de trabajo, el sistema muta su estado a **Suspensión Activa**: su carga fiscal cae a cero pesos (\$0) y no se devenga un solo centavo de deuda previsional o intereses retroactivos.
-
-### 6. Filtro de Tecnología Conveniente: no importamos chatarra ni cerrojos
-
-Ningún bien de capital importado con arancel cero entrará al país si tiene producción nacional sustituta. Y si no la tiene, la marca extranjera está obligada a liberar planos de despiece, diagramas electrónicos y software libre, licenciando el servicio técnico a las pymes metalúrgicas y escuelas de oficios locales.
-
-### 7. Tutela Sindical de Urgencia: auditar para elevar, nunca para trabar
-
-El sindicato no es un inspector de aduana previa: es el guardián de la dignidad obrera. Ejerce su rol mediante **auditoría ex-post**. Si constata precios de miseria o precarización, congela el tramo final en Escrow por 48 horas para exigir la readecuación salarial, pero la mercadería no se pudre en el taller si la empresa presenta fianza líquida de resguardo.
-
-### 8. Desacople Energético y Tarifa Plana Industrial
-
-Las máquinas de nuestros talleres no pueden pagar la energía al precio especulativo de Wall Street. Instituimos la **Tarifa Plana Manufacturera**, calculada en pesos argentinos sobre los costos reales de generación local más un margen justo, subsidiada por la renta de los recursos naturales que exporta la Patria.
-
-### 9. El Sello QR de Trazabilidad Socioproductiva
-
-Cada par de borcegos, cada zapato y cada prenda terminada llevará en su lengüeta o etiqueta un código QR inviolable. Al escanearlo, el consumidor verá la verdad desglosada:
-* Cuánto cobró el tallerista por su mano de obra.
-* Cuánto costaron los cueros y suelas nacionales.
-* Cuánto se pagó en impuestos y aportes sociales.
-* Cuánto retuvo la marca por su diseño, logística y comercialización.
-
-### 10. Perimetral Administrativa ante la Extorsión
-
-Quien pida coima a un tallerista de trinchera no es un inspector: es un saboteador de la industria nacional. Ante la denuncia fundada en la MES, el taller adquiere **180 días de inmunidad fiscal total** y el funcionario queda inhabilitado con perimetral informática y territorial de inmediato.
+1. **El trabajo real por sobre el scoring bancario:** El valor del crédito no nace de cuántas propiedades acumulaste en el pasado, sino de tu capacidad concreta de transformar insumos en calzado terminado hoy. La verdadera garantía del crédito es la producción en marcha y la palabra del oficio.
+2. **La orden de trabajo por sobre la especulación financiera:** Una orden de producción no es un papel descartable; es un compromiso de valor. Los recursos financieros deben acudir al trabajo para poner en marcha los motores, y no el trabajo arrodillarse a esperar pagos a 90 días.
+3. **La tecnología abierta por sobre la dependencia corporativa:** Rechazamos las maquinarias con cerrojos de software y repuestos dolarizados que nadie puede reparar. Abrazamos la tecnología que puede ser desarmada, comprendida y mantenida por los matriceros, torneros y mecánicos de nuestros propios barrios.
+4. **La red solidaria por sobre la burocracia de escritorio:** Las soluciones no descienden de funcionarios encerrados en un despacho. Nacen del diálogo paritario en la mesa sectorial, donde quien corta, quien cose y quien comercializa se sientan en paridad de condiciones para acordar costos justos.
+5. **La verdad de cara al consumidor:** Quien compra un par de borcegos o zapatillas tiene derecho a saber qué está pagando. Defendemos la transparencia de costos: que sea visible cuánto fue a las manos de quien cosió el calzado, cuánto a los materiales nacionales, cuánto a los impuestos y cuánto al comercio.
 
 ---
 
-## IV. El Código como Trinchera: Por qué el Software Libre es Soberanía
+## III. El Decálogo Productivo: Las 10 Reglas de la Comunidad Organizada
 
-Rechazamos los sistemas de gestión enlatados de corporaciones extranjeras que cobran licencias en dólares y tratan a la producción como una planilla de cálculo fría. 
+Para coordinar nuestro trabajo con justicia, transparencia y sin intermediarios abusivos, establecemos diez pautas claras de funcionamiento:
 
-**Indinopy** nace desde las entrañas del Conurbano y se publica bajo licencias de código abierto porque entendemos que **el software es infraestructura soberana**:
+### 1. La Orden de Producción como compromiso de valor
+La orden de producción digital (**e-OP**) es un contrato transparente entre partes y un activo de cobro preferente. Quien cuenta con una orden activa y verificada tiene el respaldo de la red productiva para justificar su trabajo y acceder a los fondos de fomento.
 
-```text
-       EL CÓDIGO ABIERTO ES A NUESTROS SISTEMAS
-                    LO QUE 
-       EL PLANO DE DESPIECE ES A NUESTRAS MÁQUINAS:
-LA GARANTÍA DE QUE NUNCA DEPENDEREMOS DE UN AMO EXTERNO.
-```
+### 2. El Hito Cero no se negocia: nadie arranca sin anticipo
+Se terminó la costumbre de entregar materiales y esperar dos o tres meses para cobrar el trabajo. Al comenzar una orden y entregarse los insumos, el fondo fiduciario libera de forma automática un anticipo inicial (entre el 30% y el 40% del valor de confección) a la cuenta del tallerista. El trabajo empieza con capital en mano para afrontar los gastos de planta.
 
-* Programamos con partida doble en inventario para que el stock de cuero no mienta.
-* Programamos algoritmos de asignación solidaria para que el trabajo se distribuya equitativamente y no se concentre en monopolios de amigos.
-* Programamos máquinas de estados con timelocks automáticos para que ningún burócrata pueda cajonear la aprobación de una orden de producción.
+### 3. El cuero es del comitente; el trabajo es del taller
+La materia prima que ingresa al taller para ser transformada está resguardada por el régimen de custodia y locación de obra. Es **estrictamente inembargable**. Si la marca comitente entra en dificultades comerciales o el taller enfrenta litigios, los insumos y las piezas en proceso no se tocan: pertenecen al circuito productivo y protegen el sustento de los operarios.
 
-Nuestras bases de datos residen en servidores nacionales. Nuestros algoritmos de precios justos son públicos y auditables. El código fuente es patrimonio común de la industria nacional.
+### 4. El Estado tiene 48 horas: si no responde, la producción sigue (Silencio Positivo)
+La lentitud administrativa no puede frenar el pan de una familia. Si la mesa técnica no presenta una objeción fundada sobre una orden dentro de las 48 horas hábiles, el sistema la da por aprobada de pleno derecho y los fondos se desbloquean automáticamente.
+
+### 5. Si la máquina se detiene, la carga fiscal es cero (Suspensión Activa de Oficio)
+El régimen tributario debe acompañar el ciclo físico de la fábrica, no el capricho del calendario burocrático. Si un taller pasa semanas sin trabajo por caída de pedidos, su carga fiscal se suspende automáticamente: no acumula deudas previsionales, multas ni intereses sobre ingresos que nunca existieron.
+
+### 6. Tecnología apropiada y reparable
+Priorizamos la maquinaria industrial que cuente con soporte, matrices y repuestos fabricados localmente. Frente a equipos extranjeros que no se produzcan en el país, exigimos planos de mantenimiento abiertos para que las escuelas técnicas y talleres metalmecánicos puedan brindar servicio local sin depender de importaciones cautivas.
+
+### 7. Acompañamiento gremial en planta: sumar para dignificar
+La presencia sindical y técnica en la fábrica no tiene como fin la clausura ni la traba burocrática, sino la tutela del salario digno, la seguridad laboral y la calidad del producto. Los conflictos se resuelven en mesas paritarias territoriales cuidando siempre la continuidad del trabajo.
+
+### 8. Tarifa energética justa para producir
+Las máquinas de nuestros talleres no pueden pagar la electricidad a precios especulativos fijados en divisas internacionales. La energía manufacturera debe calcularse en moneda nacional sobre los costos reales de generación local, compensada con la renta de los recursos naturales que exporta el país.
+
+### 9. El Sello QR de transparencia productiva
+Cada par de calzado llevará en su etiqueta un código accesible. Al escanearlo, el comprador podrá conocer la trazabilidad del producto:
+* Cuánto se pagó al taller por la mano de obra.
+* Cuánto costaron los cueros y componentes de origen nacional.
+* Cuánto representaron las cargas impositivas.
+* Cuál fue el margen de diseño y comercialización de la marca.
+
+### 10. Protección comunitaria contra el abuso
+Ningún tallerista ni trabajador debe tolerar aprietes, pedidos de retornos ni inspecciones arbitrarias. Ante una denuncia comprobada, la red sectorial interviene de inmediato brindando resguardo administrativo al taller y exigiendo el apartamiento de quien pretendió extorsionar al trabajo productivo.
 
 ---
 
-## V. Convocatoria a las Fuerzas Vivas de la Patria
+## IV. El Software al Servicio del Oficio: Por qué el Código Abierto es Soberanía
 
-Llamamos a sellar una alianza histórica entre todos los eslabones que transforman la materia y generan riqueza real:
+Rechazamos los sistemas corporativos enlatados que cobran licencias en dólares y tratan a una fábrica como una fría celda de Excel. 
 
-* **Al Tallerista de Barrio y al Aparador Artesanal:** Tu oficio no es cosa del pasado. Tus manos son la columna vertebral de la soberanía industrial. No te escondas más: la Mesa de Enlace y el Monotributo Productivo son tu trinchera y tu escudo.
-* **Al Diseñador, Modelista y Pyme de Calzado:** Dejá de poner la cara y tu patrimonio en soledad contra un sistema que te devora. El Puente SAS y la e-OP te liberan del riesgo de identidad prestada y te devuelven la rentabilidad que la usura bancaria te confiscaba.
-* **Al Programador, Hacker e Ingeniero de Software:** Dejá de vender tu talento por horas para enriquecer aplicaciones de timba financiera o delivery precarizado en el extranjero. Vení a programar el sistema operativo de nuestras fábricas, las pasarelas de pago de nuestro pueblo y las redes de distribución de nuestra industria.
-* **Al Obrero Metalúrgico, Matricero y Tornero:** Las máquinas que cosen y pegan el calzado necesitan tus matrices, tus bujes y tus engranajes. El Banco Comunitario de Maquinarias te necesita como maestro de mantenimiento soberano.
-* **Al Joven de la Escuela Técnica y de los CIFO:** En el calzado y la marroquinería hay un arte milenario y un futuro de trabajo calificado esperándote. No hay dignidad en el subsidio pasivo; la dignidad está en el orgullo de ver un par de borcegos terminado y saber que fue hecho por tus manos.
+**Indinopy** nació en los talleres del Conurbano y se distribuye bajo licencias abiertas porque entendemos que **el software es una herramienta de producción tan indispensable como la máquina de aparar**:
+
+* Programamos un sistema de inventario por partida doble para que cada retazo de cuero tenga destino claro y no haya desconfianza entre la marca y el taller.
+* Programamos reglas automáticas de cobro por hitos para que nadie tenga que rogar por la liquidación de un lote terminado.
+* Programamos temporizadores con silencio positivo para que ninguna orden quede durmiendo en el escritorio de un burócrata.
+
+El código abierto es para nuestros sistemas lo que el manual de despiece es para nuestras máquinas: la seguridad de que nadie nos va a cobrar peaje por trabajar, que podemos adaptarlo a la necesidad de cada fábrica y que el conocimiento le pertenece a la comunidad que produce.
+
+---
+
+## V. Convocatoria a quienes Construyen con sus Manos y su Cabeza
+
+Llamamos a sellar un acuerdo de trabajo y solidaridad entre todos los que transforman la realidad cotidiana:
+
+* **Al tallerista de barrio y a la costurera artesanal:** Tu oficio es un pilar de la identidad nacional. No tenés que esconderte más: el Monotributo Productivo simplificado y la mesa sectorial son herramientas pensadas para cuidarte y darte previsibilidad.
+* **Al diseñador, modelista y fabricante pyme:** Dejá de cargar en soledad con un esquema que asfixia tu creatividad y devora tu rentabilidad. La orden digital federada te devuelve la tranquilidad de trabajar con reglas claras y costos reales computables.
+* **Al programador y estudiante de sistemas:** Dejá de quemar horas enriqueciendo plataformas foráneas de timba financiera. Poné tu talento a programar el software de nuestras fábricas, las herramientas contables de nuestro pueblo y los sistemas que defienden la industria.
+* **Al obrero metalúrgico, matricero y tornero:** Las máquinas que troquelan y cosen el calzado necesitan tus manos para seguir andando. Tu conocimiento es la garantía de que nuestros galpones no se apaguen.
+* **Al joven de la escuela técnica y los centros de formación:** En el calzado y la marroquinería hay un oficio noble, creativo y calificado. Hay futuro en el orgullo de ver salir un par de botas terminado y saber que fue hecho con tus propias manos.
 
 ---
 
 ## VI. Rúbrica Final
 
-No aceptamos el destino de ser una colonia importadora de calzado descartable. Reivindicamos el derecho de nuestro pueblo a calzarse con trabajo argentino, con cuero argentino y con tecnología argentina.
+Hacer calzado es un oficio noble: abrigar y vestir los pies de nuestro pueblo con trabajo argentino, cuero argentino y tecnología argentina. Desarrollar software libre es un acto de compromiso: poner la técnica más avanzada al servicio de quienes transforman la materia.
 
-Frente a la desolación de la especulación, levantamos la bandera de la **Comunidad Organizada**.
+Frente a la desolación de la especulación, elegimos el valor del oficio, la solidaridad productiva y la comunidad organizada.
 
-**Escribir código. Coser zapatos. Defender la industria. Construir la Patria.**
+**Coser calzado. Escribir código. Dignificar el trabajo.**
 
 ---
 
-*Ciudad de Buenos Aires, Argentina, a los 9 días del mes de septiembre de 2026.*  
+*Ciudad de Buenos Aires, Argentina, Septiembre de 2026.*  
 *Por Tiago Gabriel Sarthou (tiagosarthou@gmail.com).*

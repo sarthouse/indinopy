@@ -163,7 +163,7 @@ class AlertaColusion(TimeStampedModel):
 
 class TribunalArbitraje(TimeStampedModel):
     """
-    Caso en el Tribunal de Arbitraje de Trinchera (Resolución en 72h).
+    Caso en el Tribunal Arbitral Territorial (Resolución en 72h).
     """
 
     registro_eop = models.ForeignKey(

@@ -59,7 +59,7 @@ La Cláusula de No Retroactividad es la garantía más importante del Monotribut
 
 Esta renuncia del Estado es la condición de confianza sin la cual ningún otro beneficio tiene credibilidad. Debe figurar en los primeros 100 caracteres de cualquier pieza de comunicación dirigida al sector.
 
-#### Resistencia 5: La Desconfianza en la MES — El Municipio como Árbitro Político de Trinchera
+#### Resistencia 5: La Desconfianza en la MES — El Municipio como Árbitro Político Territorial
 
 Si el tallerista percibe que la MES está dominada por las marcas y los comitentes, la va a ver como otro mecanismo de disciplinamiento patronal con nombre nuevo. A fin de disolver esta tensión de control territorial y evitar la superposición de estructuras burocráticas con los gobiernos locales, el Municipio asume el rol de Garante de Estabilidad Territorial y Árbitro de la Comisión de Crédito y Riesgo de la MES local. La gobernanza local se armoniza bajo las siguientes atribuciones institucionales:
 
@@ -67,7 +67,7 @@ Si el tallerista percibe que la MES está dominada por las marcas y los comitent
 
 * **Ventanilla Única Municipal de Formalización y Habilitación de Oficio:** Al registrarse una e-OP que dé el alta automática en el Monotributo Productivo, el Municipio otorgará de forma automática y en un plazo máximo de 48 horas hábiles la Exención de Tasas Locales (Seguridad e Higiene, Abasto y Circulación) y la Habilitación Simplificada de Oficio del taller de barrio.
 
-* **Co-Administración de la Compensación Federal:** A cambio de la exención de tasas locales por el término de diez (10) años establecida en el Pacto Fiscal Productivo, el Estado Nacional transferirá de manera directa y automática a las arcas municipales los fondos para infraestructura industrial de trinchera (pavimentación de accesos logísticos, luminarias LED para corredores productivos y polos tecnológicos territoriales), financiados por la asignación específica de los Derechos de Exportación sobre recursos no renovables.
+* **Co-Administración de la Compensación Federal:** A cambio de la exención de tasas locales por el término de diez (10) años establecida en el Pacto Fiscal Productivo, el Estado Nacional transferirá de manera directa y automática a las arcas municipales los fondos para infraestructura industrial territorial (pavimentación de accesos logísticos, luminarias LED para corredores productivos y polos tecnológicos territoriales), financiados por la asignación específica de los Derechos de Exportación sobre recursos no renovables.
 
 ### B. Bolsa de Trabajo Sectorial — Registro Nacional de Capacidades Productivas
 
@@ -168,7 +168,7 @@ Los sindicatos con personería gremial son reconocidos como garantes de la digni
 
 * **Auditoría Posterior en Territorio (Ex-Post):** el representante sindical tendrá acceso en tiempo real al tablero digital de la MES local para verificar el volumen de unidades encargadas y el valor pactado. Junto a los PTF, realizará fiscalizaciones en los talleres durante el proceso de producción o al momento de la certificación de hitos, constatando que las condiciones de salud y seguridad sean dignas y que el precio no vulnere los pisos del convenio colectivo de rama.
 
-* **Acción de Tutela de Urgencia Ex-Post y Alerta de Escrow:** Si el sindicato detecta fraude impositivo, subcontratación precarizada o valores por debajo del piso de convenio, interpondrá la Acción de Tutela de Urgencia ante la MES local. Esta presentación producirá el congelamiento preventivo automático de la liberación del último tramo del pago digital en la cuenta de Escrow del FDI por un plazo máximo duro de cuarenta y ocho (48) horas hábiles, término en el cual la Comisión de Homologación Técnica de la MES —actuando como Tribunal de Arbitraje de Trinchera— deberá sustanciar el descargo de la empresa y dictar resolución definitiva. Este acto de resguardo preventivo en ningún caso suspenderá el trabajo físico del tallerista ni anulará su derecho al cobro.
+* **Acción de Tutela de Urgencia Ex-Post y Alerta de Escrow:** Si el sindicato detecta fraude impositivo, subcontratación precarizada o valores por debajo del piso de convenio, interpondrá la Acción de Tutela de Urgencia ante la MES local. Esta presentación producirá el congelamiento preventivo automático de la liberación del último tramo del pago digital en la cuenta de Escrow del FDI por un plazo máximo duro de cuarenta y ocho (48) horas hábiles, término en el cual la Comisión de Homologación Técnica de la MES —actuando como Tribunal Arbitral Territorial— deberá sustanciar el descargo de la empresa y dictar resolución definitiva. Este acto de resguardo preventivo en ningún caso suspenderá el trabajo físico del tallerista ni anulará su derecho al cobro.
 
 * **Cláusula de Sustitución de Garantía Líquida por Continuidad Operativa:**A fin de resguardar el flujo logístico de la cadena y evitar el lucro cesante derivado de la pérdida de la ventana comercial estacional, la pyme o marca comitente afectada por la medida judicial-administrativa podrá solicitar la liberación inmediata del lote de mercadería retenido en el taller. Para ello, deberá constituir una garantía líquida o depósito de fianza de urgencia en la cuenta del FDI local equivalente al ciento por ciento (100%) del monto salarial o de precio en disputa certificado por el sindicato. Una vez verificado el depósito preventivo por goteo informático, el stock quedará liberado de oficio para su retiro y comercialización, manteniéndose el congelamiento del clearing financiero estrictamente sobre la fianza hasta que el Tribunal de Arbitraje dictamine la resolución final.
 
@@ -307,7 +307,7 @@ El sistema operará bajo una modalidad descentralizada, bimodal y de acceso irre
 
 * **Canal Digital Integrado:** Módulo específico y de acceso simplificado dentro de la interfaz de la plataforma digital de registro de e-OP. Este entorno operará bajo protocolos criptográficos de software soberano y auditoría externa permanente por parte de las Universidades Públicas del Conurbano, garantizando el absoluto desacople y bloqueo de acceso a datos sensibles por parte del personal de inspección de la Agencia de Recaudación y Control Aduanero (ARCA). Permitirá la carga de alertas y evidencia digital (audios, capturas de pantalla y geolocalización) en tiempo real.
 
-* **Buzón Físico de Trinchera:** Terminales de recepción de denuncias lacradas y numeradas de forma correlativa, ubicadas físicamente en las sedes de las Ventanillas Únicas de las Secretarías de Producción Municipal y en las filiales de los Sindicatos de rama adheridos (SETIA y afines), garantizando el acceso a la protección del régimen para aquellos talleristas que se encuentren en zonas de vulnerabilidad de conectividad.
+* **Buzón Físico Territorial:** Terminales de recepción de denuncias lacradas y numeradas de forma correlativa, ubicadas físicamente en las sedes de las Ventanillas Únicas de las Secretarías de Producción Municipal y en las filiales de los Sindicatos de rama adheridos (SETIA y afines), garantizando el acceso a la protección del régimen para aquellos talleristas que se encuentren en zonas de vulnerabilidad de conectividad.
 
 #### 3. Blindaje e Inmunidad del Tallerista Reclamante
 
@@ -342,9 +342,9 @@ En caso de denuncias por extorsión burocrática o exigencia de dádivas por par
 
 La doctrina enseña que las tensiones entre el Trabajo, el Capital y el Estado son inevitables en el proceso productivo. El error del liberalismo es dejar que el fuerte devore al débil en el mercado; el error de la burocracia colectivista es pretender anular las diferencias por decreto. Desde nuestra concepción, el conflicto no se esconde: se conduce. Este Canal de Arbitraje se instituye como la instancia máxima de conciliación interna de la cadena, obligando a las facciones a sentarse a negociar bajo el principio de co-dependencia forzosa.
 
-#### 2. Tribunal de Arbitraje de Trinchera (Instancia Local)
+#### 2. Tribunal Arbitral Territorial (Instancia Local)
 
-Ante cualquier parálisis operativa en un Nodo Regional motivada por disputas políticas entre intendencias, sindicatos o cámaras empresarias, se autoconvocará de forma inmediata el Tribunal de Arbitraje de Trinchera, integrado por:
+Ante cualquier parálisis operativa en un Nodo Regional motivada por disputas políticas entre intendencias, sindicatos o cámaras empresarias, se autoconvocará de forma inmediata el Tribunal Arbitral Territorial, integrado por:
 
 * **Presidencia:** el representante del INTI, como autoridad técnica neutral e indiscutible de la soberanía tecnológica.
 
@@ -394,7 +394,7 @@ El pasaje de un sistema de confianza analógico a una plataforma financiera basa
 
 #### 3. Trazabilidad Tecnológica y Firmas Digitales Descentralizadas
 
-Cada hito productivo declarado por el tallerista mediante la aplicación móvil contendrá metadatos inviolables de georreferenciación y validación biométrica a través del RENAPER. El sistema registrará la firma digital de la MES local en una arquitectura de datos transparente y auditable en tiempo real por todos los miembros del Consejo Superior, garantizando la absoluta inalterabilidad de la e-OP como activo seguro para el descuento o factoring del fondo de trinchera.
+Cada hito productivo declarado por el tallerista mediante la aplicación móvil contendrá metadatos inviolables de georreferenciación y validación biométrica a través del RENAPER. El sistema registrará la firma digital de la MES local en una arquitectura de datos transparente y auditable en tiempo real por todos los miembros del Consejo Superior, garantizando la absoluta inalterabilidad de la e-OP como activo seguro para el descuento o factoring del fondo productivo.
 
 #### 4. Adecuación del Rol Bancario ante la Ley de Entidades Financieras y Basilea
 
@@ -406,9 +406,7 @@ Cada hito productivo declarado por el tallerista mediante la aplicación móvil 
 
 #### 5. Régimen de Inmunidad y Blindaje del Stock de Maquila ante Contingencias del Comitente
 
-En virtud del carácter tuitivo del presente régimen y de la naturaleza jurídica del contrato de maquila industrial regulado por la extensión de la Ley 25.113, se establece que las materias primas, insumos, avíos y productos semielaborados o terminados que se encuentren físicamente dentro de un taller adherido bajo una e-OP activa, constituyen **activos intangibles de afectación productiva territorial**. Queda taxativamente prohibida su ejecución, secuestro, embargo preventivo o retención judicial por parte de magistrados de la justicia ordinaria ante quiebras, concursos o pasivos comerciales o tributarios de la marca comitente. El derecho al cobro de las e-OP de los talleristas y la regularidad laboral de la dotación gozarán de **privilegio absoluto de primer orden** por sobre cualquier acreedor hipotecario, prendario o fiscal del comitente, garantizando que el eslabón de trinchera perciba su clearing de fomento de forma inalterable.
-
-Queda taxativamente prohibida su ejecución, secuestro, embargo preventivo o retención judicial por parte de magistrados de la justicia ordinaria ante quiebras, concursos o pasivos comerciales o tributarios de la marca comitente. El derecho al cobro de las e-OP de los talleristas y la regularidad laboral de la dotación gozarán de **privilegio absoluto de primer orden** por sobre cualquier acreedor hipotecario, prendario o fiscal del comitente, garantizando que el eslabón de trinchera perciba su clearing de fomento de forma inalterable.
+En virtud del carácter tuitivo del presente régimen y de la naturaleza jurídica del contrato de maquila industrial regulado por la extensión de la Ley 25.113, se establece que las materias primas, insumos, avíos y productos semielaborados o terminados que se encuentren físicamente dentro de un taller adherido bajo una e-OP activa, constituyen **activos intangibles de afectación productiva territorial**. Queda taxativamente prohibida su ejecución, secuestro, embargo preventivo o retención judicial por parte de magistrados de la justicia ordinaria ante quiebras, concursos o pasivos comerciales o tributarios de la marca comitente. El derecho al cobro de las e-OP de los talleristas y la regularidad laboral de la dotación gozarán de **privilegio absoluto de primer orden** por sobre cualquier acreedor hipotecario, prendario o fiscal del comitente, garantizando que el eslabón de base territorial perciba su clearing de fomento de forma inalterable.
 
 ### L. De los Responsables Inscriptos Humanos y el Puente de Inclusión Fiscal
 
@@ -487,7 +485,7 @@ Para gozar de los derechos de emisión de e-OP con factoring del FDI, prioridad 
 
 En consonancia con el principio de subordinación de la técnica al hombre establecido en la doctrina nacional, y recogiendo los mandatos de la Encíclica Magnifica Humanitas y el magisterio social de S.S. Francisco, la Inteligencia Artificial (IA) se incorpora al presente régimen no como un factor de descarte laboral o concentración tecnocrática, sino como una herramienta de Planificación Algorética para la Justicia Distributiva. Su objeto es liberar al trabajador de la carga burocrática y equilibrar las asimetrías de información del mercado.
 
-#### 2. Aplicaciones Operativas de la IA de Trinchera
+#### 2. Aplicaciones Operativas de la IA en Planta
 
 La arquitectura digital de la MES Federal integrará modelos de IA de código abierto y auditoría pública bajo las siguientes funciones específicas:
 
@@ -579,5 +577,5 @@ Cuando cada actor hace lo que le es propio y el Estado articula sin invadir, el 
 **Blindaje Logístico Interjurisdiccional de Tránsito** A fin de asegurar la neutralidad en cascada del transporte de insumos hacia el Conurbano Bonaerense y resguardar la fluidez federal de la cadena productiva:
 
 * **Inmunidad de Tránsito de Materia Prima:** Las cargas de cuero, telas e insumos intermedios que circulen por rutas nacionales o provinciales con destino a los nodos de confección adheridos, y que se encuentren respaldadas por el código de registro único de una e-OP activa, gozarán de inmunidad absoluta respecto a tasas de abasto, circulación, pesaje o inspecciones fiscales locales de carácter obstructivo por parte de las jurisdicciones intermedias.  
-* **Subsidio de Combustible Logístico de Trinchera:** El Fondo de Sustentabilidad Central del FDI reconocerá a las unidades de transporte registradas y afectadas a la logística de las e-OP un crédito presunto de compensación sobre el componente de combustibles e hidrocarburos líquidos, financiado mediante la afectación específica de los Derechos de Exportación mineros y energéticos establecida en esta ley, garantizando la perfecta competitividad del costo de flete en el territorio.
+* **Subsidio de Combustible Logístico Territorial:** El Fondo de Sustentabilidad Central del FDI reconocerá a las unidades de transporte registradas y afectadas a la logística de las e-OP un crédito presunto de compensación sobre el componente de combustibles e hidrocarburos líquidos, financiado mediante la afectación específica de los Derechos de Exportación mineros y energéticos establecida en esta ley, garantizando la perfecta competitividad del costo de flete en el territorio.
 

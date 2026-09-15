@@ -80,7 +80,7 @@ El protocolo e-OP sintetiza cinco tradiciones teóricas de la economía, la cien
 * **Economía Social y Solidaria (Coraggio, 2011):**  
   El FDI opera bajo el principio de subordinación del capital a la producción real: el inversor no persigue renta especulativa sino una participación en la producción del territorio. La rentabilidad del fondo está vinculada al volumen de trabajo generado por la cadena, alineando los intereses del capital con los del tallerista.
 
-**Relación con sistemas previos:** El protocolo se diferencia de soluciones blockchain empresariales (Hyperledger Fabric) en que no requiere consenso distribuido entre nodos —su modelo de confianza es institucional, no computacional— y de la Factura de Crédito Electrónica (Ley 27.440) en que el hecho generador del colateral es el *registro de la orden productiva*, no la entrega del bien terminado. La trazabilidad de materiales a nivel de componente se alinea con estándares GS1 EPCIS (ISO/IEC 19987), aunque el sistema no implementa dicho protocolo en su versión actual (ver §9.1 Limitaciones).[^2]
+**Relación con sistemas previos:** El protocolo se diferencia de soluciones blockchain públicas y sistemas de contratos inteligentes descentralizados (Szabo, 1997; Buterin, 2014) en que no requiere cómputo distribuido no permisionado ni máquinas virtuales en cadena: su modelo de ejecución y custodia descansa en **auditoría criptográfica con anclaje institucional**, donde la autoridad de registro es colegiada y paritaria (la MES junto a ARCA e INTI). Asimismo, mientras que los esquemas fundacionales de consenso descentralizado consumen recursos en pruebas computacionales abstractas (Proof-of-Work; Nakamoto, 2008), el presente protocolo orienta la verificación a la física tangible del taller mediante la Prueba de Trabajo Productivo (PoPW; ver nota [^1]). Finalmente, respecto de instrumentos normativos existentes como la Factura de Crédito Electrónica (Ley 27.440), la e-OP innova al situar el hecho generador del colateral en el *registro y avance del proceso fabril*, y no en la entrega final del bien terminado. La trazabilidad de materiales a nivel de componente se alinea conceptualmente con estándares GS1 EPCIS (ISO/IEC 19987), aunque el sistema no implementa dicho protocolo en su versión actual (ver §9.1 Limitaciones).[^2]
 
 > **Nota sobre el régimen de maquila vigente:** La Ley 25.113 rige actualmente de forma exclusiva para el sector agropecuario. La manufacturera no agropecuaria (façón de calzado e indumentaria) carece de ley específica y se ampara en los Arts. 1251 y 1356 del CCCN. El presente protocolo opera bajo ese marco vigente y propone la reforma de la Ley 25.113 para extender la figura de Maquila Industrial a la manufactura, otorgando rango legal explícito a la inembargabilidad de insumos en el taller.
 
@@ -196,7 +196,8 @@ stateDiagram-v2
         ESCROW_PARTIAL_RELEASE --> ETAPA_EJECUCION: Próximo tramo
     }
     
-    IN_PROCESS --> SETTLED: Retorno Terminado + Conformidad Calidad
+    IN_PROCESS --> FISCAL_PENDING: Retorno Terminado + Conformidad Calidad
+    FISCAL_PENDING --> SETTLED: Validación Comprobante ARCA + Liquidación Final (20%)
     IN_PROCESS --> DISPUTED: Alerta Tutela Sindical / Cuello de Botella
     
     DISPUTED --> ARBITRATION: Tribunal de Arbitraje (72h)
@@ -205,7 +206,7 @@ stateDiagram-v2
     SETTLED --> [*]
 ```
 
-> **Figura 3.** *Máquina de estados finita determinista (FSM) que regula el ciclo de vida del colateral productivo y la liberación de hitos en Escrow.* El ciclo transita desde la creación del borrador hasta la liquidación total o resolución de disputas. Un mecanismo crítico es la transición `HITO0_UNLOCKED`, regulada por el *Timelock* de 48 horas (Silencio Administrativo Positivo): si la autoridad no veta la operación, el algoritmo libera automáticamente el anticipo del 30-40%. Durante la ejecución física, el avance de etapa a etapa exige la auditoría mediante Prueba de Trabajo Productivo (PoPW) para desarmar el colateral escalonadamente, evitando parálisis y sobrepagos.
+> **Figura 3.** *Máquina de estados finita determinista (FSM) que regula el ciclo de vida del colateral productivo y la liberación de hitos en Escrow.* El ciclo transita desde la creación del borrador hasta la liquidación total o resolución de disputas. Un mecanismo crítico es la transición `HITO0_UNLOCKED`, regulada por el *Timelock* de 48 horas (Silencio Administrativo Positivo): si la autoridad no veta la operación, el algoritmo libera automáticamente el anticipo del 30-40%. Durante la ejecución física, el avance de etapa a etapa exige la auditoría mediante Prueba de Trabajo Productivo (PoPW) para desarmar el colateral escalonadamente. Tras la entrega física, el estado `FISCAL_PENDING` retiene el tramo final del 20% hasta la constatación del comprobante electrónico en ARCA, protegiendo el crédito fiscal presunto de la marca.
 ### 4.1. Formalización Matemática del Silencio Administrativo Positivo (Timelock)
 
 Para neutralizar la parálisis por captura burocrática, la función de transición de estado hacia el desembolso del **Hito Cero** ($\mathcal{H}_0$) se modela como un contrato de bloqueo temporal (Andrychowicz et al., 2014):
@@ -222,7 +223,7 @@ Donde $\mathcal{V}_{\text{Comisión}}$ representa la emisión formal de un dicta
 
 > **Seguridad del mecanismo:** Un ataque de denegación de servicio (DoS) contra el sistema de notificaciones de la Comisión podría causar aprobaciones no deseadas por silencio positivo. La mitigación implementada es doble: (a) el sistema requiere confirmación de recepción de la notificación por parte de al menos 3 de los 7 miembros; (b) existe un canal de veto de emergencia disponible 24/7 que no depende del sistema de notificaciones ordinario.
 
-### 4.2. Prueba de Trabajo Productivo (PoPW)
+### 4.2. Prueba de Trabajo Productivo (PoPW) y Mitigación de Defección Material
 
 A diferencia de los protocolos de consenso computacional (PoW) que consumen energía en cálculos abstractos, la **Prueba de Trabajo Productivo (PoPW)** vincula el flujo informático a la física de la manufactura. Para transicionar de `IN_PROCESS` a `ESCROW_PARTIAL_RELEASE`, el taller genera una prueba $\pi_{\text{PoPW}}$ que combina:
 
@@ -231,7 +232,18 @@ A diferencia de los protocolos de consenso computacional (PoW) que consumen ener
 3. Validación biométrica facial del titular mediante interoperabilidad con RENAPER.
 4. Firma digital o ausencia de veto técnico de la Comisión de Homologación (INTI/Sindicato) en un plazo no mayor a 24 horas hábiles.
 
-> **Limitación conocida — GPS spoofing:** La coordenada GPS puede ser falsificada mediante aplicaciones de spoofing en dispositivos Android. La mitigación de primera línea es el cruce contra el domicilio catastral registrado; la de segunda línea es la **inspección física del Promotor Territorial (PTF)** como capa de verificación obligatoria cuando la coordenada reportada difiere en más de 500m del domicilio catastral o cuando el sistema detecta patrones anómalos (ver §4.3). La inspección física es, en última instancia, la fuente de verdad irrefutable.
+**Blindaje contra vectores de fraude en planta:**
+
+* **Binding Biométrico Anti-Sybil (Neutralización de Identidades Baratas):**  
+  En el sector informal es común el uso recurrente de CUITs prestados de terceros para eludir controles impositivos (§1.3). Si las sanciones recayeran únicamente sobre el CUIT, un infractor podría incurrir en fraude, abandonar la clave fiscal (*burn identity*) y reingresar con una identidad prestada. El protocolo neutraliza este ataque atando la prueba $\pi_{\text{PoPW}}$ a la **identidad biológica irreemplazable del titular/artesano** mediante cotejo facial en RENAPER. Toda sanción o exclusión queda indexada al vector biométrico de la persona física; cualquier intento de dar de alta una nueva razón social o CUIT con la misma firma biométrica dispara una alerta de reincidencia e inhabilita los adelantos del FDI.
+
+* **Despacho Escalonado de Insumos (Mitigación del *Exit Scam*):**  
+  Si la marca comitente remitiera el 100% de la materia prima al inicio junto al desembolso del 35% del Hito Cero, un tallerista defector podría apropiarse de ambos activos antes de la primera auditoría. Para mitigar esta asimetría, el protocolo establece el **Despacho Escalonado Just-in-Time**: al desbloquearse el Hito Cero solo se despachan los insumos de la primera fase (corte de cuero); las bases, forros y avíos correspondientes al aparado y armado se remiten únicamente contra la certificación $\pi_{\text{PoPW}}$ del corte completado. De este modo, la exposición neta combinada en todo momento está acotada al valor residual del lote en curso.
+
+* **Retención de Cierre Fiscal (`FISCAL_PENDING`):**  
+  Para proteger el incentivo impositivo de la marca (cómputo del Crédito Fiscal Presunto del 25% y deducción de Ganancias), el último tramo de Escrow (20%) y la adjudicación de puntos UCP no se liberan tras la mera entrega física, sino al transicionar por `FISCAL_PENDING`. En esta etapa, el sistema verifica por API con ARCA que el taller haya emitido la factura oficial (Monotributo Productivo o régimen general). Si la registración fiscal se demora, el saldo permanece retenido en la cuenta de custodia sin devengar mora comercial.
+
+> **Limitación conocida — Oráculo Físico y GPS Spoofing:** La coordenada GPS puede ser falsificada mediante software en terminales móviles. La mitigación de primera línea es el cruce contra el domicilio catastral registrado; la de segunda línea es la **inspección física del Promotor Territorial (PTF)** como capa de verificación obligatoria cuando la coordenada reportada difiere en más de 500m del domicilio catastral o cuando el sistema detecta patrones anómalos (ver §4.3). La inspección física y el pesaje aleatorio de retazos de cuero por el INTI constituyen la última instancia de verdad física del sistema.
 
 ### 4.3. Mecanismo de Detección Anti-Colusión (Fragmentación Artificial)
 
@@ -300,20 +312,20 @@ Donde:
 
 ### 5.2. Proposición 1 — Esbozo de Solvencia del Fondo
 
-> **Nota metodológica:** Lo que sigue es una **proposición con esbozo de demostración**, no un teorema en sentido matemático riguroso. La demostración formal requiere el análisis de estabilidad de la EDE anterior, incluyendo condiciones de Lyapunov, que excede el alcance de este position paper y constituye una línea de trabajo futuro (§9.1).
+> **Nota metodológica:** Lo que sigue es una **proposición con esbozo de demostración**, no un teorema en sentido matemático riguroso. La demostración formal requiere el análisis de estabilidad del sistema dinámico de la EDO anterior (ecuación diferencial ordinaria), incluyendo condiciones de Lyapunov, que excede el alcance de este position paper y constituye una línea de trabajo futuro (§9.1). Asimismo, los valores paramétricos adoptados ($K=3$, $\tau=30$ días, $\mu_{\text{mora}} \le 0.08$) representan estimaciones de diseño iniciales que deberán ser calibradas empíricamente durante el piloto territorial.
 
 **Proposición 1 (Condición Suficiente de No-Iliquidez):**  
-*Sea un fondo con capital base $C_0$, ratio de apalancamiento $K=3$, plazo medio de rotación de cartera $\tau = 30$ días, y tasa de pérdida de primer piso por contingencias de taller $\delta$. Bajo las hipótesis (H1) $\delta \le 0.08$ y (H2) la tasa de recapitalización exógena satisface:*
+*Sea un fondo con capital base $C_0$, ratio de apalancamiento $K=3$, plazo medio de rotación de cartera $\tau = 30$ días, y tasa de pérdida de primer piso por contingencias de taller $\mu_{\text{mora}}$. Bajo las hipótesis (H1) $\mu_{\text{mora}} \le 0.08$ y (H2) la tasa de recapitalización exógena satisface:*
 
-$$\phi_{\text{exógena}} \ge \delta \cdot K \cdot \Omega_{\text{total}}$$
+$$\phi_{\text{exógena}} \ge \mu_{\text{mora}} \cdot K \cdot \Omega_{\text{total}}$$
 
 *el fondo mantiene solvencia operativa.*
 
 **Justificación de las hipótesis:**
-- **(H1) $\delta \le 0.08$:** El Fondo de Garantía para la Micro, Pequeña y Mediana Empresa (FOGAPYME) de Argentina registró una tasa de mora promedio inferior al 5% anual en el período 2019-2023 (SEPYME, 2023). El umbral de 8% incorpora un margen de seguridad del 60% sobre ese referente histórico para contextos de crisis.
+- **(H1) $\mu_{\text{mora}} \le 0.08$:** El Fondo de Garantía para la Micro, Pequeña y Mediana Empresa (FOGAPYME) de Argentina registró una tasa de mora promedio inferior al 5% anual en el período 2019-2023 (SEPYME, 2023). El umbral de 8% incorpora un margen de seguridad del 60% sobre ese referente histórico para contextos de crisis.
 - **(H2) Ciclo de 30 días:** Consistente con el ciclo de temporada del sector calzado (tiempo medio entre despacho de insumos y cobro de venta minorista), parámetro de diseño del protocolo coherente con el comportamiento sectorial documentado (INDEC, 2026).[^3]
 
-**Esbozo:** Dado que el Hito Cero desembolsa solo el $35\%$ del presupuesto del servicio y el $65\%$ restante permanece bloqueado en Escrow condicionado a entregas físicas, la exposición bruta al riesgo no diversificable está acotada superiormente a $\omega_{\text{riesgo}} \le 0.35 \cdot \mathcal{P}$. Ante una parálisis total del taller, el mecanismo de *Fragmentación Solidaria* reasigna el remanente de materiales a un taller lindero con capacidad ociosa, limitando la pérdida neta al valor del anticipo inicial. Con un rendimiento de canon de marca del $2\%$ y una inyección contracíclica del \$0.5\%$ de derechos exportadores —ambos **supuestos de diseño de la propuesta normativa del proyecto**, no cifras observadas; véase §3.2 y nota [^2]— la tasa de reposición supera el límite crítico $\delta = 0.08$. Las hipótesis (H1) y (H2) que condicionan la validez de la Proposición sí se apoyan en fuentes externas (SEPYME, 2023; INDEC, 2026). $\square$ *(esbozo)*
+**Esbozo:** Dado que el Hito Cero desembolsa solo el $35\%$ del presupuesto del servicio y el $65\%$ restante permanece bloqueado en Escrow condicionado a entregas físicas, la exposición líquida directa al riesgo no diversificable está acotada superiormente a $\omega_{\text{riesgo}} \le 0.35 \cdot \mathcal{P}$, mientras que el riesgo sobre insumos físicos queda acotado por el despacho escalonado (§4.2). Ante una parálisis total del taller, el mecanismo de *Fragmentación Solidaria* reasigna el remanente de materiales a un taller lindero con capacidad ociosa, limitando la pérdida neta al valor del anticipo inicial. Con un rendimiento de canon de marca del $2\%$ y una inyección contracíclica del $0.5\%$ de derechos exportadores —ambos **supuestos de diseño de la propuesta normativa del proyecto**, no cifras observadas; véase §3.2 y nota [^2]— la tasa de reposición supera el límite crítico $\mu_{\text{mora}} = 0.08$. Las hipótesis (H1) y (H2) que condicionan la validez de la Proposición sí se apoyan en fuentes externas (SEPYME, 2023; INDEC, 2026). $\square$ *(esbozo)*
 
 ### 5.3. Neutralización de Descalce Inflacionario (Unidad de Cuenta Industrial)
 
@@ -358,16 +370,16 @@ graph TD
 > **Figura 5.** *Árbol de decisiones y matriz de incentivos estratégicos en el juego repetido entre la Marca Comitente y el Tallerista.* Este modelo teórico formaliza los incentivos para sostener la cooperación a largo plazo, demostrando por qué la colusión o defección patronal deja de ser rentable. Si la Marca defecta (ej: reteniendo pagos indebidamente), se expone al sistema automático de *Slashing* (quita de Unidades de Crédito Productivo) y eventual ejecución de la fianza. Si el Taller defecta (ej: desvío de insumos), sufre la retención punitiva sobre órdenes futuras y la suspensión de prioridad territorial en la Bolsa de Trabajo. Bajo el diseño del FIMCA, el juego converge hacia un Equilibrio de Nash Cooperativo.
 ### 6.2. Mecanismo de Slashing y Secuencia de Penalizaciones
 
-En el régimen tradicional informal, la defección patronal ($D_M$) era frecuente porque el costo de litigar para el tallerista era prohibitivo. En el **Protocolo e-OP**, las penalizaciones operan en dos velocidades:
+En el régimen tradicional informal, la defección patronal ($D_M$) era frecuente porque el costo de litigar para el tallerista era prohibitivo. A su vez, la defección del taller ($D_T$, por apropiación de insumos o mora deliberada) quedaba impune al no existir colateral ejecutable ni barreras a la sustitución de identidades. En el **Protocolo e-OP**, las penalizaciones y defensas operan en dos velocidades:
 
-**Slashing inmediato (algorítmico, sin arbitraje):**
-- Quita inmediata de hasta el $50\%$ de las Unidades de Crédito Productivo (UCP) de la marca defectora.
-- Congelamiento preventivo del último tramo de escrow (20%) durante 48h para el tallerista defector.
+**Slashing inmediato y defensas algorítmicas (sin arbitraje previo):**
+- **Marca defectora:** Quita inmediata de hasta el $50\%$ de las Unidades de Crédito Productivo (UCP) y suspensión automática para emitir nuevas e-OPs financiadas en la Bolsa de Trabajo.
+- **Taller defector:** Congelamiento preventivo del último tramo de Escrow (20%) y bloqueo de asignaciones en la Bolsa de Trabajo. El **despacho escalonado Just-in-Time** (§4.2) acota ex-ante el botín material de la defección ($g_T$), mientras que el **binding biométrico** ante RENAPER indexa la penalización a la persona física del artesano, neutralizando la evasión punitiva mediante CUITs prestados.
 
-**Penalizaciones post-laudo (tras resolución del Tribunal de Arbitraje en 72h hábiles):**
+**Penalizaciones post-laudo (tras resolución del Tribunal Arbitral en 72h hábiles):**
 - Ejecución de la **Cláusula de Garantía Líquida por Continuidad Operativa**. **Nota de diseño:** Al no existir un depósito previo de capital inmovilizado, si la marca comitente entra en disputa y pretende retirar su stock del taller para no perder la temporada comercial, está obligada a depositar en el FDI el $100\%$ del monto reclamado como fianza de urgencia. La ejecución post-laudo recae sobre este depósito ad-hoc, sumado al bloqueo de fondeo para futuras e-OPs.
-- Retención automática del $30\%$ sobre flujos futuros del taller hasta resarcir el daño. La asimetría punitiva (exigencia de depósito en efectivo a la marca para liberar stock vs. descuento de ingresos futuros al taller) balancea la asimetría patrimonial intrínseca.
-- Publicación de la infracción en el Boletín Oficial Sectorial.
+- Retención automática del $30\%$ sobre flujos futuros del taller hasta resarcir el daño patrimonial. La asimetría punitiva (exigencia de depósito en efectivo a la marca para liberar stock vs. descuento de ingresos futuros al taller) balancea la asimetría patrimonial intrínseca entre ambos actores.
+- Publicación de la infracción en el Boletín Oficial Sectorial y degradación del score solidario.
 
 Esta secuencia resuelve la aparente contradicción entre la ejecución "inmediata" y el proceso de arbitraje: el slashing de reputación (UCP) es instantáneo, mientras la ejecución patrimonial requiere el debido proceso del Tribunal.
 
@@ -376,18 +388,36 @@ Esta secuencia resuelve la aparente contradicción entre la ejecución "inmediat
 **Proposición 2 (Equilibrio de Nash Perfecto en Subjuegos bajo Grim Trigger):**  
 *En el juego repetido bajo el Protocolo e-OP, el perfil de estrategias $(\text{Cooperar}, \text{Cooperar})$ constituye un **Equilibrio de Nash Perfecto en Subjuegos (SPE)** sustentado por una estrategia de gatillo implacable (Grim Trigger; Friedman, 1971), para todo factor de descuento $\delta > \delta^*$.*
 
-*Derivación del umbral $\delta^*$:*  
-Para la marca comitente, el valor presente de cooperar es:
+*Derivación analítica del umbral $\delta^*$:*  
+Para la marca comitente, el valor presente descontado de cooperar indefinidamente es:
 $$V_M(C) = \frac{\pi_M + \beta \cdot \text{UCP}}{1 - \delta}$$
 
-El valor de defectar en un período y recibir exclusión perpetua es:
+El valor presente de defectar en el período corriente y ser expulsada a perpetuidad hacia el mercado informal es:
 $$V_M(D) = \pi_M + g_M + \frac{\delta \cdot \pi_{\text{Informal}}}{1 - \delta}$$
 
-La condición $V_M(C) \ge V_M(D)$ despejada en $\delta$ da:
+Donde $g_M$ representa la ganancia unilateral de corto plazo (retención indebida de pagos) y $\beta \cdot \text{UCP}$ el flujo periódico de beneficios derivados del Régimen FIMCA (prioridad de asignación, deducción impositiva y exenciones arancelarias).
 
-$$\delta^* = \frac{g_M - \beta \cdot \text{UCP}}{(\pi_M + \beta \cdot \text{UCP}) - \pi_{\text{Informal}}}$$
+La condición de no-defección $V_M(C) \ge V_M(D)$ se expresa como:
+$$\frac{\pi_M + \beta \cdot \text{UCP}}{1 - \delta} \ge \pi_M + g_M + \frac{\delta \cdot \pi_{\text{Informal}}}{1 - \delta}$$
 
-Dado que los beneficios del Régimen FIMCA ($\beta \cdot \text{UCP}$, que incluye arancel cero, exención de IIBB y prioridad aduanera) son sistemáticamente mayores que la ganancia unilateral $g_M$ (el saldo retenido de una sola orden), y el mercado informal ofrece $\pi_{\text{Informal}} < \pi_M$ por los sobrecostos impositivos de no deducibilidad, el numerador es negativo o cercano a cero, lo que implica $\delta^* \approx 0.35$–$0.40$ para parámetros típicos del sector.
+Multiplicando ambos miembros por $(1 - \delta) > 0$ y agrupando términos:
+$$\pi_M + \beta \cdot \text{UCP} \ge (\pi_M + g_M)(1 - \delta) + \delta \cdot \pi_{\text{Informal}}$$
+$$\beta \cdot \text{UCP} - g_M \ge -\delta (\pi_M + g_M - \pi_{\text{Informal}})$$
+$$\delta (\pi_M + g_M - \pi_{\text{Informal}}) \ge g_M - \beta \cdot \text{UCP}$$
+
+Despejando el factor de descuento crítico:
+$$\delta^* = \frac{g_M - \beta \cdot \text{UCP}}{\pi_M + g_M - \pi_{\text{Informal}}}$$
+
+**Interpretación económica:**  
+1. Para que la interacción plantee un dilema estratégico real en el período corriente, la tentación de captura inmediata debe ser mayor al beneficio cooperativo de un único período ($g_M > \beta \cdot \text{UCP}$), asegurando que el numerador sea estrictamente positivo ($g_M - \beta \cdot \text{UCP} > 0$).  
+2. No obstante, en el mediano plazo el mercado informal acarrea severos sobrecostos por falta de crédito fiscal e imposibilidad de deducir mano de obra ($\pi_{\text{Informal}} < \pi_M$), sumados a la pérdida perpetua de los beneficios del fondo. Por lo tanto, el denominador satisface $(\pi_M + g_M - \pi_{\text{Informal}}) > (g_M - \beta \cdot \text{UCP})$.  
+3. Esto garantiza que el umbral crítico caiga en el intervalo interior:
+$$0 < \delta^* < 1 \quad (\text{típicamente } \delta^* \approx 0.35\text{–}0.40 \text{ para parámetros fabriles})$$
+
+Para cualquier actor con una tasa de descuento temporal intersubjetiva estándar ($\delta > 0.40$), la cooperación sostenida $(\text{Cooperar}, \text{Cooperar})$ es estrictamente dominante.
+
+*Análisis simétrico para el Tallerista:*  
+Un planteo idéntico rige para el tallerista respecto a la tentación de desviar insumos ($g_T$). Dado que el despacho escalonado de insumos (§4.2) comprime fuertemente el valor de $g_T$ por hito y el binding biométrico cierra la puerta a la dilución del castigo mediante CUITs sucesivos, el umbral de cooperación del tallerista satisface $\delta_T^* \le 0.30$, induciendo un equilibrio cooperativo bilateral robusto.
 
 **Análisis de robustez:** Esta condición puede no cumplirse durante shocks macroeconómicos severos (devaluaciones que colapsen $\pi_{\text{Informal}}$ hacia cero) o en actores con costo de exclusión del sistema cercano a cero (informales plenos que no participan del Régimen FIMCA). El protocolo mitiga estos escenarios mediante: (a) la indexación UCI-IPIM que preserva el valor real de los beneficios; (b) la cláusula de entrada gradual que requiere integrar reserva al FDI para acceder al régimen, elevando el costo de abandono.
 
@@ -406,9 +436,9 @@ La **Mesa de Enlace Sectorial (MES)** materializa los ocho principios de diseño
 | **3. Mecanismos de elección colectiva** | Estructura paritaria de 7 sillas con voto directo; quórum de 5 miembros; mayoría simple (4 votos); mayoría agravada de 5 con concurrencia obligatoria de al menos un representante del Nodo Productivo para materias reservadas. | Sesiones plenarias registradas; votos digitales con firma. |
 | **4. Monitoreo y rendición de cuentas** | Los monitores son los propios pares: el Promotor Territorial (PTF), el delegado sindical y el perito del INTI. | Boletín Oficial Sectorial semanal con balance transparente del FDI y cartera de e-OPs activas. |
 | **5. Sanciones graduadas** | Escala: (1) Apercibimiento digital; (2) Quita de puntos UCP; (3) Congelamiento de giro de stock; (4) Exclusión definitiva. | Mecanismo de slashing inmediato para sanciones leves; laudo del Tribunal para sanciones patrimoniales. |
-| **6. Mecanismos rápidos de resolución de conflictos** | Tribunal de Arbitraje de Trinchera con laudo perentorio en 72 horas hábiles; arbitraje como condición previa a la vía judicial ordinaria. | Integrado por perito INTI (presidencia) y 2 vocales sorteados del padrón ajenos al conflicto. |
+| **6. Mecanismos rápidos de resolución de conflictos** | Tribunal Arbitral Territorial con laudo perentorio en 72 horas hábiles; arbitraje como condición previa a la vía judicial ordinaria. | Integrado por perito INTI (presidencia) y 2 vocales sorteados del padrón ajenos al conflicto. |
 | **7. Reconocimiento de derechos de organización** | Facultades públicas delegadas por la Ley de Salvataje Nacional; habilitación simplificada de oficio municipal en 48 horas hábiles. | Silencio positivo administrativo municipal tras 48h sin objeción fundada. |
-| **8. Empresas anidadas (Niveles múltiples)** | MES Municipal (operativa de trinchera) anidada en el Consejo Superior de la MES Federal (macroestrategia, tablas marco y tribunal de alzada). | El nodo local puede elevar cualquier causa al Consejo Federal; las RGF federales prevalecen sobre las RGL locales. |
+| **8. Empresas anidadas (Niveles múltiples)** | MES Municipal (operativa territorial) anidada en el Consejo Superior de la MES Federal (macroestrategia, tablas marco y tribunal de alzada). | El nodo local puede elevar cualquier causa al Consejo Federal; las RGF federales prevalecen sobre las RGL locales. |
 
 ---
 
@@ -471,6 +501,9 @@ graph TD
 | DoS contra notificadores de la Comisión | Silencio positivo no deseado (aprobación por omisión) | Confirmación de recepción por ≥ 3/7 miembros + canal de veto de emergencia 24/7 |
 | Captura política de la Comisión de Crédito | Favoritismo en aprobación de e-OPs | Incompatibilidad absoluta por interés, parentesco o vínculo societario; registro público de votos |
 | Falsificación de hito productivo | Cobro anticipado sin trabajo real | Inspección física del Comité de Homologación (INTI/Sindicato) en 24h como requisito de liberación |
+| Exit Scam del Taller (Robo de insumos + Hito Cero) | Apropiación del anticipo líquido y desvío de materias primas despachadas. | Despacho Escalonado Just-in-Time (por etapas de corte, aparado y armado); hard-cap de 2 SMVM en fase de tutela; reasignación de lote por Fragmentación Solidaria. |
+| Ataque de Identidad Barata (Sybil con CUIT prestado) | Quema de CUIT infractor para reingresar al régimen eludiendo sanciones de reputación. | Binding Biométrico Facial obligatorio (RENAPER) atado a la persona física del titular/artesano. Toda sanción inhabilita reingresos bajo razones sociales o CUITs interpuestos. |
+| Defección Fiscal (Omisión de facturación ARCA) | Cobro del servicio sin emisión de comprobante oficial, frustrando la deducción impositiva de la marca. | Estado `FISCAL_PENDING`: retención estanca del tramo final (20%) en Escrow y congelamiento de UCP hasta la constatación automática de la factura electrónica en ARCA. |
 
 ### 8.3. Estimación de Escalabilidad
 
@@ -505,6 +538,8 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 5. **Conectividad:** El sistema en su estado actual requiere conectividad a internet para la validación biométrica (RENAPER) y el clearing bancario (Banco Provincia). En zonas de baja cobertura, se requiere un modo offline con sincronización diferida, pendiente de implementación.
 
 6. **Escalabilidad y gobernanza a nivel federal:** La Proposición 1 analiza la solvencia de un solo nodo FDI. A su vez, la estructura federal de dos niveles descripta en el Principio 8 de Ostrom (§7) no está reflejada aún en la arquitectura de software `apps.mes`; el piloto de Fase 1 opera exclusivamente en el nivel municipal (San Martín/La Matanza), y la implementación del Consejo Superior Federal —incluyendo el modelo de datos para apelaciones inter-distrito y la jerarquía normativa RGF/RGL, así como el análisis de solvencia multi-nodo con flujos inter-distritos— es trabajo futuro.
+
+7. **Ataques terminales de un solo tiro y oráculo de insumos:** Los mecanismos de reputación y Grim Trigger (§6) presuponen un horizonte infinito, pero son vulnerables a actores oportunistas decididos a ejecutar una defección terminal de un solo tiro (*one-shot exit scam*). Si bien el protocolo acota este riesgo combinando el despacho escalonado de insumos, el hard-cap inicial de 2 SMVM y el binding biométrico contra el reciclaje de identidades, la exposición patrimonial residual depende de la solvencia del fondo de reserva del FDI y de la inspección física in situ. La instrumentación de tecnologías de pesaje continuo o precintado digital IoT constituye un desafío técnico pendiente para automatizar la salvaguarda de insumos físicos.
 
 ---
 

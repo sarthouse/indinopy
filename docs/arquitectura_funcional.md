@@ -19,7 +19,7 @@ Este documento consolida la arquitectura funcional de **Indinopy**, integrando l
 
 Indinopy no es solo un ERP administrativo, sino una plataforma de **gobernanza comunitaria y financiera** para la manufactura de calzado e indumentaria. Su arquitectura está diseñada para resolver tres problemas estructurales:
 1. **Falta de crédito:** Transforma la Orden de Producción (e-OP) en un activo financiero (título de crédito) auditable y ejecutable.
-2. **Burocracia y Extorsión:** Reemplaza la confianza institucional por **confianza matemática** (criptografía y Smart Contracts).
+2. **Burocracia y Discrecionalidad:** Reemplaza el expediente analógico y la discrecionalidad burocrática por **auditoría criptográfica institucional y contratos automatizados de ejecución estanca (Escrow y Timelocks en Celery/PostgreSQL)** tutelados por la gobernanza paritaria de la MES.
 3. **Purgatorio Fiscal:** Conecta APIs de forma invisible para automatizar el alta tributaria (Monotributo Productivo) y retener impuestos solo al momento de la liquidación bancaria, evitando la acumulación de pasivos.
 
 ---
@@ -109,7 +109,7 @@ flowchart TD
             GW["ERP Corporativo (SAP / Tango)<br/><b>REST Gateway mTLS</b><br/>POST /api/v1/headless/e-op/"]
         end
 
-        subgraph TRINCHERA["Fallback de Adopción & Acceso Móvil"]
+        subgraph TERRITORIO["Fallback de Adopción & Acceso Móvil"]
             PT["<b>Portal Web de Tallerista</b><br/>(Alojado en Nodo Marca)"]
             MOB["<b>App Móvil PTF / Tallerista</b><br/>Secure Enclave Ed25519 + GPS"]
         end
@@ -170,19 +170,29 @@ sequenceDiagram
     
     rect rgb(20, 50, 20)
         Note right of Marca: HITO CERO (Financiado por FDI)
-        Marca->>Taller: Despacha Insumos (Remito Maquila)
-        Marca->>MES: Confirma Entrega Materiales
+        Marca->>Taller: Despacha Insumos Fase 1 - Corte (Remito Maquila)
+        Marca->>MES: Confirma Entrega Materiales Fase 1
         FDI->>Banco: Instrucción de Anticipo (30-40%)
         Banco-->>Taller: Transfiere a Cuenta Taller (Principal / Prestador)
     end
     
     rect rgb(20, 50, 50)
-        Note right of Marca: HITOS DE AVANCE (Fast Track PTF)
-        Taller->>MES: Finaliza Lote (Solicita Inspección)
+        Note right of Marca: HITOS DE AVANCE (Fast Track PTF y Despacho Escalonado)
+        Taller->>MES: Finaliza Lote Corte (Solicita Inspección)
         MES->>Taller: Despacha Promotor Territorial (PTF)
         Taller->>MES: PTF Firma Conformidad en Campo (GPS/Biometría)
-        FDI->>Banco: Instrucción de Liquidación (Clearing)
+        Marca->>Taller: Despacha Insumos Fase 2 - Aparado/Armado (Bases/Avíos)
+        FDI->>Banco: Instrucción de Liquidación (Clearing Parcial)
         Banco-->>Taller: Transfiere Hito de Avance
+    end
+
+    rect rgb(50, 40, 20)
+        Note right of Marca: CIERRE FISCAL (Estado FISCAL_PENDING)
+        Taller->>MES: Entrega Producto Terminado
+        MES->>ARCA: Verifica Emisión de Factura Electrónica Oficial
+        ARCA-->>MES: Comprobante CAE Válido
+        FDI->>Banco: Liquidación Final (20% Saldo Escrow)
+        Banco-->>Taller: Acredita Saldo Final + Puntos UCP
     end
     
     rect rgb(20, 40, 60)
@@ -192,7 +202,7 @@ sequenceDiagram
         Banco->>MES: Confirma Liquidación Final
     end
 ```
-*Figura 3: Ciclo de financiamiento productivo. El FDI asume el riesgo crediticio tomando la e-OP como colateral y ordenando al Banco (agente de clearing) el pago del Hito Cero a la cuenta inembargable del tallerista.*
+*Figura 3: Ciclo de financiamiento productivo con despacho escalonado Just-in-Time y cierre fiscal condicionado. El FDI asume el riesgo crediticio tomando la e-OP como colateral, ordenando al Banco el Hito Cero tras verificar la entrega inicial de materiales, y reteniendo el saldo final hasta la constatación electrónica de la factura en ARCA.*
 
 ### C. Fast Track de Aprobación en Campo (El rol del PTF)
 
@@ -213,6 +223,7 @@ flowchart TD
 ### D. El Puente de Formalización (Integración ARCA/AFIP)
 El trabajador periférico entra al sistema de forma invisible:
 *   Al aceptar su primera e-OP (vía App), el sistema llama a **RENAPER (Biometría)** y a **ARCA** para darle el *Alta de Oficio* en el Monotributo Productivo.
+*   **Binding Biométrico Anti-Sybil:** El cotejo facial en RENAPER vincula la persona física del artesano a su historial en el sistema. Si una unidad incurre en desvío doloso de insumos, la inhabilitación se asocia al vector biométrico de la persona, impidiendo el "reciclaje de reputación" mediante CUITs prestados de terceros o familiares.
 *   En paralelo, abre una **cuenta inembargable BAPRO** de <i>Clearing</i>.
 *   **Suspensión Activa:** Si el taller no recibe e-OPs por 15 días, el sistema notifica la inactividad, frenando el devengo de impuestos fijos.
 
@@ -370,7 +381,7 @@ En Nodos Talleristas On-Premise que operan con conectividad intermitente (Pollin
 *   **Alertas (SLAs):** Si la tasa de timeout de los webhooks bancarios supera el umbral crítico, o si la validación del Timelock se atrasa >30 min, se disparan incidentes automatizados al equipo de infraestructura MES.
 
 ### F. Edge Cases de Negocio
-1. **Default del Comitente (Crédito Impago):** Si a los 60 días la marca no le devuelve la plata al FDI, la e-OP entra en `DEFAULT`. El FDI asume la pérdida contable, pero el Smart Contract aplica un **Hard Ban** a la firma criptográfica (CUIT) de la marca en toda la Red Federada hasta saldar la deuda. El Tallerista conserva el 100% de la plata porque ya le fue liquidada.
+1. **Default del Comitente (Crédito Impago):** Si a los 60 días la marca no le devuelve la plata al FDI, la e-OP entra en `DEFAULT`. El FDI asume la pérdida contable, pero el motor de gobernanza aplica un **Hard Ban** institucional y criptográfico a la clave y CUIT de la marca en toda la Red Federada hasta saldar la deuda. El Tallerista conserva el 100% de la plata porque ya le fue liquidada.
 2. **Cancelación Parcial (Fuerza Mayor):** Si se incendia el taller o hay faltantes a mitad del lote, el sistema emite una enmienda ("Addenda e-OP"). Recalcula los hitos (ej: paga el 50% de los pares salvados) y devuelve la garantía sobrante retenida en custodia a la cuenta del FDI.
 
 ---
@@ -475,7 +486,7 @@ El ciclo de desarrollo en Indinopy obliga a pasar por un pipeline estricto (ej. 
 
 ## 13. Workflows de Denuncias, Vetos y Resolución Arbitral
 
-La red federada asume que los conflictos son inevitables. Para evitar la parálisis judicial tradicional, Indinopy implementa *Smart Contracts* de resolución de disputas directamente sobre el Escrow.
+La red federada asume que los conflictos son inevitables. Para evitar la parálisis judicial tradicional, Indinopy implementa contratos de ejecución automatizada y resolución arbitral directamente sobre el Escrow.
 
 ### A. Canal de Denuncias y Tribunal de Arbitraje
 Cuando ocurre un diferendo de calidad o faltante de materiales entre el Comitente y el Tallerista, el sistema ejecuta esta máquina de estados:

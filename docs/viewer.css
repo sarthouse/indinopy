@@ -1,4 +1,4 @@
-﻿:root {
+:root {
             --bg-body: #0a0e17;
             --bg-card: #111827;
             --border-color: #1f2937;
@@ -336,7 +336,7 @@
             width: 100%;
             height: auto;
             min-height: 200px;
-            overflow: auto;
+            overflow: hidden;
             display: block;
             text-align: center;
             background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
@@ -344,6 +344,9 @@
             padding: 20px;
             box-sizing: border-box;
             cursor: grab;
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         /* Fuerza al contenedor interno de Mermaid a expandirse */
@@ -540,4 +543,38 @@
             background: #10b981;
             color: #fff;
             border-color: #059669;
+        }
+
+        /* SOPORTE MÓVIL Y TOUCH PARA DIAGRAMAS MERMAID */
+        @media (max-width: 768px) {
+            .mermaid-header {
+                padding: 10px 12px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .mermaid-title {
+                font-size: 11px;
+                font-weight: 600;
+            }
+            .mermaid-controls {
+                gap: 8px;
+            }
+            .m-btn {
+                padding: 6px 10px;
+                min-width: 36px;
+                min-height: 36px;
+                font-size: 14px;
+                border-radius: 6px;
+            }
+            .mermaid-viewport {
+                padding: 16px 8px;
+                min-height: 220px;
+            }
+            .mermaid-wrapper.fullscreen {
+                position: fixed;
+                z-index: 10000;
+            }
+            .mermaid-wrapper.fullscreen .mermaid-viewport {
+                height: calc(100vh - 52px);
+            }
         }
