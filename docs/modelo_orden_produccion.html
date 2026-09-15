@@ -182,31 +182,11 @@
         }
 
         .meta-numbers {
-            font-size: 11px;
+            font-size: 10px;
+            line-height: 1.35;
             color: #2d3748;
+            text-align: right;
         }
-
-        /* PROTOCOLO CRIPTOGRÁFICO Y GOBERNANZA */
-        .protocol-box {
-            background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--secondary-color);
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            display: grid;
-            grid-template-columns: 1.4fr 1.1fr 1fr;
-            gap: 12px;
-            font-size: 10.5px;
-        }
-
-        .protocol-item strong {
-            color: var(--primary-color);
-            display: block;
-            font-size: 9px;
-            text-transform: uppercase;
-            margin-bottom: 2px;
-        }
-
         .mono-text {
             font-family: 'Courier New', Courier, monospace;
             font-size: 9.5px;
@@ -623,64 +603,94 @@
                 <div class="op-badges">
                     <span class="badge badge-credito">Título de Crédito Fiduciario</span>
                     <span class="badge badge-mes">Homologada MES</span>
-                    <span class="badge badge-inembargable">Insumos Inembargables</span>
+                    <span class="badge badge-inembargable">Insumos en Custodia</span>
                 </div>
                 <div class="meta-numbers">
                     <strong>e-OP N°:</strong> OP-2026-00842<br>
-                    <strong>Emisión:</strong> 09/09/2026 09:30 hs<br>
-                    <strong>Venc. Timelock 48h:</strong> 11/09/2026 14:00 hs
+                    <strong>UUID:</strong> <span class="mono-text">e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</span><br>
+                    <strong>Merkle BOM:</strong> <span class="mono-text">0x7f83b165...200126d</span><br>
+                    <strong>Emisión:</strong> 09/09/2026 09:30 hs · <strong>Timelock:</strong> 48h Silencio Positivo
                 </div>
             </div>
         </div>
 
-        <!-- PROTOCOLO CRIPTOGRÁFICO Y GOBERNANZA -->
-        <div class="protocol-box">
-            <div class="protocol-item">
-                <strong>Primitiva Criptográfica e-OP</strong>
-                <span><strong>UUID:</strong> <span
-                        class="mono-text">e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</span></span><br>
-                <span><strong>Merkle Root BOM:</strong> <span
-                        class="mono-text">0x7f83b1657ff1fc53b92dc18148a1d65d...200126d</span></span><br>
-                <span><strong>Contrato Timelock:</strong> 48h Silencio Positivo (Art. 4.1)</span>
-            </div>
-            <div class="protocol-item">
-                <strong>Régimen Jurídico y Afectación</strong>
-                <span>Locación de Obra / Trabajo a Facón (Arts. 1251 y ss. CCCN)</span><br>
-                <span>Provisión de Insumos por Comitente (Art. 1262 CCCN)</span><br>
-                <span>Depósito Regular e Inembargabilidad (Arts. 1356 y 1358 CCCN)</span>
-            </div>
-            <div class="protocol-item">
-                <strong>Gobernanza Territorial MES</strong>
-                <span><strong>Nodo:</strong> Conurbano Sur (Lanús / Lomas)</span><br>
-                <span><strong>PTF Asignado:</strong> Juan M. Pereyra (Leg. 042)</span><br>
-                <span><strong>Estado:</strong> Adelanto Liquidado (Fast-Track 40%)</span>
-            </div>
-        </div>
-
-        <!-- 1. PARTES INTERVINIENTES -->
+        <!-- 1. PARTES INTERVINIENTES Y RED PRODUCTIVA TERRITORIAL -->
         <div class="section-title">
-            <span>1. Partes Intervinientes y Radicación Territorial</span>
-            <span class="tag">Bolsa de Trabajo Sectorial · Padrón Verificado</span>
+            <span>1. Partes Intervinientes y Red Productiva Territorial</span>
+            <span class="tag">Bolsa de Trabajo Sectorial · Padrón Verificado MES</span>
         </div>
         <div class="grid-2col">
             <div class="card-info">
-                <h4>Marca Comitente (Titular de Insumos y Fondeo de Escrow)</h4>
+                <h4>Marca Comitente (Titular de Insumos en Custodia)</h4>
                 <p><strong>Razón Social:</strong> Borcegos Cruz del Sur S.R.L.</p>
                 <p><strong>CUIT:</strong> 30-71589412-8 (Padrón Homologado MES RIGI-COM-0184)</p>
-                <p><strong>Beneficiario Final (UBO):</strong> Marcelo Daniel Benítez — DNI 23.419.882 (Verificado
-                    RENAPER)</p>
+                <p><strong>Beneficiario Final (UBO):</strong> Marcelo Daniel Benítez — DNI 23.419.882 (Verificado RENAPER)</p>
                 <p><strong>Planta y Domicilio:</strong> Av. Hipólito Yrigoyen 4150, Lanús Oeste, PBA</p>
-                <p><strong>Cuenta Custodia FDI:</strong> CBU 0140098701509900412891 (Banco Provincia - Suc. Lanús)</p>
+                <p><strong>Esquema Financiero:</strong> Asistido por FDI (Cancelación comercial a 60 días)</p>
+                <p><strong>Cuenta Operativa de Pago:</strong> CBU 0140098701509900412891 (Banco Provincia)</p>
             </div>
             <div class="card-info">
-                <h4>Tallerista Principal / Consorcio de Confección Territorial</h4>
-                <p><strong>Taller:</strong> Taller de Aparado San Cayetano (de Carlos Alberto Benegas)</p>
-                <p><strong>CUIT / Monotributo Productivo:</strong> 20-18493021-3 (Categoría Activa de Oficio)</p>
-                <p><strong>Domicilio del Taller:</strong> Pasaje Ucrania 1420, Villa Jardín, Lanús Oeste, PBA</p>
-                <p><strong>Score Solidario en Bolsa:</strong> 98.4 / 100 (Insignia 'Oficio de Calidad' - Silla 4 MES)
-                </p>
-                <p><strong>Cuenta de Clearing Taller:</strong> CVU 0000003100094182901412 (Cuenta DNI / BAPRO)</p>
+                <h4>Taller Gestor Coordinador (Consorcio Productivo Territorial)</h4>
+                <p><strong>Denominación:</strong> Taller San Cayetano (Consorcio Lanús - SAS en trámite de constitución)</p>
+                <p><strong>Responsable Gestor:</strong> Carlos Alberto Benegas — CUIT 20-18493021-3</p>
+                <p><strong>Radicación Fabril:</strong> Pasaje Ucrania 1420, Villa Jardín, Lanús Oeste, PBA</p>
+                <p><strong>Score Solidario en Bolsa:</strong> 98.4 / 100 (Insignia 'Oficio de Calidad' - Silla 4 MES)</p>
+                <p><strong>Cuenta de Clearing Cabecera:</strong> CVU 0000003100094182901412 (Cuenta DNI / BAPRO)</p>
             </div>
+        </div>
+
+        <!-- RED MULTITALLER Y PRESTADORES DE OFICIO -->
+        <div style="margin-top: 6px; margin-bottom: 8px;">
+            <div style="font-size: 9.5px; font-weight: bold; color: var(--primary-color); text-transform: uppercase; margin-bottom: 3px; display: flex; justify-content: space-between;">
+                <span>Red Multitaller y Prestadores de Oficio Asignados (Liquidación Directa Split FDI)</span>
+                <span style="font-size: 8.5px; color: var(--text-muted); font-weight: normal;">Supervisión Territorial: PTF Juan M. Pereyra (Leg. MES-042 · Nodo Conurbano Sur)</span>
+            </div>
+            <table style="font-size: 9.5px; margin-bottom: 4px;">
+                <thead>
+                    <tr style="background-color: #edf2f7;">
+                        <th>Etapa / Tarea Productiva</th>
+                        <th>Taller / Prestador Asignado</th>
+                        <th>Identificación Fiscal / DNI</th>
+                        <th>Condición Operativa</th>
+                        <th>Cuenta Clearing (BAPRO / CVU)</th>
+                        <th class="text-right">Hito de Pago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1. Corte de Cuero y Forro</strong></td>
+                        <td>Cortaduría 'El Ombú'</td>
+                        <td>CUIT 30-68912345-2</td>
+                        <td>Taller Homologado MES</td>
+                        <td class="mono-text">CBU 0140023401100984210019</td>
+                        <td class="text-right">Hito 1 (20%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. Rebajado y Dividido</strong></td>
+                        <td>Servicio Especializado CIFO / Gómez</td>
+                        <td>DNI 28.451.902</td>
+                        <td>Prestador Eventual (Oficio Tutelado)</td>
+                        <td class="mono-text">CVU 0000003100088192019482</td>
+                        <td class="text-right">Hito 1 (Incl.)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3. Aparado y Costura Reforzada</strong></td>
+                        <td>Taller San Cayetano + Célula Domiciliaria</td>
+                        <td>CUIT 20-18493021-3 / SAS en trámite</td>
+                        <td>Taller Gestor de Red</td>
+                        <td class="mono-text">CVU 0000003100094182901412</td>
+                        <td class="text-right">Hito 2 (25%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>4. Montado, Pegado y Fondo</strong></td>
+                        <td>Fondo y Solados 'Sur-Calzado'</td>
+                        <td>CUIT 33-71239845-9</td>
+                        <td>Taller Homologado MES</td>
+                        <td class="mono-text">CBU 0140089201200384192831</td>
+                        <td class="text-right">Hito Final (15%)</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- 2. PRODUCTO Y CURVA DE TALLES -->
@@ -1341,64 +1351,94 @@
                 <div class="op-badges">
                     <span class="badge badge-taller">Duplicado de Taller</span>
                     <span class="badge badge-mes">Homologada MES</span>
-                    <span class="badge badge-inembargable">Insumos Inembargables</span>
+                    <span class="badge badge-inembargable">Insumos en Custodia</span>
                 </div>
                 <div class="meta-numbers">
                     <strong>e-OP N°:</strong> OP-2026-00842<br>
-                    <strong>Emisión:</strong> 09/09/2026 09:30 hs<br>
-                    <strong>Venc. Timelock 48h:</strong> 11/09/2026 14:00 hs
+                    <strong>UUID:</strong> <span class="mono-text">e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</span><br>
+                    <strong>Merkle BOM:</strong> <span class="mono-text">0x7f83b165...200126d</span><br>
+                    <strong>Emisión:</strong> 09/09/2026 09:30 hs · <strong>Timelock:</strong> 48h Silencio Positivo
                 </div>
             </div>
         </div>
 
-        <!-- PROTOCOLO CRIPTOGRÁFICO Y GOBERNANZA -->
-        <div class="protocol-box">
-            <div class="protocol-item">
-                <strong style="color: #2d3748;">Primitiva Criptográfica e-OP</strong>
-                <span><strong>UUID:</strong> <span
-                        class="mono-text">e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1</span></span><br>
-                <span><strong>Merkle Root BOM:</strong> <span
-                        class="mono-text">0x7f83b1657ff1fc53b92dc18148a1d65d...200126d</span></span><br>
-                <span><strong>Contrato Timelock:</strong> 48h Silencio Positivo (Art. 4.1)</span>
-            </div>
-            <div class="protocol-item">
-                <strong style="color: #2d3748;">Régimen Jurídico y Afectación</strong>
-                <span>Locación de Obra / Trabajo a Facón (Arts. 1251 y ss. CCCN)</span><br>
-                <span>Provisión de Insumos por Comitente (Art. 1262 CCCN)</span><br>
-                <span>Depósito Regular e Inembargabilidad (Arts. 1356 y 1358 CCCN)</span>
-            </div>
-            <div class="protocol-item">
-                <strong style="color: #2d3748;">Gobernanza Territorial MES</strong>
-                <span><strong>Nodo:</strong> Conurbano Sur (Lanús / Lomas)</span><br>
-                <span><strong>PTF Asignado:</strong> Juan M. Pereyra (Leg. 042)</span><br>
-                <span><strong>Estado:</strong> Adelanto Liquidado (Fast-Track 40%)</span>
-            </div>
-        </div>
-
-        <!-- 1. PARTES INTERVINIENTES -->
+        <!-- 1. PARTES INTERVINIENTES Y RED PRODUCTIVA TERRITORIAL -->
         <div class="section-title">
-            <span>1. Partes Intervinientes y Radicación Territorial</span>
-            <span class="tag">Bolsa de Trabajo Sectorial · Padrón Verificado</span>
+            <span>1. Partes Intervinientes y Red Productiva Territorial</span>
+            <span class="tag">Bolsa de Trabajo Sectorial · Padrón Verificado MES</span>
         </div>
         <div class="grid-2col">
             <div class="card-info">
-                <h4 style="color: #2d3748;">Marca Comitente (Titular de Insumos)</h4>
+                <h4 style="color: #2d3748;">Marca Comitente (Titular de Insumos en Custodia)</h4>
                 <p><strong>Razón Social:</strong> Borcegos Cruz del Sur S.R.L.</p>
                 <p><strong>CUIT:</strong> 30-71589412-8 (Padrón Homologado MES RIGI-COM-0184)</p>
-                <p><strong>Beneficiario Final (UBO):</strong> Marcelo Daniel Benítez — DNI 23.419.882 (Verificado
-                    RENAPER)</p>
+                <p><strong>Beneficiario Final (UBO):</strong> Marcelo Daniel Benítez — DNI 23.419.882 (Verificado RENAPER)</p>
                 <p><strong>Planta y Domicilio:</strong> Av. Hipólito Yrigoyen 4150, Lanús Oeste, PBA</p>
-                <p><strong>Cuenta Custodia FDI:</strong> CBU 0140098701509900412891 (Banco Provincia - Suc. Lanús)</p>
+                <p><strong>Esquema Financiero:</strong> Asistido por FDI (Cancelación comercial a 60 días)</p>
+                <p><strong>Cuenta Operativa de Pago:</strong> CBU 0140098701509900412891 (Banco Provincia)</p>
             </div>
             <div class="card-info">
-                <h4 style="color: #2d3748;">Tallerista Principal / Consorcio de Confección Territorial</h4>
-                <p><strong>Taller:</strong> Taller de Aparado San Cayetano (de Carlos Alberto Benegas)</p>
-                <p><strong>CUIT / Monotributo Productivo:</strong> 20-18493021-3 (Categoría Activa de Oficio)</p>
-                <p><strong>Domicilio del Taller:</strong> Pasaje Ucrania 1420, Villa Jardín, Lanús Oeste, PBA</p>
-                <p><strong>Score Solidario en Bolsa:</strong> 98.4 / 100 (Insignia 'Oficio de Calidad' - Silla 4 MES)
-                </p>
-                <p><strong>Cuenta de Clearing Taller:</strong> CVU 0000003100094182901412 (Cuenta DNI / BAPRO)</p>
+                <h4 style="color: #2d3748;">Taller Gestor Coordinador (Consorcio Productivo Territorial)</h4>
+                <p><strong>Denominación:</strong> Taller San Cayetano (Consorcio Lanús - SAS en trámite de constitución)</p>
+                <p><strong>Responsable Gestor:</strong> Carlos Alberto Benegas — CUIT 20-18493021-3</p>
+                <p><strong>Radicación Fabril:</strong> Pasaje Ucrania 1420, Villa Jardín, Lanús Oeste, PBA</p>
+                <p><strong>Score Solidario en Bolsa:</strong> 98.4 / 100 (Insignia 'Oficio de Calidad' - Silla 4 MES)</p>
+                <p><strong>Cuenta de Clearing Cabecera:</strong> CVU 0000003100094182901412 (Cuenta DNI / BAPRO)</p>
             </div>
+        </div>
+
+        <!-- RED MULTITALLER Y PRESTADORES DE OFICIO -->
+        <div style="margin-top: 6px; margin-bottom: 8px;">
+            <div style="font-size: 9.5px; font-weight: bold; color: #2d3748; text-transform: uppercase; margin-bottom: 3px; display: flex; justify-content: space-between;">
+                <span>Red Multitaller y Prestadores de Oficio Asignados (Liquidación Directa Split FDI)</span>
+                <span style="font-size: 8.5px; color: var(--text-muted); font-weight: normal;">Supervisión Territorial: PTF Juan M. Pereyra (Leg. MES-042 · Nodo Conurbano Sur)</span>
+            </div>
+            <table style="font-size: 9.5px; margin-bottom: 4px;">
+                <thead>
+                    <tr style="background-color: #edf2f7;">
+                        <th>Etapa / Tarea Productiva</th>
+                        <th>Taller / Prestador Asignado</th>
+                        <th>Identificación Fiscal / DNI</th>
+                        <th>Condición Operativa</th>
+                        <th>Cuenta Clearing (BAPRO / CVU)</th>
+                        <th class="text-right">Hito de Pago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1. Corte de Cuero y Forro</strong></td>
+                        <td>Cortaduría 'El Ombú'</td>
+                        <td>CUIT 30-68912345-2</td>
+                        <td>Taller Homologado MES</td>
+                        <td class="mono-text">CBU 0140023401100984210019</td>
+                        <td class="text-right">Hito 1 (20%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. Rebajado y Dividido</strong></td>
+                        <td>Servicio Especializado CIFO / Gómez</td>
+                        <td>DNI 28.451.902</td>
+                        <td>Prestador Eventual (Oficio Tutelado)</td>
+                        <td class="mono-text">CVU 0000003100088192019482</td>
+                        <td class="text-right">Hito 1 (Incl.)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3. Aparado y Costura Reforzada</strong></td>
+                        <td>Taller San Cayetano + Célula Domiciliaria</td>
+                        <td>CUIT 20-18493021-3 / SAS en trámite</td>
+                        <td>Taller Gestor de Red</td>
+                        <td class="mono-text">CVU 0000003100094182901412</td>
+                        <td class="text-right">Hito 2 (25%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>4. Montado, Pegado y Fondo</strong></td>
+                        <td>Fondo y Solados 'Sur-Calzado'</td>
+                        <td>CUIT 33-71239845-9</td>
+                        <td>Taller Homologado MES</td>
+                        <td class="mono-text">CBU 0140089201200384192831</td>
+                        <td class="text-right">Hito Final (15%)</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- 2. PRODUCTO Y CURVA DE TALLES -->

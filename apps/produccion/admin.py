@@ -89,7 +89,6 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
         "cantidad_total",
         "cantidad_producida",
         "estado_escrow",
-        "regimen_juridico",
         "estado",
         "hash_status",
     ]
@@ -97,7 +96,6 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
         "estado",
         "estado_escrow",
         "tipo",
-        "regimen_juridico",
         "es_sello_buen_diseno",
     ]
     search_fields = [
@@ -152,8 +150,6 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
                 "fields": (
                     "estado_escrow",
                     "fecha_fondeo_escrow",
-                    "regimen_juridico",
-                    "clausula_inembargabilidad",
                     "firmas_digitales",
                 )
             },

@@ -248,10 +248,200 @@ Para no burocratizar el uso diario de las PyMEs, Indinopy cuenta con un **Sistem
 
 ### Formalización Automática: Alta de Oficio en la Primera e-OP
 
-El software elimina la barrera burocrática del tallerista informal (que carece de CUIT o Clave Fiscal). 
-1. **Trigger de Alta:** Cuando un Tallerista acepta su primera e-OP desde la app, si su DNI no está registrado fiscalmente en la MES, el ERP genera un payload especial tipo `ALTA_OFICIO`.
-2. **APIs RENAPER/ARCA:** El Nodo MES recibe el payload, valida la biometría del Tallerista vía API del RENAPER, y dispara un webservice hacia ARCA/AFIP para generar el alta en el **Monotributo Productivo** de forma 100% programática.
-3. **Apertura de Cuenta Inembargable:** En el mismo milisegundo, vía Open Banking, se abre la **Cuenta de Clearing Técnica en el Banco Provincia**. Esta cuenta (tanto para el trabajador individual como para el taller gestor SAS) nace con el flag de **inembargabilidad** absoluta por ley, protegiendo los fondos de cualquier pasivo de la etapa informal previa.
+El software elimina la barrera burocrática del tallerista informal o trabajador de oficio que carece de CUIT o Clave Fiscal:
+
+#### 1. Inyección en el Payload Canónico de la e-OP
+Cuando la marca emite o el tallerista confirma su primera e-OP, si el tallerista asignado a una etapa (o el Taller Gestor) no cuenta con inscripción fiscal activa en el padrón de la MES, el ERP emisor inyecta los datos de onboarding directamente en el payload canónico que viaja al Nodo MES:
+
+```json
+{
+  "protocolo_version": "2.0",
+  "uuid_identificador": "e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1",
+  "comitente": {
+    "cuit": "30-71589412-8",
+    "cbu_comercial": "0140098701509900412891"
+  },
+  "taller_gestor": {
+    "denominacion": "Taller San Cayetano (Consorcio Lanús)",
+    "cuit_gestor": "20-18493021-3",
+    "estado_societario": "transicion_sas",
+    "cuenta_clearing_cvu": "0000003100094182901412"
+  },
+  "etapas_asignadas": [
+    {
+      "orden": 1,
+      "servicio": "Corte",
+      "tallerista": {
+        "cuit": "30-68912345-2",
+        "tipo": "taller_homologado",
+        "cuenta_clearing_cvu": "0140023401100984210019"
+      }
+    },
+    {
+      "orden": 2,
+      "servicio": "Aparado",
+      "tallerista": {
+        "dni": "28451902",
+        "tipo": "prestador_oficio",
+        "requiere_alta_oficio": true,
+        "datos_alta_oficio": {
+          "nombre_completo": "Carlos Alberto Benegas",
+          "biometria_token_renaper": "0x7a91...bc01",
+          "cvu_cuenta_dni": "0000003100094182901412",
+          "domicilio_catastral": "Pasaje Ucrania 1420, Lanús Oeste",
+          "actividad_codigo": "152011"
+        }
+      }
+    }
+  ]
+}
+```
+
+#### 2. Capa de Servicios: `AltaOficioService` (`apps.federacion.services`)
+Al recibir el payload canónico, el Nodo MES ejecuta el pipeline transaccional de formalización:
+1. **Validación Biométrica RENAPER:** Valida la identidad y prueba de vida del titular contra el servicio nacional del RENAPER usando el token biométrico capturado en la app/portal.
+2. **Alta Automática en ARCA (ex-AFIP):** Invoca el webservice de Monotributo Productivo de Oficio. El tallerista queda formalizado sin cuota fija mensual que lo endeude cuando no tiene trabajo; en su lugar, se activa la micro-retención del 1.5% en clearing.
+3. **Apertura de Cuenta de Clearing Técnica Inembargable (BAPRO):** Vía Open Banking del Banco Provincia, se genera o vincula la cuenta de clearing (Cuenta DNI / CVU) con el flag legal de inembargabilidad absoluta de primer orden amparado en CCCN 1356.
+4. **Emisión de Par de Claves Ed25519:** La MES firma digitalmente el certificado público del tallerista y lo incorpora al padrón activo de la federación.
+
+### Especificación del Contrato API: Sobre de Red y Payload Canónico Completo
+
+Cuando el ERP de la Marca (Nodo Comitente) confirma una e-OP y la transmite a la MES (`POST /federacion/eop/entrante/`), la comunicación consta de dos capas estrictas:
+
+#### 1. Sobre de Transporte Criptográfico (`EntradaEOPSerializer`)
+Es el payload HTTP que recibe y valida el API Gateway de la MES para autenticación, no repudio y anti-tampering:
+
+```json
+{
+  "uuid_identificador": "e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1",
+  "hash_seguridad": "a4f81c7b8e923d456102fae83912bc09148d200126d482910384729104829104",
+  "comitente_cuit": "30715894128",
+  "tallerista_cuit": "20184930213",
+  "monto_total_uci": "3950.0000",
+  "clave_publica_comitente": "7d9b01f92c3a4e5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b",
+  "firma_comitente": "3a8f10bc49281e...[firma Ed25519 en hex de 128 caracteres]...",
+  "payload_canonico": { ... }
+}
+```
+
+#### 2. Payload Canónico Determinista (`payload_canonico`)
+Es el contrato fiduciario inmutable que se firma digitalmente con Ed25519 y cuyo hash SHA-256 se sella en la red:
+
+```json
+{
+  "protocolo_version": "2.0",
+  "uuid": "e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1",
+  "numero_op": "OP-2026-00842",
+  "fecha_emision": "2026-09-09T09:30:00Z",
+  "partes": {
+    "comitente": {
+      "cuit": "30-71589412-8",
+      "razon_social": "Borcegos Cruz del Sur S.R.L.",
+      "cbu_comercial": "0140098701509900412891",
+      "plazo_cancelacion_fdi_dias": 60
+    },
+    "taller_gestor": {
+      "cuit_o_dni": "20-18493021-3",
+      "denominacion": "Taller San Cayetano (Consorcio Lanús)",
+      "estado_societario": "transicion_sas",
+      "cuenta_clearing_cabecera": "0000003100094182901412"
+    }
+  },
+  "condiciones_economicas": {
+    "moneda_indexacion": "UCI",
+    "monto_total_uci": 3950.00,
+    "desglose_vector_c": {
+      "costo_mod": 2825.00,
+      "costo_cs": 565.00,
+      "reserva_fdi": 79.00,
+      "monotributo_retencion": 59.25,
+      "margen_taller": 421.75
+    },
+    "es_sello_buen_diseno": true,
+    "timelock_horas": 48
+  },
+  "cronograma_escrow_hitos": [
+    {
+      "id_hito": "H0",
+      "nombre": "Adelanto Operativo / Hito Cero",
+      "porcentaje_tramo": 40.0,
+      "condicion_disparo": "Aprobacion_MES_o_Silencio_48h",
+      "destinatario": "taller_gestor"
+    },
+    {
+      "id_hito": "H1",
+      "nombre": "Corte Completo y Verificado",
+      "porcentaje_tramo": 20.0,
+      "condicion_disparo": "PoPW_Parte_Corte_Mas_Aval_PTF",
+      "destinatario": "etapa_corte"
+    },
+    {
+      "id_hito": "H2",
+      "nombre": "Aparado Terminado",
+      "porcentaje_tramo": 25.0,
+      "condicion_disparo": "PoPW_Remito_Traslado_Aparado",
+      "destinatario": "taller_gestor"
+    },
+    {
+      "id_hito": "H3",
+      "nombre": "Liquidación Cierre de Lote",
+      "porcentaje_tramo": 15.0,
+      "condicion_disparo": "Recepcion_Conforme_Sin_Veto_48h",
+      "destinatario": "taller_gestor"
+    }
+  ],
+  "etapas_productivas": [
+    {
+      "orden": 1,
+      "servicio": "Corte de Cuero y Forro",
+      "tallerista_asignado": {
+        "cuit": "30-68912345-2",
+        "nombre": "Cortaduría El Ombú",
+        "cuenta_clearing_cvu": "0140023401100984210019",
+        "tipo": "taller_homologado"
+      }
+    },
+    {
+      "orden": 2,
+      "servicio": "Aparado Reforzado",
+      "tallerista_asignado": {
+        "cuit": "20-18493021-3",
+        "nombre": "Taller San Cayetano",
+        "cuenta_clearing_cvu": "0000003100094182901412",
+        "tipo": "taller_gestor"
+      },
+      "alta_oficio": null
+    }
+  ],
+  "especificacion_tecnica": {
+    "articulo": "Art. 410-TX - Borcego Aconcagua Pro",
+    "cantidad_pares": 500,
+    "curva_talles": [
+      {"talle": 38, "cantidad": 20},
+      {"talle": 39, "cantidad": 40},
+      {"talle": 40, "cantidad": 80},
+      {"talle": 41, "cantidad": 120},
+      {"talle": 42, "cantidad": 140},
+      {"talle": 43, "cantidad": 70},
+      {"talle": 44, "cantidad": 30}
+    ],
+    "merkle_root_bom": "0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d"
+  }
+}
+```
+
+#### 3. Política de Costos Congelados (Snapshots Inmutables vs Properties Dinámicas)
+Para asegurar la estabilidad del crédito fiduciario y la trazabilidad industrial frente a la inflación:
+
+1. **El Riesgo de las Properties Dinámicas:** Si los costos de la orden se calcularan exclusivamente mediante `@property` leyendo `ProductoTemplate.costo`, cualquier actualización posterior de precios en el catálogo alteraría retroactivamente el balance histórico de una OP ya confirmada o finalizada.
+2. **Momento del Congelamiento (Trigger de Confirmación):**
+   - Al pasar la orden de `borrador` a `confirmado` (o emitirse la e-OP), el sistema calcula el Vector C y los costos unitarios y los **persiste como snapshots inmutables** en campos `models.DecimalField` en la base de datos (`costo_mod`, `costo_cs`, `costo_bom`, etc.).
+   - A partir de ese milisegundo, los valores quedan congelados y no vuelven a recalcularse dinámicamente.
+3. **Indexación en UCI:** Para mitigar la pérdida de poder adquisitivo del tallerista y la descapitalización del FDI durante el plazo de ejecución (30 a 60 días), los costos congelados se expresan en **Unidades de Cuenta Industrial (UCI)**, referenciadas a la canasta sectorial INDEC/IPIM.
+4. **Sellado Criptográfico:** Los valores congelados del Vector C forman parte del input determinista del payload canónico. Al calcular el `hash_seguridad` (SHA-256) y firmarlo con Ed25519, cualquier intento de alterar un costo congelado invalida la firma criptográfica en el Nodo MES y en el Portal Fiduciario del Banco.
+5. **Desacople Arquitectónico:**
+   - En `apps.produccion`: Se congela el costo fabril histórico (`costo_total_insumos_teorico` y los costos de servicios por etapa) para la valorización contable de inventario por partida doble.
+   - En `apps.eop`: Se congela el Vector C fiduciario en UCIs para la garantía del Escrow y la liquidación del clearing ante el FDI.
 
 ### Portal Fiduciario (Dashboard de Clearing en la MES)
 
@@ -807,7 +997,6 @@ erDiagram
         string hash_seguridad "SHA-256 sellado"
         jsonb firmas_digitales "Ed25519 (Marca, Taller, PTF)"
         boolean es_sello_buen_diseno
-        string regimen_juridico
     }
 
     EOP_HITO_ESCROW {
@@ -847,11 +1036,11 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
         help_text=_("Asociación a la orden de planta en Indinopy. Si es NULL, la orden proviene de un ERP externo (Headless)."),
     )
 
-    # Identidad y Ruteo en la Red Federada
+    # Identidad y Ruteo en la Red Federada (Snapshot capturado de ConfiguracionEmpresa)
     nodo_mes = models.CharField(
         max_length=100,
         verbose_name=_("Nodo MES de Destino"),
-        help_text=_("Identificador del nodo territorial de gobernanza competente"),
+        help_text=_("Snapshot inmutable capturado automáticamente de ConfiguracionEmpresa.nodo_mes_identificador al emitir"),
     )
     ptf_asignado = models.ForeignKey(
         "contactos.Contacto",
@@ -887,16 +1076,7 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
     costo_tax = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Monotributo / Tax"))
     costo_mg = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Margen"))
 
-    # Blindaje Jurídico y Sello de Calidad
-    regimen_juridico = models.CharField(
-        max_length=40,
-        choices=[
-            ("fason_locacion_obra", _("Façón / Locación de Obra (Arts. 1251 CCCN)")),
-            ("maquila_industrial", _("Maquila Industrial (Ley 25.113 Ampliada)")),
-        ],
-        default="fason_locacion_obra",
-    )
-    clausula_inembargabilidad = models.BooleanField(default=True)
+    # Sello de Calidad
     es_sello_buen_diseno = models.BooleanField(default=False)
 
     # Árbol de Merkle del BOM inmutable (Snapshot estático)
@@ -930,13 +1110,56 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
 * **`EOPService` (`apps/eop/services.py`):** Encapsula el ciclo de vida fiduciario: creación del contrato, emisión del payload JSON determinista, ruteo HTTP a la MES y despacho de webhooks al BAPRO para la liquidación.
 * **Modo Headless Nativo (SAP / Tango):** Una marca con ERP corporativo emite e-OPs enviando un payload REST directo a `apps.eop`. El contrato se crea con `orden_produccion_local = None`, permitiéndole participar del régimen FIMCA sin duplicar sus maestros de producción ni almacenes en Indinopy.
 
-#### 5. Checklist de Implementación de la Fase G
+#### 5. Modelo de Etapas Desacopladas, Split Payment y Deslinde de Responsabilidad
+
+En la manufactura real del calzado, el flujo técnico y financiero exige un deslinde nítido de responsabilidades:
+
+1. **La Marca solo responde ante el Fondo (FDI):**
+   - La marca comitente no gestiona micropagos individuales, ni interactúa con la red de prestadores eventuales, ni asume fricciones de subcontratación.
+   - Su único compromiso financiero es cancelar el financiamiento asistido directamente ante el **Fondo (FDI)** en el plazo comercial pactado (30 a 60 días fecha de entrega).
+2. **Responsabilidad de Liberación del Dinero (Fondo o Taller Gestor):**
+   - La dispersión efectiva hacia los prestadores de cada proceso no es responsabilidad de la marca:
+     - **Vía FDI:** Cuando la etapa tiene un tallerista independiente homologado asignado de forma rígida, el FDI transfiere directamente desde su bóveda fiduciaria BAPRO al CBU/CVU de dicho taller.
+     - **Vía Taller Gestor:** Si el Taller Gestor subcontrata o terceriza etapas (ej. aparado a domicilio o rebajado artesanal), el FDI le acredita el tramo al Gestor y este asume la dispersión secundaria y la responsabilidad técnica solidaria.
+3. **Un Tallerista Rígido por Etapa con Fallback:**
+   - Cada etapa del MRP (`RecetaEtapa` / `OPEtapaTracking`) cuenta con un único ejecutor asignado (`tallerista_asignado`).
+   - Si no se especifica un tallerista externo individual, la liquidación de la etapa se transfiere por defecto al **Taller Gestor Coordinador** (consorcio en transición a SAS).
+4. **Desestimación de Campo 'Cláusula de Inembargabilidad':**
+   - Se prescinde de cualquier campo booleano de inembargabilidad en los modelos. El depósito en custodia opera por imperio de los Arts. 1251 y 1356 del CCCN; la inembargabilidad registral especial es una iniciativa de reforma legislativa que no forma parte del esquema de datos del software.
+
+#### 6. Portal del Tallerista (PWA / Mobile-First)
+
+El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la máquina de coser; no opera desde una PC de escritorio ni maneja un ERP denso. El **Portal del Tallerista** se diseña como una aplicación web progresiva (PWA) optimizada para smartphones:
+
+1. **Acceso Seguro Sin Contraseñas Complejas:**
+   - Autenticación biométrica nativa (WebAuthn / Passkeys vía huella dactilar o FaceID del teléfono) o código OTP por WhatsApp/SMS.
+   - Par de claves Ed25519 alojado de forma segura en el almacenamiento local del dispositivo.
+2. **Bandeja de e-OPs y Etapas Entrantes:**
+   - Notificación en tiempo real cuando una marca le asigna una etapa (ej. *"Tenés 500 pares para Aparar de Borcegos Cruz del Sur"*).
+   - Aceptación formal con un toque de pantalla mediante firma digital Ed25519.
+3. **Ficha Técnica Ciega (Documento de Taller):**
+   - Muestra modelo, fotos de armado, curva de talles normalizada INTI, instrucciones técnicas y mermas toleradas.
+   - **Ciego de Precios Comerciales:** No expone precios de venta al público (PVP) ni márgenes comerciales de la marca, protegiendo la confidencialidad de la cadena.
+4. **Carga Ultrarrápida de Partes de Producción (PoPW):**
+   - Formulario de 2 campos al final de la jornada: *Pares Producidos* (Primera calidad vs Segunda/Descarte).
+   - La app adjunta automáticamente la geolocalización GPS (para convalidar el radio catastral del taller) y genera el hash de avance.
+5. **Billetera de Hitos y Saldo Escrow (Cuenta DNI / BAPRO):**
+   - Visualización pedagógica del dinero de mano de obra en custodia del FDI:
+     - **Saldo Retenido:** Fondos bloqueados en la bóveda que se cobrarán al finalizar.
+     - **Reloj Timelock 48h:** Cuenta regresiva en tiempo real (*"Liberación en 18h por Silencio Positivo"* o *"Aprobado por PTF"*).
+     - **Saldo Acreditado:** Historial de transferencias inmediatas recibidas en su Cuenta DNI / CVU con comprobante fiscal descargable.
+6. **Módulo 'Camino a SAS' (Para Talleres Gestores):**
+   - Estado del trámite de personería jurídica simplificada (SAS / Consorcio de Cooperación).
+   - Registro de talleres satélite y prestadores domiciliarios vinculados.
+
+#### 7. Checklist de Implementación de la Fase G
 - [ ] Crear la aplicación `apps/eop/` con configuración en `apps.py` e incorporar en `INSTALLED_APPS`.
 - [ ] Definir modelos `ContratoEOP` y `EOPHitoEscrow` en `apps/eop/models.py`.
 - [ ] Desarrollar servicio de dominio `EOPService` en `apps/eop/services.py`.
 - [ ] Escribir migración de datos (`DataMigration`) para transferir las órdenes con `es_eop_federada=True` existentes en `apps.produccion` hacia registros independientes de `ContratoEOP`.
 - [ ] Configurar señales desacopladas en `apps/eop/signals.py` para escuchar avances físicos de `OPParteProduccion`.
 - [ ] Rutar los endpoints de federación (`/federacion/eop/...`) para interactuar con `ContratoEOP`.
+- [ ] Implementar frontend del **Portal del Tallerista** (PWA móvil con WebAuthn y WebCrypto Ed25519).
 - [ ] Deprecar campos fiduciarios de `OrdenProduccion` en `apps/produccion/models.py` convirtiéndolos en properties delegadas (`@property def contrato_eop`).
 
 ---

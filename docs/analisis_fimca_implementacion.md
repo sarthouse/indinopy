@@ -153,29 +153,6 @@ class OrdenProduccion(DocumentoBase):
         unique=True,
         verbose_name=_("Identificador Único e-OP"),
     )
-    regimen_juridico = models.CharField(
-        max_length=40,
-        choices=[
-            (
-                "fason_locacion_obra",
-                _("Façón / Locación de Obra (Arts. 1251 CCCN - Insumos Propios)"),
-            ),
-            (
-                "maquila_industrial",
-                _("Maquila Industrial (Proyecto Reforma Ley 25.113)"),
-            ),
-            ("produccion_propia", _("Producción Integrada en Planta")),
-        ],
-        default="fason_locacion_obra",
-        verbose_name=_("Régimen Jurídico"),
-    )
-    clausula_inembargabilidad = models.BooleanField(
-        default=True,
-        verbose_name=_("Amparado bajo Inembargabilidad de Stock"),
-        help_text=_(
-            "Declara las materias primas y semielaborados como activos intangibles de afectación productiva territorial."
-        ),
-    )
     es_sello_buen_diseno = models.BooleanField(
         default=False,
         verbose_name=_("Distinción Sello Buen Diseño (SBD)"),

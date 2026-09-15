@@ -239,27 +239,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         null=True, blank=True, verbose_name=_("Fecha de Fondeo (Inicio Timelock 48h)")
     )
 
-    # Identidad digital y seguridad jurídica de la e-OP son heredadas de DocumentoFirmableMixin
-    regimen_juridico = models.CharField(
-        max_length=40,
-        choices=[
-            ("fason_locacion_obra", _("Façón / Locación de Obra (Arts. 1251 CCCN)")),
-            (
-                "maquila_industrial",
-                _("Maquila Industrial (Proyecto Reforma Ley 25.113)"),
-            ),
-            ("produccion_propia", _("Producción Integrada en Planta")),
-        ],
-        default="fason_locacion_obra",
-        verbose_name=_("Régimen Jurídico"),
-    )
-    clausula_inembargabilidad = models.BooleanField(
-        default=True,
-        verbose_name=_("Amparado bajo Inembargabilidad de Stock"),
-        help_text=_(
-            "Declara las materias primas y semielaborados como propiedad inembargable del comitente emisor"
-        ),
-    )
     # === Protocolo e-OP ===
     # NOTA: Tallerista_principal fue removido. La asignación de proveedores externos
     # se hace a nivel de Etapa (OPEtapaTracking) para soportar múltiples prestadores con CBU independiente.
@@ -662,8 +641,6 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
             "receta_id": self.receta_id,
             "cliente_id": self.cliente_id,
             "cantidad_total": self.cantidad_total,
-            "regimen_juridico": self.regimen_juridico,
-            "clausula_inembargabilidad": self.clausula_inembargabilidad,
             "merkle_root_bom": self.calcular_merkle_root_bom(),
             "creado_en": self.creado_en.isoformat() if self.creado_en else None,
         }
