@@ -162,7 +162,7 @@ class DocumentoBase(TimeStampedModel):
 
 class Moneda(TimeStampedModel):
     """
-    Modelo para monedas (Odoo: res.currency).
+    Modelo para gestión de monedas de cuenta y tipo de cambio.
     """
 
     nombre = models.CharField(max_length=50, verbose_name="Nombre de la moneda")
@@ -190,7 +190,7 @@ class Moneda(TimeStampedModel):
 class ConfiguracionEmpresa(TimeStampedModel):
     """
     Singleton que almacena la configuración de la empresa dueña del ERP (Single-Tenant).
-    Equivalente a res.company en Odoo.
+    Centraliza datos fiscales, credenciales AFIP y parámetros globales del sistema.
     """
 
     ENTORNO_AFIP_CHOICES = [

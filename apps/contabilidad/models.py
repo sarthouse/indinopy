@@ -9,7 +9,7 @@ from apps.base.models import TimeStampedModel
 
 class CondicionPago(TimeStampedModel):
     """
-    Modelo para condiciones de pago (Odoo: account.payment.term).
+    Modelo para condiciones de pago comercial y plazos de crédito.
     Define el plazo y estructuración financiera de una deuda (ej. 30/60 días).
     """
 
@@ -27,7 +27,7 @@ class CondicionPago(TimeStampedModel):
 
 class LineaCondicionPago(models.Model):
     """
-    Línea de condición de pago (Odoo: account.payment.term.line).
+    Línea de condición de pago.
     Permite desglosar un pago en múltiples cuotas o vencimientos.
     """
 
@@ -60,7 +60,7 @@ class LineaCondicionPago(models.Model):
 
 class Impuesto(TimeStampedModel):
     """
-    Modelo para tasas de impuestos, retenciones y percepciones (Odoo: account.tax).
+    Modelo para alícuotas impositivas, retenciones y percepciones.
     """
 
     TIPO_IMPUESTO_CHOICES = [
@@ -121,7 +121,7 @@ class Impuesto(TimeStampedModel):
 
 class Diario(TimeStampedModel):
     """
-    Diario Contable (Odoo: account.journal).
+    Diario Contable.
     Define los puntos de venta de AFIP para la facturación, o secuencias internas.
     """
 
@@ -172,7 +172,7 @@ class Diario(TimeStampedModel):
 class TipoComprobanteAFIP(models.Model):
     """
     Tabla oficial de códigos de comprobantes según AFIP.
-    Inspirado en l10n_latam.document.type de Odoo y django-afip.
+    Basado en el estándar de tipos de comprobante de AFIP / ARCA.
     """
 
     CLASIFICACION_CHOICES = (
@@ -219,7 +219,7 @@ class TipoComprobanteAFIP(models.Model):
 class DocumentoDeuda(TimeStampedModel):
     """
     Representa una Factura, Nota de Débito, Nota de Crédito o Liquidación de Fasón.
-    Es el origen del devengado (Cuenta Corriente). (Odoo: account.move).
+    Es el origen del devengado (Cuenta Corriente y Asiento Contable).
     """
 
     TIPO_CHOICES = [
@@ -358,7 +358,7 @@ class DocumentoDeuda(TimeStampedModel):
 
 class LineaDocumentoDeuda(models.Model):
     """
-    Línea individual de la factura (Odoo: account.move.line).
+    Línea individual del comprobante de deuda o factura.
     """
 
     documento = models.ForeignKey(

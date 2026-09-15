@@ -23,7 +23,7 @@ class Categoria(TimeStampedModel):
 
 class UnidadMedida(TimeStampedModel):
     """
-    Unidad de medida para inventario, producción y ventas (Odoo: uom.uom).
+    Unidad de medida para inventario, producción y ventas.
     Permite definir unidades dinámicas (ej: Metros, Pares, Rollos, Litros).
     """
 
@@ -356,7 +356,7 @@ class MovimientoStock(DocumentoBase):
 
     def dividir_backorder(self, cantidades_realizadas, usuario=None):
         """
-        Aplica el patrón estándar Backorder de Odoo para recepciones, entregas o traslados parciales.
+        Aplica el patrón estándar de Backorders para recepciones, entregas o traslados parciales.
         - cantidades_realizadas: dict con {linea_id: cantidad_real_efectuada}
         - Si para alguna línea la cantidad realizada es menor a la cantidad demandada:
           1. Crea un nuevo MovimientoStock remanente (Backorder) en estado 'confirmado' para el saldo.
@@ -431,7 +431,7 @@ class MovimientoStock(DocumentoBase):
 
 class LineaMovimientoStock(TimeStampedModel):
     """
-    La línea específica que mueve una cantidad de producto (Odoo: stock.move).
+    La línea específica que mueve una cantidad de producto en inventario.
     Hereda de TimeStampedModel: creado_en, modificado_en.
     """
 

@@ -368,7 +368,7 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         self, variaciones_cantidades, observaciones="", usuario=None
     ):
         """
-        Registra la finalización parcial de una tanda de la OP (Odoo MRP).
+        Registra la finalización parcial de una tanda de la OP.
         - variaciones_cantidades: dict con {op_variacion_id: cantidad_producida}
         """
         with transaction.atomic():
@@ -791,7 +791,7 @@ class OPInsumoRequerido(TimeStampedModel):
 
 class OPParteProduccion(TimeStampedModel):
     """
-    Parte o declaración parcial de producción (Odoo: mrp.production quantity producing).
+    Parte o declaración parcial de producción con imputación de unidades y scrap.
     Permite declarar que se terminaron X pares de ciertas variantes, generando el alta
     inmediata en stock y el consumo proporcional de los insumos.
     """

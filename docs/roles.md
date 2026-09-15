@@ -21,7 +21,7 @@ Una marca estructurada requiere segregación de funciones para evitar fraudes in
 
 ### A. Alta Gerencia y Legales
 *   **Gerente General (CEO/Director):** Acceso de lectura global a todos los tableros de control (Finanzas, Producción, Ventas). No opera el día a día. Autoriza presupuestos macro.
-*   **Apoderado Legal / Titular (Firma Criptográfica):** Es el **único** rol que posee la aplicación móvil (Secure Enclave) vinculada a la Clave Privada (Ed25519) de la empresa. Su única función operativa en el ERP es apretar el botón *"Firmar e-OP y Fondear Escrow"*. 
+*   **Apoderado Legal / Titular (Firma Criptográfica):** Es el **único** rol que posee la aplicación móvil (Secure Enclave) vinculada a la Clave Privada (Ed25519) de la empresa. Su función operativa en el ERP es validar con su firma digital: apretar el botón *"Firmar e-OP y Constituir Garantía"* (autorizando el compromiso crediticio ante la MES/FDI). 
 
 ### B. Módulo de Producción y Suministros
 *   **Jefe de Producción:** Modela las Recetas (BOM - Bill of Materials). Calcula los costos teóricos. Arma los lotes y deja las e-OPs en estado "Borrador". **No puede obligar financieramente a la empresa** (no tiene firma criptográfica).

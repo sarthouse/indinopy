@@ -37,17 +37,19 @@ El Comitente no financia a 90 días ni el Tallerista trabaja "a ciegas". La e-OP
 sequenceDiagram
     participant C as Comitente (Marca)
     participant T as Tallerista
-    participant E as Tesorería (Escrow FDI)
-    participant P as PTF (Auditor)
     participant M as Nodo MES (Gobernanza)
+    participant E as Tesorería (FDI / Escrow)
+    participant P as PTF (Auditor)
 
     C->>C: Crea e-OP (Curva, Costos, Hitos)
     C->>T: Propone e-OP (Multifirma)
     T->>C: Firma y Acepta e-OP (Ed25519)
-    C->>E: Fondea el 100% (Bloqueado en Escrow)
-    E-->>T: Notifica Fondeo Exitoso (Inicia Trabajo)
+    C->>M: Registra e-OP y aporta garantía de anclaje
+    M->>E: Homologa e-OP como colateral crediticio
+    E->>T: Desembolsa Hito Cero (30-40% Capital de Trabajo)
+    C->>T: Remite insumos Fase 1 (Remito CCCN 1251/1356)
     
-    Note over T,P: Tallerista finaliza un lote
+    Note over T,P: Tallerista produce y finaliza un lote
     P->>T: Visita de Campo (Inspección)
     P->>M: Firma Aprobación Exprés (GPS + Ed25519)
     
@@ -59,6 +61,8 @@ sequenceDiagram
         M->>E: Ordena Liberar Hito
         E->>T: Transfiere Fondos (Clearing)
     end
+    Note over C,E: Ciclo Comercial Post-Entrega (30-60 días)
+    C->>E: Cancela crédito productivo ante el FDI
 ```
 
 ### B. Circuito de Ventas (Integración WooCommerce)

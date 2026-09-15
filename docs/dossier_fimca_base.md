@@ -100,21 +100,27 @@ El Sistema de Adelantos Productivos rompe este paradigma al institucionalizar la
 ```mermaid
 sequenceDiagram
     participant M as Marca Comitente
-    participant E as Escrow (Smart Contract)
     participant MES as Mesa de Enlace Sectorial
+    participant FDI as Fideicomiso (FDI / Custodia)
+    participant B as Agente de Clearing (Bancos/Wallets)
     participant T as Tallerista
     
-    M->>MES: Carga la e-OP y solicita homologación
-    MES-->>M: Audita "Precio Justo" y Homologa
-    M->>E: Fondea el 100% del pago (Fiat/Token)
-    Note over E: Fondos Bloqueados Inmutables
-    E-->>T: Notifica: "Fondos Asegurados. Inicie Producción"
-    T->>MES: Entrega Lote Terminado y Verificado
-    MES->>E: Emite Certificado de Hito Productivo
-    E->>T: Libera Fondos Automáticamente (Clearing)
-    E->>M: Transfiere Propiedad Legal del Lote
+    M->>MES: Emite e-OP (Costos, BOM y Curva) y registra garantía
+    MES-->>M: Audita "Precio Justo" y homologa e-OP
+    MES->>FDI: Registra e-OP homologada como colateral de crédito
+    FDI->>B: Ordena desembolso Hito Cero (30-40% Capital de Trabajo)
+    B->>T: Acredita fondos inmediatos (Sin historial de e-OP)
+    M->>T: Despacha insumos de Fase 1 (Remito)
+    Note over T: Producción en planta
+    T->>MES: Declara avance de lote con PoPW (Geolocalización + Biometría)
+    MES->>FDI: Certifica hito productivo (o Silencio Positivo 48h)
+    FDI->>B: Ordena liquidación de tramos de avance
+    B->>T: Acredita pago de mano de obra
+    T->>M: Entrega lote terminado y auditado
+    Note over M,FDI: Ciclo Comercial (Venta en mostrador / e-commerce)
+    M->>FDI: Cancela crédito productivo a plazo (30-60 días)
 ```
-> **Figura 2.** Arquitectura Transaccional del Fideicomiso de Desarrollo Industrial (FDI). El contrato *Escrow* garantiza que el taller no asuma riesgo de impago y que la marca no pague hasta que el trabajo esté auditado.
+> **Figura 2.** Arquitectura Transaccional del Fideicomiso de Desarrollo Industrial (FDI). La marca no inmoviliza el 100% del capital por adelantado: el FDI adelanta la liquidez (Hito Cero e hitos de avance) al tallerista colateralizado en la e-OP homologada, y la marca cancela el financiamiento a plazo (30-60 días) una vez comercializado el lote.
 
 ## El Fideicomiso de Desarrollo Industrial (FDI): Capital de Trabajo de la Comunidad
 

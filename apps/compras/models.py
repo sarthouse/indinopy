@@ -9,7 +9,7 @@ from apps.inventario.models import MovimientoStock, LineaMovimientoStock, Ubicac
 
 class TarifaProveedor(TimeStampedModel):
     """
-    Lista de precios de proveedor (Odoo: product.supplierinfo).
+    Lista de precios de proveedor y condiciones comerciales.
     Permite automatizar compras y reabastecimiento conociendo quién vende qué, a qué precio y cuánto tarda.
     """
 
@@ -62,7 +62,7 @@ class TarifaProveedor(TimeStampedModel):
 
 class OrdenCompra(DocumentoBase):
     """
-    Orden de Compra comercial a proveedores de insumos o servicios (Odoo: purchase.order).
+    Orden de Compra comercial a proveedores de insumos o servicios.
     Hereda de DocumentoBase: numero, fecha, estado, observaciones, creado_en, modificado_en, adjuntos.
     Ciclo de vida: borrador -> confirmado -> finalizado (o cancelado/anulado).
     """
@@ -257,7 +257,7 @@ class OrdenCompra(DocumentoBase):
 
 class LineaOrdenCompra(TimeStampedModel):
     """
-    Línea de detalle en la Orden de Compra (Odoo: purchase.order.line).
+    Línea de detalle de insumo o servicio en la Orden de Compra.
     Especifica SKU, cantidad, unidad de medida, precio pactado y seguimiento de recepción.
     """
 

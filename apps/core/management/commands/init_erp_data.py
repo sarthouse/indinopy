@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Inicializa la base de datos con los datos maestros (Estilo Odoo)"
+    help = "Inicializa la base de datos con los datos maestros del ERP"
 
     @transaction.atomic
     def handle(self, *args, **options):
