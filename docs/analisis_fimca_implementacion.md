@@ -1,7 +1,7 @@
 <span class="doc-header-badge">⚙️ Especificación Técnica</span>
 # Análisis del Dossier Proyecto FIMCA e Integración Arquitectónica en Indinopy
 
-> **Referencia base:** [Dossier Proyecto FIMCA](dossier_rigi_conurbano_2026.html)  
+> **Referencia base:** [Dossier Proyecto FIMCA](dossier_fimca_base.html)  
 > **Sistema destino:** **Indinopy** — ERP & MES Industrial para Manufactura de Calzado, Cuero e Indumentaria  
 > **Fecha:** Septiembre de 2026  
 > **Estado:** Especificación Técnica y Plan de Implementación  
@@ -15,7 +15,7 @@
 3. **Mesa de Enlace Sectorial (MES):** Órgano tripartito (Estado/INTI, Sindicatos, Cámaras, Talleristas) que gobierna la cadena.
 4. **Fideicomiso de Desarrollo Industrial (FDI):** Fondo de ahorro comunitario que reemplaza a los bancos comerciales.
 5. **La Orden de Producción como Título de Crédito (e-OP):** El banco o billetera no pide balances pasados al tallerista; financia el trabajo en curso tomando la OP registrada como garantía real de producción.
-6. **Hito Cero & Escrow Digital:** Anticipo automático de arranque (30% al 40%) al entregar los insumos al tallerista, y pagos posteriores liberados en custodia (*Escrow*) contra la certificación de hitos físicos cumplidos.
+6. **Hito Cero & Financiamiento FDI:** La orden de producción se clasifica según el *Sistema Dual* (OP Privada vs e-OP Federada). En la e-OP Federada, el FDI aprueba el financiamiento y el Banco (agente de clearing) transfiere el Hito Cero (30-40%) de forma automática al entregar los insumos. Los pagos posteriores se liberan contra la certificación de hitos físicos cumplidos por el PTF (Puente Humano).
 7. **Régimen de Maquila y Façón (Propuesta de Reforma Ley 25.113 vs. CCCN Actual):** Actualmente en Argentina la **Ley 25.113 rige con exclusividad para el sector agroindustrial** (productores agropecuarios entregando materia prima con pago en especie y no sujeción tributaria). En el sector del calzado y la indumentaria rige la figura del **façón** (servicio de confección remunerado en dinero), la cual carece de ley propia y se apoya en la *Locación de Obra* (Arts. 1251 y ss. del CCCN) y *Depósito* (Arts. 1356 y ss. CCCN), lo que genera vulnerabilidad laboral (Art. 30 LCT) y riesgo de embargo sobre los insumos ante problemas del tallerista. El Proyecto FIMCA propone **reformar la Ley 25.113 para extender la figura a la "Maquila Industrial"**. Indinopy debe blindar documentalmente la propiedad inembargable de los insumos bajo el CCCN actual y dejar la arquitectura preparada para la eventual ampliación de la Ley 25.113.
 8. **Monotributo Productivo Automatizado:** Alta simplificada con la primera e-OP, retención de 1-2% por cobro efectivo, y "Suspensión Activa de Oficio" (carga fiscal cero pesos si no hay órdenes activas, sin acumular deudas cíclicas).
 9. **Sello QR de Trazabilidad Socioproductiva:** Código escaneable en el calzado para que el consumidor final vea el desglose ético real: cuánto va al tallerista, cuánto a materiales, cuánto a impuestos y cuánto a la marca.
@@ -45,9 +45,9 @@ flowchart TD
             A3["Suspensión Embargos s/ Maquinaria"]
         end
         subgraph P2["2. Financiamiento Soberano (FDI)"]
-            B1["La OP como Colateral Crediticio"]
+            B1["La e-OP como Colateral Crediticio"]
             B2["Hito Cero: Anticipo 30-40% sin Historial"]
-            B3["Escrow Digital y Pagos contra Hitos"]
+            B3["Instrucción de Clearing (Banco)"]
         end
     end
 

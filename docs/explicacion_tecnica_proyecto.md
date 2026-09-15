@@ -9,10 +9,10 @@
 ## 1. ¿Qué Buscamos? (Los 5 Objetivos Estratégicos)
 
 ### 💵 1. Transformar el Trabajo en Dinero Líquido
-Superar la "trampa de Stiglitz". Un aparador o costurero no tiene una casa para hipotecar. La **e-OP (Orden de Producción Electrónica)** se transforma en un título de crédito fiduciario negociable ante el Banco Provincia y el Fideicomiso FDI, dando liquidez sin pedir garantías patrimoniales.
+Superar la "trampa de Stiglitz". Un aparador o costurero no tiene una casa para hipotecar. La **e-OP (Orden de Producción Electrónica)** se transforma en un activo financiero (colateral). El **Fideicomiso (FDI)** asume el riesgo crediticio y financia la operación, ordenando al Banco Provincia (Agente de Clearing) que liquide los fondos sin pedir garantías patrimoniales al tallerista.
 
 ### ⚡ 2. El Hito Cero: Nadie Enciende un Motor sin Cobrar
-Erradicar la práctica de entregar materiales y esperar 60 o 90 días para cobrar la confección. Al firmarse la e-OP y despacharse el cuero, el sistema libera un **anticipo automático del 30% al 40% (o 50% con Sello de Buen Diseño)** para solventar costos operativos inmediatos.
+Erradicar la práctica de entregar materiales y esperar 60 o 90 días para cobrar la confección. Al firmarse la e-OP y despacharse el cuero, el sistema libera un **anticipo automático del 30% al 40% (Capital aportado por el FDI)** para solventar costos operativos inmediatos. La marca comitente repaga este crédito a los 30 o 60 días.
 
 ### 🛡️ 3. Blindaje Legal de Insumos (Inembargabilidad)
 Bajo el régimen de Maquila y Locación de Obra (Arts. 1251 y 1356 CCCN), se formaliza la disociación patrimonial: el cuero es de la marca y el taller es depositario. Los insumos son **estrictamente inembargables** ante quiebras o litigios particulares de cualquiera de las partes.
@@ -46,11 +46,11 @@ Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su 
 *   **Receta Técnica y Tolerancias INTI:** Árbol de Merkle determinista que fija las cantidades teóricas de cuero, suela y adhesivo con hasta un 10% de tolerancia técnica de merma auditada por el INTI.
 *   **Partes de Producción:** Registro en tiempo real de lotes y pares terminados en cada etapa física (corte, rebajado, aparado, armado) que disparan los pagos en tesorería.
 
-### B. Módulo Tesorería y Escrow Digital `apps.tesoreria`
-*   **Máquina de Estados Finita:** Los fondos depositados por el comitente quedan bloqueados en una cuenta de custodia (*Escrow*) del Fideicomiso de Desarrollo Industrial (FDI) y se desbloquean paso a paso:
-    <br>`BORRADOR → COLATERALIZADA (2% FDI) → HITO0_UNLOCKED (30-40%) → EN_PROCESO → LIQUIDADA`.
-*   **Algoritmo de Timelock:** Temporizador regresivo que monitorea las 48 horas hábiles. Si la Comisión de Crédito de la MES no carga un dictamen formal de rechazo, el sistema emite automáticamente la firma de liberación.
-*   **Partición Factorial de Pagos:** Al liquidar una etapa, el sistema fragmenta automáticamente la transferencia en cuentas separadas: mano de obra directa para el taller, aportes sindicales y reserva de garantía FDI (2%).
+### B. Módulo Tesorería y Sistema Dual `apps.tesoreria`
+*   **Sistema Dual:** La plataforma distingue entre la **OP Privada** (relación directa entre privados sin burocracia) y la **e-OP Federada** (que activa el circuito institucional FIMCA de crédito y escudo fiscal).
+*   **Instrucción de Clearing (FDI):** En una e-OP Federada, el Fideicomiso FDI aprueba el financiamiento y le instruye al Banco (agente técnico de clearing) que transfiera los adelantos.
+*   **Algoritmo de Timelock:** Temporizador regresivo que monitorea las 48 horas hábiles. Si la Comisión de Crédito de la MES no emite un veto fundado, el sistema auto-aprueba la homologación por Silencio Administrativo.
+*   **Partición Factorial de Pagos:** Al certificar un hito físico en el taller, el sistema ordena al banco la liquidación fragmentada: anticipo neto a la cuenta del prestador, retención de micro-cuota y 2% al fondo territorial.
 
 ### C. Módulo Contactos y Bolsa de Trabajo `apps.contactos`
 *   **Perfil Tallerista y Capacidad Instalada:** Registra la dotación de operarios, máquinas disponibles y capacidad teórica semanal en pares de calzado.
@@ -85,12 +85,12 @@ Más allá de la emisión de la e-OP, el proyecto institucionaliza cinco disposi
 **🛡️ Blindaje Territorial frente a la Extorsión Burocrática y Comercial**
 
 El tallerista de barrio no confía en un folleto estatal; teme que registrarse sea la puerta de entrada a la coima o la inspección extorsiva. El régimen implementa un blindaje tuitivo de trinchera:
-*   **Ventanilla Única Municipal en 48 Horas:** Al registrarse la primera e-OP, el Municipio emite de oficio la Habilitación Simplificada del taller y la Exención de Tasas Locales (Seguridad e Higiene, Abasto) por 10 años.
-*   **El Promotor Territorial (PTF) como Tutor:** Un par del propio oficio con 12 meses en el régimen y honorario equivalente a 2 SMVM financiado por el FDI guía al tallerista, labra el *Dictamen de Transición Asistida* y lo tutela en sus primeras 3 e-OP.
-*   **Canal de Denuncias Criptográfico y Buzón Lacrado:** Terminales descentralizadas e independientes de la Agencia de Recaudación (ARCA) para denunciar aprietes, coimas o imposición de precios de miseria.
-*   **Inmunidad Fiscal Temporaria de 180 Días:** La radicación formal de una denuncia suspende de pleno derecho toda inspección presencial o ejecución fiscal sobre el taller por 180 días hábiles prorrogables.
-*   **Orden de Restricción Administrativa ("Perimetral al Inspector"):** Si un funcionario público pide dádivas, el sistema suspende preventivamente su usuario informático y la justicia le prohíbe el ingreso al cuadrante productivo del taller denunciante.
-*   **Solidaridad de Distrito:** Si una seccional fiscal acumula más de 3 denuncias firmes en un año, se congelan los fondos de incentivo salarial ("cuenta de jerarquización") de toda esa delegación.
+*   **Ventanilla Única Municipal en 48 Horas:** Al registrarse la primera e-OP, el Municipio emite de oficio la Habilitación Simplificada del taller y la Exención de Tasas Locales por 10 años.
+*   **El PTF como Puente Humano y Tutor Técnico:** Un par del propio oficio actúa como oráculo en el territorio. Disuelve la brecha digital, labra el *Dictamen de Transición Asistida* y tutela al tallerista en sus primeras e-OPs para lograr el alta automática y bancarización sin gestores.
+*   **Canal de Denuncias Criptográfico y Buzón Lacrado:** Terminales descentralizadas para denunciar aprietes, coimas o imposición de precios de miseria.
+*   **Inmunidad Fiscal Temporaria de 180 Días:** La radicación formal de una denuncia suspende de pleno derecho toda inspección presencial o ejecución fiscal sobre el taller por 180 días hábiles.
+*   **Orden de Restricción Administrativa ("Perimetral al Inspector"):** Si un funcionario público pide dádivas, el sistema suspende preventivamente su usuario informático y se le prohíbe el ingreso al cuadrante productivo del taller denunciante.
+*   **Solidaridad de Distrito:** Si una seccional fiscal acumula más de 3 denuncias firmes en un año, se congelan los fondos de incentivo salarial de toda esa delegación.
 
 ### 4.3. Red de Centros CIFO y Banco Comunitario de Maquinarias
 **⚙️ Capital Físico Comunitario y Rescate de Bienes de Capital Fuera de Circuito**
@@ -162,6 +162,9 @@ Diseñado para la fábrica que desea mantener su base de datos físicamente en u
 *   **El Problema de Internet (Webhooks):** Como el router de la fábrica bloquea conexiones entrantes, la integración con la Red Federada y WooCommerce se soluciona de dos formas nativas:
     1. **El Mecanismo de Polling (El "Cartero"):** La PC ejecuta un proceso silencioso (Celery Beat) que pregunta a la MES o a WooCommerce cada 5 minutos: *"¿Hay novedades/ventas nuevas para mi CUIT?"*. Así sortea las barreras de los firewalls domésticos sin configurar puertos.
     2. **Túneles Inversos (Zero Trust):** Para flujos que exigen tiempo real estricto, Indinopy es compatible con Cloudflare Tunnels o Ngrok. Se establece un "tubo seguro" desde la PC hacia internet, permitiendo que el dominio `fabricaperez.indinopy.ar` impacte directo en la PC del galpón, totalmente encriptado y oculto de escaneos de hackers.
+
+#### C. Portal de Talleristas (Fallback Centralizado)
+Si un tallerista no posee infraestructura ni desea operar su propio nodo, el sistema ofrece un tercer mecanismo de adopción: el **Portal Centralizado de la Marca**. El trabajador ingresa con usuario y contraseña (o Token Biométrico) directamente al nodo de su Comitente para firmar la e-OP, notificar hitos y descargar sus comprobantes, garantizando el 100% de adopción sin barreras técnicas.
 
 ---
 Documento de Especificación Estratégica · Sistema de Gestión **Indinopy ERP/MES** para la Mesa de Enlace Sectorial (MES).  

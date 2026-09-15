@@ -250,14 +250,14 @@ El software elimina la barrera burocrática del tallerista informal (que carece 
 2. **APIs RENAPER/ARCA:** El Nodo MES recibe el payload, valida la biometría del Tallerista vía API del RENAPER, y dispara un webservice hacia ARCA/AFIP para generar el alta en el **Monotributo Productivo** de forma 100% programática.
 3. **Apertura de Cuenta Inembargable:** En el mismo milisegundo, vía Open Banking, se abre la **Cuenta de Clearing Técnica en el Banco Provincia**. Esta cuenta (tanto para el trabajador individual como para el taller gestor SAS) nace con el flag de **inembargabilidad** absoluta por ley, protegiendo los fondos de cualquier pasivo de la etapa informal previa.
 
-### Portal Fiduciario y Operatoria Bancaria (BAPRO/FDI)
+### Portal Fiduciario (Dashboard de Clearing en la MES)
 
-La liberación de fondos del Escrow no ocurre mágicamente; requiere que la entidad financiera (ej: Banco Provincia) ejecute el clearing. La arquitectura lo resuelve con el rol de **Fiduciario**:
+La liberación de fondos del Escrow no ocurre mágicamente; requiere que la entidad fiduciaria (FDI) y el Banco (agente de clearing) ejecuten la transferencia. La arquitectura lo resuelve construyendo un sub-módulo interno en el nodo de la MES:
 
-1. **El Nodo MES tiene un Dashboard Bancario:** En `/mes/banco/` o vía API, el oficial de cuenta del Fideicomiso accede con rol `FIDUCIARIO`.
-2. **Generación de Lotes (Batch TXT):** Cuando la MES aprueba 50 hitos en el día, el Fiduciario genera un "Lote de Liquidación" que exporta un archivo estandarizado (ej: formato Interbanking/BAPRO).
-3. **API Directa (Open Banking):** Alternativamente, si el banco expone una API de pagos masivos corporativos, el worker de Celery (`EscrowService.liberar_hito`) puede inyectar la instrucción de pago B2B directamente al banco con la partición factorial (98% al CBU del taller, 2% al CBU de la MES).
-4. **Comprobantes y Facturación:** Tras el clearing exitoso del banco, Indinopy llama al WSFE de AFIP, emite la Factura Electrónica y cancela la posición de IVA diferido.
+1. **El Dashboard Fiduciario:** En `/mes/fiduciaria/` (o vía API), los oficiales de cuenta de la administradora del Fideicomiso acceden con el rol `FIDUCIARIO`.
+2. **Bandeja de Entrada (Inbox) y Tablero de Fondeo:** Visualizan las e-OPs aprobadas por la Comisión de Crédito (o por Silencio Positivo) junto con el saldo disponible en la cuenta custodia del FDI.
+3. **Generación de Lotes (El "Botón de Pago"):** Cuando autorizan, generan un "Lote de Liquidación" exportando un archivo batch estandarizado (`.txt` Interbanking/BAPRO Empresas) o disparando un Webhook corporativo hacia la API B2B del Banco.
+4. **Endpoint de Retorno (Callback):** Tras el clearing exitoso del banco, Indinopy recibe la confirmación, dispara la Factura Electrónica de AFIP por el milisegundo exacto y cancela la posición de IVA diferido.
 
 ### Endpoints de Federación del Nodo MES (Pendiente de Desarrollar)
 
@@ -387,6 +387,7 @@ POLLING API (Fallback — Pull)
 - [ ] Emisión, distribución y Lista de Revocación (CRL) de certificados PTF.
 - [ ] Worker Celery para Timelock de 48h (Silencio Positivo) en red.
 - [ ] Verificación GPS en `OPParteProduccion` (PoPW).
+- [ ] **Portal Fiduciario**: Desarrollo del Dashboard de Clearing (`/mes/fiduciaria/`) con generador de lotes BAPRO y endpoint de callbacks (conciliación automática y disparo de factura AFIP).
 
 ### Fase C — Integración Headless (API Gateway e-OP)
 - [ ] Implementar flag `MODO_HEADLESS` en `ConfiguracionEmpresa` / `settings.py`

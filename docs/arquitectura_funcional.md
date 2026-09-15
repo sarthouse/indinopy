@@ -234,3 +234,105 @@ A nivel de código (MVT avanzado), el sistema protege sus transacciones forzando
 *   `views.py`: Exclusivo para ruteo HTTP, validación de permisos y serialización. Cero lógica de negocio.
 *   `models.py`: Exclusivo para estructura de base de datos relacional/espacial (PostGIS) y validaciones de campo.
 *   `services.py`: **Core Transaccional.** Todo cambio de estado (ej: `ProduccionService.confirmar_op()`) se envuelve en `transaction.atomic()`, dispara los cálculos de Merkle, genera el documento contable, sella el hash, emite los *Signals* y programa las tareas asincrónicas en Celery.
+
+---
+
+## 7. Modelo de Datos y Máquina de Estados (e-OP)
+
+### A. Máquina de Estados de la e-OP (State Machine)
+El ciclo de vida financiero y productivo de la e-OP es estricto y unidireccional. Se maneja a través de un motor de estados para evitar inconsistencias y ataques de doble gasto/pago.
+
+```mermaid
+stateDiagram-v2
+    [*] --> BORRADOR : Creación (Nodo Marca)
+    
+    BORRADOR --> EN_REVISION_MES : Comitente Firma (Payload Canónico + Hash)
+    
+    state EN_REVISION_MES {
+        [*] --> TIMELOCK_48H
+        TIMELOCK_48H --> RECHAZADA_POR_VETO : Auditoría algorética falla o Veto Humano
+        TIMELOCK_48H --> APROBADA_SILENCIO : Celery Beat (Timeout 48h sin vetos)
+    }
+    
+    EN_REVISION_MES --> HITO_CERO_PENDIENTE : Aprobación explícita / Silencio
+    
+    HITO_CERO_PENDIENTE --> EN_PROCESO : Clearing BAPRO OK (FDI liquida anticipo)
+    HITO_CERO_PENDIENTE --> SUSPENDIDA : Falla de clearing bancario / Fondos insuficientes
+    
+    EN_PROCESO --> HITO_AVANCE_PENDIENTE : Tallerista reporta lote terminado
+    
+    state HITO_AVANCE_PENDIENTE {
+        [*] --> INSPECCION_PTF
+        INSPECCION_PTF --> DISPUTA : PTF rechaza calidad/condiciones
+        INSPECCION_PTF --> CLEARING_AVANCE : PTF firma conformidad (Biometría + GPS)
+        CLEARING_AVANCE --> [*] : BAPRO liquida tramo
+    }
+    
+    HITO_AVANCE_PENDIENTE --> EN_PROCESO : Retorna tras clearing
+    EN_PROCESO --> LIQUIDADA : Último hito aprobado y pagado
+    
+    SUSPENDIDA --> EN_REVISION_MES : Resolución de fondos
+    DISPUTA --> EN_PROCESO : Resolución Tribunal de Trinchera
+    DISPUTA --> CANCELADA : Laudo negativo definitivo
+    
+    LIQUIDADA --> [*]
+    RECHAZADA_POR_VETO --> [*]
+    CANCELADA --> [*]
+```
+
+### B. Payload Canónico de la e-OP (Contrato API)
+El intercambio de información entre nodos no transfiere tablas SQL, sino un **Payload Canónico JSON** determinista. 
+*   **Perímetro de Ingreso:** `POST /federacion/eop/entrante/` (Nodo MES)
+*   **Estructura Base:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "version": "1.1",
+  "comitente": {"cuit": "30-12345678-9", "clave_publica": "ed25519_abc123..."},
+  "taller": {"cuit": "20-87654321-0", "clave_publica": "ed25519_xyz789..."},
+  "financial_terms": {
+    "moneda": "ARS",
+    "monto_total": 1500000.00,
+    "cronograma_hitos": [
+      {"id": "H0", "porcentaje": 35.0, "tipo": "anticipo"},
+      {"id": "H1", "porcentaje": 65.0, "tipo": "cierre_lote"}
+    ]
+  },
+  "merkle_root_bom": "e3b0c442...",
+  "firmas": {
+    "comitente": "firma_hex_generada_con_ed25519_privada"
+  }
+}
+```
+*   **Validación en MES:** Al ingresar, el API Gateway de la MES reordena las llaves alfabéticamente (canonicalización), recalcula el SHA-256 y verifica la firma `Ed25519` contra el padrón PKI. Si falla, retorna `400 Bad Request` y no impacta la base.
+
+---
+
+## 8. Casos Límite, Manejo de Errores y NFRs
+
+### A. Resiliencia, Fallas y Dead-Letter Queues (DLQ)
+En una arquitectura distribuida donde fluye crédito fiduciario, el "camino feliz" no es suficiente:
+1. **Falla de Celery Beat (Timelock):** Si el worker que monitorea el Silencio Positivo (48h) se cae, cuando Celery reinicia busca transacciones `EN_REVISION_MES` cuyo `timestamp_creacion + 48h < NOW()`, procesándolas en bloque retroactivamente (estrategia *catch-up*).
+2. **Idempotencia de Webhooks:** Todo endpoint receptor (ej: callbacks del Banco) exige el UUID y una `X-Idempotency-Key`. Si el Banco envía el callback de liquidación dos veces por timeout de su lado, Indinopy devuelve `200 OK` en el segundo intento pero omite modificar el saldo o disparar la AFIP nuevamente.
+3. **Dead-Letter Queue (DLQ):** Los webhooks salientes (ej: notificación al Taller) se encolan en Redis con reintentos exponenciales. Si tras 24h falla (ej: taller offline), el mensaje cae a una DLQ para análisis manual y alerta por email.
+
+### B. Ciclo de Vida Criptográfico y Recuperación de Identidad
+1. **Pérdida de Dispositivo (PTF / Titular):** La clave privada Ed25519 reside en el *Secure Enclave* del celular y no es extraíble. Ante robo/pérdida, el PTF lo reporta presencialmente a la MES. Un administrador local ejecuta la revocación añadiendo la clave pública a la CRL (Certificate Revocation List). Las firmas futuras con esa llave se rechazan en todo el ecosistema.
+2. **Rotación de Llaves de Nodos:** Automática cada 12 meses.
+
+### C. Consistencia en Topología Offline-First
+En Nodos Talleristas On-Premise que operan con conectividad intermitente (Polling):
+*   Si el Tallerista firma la aceptación offline, la firma criptográfica se almacena en caché local con el *timestamp* real.
+*   Al reconectar, el worker transmite el payload.
+*   **Resolución de Conflictos:** Si la marca intentó cancelar la e-OP simultáneamente, el Nodo MES prioriza el vector de tiempo de las firmas descentralizadas. Si el tallerista firmó en su dispositivo *antes* de que la marca enviara la cancelación a la MES, el contrato es vinculante.
+
+### D. Seguridad y Privacidad de Datos Biométricos
+*   **Zero-Retention (Ley 25.326):** Los datos biométricos (huella o biometría facial) utilizados en el Alta de Oficio (integración RENAPER) no se almacenan en los discos de Indinopy. El Nodo MES actúa como passthrough, envía el vector a la API de RENAPER, recibe un `match_score`, lo sella en el registro de auditoría, y descarta el vector biométrico de la memoria RAM inmediatamente.
+
+### E. Observabilidad Distribuida
+*   **Traceability (OpenTelemetry):** El Payload Canónico transporta un `trace_id`. Esto permite correlacionar transacciones distribuidas (Nodo Marca → Nodo MES → Portal Fiduciario → API BAPRO), centralizando los logs en herramientas como Grafana/Loki.
+*   **Alertas (SLAs):** Si la tasa de timeout de los webhooks bancarios supera el umbral crítico, o si la validación del Timelock se atrasa >30 min, se disparan incidentes automatizados al equipo de infraestructura MES.
+
+### F. Edge Cases de Negocio
+1. **Default del Comitente (Crédito Impago):** Si a los 60 días la marca no le devuelve la plata al FDI, la e-OP entra en `DEFAULT`. El FDI asume la pérdida contable, pero el Smart Contract aplica un **Hard Ban** a la firma criptográfica (CUIT) de la marca en toda la Red Federada hasta saldar la deuda. El Tallerista conserva el 100% de la plata porque ya le fue liquidada.
+2. **Cancelación Parcial (Fuerza Mayor):** Si se incendia el taller o hay faltantes a mitad del lote, el sistema emite una enmienda ("Addenda e-OP"). Recalcula los hitos (ej: paga el 50% de los pares salvados) y devuelve la garantía sobrante retenida en custodia a la cuenta del FDI.
