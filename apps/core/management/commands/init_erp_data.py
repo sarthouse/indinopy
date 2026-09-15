@@ -120,7 +120,7 @@ class Command(BaseCommand):
             },
         )
 
-        # Consumidor Final Genérico (Para Ventas Mostrador / Circuito X)
+        # Consumidor Final Genérico (Para Ventas Mostrador / Operaciones Locales)
         tipo_sin_identificar = TipoDocumentoAFIP.objects.filter(codigo="99").first()
         Contacto.objects.get_or_create(
             codigo="CF-01",
@@ -261,11 +261,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("✔️ Monedas AFIP creadas."))
 
     def crear_diarios_contables(self):
-        # 1. Diario Blanco (Conectado a AFIP)
+        # 1. Diario de Ventas Electrónicas (Conectado a AFIP/ARCA)
         Diario.objects.get_or_create(
             codigo="VEN-A",
             defaults={
-                "nombre": "Ventas AFIP (Blanco)",
+                "nombre": "Ventas Electrónicas (AFIP)",
                 "tipo": "ventas",
                 "punto_venta_afip": 3,
                 "es_facturacion_electronica": True,
@@ -273,11 +273,11 @@ class Command(BaseCommand):
             },
         )
 
-        # 2. Diario Negro (Circuito X / No Informado)
+        # 2. Diario de Gestión y Control Interno (No Electrónico / RG AFIP 1415)
         Diario.objects.get_or_create(
             codigo="VEN-X",
             defaults={
-                "nombre": "Ventas Internas (Circuito X)",
+                "nombre": "Ventas de Gestión Interna",
                 "tipo": "ventas",
                 "punto_venta_afip": None,
                 "es_facturacion_electronica": False,
@@ -285,5 +285,5 @@ class Command(BaseCommand):
             },
         )
         self.stdout.write(
-            self.style.SUCCESS("✔️ Diarios contables (Blanco / X) creados.")
+            self.style.SUCCESS("✔️ Diarios contables (Electrónico / Gestión Interna) creados.")
         )

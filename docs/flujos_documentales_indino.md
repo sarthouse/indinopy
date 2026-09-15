@@ -19,10 +19,10 @@ El eje del sistema abandona el esquema tradicional para adoptar instrumentos leg
 *   **Remito de Maquila (Arts. 1251/1356 CCCN):** Documento que formaliza el traslado de insumos al taller, estableciendo su estricta **inembargabilidad**.
 *   **Factura Electrónica AFIP:** Comprobante fiscal (FacturadorAFIP) generado automáticamente con el clearing del FDI (Cuenta de IVA diferida).
 
-### El Sistema Dual: OP Privada vs e-OP Federada
-Para no burocratizar innecesariamente a los actores que no requieren de los beneficios del RIGI (ej: Marcas que se autofinancian o producen internamente), Indinopy opera bajo un **Sistema Dual**:
-1. **OP Privada (Simple):** Es una orden de producción rápida y directa entre la Marca y el Taller. No requiere bloqueo de fondos en Escrow, no pasa por la Comisión de la MES ni requiere firmas criptográficas de los auditores (PTF). Es ágil y 100% de derecho privado.
-2. **e-OP Federada (FIMCA):** Se activa marcando la opción `es_eop_federada = True`. Engancha automáticamente todo el ecosistema institucional: fondeo en el FDI, Timelock de 48h, auditoría PoPW por el PTF y beneficios fiscales del Puente SAS. Se utiliza cuando el Tallerista o la Marca necesitan seguridad de cobro, financiamiento o reducción impositiva.
+### Modalidades Operativas de Producción: OP de Gestión Interna vs e-OP Federada
+Para diferenciar la coordinación fabril de planta del circuito de fomento fiduciario, Indinopy opera bajo dos modalidades:
+1. **OP de Gestión Interna (Modo Fabril Directo):** Hoja de ruta técnica y operativa entre la oficina de producción y la línea de corte/aparado/armado. No requiere bloqueo de fondos en Escrow, no pasa por la Comisión de la MES ni requiere fiscalización de auditores (PTF), operando como directiva interna de fabricación de derecho privado. En el plano contable (`DocumentoDeuda`), puede generar comprobantes de control interno provisorios (Clase "X" conforme a RG AFIP 1415) para reflejar el devengado operativo de fábrica antes de la facturación electrónica definitiva.
+2. **e-OP Federada (Protocolo FIMCA):** Se activa marcando la opción `es_eop_federada = True`. Engancha automáticamente el ecosistema institucional: colateral en el FDI, custodia en Escrow, Timelock de 48h con silencio positivo, auditoría PoPW por el PTF y beneficios fiscales del régimen promocional con facturación electrónica AFIP vinculada al clearing.
 
 ---
 

@@ -135,10 +135,10 @@ flowchart TD
 
 ## 5. Flujos Core de Negocio (Core Business Flows)
 
-### A. El Sistema Dual: OP Privada vs e-OP Federada
-Para no burocratizar innecesariamente a los actores que no requieren de los beneficios del FIMCA, Indinopy opera bajo un **Sistema Dual**:
-1. **OP Privada (Simple):** Orden directa entre Marca y Taller. No bloquea fondos en Escrow ni pasa por la MES. Se resuelve en el ámbito privado.
-2. **e-OP Federada:** Activa el ecosistema institucional (Escrow, Timelock 48h, Auditoría PTF, beneficios fiscales del Puente SAS).
+### A. Modalidades de Producción: OP de Gestión Interna vs e-OP Federada
+Para no burocratizar la planta ni forzar fricciones administrativas en los procesos habituales de fabricación, Indinopy distingue dos modalidades operativas:
+1. **OP de Gestión Interna (Modo Fabril Directo):** Hoja de ruta técnica de planta para la coordinación física de la manufactura (curvas de talles, consumos BOM, ruteo de etapas de corte/aparado/armado y partes de producción). Al constituir una directiva operativa de ingeniería fabril interna y no una enajenación comercial entre terceros, no genera hecho imponible tributario ni requiere validación electrónica ante AFIP/ARCA (sin CAE). En el plano administrativo-contable (`DocumentoDeuda`), permite la registración de comprobantes de control interno clase "X" (RG AFIP 1415) para reflejar el devengado operativo de fábrica antes de la facturación comercial definitiva.
+2. **e-OP Federada (Protocolo Institucional FIMCA):** Eleva la orden técnica a título de afectación productiva y colateral financiero ante el Fideicomiso FDI, activando el ecosistema institucional (Escrow bancario, anticipo Hito Cero, Timelock 48h con silencio positivo, auditoría territorial PTF y beneficios promocionales de IVA diferido y crédito fiscal presunto del 25%).
 
 ### B. Ciclo de Vida de una e-OP Federada: Hito Cero y Financiamiento FDI
 

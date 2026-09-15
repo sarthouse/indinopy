@@ -8,42 +8,31 @@
 
 Este glosario documenta y define en profundidad cada uno de los conceptos, siglas, fórmulas, procedimientos e instituciones presentes en la arquitectura de **Indinopy ERP/MES**, el modelo de orden de producción (**`modelo_orden_produccion.html`**), el protocolo de la **Orden de Producción Electrónica (e-OP)** y el marco normativo **FIMCA**.
 
-```mermaid
-flowchart TD
-    ROOT["Glosario de Conceptos del Proyecto"]
+## Introducción al Ecosistema y Marco Taxonómico
 
-    subgraph G1["Institución y Reglas"]
-        B["1. Metadatos del Sistema"]
-        C["2. Criptografía y Trazabilidad"]
-        D["3. Actores y Velo Societario"]
-    end
+El presente glosario constituye el cuerpo conceptual unificado de **Indinopy ERP/MES** y el marco de gobernanza **FIMCA** (*Formalización e Incentivo a la Manufactura del Calzado Argentino*). Su propósito es tender un puente de lenguaje común entre mundos que históricamente han operado desconectados: la ingeniería de software distribuido, la criptografía aplicada, el derecho civil y laboral argentino, la física de la transformación del cuero y la economía política del trabajo territorial.
 
-    subgraph G2["Física Productiva"]
-        E["4. Técnica del Calzado y BOM"]
-        F["5. Tracking Físico y Partes"]
-    end
+La arquitectura del proyecto se sostiene sobre cuatro pilares vertebrales cuyos términos se detallan a lo largo de este documento:
 
-    subgraph G3["Finanzas y Marco Legal"]
-        G["6. Arquitectura Escrow y UCI"]
-        H["7. Desglose Factorial de Costos"]
-        I["8. Tutela Sindical y Arbitraje"]
-        J["9. Régimen Fiscal y Previsional"]
-    end
-
-    subgraph G4["Infraestructura y Cumplimiento"]
-        K["10. Resiliencia y Operaciones"]
-        L["11. Siglas y Acrónimos"]
-    end
-
-    ROOT --> G1
-    ROOT --> G2
-    ROOT --> G3
-    ROOT --> G4
-```
+1. **Sustitución de Burocracia por Confianza Matemática:** La relación entre marcas comitentes y talleres no depende de expedientes analógicos ni de la discrecionalidad estatal. A través de primitivas criptográficas deterministas (hashing SHA-256 de payloads canónicos, árboles de Merkle para recetas BOM y firmas asimétricas Ed25519 en hardware seguro), el sistema garantiza la inmutabilidad de los compromisos y la trazabilidad de los costos sin vulnerar secretos industriales.
+2. **La e-OP como Activo Financiero y Colateral:** La Orden de Producción Electrónica deja de ser una simple planilla de fábrica para constituirse en un título ejecutivo de crédito fiduciario. Su convalidación institucional en la Mesa de Enlace Sectorial (MES) habilita el fondeo inmediato del **Hito Cero** (anticipo del 35% al 40% del capital de trabajo) mediante el Fideicomiso de Desarrollo Industrial (FDI), desintermediando el crédito usurario y protegiendo el poder adquisitivo del tallerista mediante la indexación en Unidades de Cuenta Industrial (UCI).
+3. **Auditoría de Trinchera y Prueba de Trabajo Productivo (PoPW):** Para evitar fraudes informáticos o aprobaciones de escritorio, el protocolo exige la verificación física y presencial en el taller. La figura del Promotor Territorial de Formalización (PTF) —un par del propio oficio— constata los lotes mediante geocercado satelital (PostGIS < 150m) y biometría RENAPER, activando la liquidación inmediata de hitos en cuentas inembargables del Banco Provincia (BAPRO).
+4. **Descompresión Fiscal y Blindaje Jurídico:** El régimen desarma el "purgatorio fiscal" que condena a los talleristas a la informalidad. Mediante la figura del Monotributo Productivo con micro-retención automática en clearing (1.5%), la Cláusula de No Retroactividad, la Cuenta de IVA Sectorial Diferida y el Crédito Fiscal Presunto del 25%, el sistema permite a las marcas deducir el 100% de sus costos de mano de obra en Ganancias e IVA sin asfixiar la liquidez del tallerista de base, blindando a su vez las materias primas contra embargos bajo el régimen de Locación de Obra (CCCN 1251) y Custodia (CCCN 1356).
 
 ---
 
-## 1. Identificación del Sistema y Metadatos Institucionales
+### Índice Rápido de Secciones
+
+| Eje Temático | Secciones y Contenido Principal |
+| :--- | :--- |
+| **Institución y Reglas** | [1. Metadatos del Sistema](#sec-1) (Indinopy, e-OP, MES, FDI, Timelock, Silencio Positivo, Modalidad Operativa Fabril, Addenda)<br/>[2. Criptografía y Trazabilidad](#sec-2) (UUID, Merkle BOM, Ed25519, Multisig, QR, PoPW, Geo-Fencing, mTLS, CRL, IA Algorética, Zero-Retention)<br/>[3. Actores y Velo Societario](#sec-3) (Marca, UBO, Tallerista, PTF, Score Solidario, Bolsa de Trabajo, Maestros Artesanos, Talleres Espejo, Ventanilla Única) |
+| **Física Productiva** | [4. Técnica del Calzado y BOM](#sec-4) (BOM, Curva de Talles, Horma INTI, SBD, Mermas, Cuero Flor, Cordura, Puntera IRAM, Adhesivos)<br/>[5. Tracking Físico y Partes](#sec-5) (Parte de Producción, Liquidación Desacoplada, Etapas 1 a 4 de Corte a Empaque) |
+| **Finanzas y Marco Legal** | [6. Arquitectura Escrow y UCI](#sec-6) (Escrow, Hito Cero, Hitos de Avance, Hito Final, UCI, Micro-canon MES, Fondo de Riesgo, UCP, AML/KYC/ROS)<br/>[7. Desglose Factorial de Costos](#sec-7) (Costo Industrial Fabril, Mano de Obra Territorial, Margen Comercial, P.V.P.)<br/>[8. Tutela Sindical y Arbitraje](#sec-8) (Veto Ex-Post, Alerta de Escrow, Fianza Líquida, Tribunal Arbitral, Slashing, Hard Ban, Canal de Denuncias)<br/>[9. Régimen Fiscal y Previsional](#sec-9) (Locación de Obra vs Compraventa, Inembargabilidad CCCN 1251/1356, Monotributo Productivo 1.5%, Suspensión Activa, Ganancias, Aportes Patronales, No Retroactividad, IVA Diferido, Crédito Presunto 25%, Puente SAS, Tarifa Plana, Control Interno RG 1415) |
+| **Infraestructura y Cumplimiento** | [10. Resiliencia de Software y Operaciones](#sec-10) (Dead-Letter Queue, Idempotencia, Topología Offline-First)<br/>[11. Tabla Rápida de Siglas y Acrónimos](#sec-11) (Guía alfabética de acrónimos técnicos, legales y tributarios) |
+
+---
+
+## <a id="sec-1"></a>1. Identificación del Sistema y Metadatos Institucionales
 
 ### **Indinopy ERP/MES**
 Plataforma de software libre (bajo licencia abierta) diseñada específicamente para la planificación de recursos empresariales (**ERP - Enterprise Resource Planning**) y la ejecución de manufactura en planta (**MES - Manufacturing Execution System**) en cadenas de valor de calzado, confección y marroquinería. **No es una empresa fabricante ni una marca comercial**, sino la infraestructura técnica digital que procesa las órdenes, audita los stocks por partida doble y gestiona la interacción con la Mesa de Enlace Sectorial.
@@ -63,17 +52,17 @@ Algoritmo de control temporal programado en el sistema informático. Establece u
 ### **Silencio Administrativo Positivo**
 Principio rector de ingeniería procesal: ante la inacción u omisión burocrática del cuerpo colegiado dentro del plazo perentorio de 48 horas, **el sistema informático da por aprobada la orden de pleno derecho por vía de silencio positivo**. Impide que disputas partidarias o desidia administrativa congelen el trabajo del tallerista.
 
-### **Sistema Dual (OP Privada vs. e-OP Federada)**
-Arquitectura operativa bifurcada de Indinopy diseñada para no burocratizar transacciones estándar:
-* **OP Privada (Simple):** Orden directa entre Marca y Taller que opera sin depósito en garantía fiduciaria, sin supervisión de la MES ni auditoría territorial. Se resuelve en el ámbito mercantil privado de las partes.
-* **e-OP Federada:** Orden que activa plenamente el protocolo institucional FIMCA: custodia en Escrow del FDI, Timelock de 48 horas con silencio positivo, supervisión del Promotor Territorial (PTF), deducción impositiva al 100% y neutralidad en Ingresos Brutos.
+### **Modalidad Operativa Fabril (OP de Gestión Interna vs. e-OP Federada)**
+Arquitectura de ejecución manufacturera estructurada para diferenciar la coordinación técnica de planta del circuito de financiamiento fiduciario:
+* **OP de Gestión Interna (Modo Fabril / Taller Propio):** Documento técnico-operativo de planta (hoja de ruta de ingeniería, curva de talles, receta de consumo BOM y ruteo de etapas físicas de corte, rebajado, aparado y armado). Al constituir una directiva operativa interna de coordinación fabril y no una operación de compraventa o enajenación comercial entre terceros, no configura hecho imponible tributario ni requiere validación electrónica ante AFIP/ARCA (sin CAE). Su alcance es estrictamente de gestión industrial y se rige por el Código Civil y Comercial de la Nación (CCCN).
+* **e-OP Federada (Protocolo Institucional FIMCA):** Orden que eleva la especificación técnica de planta a título de afectación productiva y colateral financiero ante el Fideicomiso FDI. Activa la custodia en Escrow bancario, el adelanto de capital de trabajo (Hito Cero), el Timelock de 48 horas con silencio positivo, la auditoría técnica territorial (PTF) y el régimen promocional de crédito fiscal presunto (25%) e IVA diferido.
 
 ### **Addenda e-OP (Enmienda Contractual por Fuerza Mayor)**
 Mecanismo de modificación formal inmutable de una e-OP en ejecución. Ante contingencias fortuitas (siniestros, rotura crítica de maquinaria o mermas extraordinarias no imputables), las partes y la MES suscriben criptográficamente una adenda que recalcula proporcionalmente las metas de entrega, readecua los desembolsos de los hitos pendientes y reintegra el saldo no devengado de la custodia fiduciaria al FDI.
 
 ---
 
-## 2. Primitivas Criptográficas y de Trazabilidad Inmutable
+## <a id="sec-2"></a>2. Primitivas Criptográficas y de Trazabilidad Inmutable
 
 ### **UUID (Universally Unique Identifier)**
 Identificador universal único pseudoaleatorio de 128 bits (ej. `e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1`). Garantiza la unicidad matemática global de cada e-OP emitida en el sistema, vinculando en una sola clave todas las transacciones físicas, remitos, movimientos de inventario y transferencias bancarias asociadas.
@@ -110,7 +99,7 @@ Directriz de privacidad y seguridad implementada en la integración de enrolamie
 
 ---
 
-## 3. Actores de Gobernanza y Velo Societario
+## <a id="sec-3"></a>3. Actores de Gobernanza y Velo Societario
 
 ### **Marca Comitente**
 Empresa que encarga la producción, aporta el diseño, provee las materias primas bajo régimen de custodia, comercializa el producto terminado e integra el fondeo de la mano de obra en la bóveda de Escrow del FDI.
@@ -142,7 +131,7 @@ Dependencia operativa de articulación entre el gobierno local y la MES. Al tram
 
 ---
 
-## 4. Técnica del Calzado, BOM y Mermas
+## <a id="sec-4"></a>4. Técnica del Calzado, BOM y Mermas
 
 ### **BOM (Bill of Materials / Lista de Materiales)**
 Receta técnica formal y exhaustiva que detalla todos los insumos necesarios para fabricar una unidad de producto (un par de calzado): superficie de cuero, metros de cordura, pares de suelas, kilogramos de adhesivo, pares de punteras y avíos.
@@ -173,7 +162,7 @@ Pegamento de base poliéster-poliuretano libre de toluol (solvente aromático al
 
 ---
 
-## 5. Tracking Físico y Partes de Producción
+## <a id="sec-5"></a>5. Tracking Físico y Partes de Producción
 
 ### **Parte de Producción Físico (`OPParteProduccion` - PART-N°)**
 Comprobante operativo digital y en papel mediante el cual el tallerista declara la culminación de un tramo del trabajo, especificando: pares conformes de primera calidad, pares de segunda y porcentaje de scrap resultante. Es el disparador probatorio que gatilla la auditoría del PTF.
@@ -195,7 +184,7 @@ Etapa final de deshormado, colocación de plantillas de confort en goma EVA, lim
 
 ---
 
-## 6. Arquitectura Financiera, Escrow Digital y Moneda
+## <a id="sec-6"></a>6. Arquitectura Financiera, Escrow Digital y Moneda
 
 ### **Escrow Digital Atomizado**
 Dispositivo fiduciario programable en el sistema informático. Los fondos correspondientes a la retribución de la mano de obra son depositados por la marca comitente en una subcuenta fiduciaria cerrada del FDI en el momento en que se emite la orden. La marca **pierde la libre disponibilidad del dinero**, el cual se va liberando automáticamente hacia la cuenta del tallerista conforme se verifican los hitos pactados.
@@ -230,7 +219,7 @@ Entramado de cumplimiento regulatorio financiero exigido por los convenios con e
 
 ---
 
-## 7. Matriz Factorial de Costos Ítem por Ítem
+## <a id="sec-7"></a>7. Matriz Factorial de Costos Ítem por Ítem
 
 ### **Costo Industrial Fabril**
 Costo técnico directo consolidado de fabricación en planta, compuesto por la suma matemática de:
@@ -247,7 +236,7 @@ Precio final proyectado para la venta del calzado en el mostrador del comercio m
 
 ---
 
-## 8. Tutela Laboral, Veto Ex-Post y Arbitraje
+## <a id="sec-8"></a>8. Tutela Laboral, Veto Ex-Post y Arbitraje
 
 ### **Veto Ex-Post Sindical**
 Potestad de policía de trabajo ejercida por el sindicato con personería gremial (UTICRA o SETIA). A diferencia del modelo burocrático tradicional, el gremio **no frena el inicio de la orden con sellos preventivos**, sino que audita la realidad física en el taller durante la confección o al momento de la entrega.
@@ -274,7 +263,7 @@ Dispositivo bimodal de protección institucional (Addenda II, Sección VIII.F) i
 
 ---
 
-## 9. Régimen Impositivo, Fiscal y Previsional
+## <a id="sec-9"></a>9. Régimen Impositivo, Fiscal y Previsional
 
 ### **Locación de Obra vs. Compraventa**
 Diferenciación legal de fondo regulada por el Código Civil y Comercial de la Nación (Art. 1251):
@@ -315,9 +304,18 @@ Programa de migración asistida que desactiva el "purgatorio fiscal" (Addenda II
 ### **Tarifa Plana Industrial Manufacturera (Desacople Energético)**
 Dispositivo de soberanía tarifaria (Addenda II, Sección VIII.L) que desacopla el costo de la energía eléctrica consumida por los talleres adheridos de las cotizaciones internacionales o precios dolarizados. Se fija una tarifa plana calculada en pesos según costos reales de generación local más margen auditado. La diferencia con el mercado spot es compensada a las distribuidoras por el FDI mediante la asignación específica de Derechos de Exportación sobre hidrocarburos y minería.
 
+### **Comprobante de Gestión y Control Interno (Clase "X" / Sin CAE - RG AFIP 1415)**
+Documento administrativo no fiscal habilitado en el modelo de cuentas a pagar/cobrar (`DocumentoDeuda`) en estricto apego al régimen de emisión de comprobantes de la autoridad fiscal (Resolución General AFIP N° 1415/2003, Art. 8 inc. a, "Documento no válido como factura"):
+* **Devengado Operativo de Fábrica:** Permite a la empresa asentar el avance físico de obra, liquidaciones provisorias de taller a destajo, remitos internos de circulación de insumos y provisiones de costos de planta antes de la emisión o recepción del comprobante electrónico definitivo con CAE.
+* **Agnosticismo y Realidad Económica:** Garantiza el reflejo fidedigno de los flujos físicos y financieros de la fábrica sin anticipar ni distorsionar bases imponibles fiscales, reservando los comprobantes con validación electrónica (Facturas A, B, C, MiPyME) para los actos comerciales perfeccionados.
+
+> [!NOTE]
+> **Aviso de Neutralidad Tecnológica y Cumplimiento Legal:**
+> Indinopy es una plataforma de software de ejecución de manufactura (MES) y planificación de recursos (ERP). La habilitación de comprobantes de control interno y órdenes de producción responde estrictamente a necesidades de coordinación técnica fabril y cómputo de costos operativos. Toda orden de producción y comprobante de gestión interna está sujeto a la legislación mercantil y tributaria vigente. La determinación de la materia gravada, la emisión de facturas electrónicas con CAE y la liquidación impositiva recaen de manera exclusiva e indelegable en los contribuyentes y usuarios emisores bajo el Régimen Penal Tributario (Ley 27.430).
+
 ---
 
-## 10. Resiliencia de Software, Integración y Operaciones Técnicas
+## <a id="sec-10"></a>10. Resiliencia de Software, Integración y Operaciones Técnicas
 
 ### **Dead-Letter Queue (DLQ) e Idempotencia de Webhooks**
 Mecanismos de robustez y tolerancia a fallas en la arquitectura asincrónica distribuida (Celery / Redis / PostgreSQL):
@@ -329,7 +327,7 @@ Esquema de comunicación asincrónica saliente (*outbound polling*) diseñado pa
 
 ---
 
-## 11. Tabla Rápida de Siglas y Acrónimos
+## <a id="sec-11"></a>11. Tabla Rápida de Siglas y Acrónimos
 
 | Sigla | Significado Completo | Ámbito de Aplicación |
 | :--- | :--- | :--- |

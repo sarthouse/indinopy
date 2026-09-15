@@ -69,8 +69,13 @@ function generateTOC(contentDiv) {
     ul.className = 'toc-list';
 
     headings.forEach((heading, index) => {
-        if (!heading.id) {
-            heading.id = 'section-' + index + '-' + heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const innerAnchor = heading.querySelector('a[id], span[id]');
+        if (innerAnchor && innerAnchor.id) {
+            heading.id = innerAnchor.id;
+        } else if (!heading.id) {
+            heading.id = 'section-' + index + '-' + heading.textContent.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         }
 
         const li = document.createElement('li');
@@ -102,6 +107,21 @@ function generateTOC(contentDiv) {
         sidebar.classList.remove('open');
     });
 }
+
+// Navegación suave global para cualquier enlace interno (#) dentro del documento
+document.addEventListener('click', (e) => {
+    const anchor = e.target.closest('a[href^="#"]');
+    if (!anchor) return;
+    const hash = anchor.getAttribute('href');
+    if (!hash || hash === '#') return;
+    const targetId = decodeURIComponent(hash.slice(1));
+    const targetEl = document.getElementById(targetId) || document.querySelector(`[name="${targetId}"]`);
+    if (targetEl) {
+        e.preventDefault();
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.pushState(null, null, hash);
+    }
+});
 
 async function loadMarkdown() {
     try {
@@ -270,6 +290,15 @@ async function loadMarkdown() {
                     updateTransform();
                 }, { passive: false });
             });
+        }
+
+        // Si la URL vino con un hash (#), hacer scroll suave hasta el elemento
+        if (window.location.hash) {
+            const targetId = decodeURIComponent(window.location.hash.slice(1));
+            const targetEl = document.getElementById(targetId) || document.querySelector(`[name="${targetId}"]`);
+            if (targetEl) {
+                setTimeout(() => targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+            }
         }
 
     } catch (error) {

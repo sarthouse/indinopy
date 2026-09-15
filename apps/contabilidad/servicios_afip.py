@@ -51,7 +51,9 @@ class FacturadorAFIP:
             )
 
         if not documento_deuda.diario.es_facturacion_electronica:
-            logger.info(f"El diario {documento_deuda.diario.codigo} opera en Circuito X. Se omite conexión con AFIP.")
+            logger.info(
+                f"El diario {documento_deuda.diario.codigo} opera bajo modalidad de gestión interna (no electrónico). Se omite conexión con AFIP."
+            )
             return True
 
         if documento_deuda.afip_cae:

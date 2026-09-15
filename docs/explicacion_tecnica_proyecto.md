@@ -46,8 +46,8 @@ Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su 
 *   **Receta Técnica y Tolerancias INTI:** Árbol de Merkle determinista que fija las cantidades teóricas de cuero, suela y adhesivo con hasta un 10% de tolerancia técnica de merma auditada por el INTI.
 *   **Partes de Producción:** Registro en tiempo real de lotes y pares terminados en cada etapa física (corte, rebajado, aparado, armado) que disparan los pagos en tesorería.
 
-### B. Módulo Tesorería y Sistema Dual `apps.tesoreria`
-*   **Sistema Dual:** La plataforma distingue entre la **OP Privada** (relación directa entre privados sin burocracia) y la **e-OP Federada** (que activa el circuito institucional FIMCA de crédito y escudo fiscal).
+### B. Módulo Tesorería y Modalidades Operativas `apps.tesoreria`
+*   **Modalidades Operativas:** La plataforma distingue entre la **OP de Gestión Interna** (hoja de ruta de planta y gestión mercantil directa, con soporte para comprobantes de control interno clase "X" según RG AFIP 1415 en `DocumentoDeuda`) y la **e-OP Federada** (que activa el circuito institucional FIMCA de colateralización crediticia, custodia Escrow y clearing fiscal).
 *   **Instrucción de Clearing (FDI):** En una e-OP Federada, el Fideicomiso FDI aprueba el financiamiento y le instruye al Banco (agente técnico de clearing) que transfiera los adelantos.
 *   **Algoritmo de Timelock:** Temporizador regresivo que monitorea las 48 horas hábiles. Si la Comisión de Crédito de la MES no emite un veto fundado, el sistema auto-aprueba la homologación por Silencio Administrativo.
 *   **Partición Factorial de Pagos:** Al certificar un hito físico en el taller, el sistema ordena al banco la liquidación fragmentada: anticipo neto a la cuenta del prestador, retención de micro-cuota y 2% al fondo territorial.
