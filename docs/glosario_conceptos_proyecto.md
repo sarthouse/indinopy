@@ -1,16 +1,16 @@
 <span class="doc-header-badge">📖 Glosario</span>
-# Glosario Integral de Conceptos: Protocolo e-OP y Gobernanza FIMCA
+# Glosario de Conceptos del Proyecto: Indinopy, Protocolo e-OP y Gobernanza FIMCA
 ### *Guía Taxonómica de Términos Legales, Criptográficos, Técnicos, Financieros y de Trinchera*
 
 **Sistema de Gestión Indinopy ERP/MES · Mesa de Enlace Sectorial (MES Federal / Nodo Conurbano)**
 
 ---
 
-Este glosario documenta y define en profundidad cada uno de los conceptos, siglas, fórmulas, procedimientos e instituciones presentes en el modelo de orden de producción (**`modelo_orden_produccion.html`**) y en la arquitectura de gobernanza de la **Orden de Producción Electrónica (e-OP)** y el marco **FIMCA**.
+Este glosario documenta y define en profundidad cada uno de los conceptos, siglas, fórmulas, procedimientos e instituciones presentes en la arquitectura de **Indinopy ERP/MES**, el modelo de orden de producción (**`modelo_orden_produccion.html`**), el protocolo de la **Orden de Producción Electrónica (e-OP)** y el marco normativo **FIMCA**.
 
 ```mermaid
 flowchart TD
-    ROOT["Glosario Integral e-OP"]
+    ROOT["Glosario de Conceptos del Proyecto"]
 
     subgraph G1["Institución y Reglas"]
         B["1. Metadatos del Sistema"]
@@ -30,9 +30,15 @@ flowchart TD
         J["9. Régimen Fiscal y Previsional"]
     end
 
+    subgraph G4["Infraestructura y Cumplimiento"]
+        K["10. Resiliencia y Operaciones"]
+        L["11. Siglas y Acrónimos"]
+    end
+
     ROOT --> G1
     ROOT --> G2
     ROOT --> G3
+    ROOT --> G4
 ```
 
 ---
@@ -57,6 +63,14 @@ Algoritmo de control temporal programado en el sistema informático. Establece u
 ### **Silencio Administrativo Positivo**
 Principio rector de ingeniería procesal: ante la inacción u omisión burocrática del cuerpo colegiado dentro del plazo perentorio de 48 horas, **el sistema informático da por aprobada la orden de pleno derecho por vía de silencio positivo**. Impide que disputas partidarias o desidia administrativa congelen el trabajo del tallerista.
 
+### **Sistema Dual (OP Privada vs. e-OP Federada)**
+Arquitectura operativa bifurcada de Indinopy diseñada para no burocratizar transacciones estándar:
+* **OP Privada (Simple):** Orden directa entre Marca y Taller que opera sin depósito en garantía fiduciaria, sin supervisión de la MES ni auditoría territorial. Se resuelve en el ámbito mercantil privado de las partes.
+* **e-OP Federada:** Orden que activa plenamente el protocolo institucional FIMCA: custodia en Escrow del FDI, Timelock de 48 horas con silencio positivo, supervisión del Promotor Territorial (PTF), deducción impositiva al 100% y neutralidad en Ingresos Brutos.
+
+### **Addenda e-OP (Enmienda Contractual por Fuerza Mayor)**
+Mecanismo de modificación formal inmutable de una e-OP en ejecución. Ante contingencias fortuitas (siniestros, rotura crítica de maquinaria o mermas extraordinarias no imputables), las partes y la MES suscriben criptográficamente una adenda que recalcula proporcionalmente las metas de entrega, readecua los desembolsos de los hitos pendientes y reintegra el saldo no devengado de la custodia fiduciaria al FDI.
+
 ---
 
 ## 2. Primitivas Criptográficas y de Trazabilidad Inmutable
@@ -75,6 +89,24 @@ Mecanismo de seguridad transaccional donde los fondos bloqueados en Escrow solo 
 
 ### **Sello QR de Trazabilidad Socioproductiva**
 Código bidimensional impreso en la etiqueta de packaging de cada par de calzado. Al ser escaneado por el consumidor final en góndola o comercio electrónico, redirige a una URL pública (`https://indino.ar/t/{UUID}`) que desglosa de manera transparente la descomposición factorial de costos: mano de obra territorial, materias primas nacionales, carga impositiva neta y margen comercial.
+
+### **PoPW (Proof of Productive Work / Prueba de Trabajo Productivo)**
+Mecanismo de consenso fáctico que sustituye a las pruebas computacionales sintéticas. La liberación de recursos en custodia financiera no depende de cálculos de hashing abstractos, sino de la constatación física presencial de un lote manufacturado en planta por parte del PTF, sellada con geolocalización PostGIS, validación biométrica RENAPER y firma Ed25519 en hardware seguro.
+
+### **Geo-Fencing Anti-Colusión (PostGIS `ST_Distance`)**
+Algoritmo de salvaguarda espacial ejecutado en la capa transaccional (`services.py`). Al momento de certificar un hito en la app móvil, el sistema evalúa la distancia ortodrómica entre las coordenadas GPS emitidas por el dispositivo del auditor y el polígono catastral habilitado del taller. Si la distancia supera los 150 metros, se bloquea la firma Ed25519 y se dispara un *Alerta de Colusión* en la MES para evitar aprobaciones fraudulentas remotas.
+
+### **mTLS (Mutual TLS) y PKI Federada**
+Protocolo de seguridad perimetral de red en el que tanto el cliente como el servidor se autentican mutuamente mediante certificados digitales x509. En la red Indinopy, los nodos de marcas y talleres solo pueden intercambiar payloads canónicos con el nodo MES si sus certificados fueron emitidos por la Autoridad Certificante raíz (`indinopy.ar`).
+
+### **Lista de Revocación de Certificados (CRL)**
+Registro criptográfico inmutable y distribuido administrado por la MES que contiene los identificadores de claves públicas Ed25519 dadas de baja por pérdida de terminales móviles, robo o remoción de apoderados y promotores. Toda transacción firmada con una clave registrada en la CRL es rechazada automáticamente por el API Gateway.
+
+### **IA Algorética (Planificación Algorética para la Justicia Distributiva)**
+Concepto doctrinario fundacional de FIMCA (Addenda II, Sección VIII.K), inspirado en la encíclica *Magnifica Humanitas* y el principio de subordinación de la tecnología a la dignidad humana. Plantea el despliegue de modelos de inteligencia artificial de código abierto bajo control comunitario para: (a) auditar predictivamente precios de mano de obra y alertar ante intentos de remuneración por debajo del convenio colectivo; (b) optimizar equitativamente la asignación de pedidos en la Bolsa de Trabajo; y (c) asistir a los PTFs mediante interfaces en lenguaje natural. Se establece como dogma legal que **ningún sistema automatizado puede decretar sanciones, exclusiones de marcas ni quitas de beneficios sin intervención y ratificación humana colegiada**.
+
+### **Zero-Retention Biométrico (Ley 25.326 de Protección de Datos)**
+Directriz de privacidad y seguridad implementada en la integración de enrolamiento con RENAPER. Los vectores biométricos (huella dactilar o reconocimiento facial) no se almacenan bajo ninguna circunstancia en almacenamiento persistente ni bases de datos de Indinopy. El sistema procesa la validación de forma efímera en memoria RAM, estampa el resultado en el log de auditoría y destruye el vector biométrico de inmediato.
 
 ---
 
@@ -95,6 +127,18 @@ Trabajador de base del oficio con antigüedad mínima comprobable de 12 meses y 
 
 ### **Score Solidario de la Bolsa de Trabajo**
 Algoritmo de reputación cooperativa que reemplaza al *scoring* bancario tradicional. Califica a marcas y talleres sobre una escala de 0 a 100 puntos en base a variables reales: índice de cumplimiento de plazos, calidad de entrega, bajo nivel de desperdicio de cuero y cumplimiento de pisos salariales.
+
+### **Bolsa de Trabajo Sectorial (Registro Nacional de Capacidades)**
+Mercado organizado comunitario gobernado por la MES (Addenda II, Sección VIII.B). Funciona como un directorio verificado en tiempo real donde la oferta de los talleres adheridos (especialidades, capacidad productiva semanal auditada, radio logístico e historial de cumplimiento) se cruza con la demanda de las marcas comitentes sin intermediarios ni cobro de comisiones privadas. La formalización es la llave de acceso directa a nuevas oportunidades de negocio.
+
+### **Maestros Artesanos y Sub-Bolsa de Formación**
+Categoría de reconocimiento honorífico y operativo dentro de la Bolsa de Trabajo para talleristas con más de diez años en el oficio y antecedentes intachables. Autoriza la tutoría de pasantías productivas remuneradas para jóvenes de 16 a 24 años mediante fondos del FDI, protegiendo del descarte y la extinción técnicas históricas de moldería, aparado fino y marroquinería artesanal.
+
+### **Talleres Espejo (Fragmentación Artificial y Fraude de Escala)**
+Práctica ilícita consistente en subdividir artificialmente un taller consolidado en múltiples prestadores individuales falsos o monotributistas precarios para eludir las escalas del régimen general o la registración formal de trabajadores. La plataforma detecta este patrón mediante auditorías automáticas de metadatos espaciales, direcciones IP compartidas y similitud de facturación, derivando de oficio las actuaciones al Sindicato y a la MES para su reconversión forzosa al Puente SAS.
+
+### **Ventanilla Única Municipal de Formalización y Habilitación de Oficio**
+Dependencia operativa de articulación entre el gobierno local y la MES. Al tramitarse una e-OP que otorga el alta en el Monotributo Productivo, el municipio emite en un plazo perentorio de 48 horas la habilitación comercial provisoria de oficio del taller barrial y hace efectiva la exención decenal de tasas de seguridad e higiene pactada en el régimen.
 
 ---
 
@@ -176,6 +220,14 @@ Alícuota fija descontada automáticamente del clearing de cada e-OP liquidada e
 ### **Fondo de Riesgo y Contingencias del FDI (0.5%)**
 Fondo fiduciario de reserva colectiva alimentado con una alícuota de medio punto sobre las órdenes. Se utiliza para absorber pérdidas fortuitas por rotura de maquinaria pesada, incendios o siniestros en talleres vulnerables, evitando que una contingencia individual hunda a la microempresa o paralice la cadena.
 
+### **UCP (Unidades de Crédito Productivo — Score Solidario de Marcas)**
+Activo digital de reputación empresarial co-administrado por la MES Federal y la Secretaría de Comercio de la Nación (Addenda II, Sección VIII.J). Las marcas comitentes homologadas acumulan UCPs en su perfil público al: (a) pagar tarifas justas de mano de obra en término; (b) integrar pedidos con talleres vulnerables; (c) colaborar en la exportación de calzado nacional; o (d) adoptar el Sello QR de transparencia radical de costos en góndola. Un saldo elevado de UCP otorga prioridad automatizada en cupos de importación temporaria con arancel cero y descuentos de hasta el 20% en la Tarifa Plana Industrial.
+
+### **Compliance Fiduciario: AML, KYC y Reporte de Operación Sospechosa (ROS)**
+Entramado de cumplimiento regulatorio financiero exigido por los convenios con el Banco de la Provincia de Buenos Aires (BAPRO) y la UIF:
+* **KYC (Know Your Customer):** Validación de identidad de titulares y beneficiarios finales (UBO) cruzada en tiempo real con RENAPER y ARCA.
+* **AML (Anti-Money Laundering):** Monitoreo algorítmico continuo de volúmenes transaccionales. Si un tallerista excede los topes objetivos de facturación de su categoría fiscal sin justificación técnica, el sistema retiene preventivamente la liquidación del clearing y genera un **ROS interno** para análisis por parte del oficial de cumplimiento del fideicomiso.
+
 ---
 
 ## 7. Matriz Factorial de Costos Ítem por Ítem
@@ -214,6 +266,12 @@ Castigo informático automático ante faltas graves o reincidencia en prácticas
 * **Para Marcas Defectoras:** Quita inmediata de Unidades de Crédito Productivo (UCP), pérdida del beneficio de arancel cero y, a la tercera condena firme, **exclusión total del FIMCA**.
 * **Para Talleres Defectores:** Retención del 30% en liquidaciones de e-OPs futuras para resarcir cuero dañado y degradación de la insignia en la Bolsa de Trabajo.
 
+### **Hard Ban Criptográfico de Nodo**
+Sanción informática máxima e irreversible ejecutada por el Smart Contract del nodo raíz de la MES. Ante un default de pago no subsanado superior a 60 días con el FDI, o ante la reiteración de tres fallos condenatorios por abusos laborales, el CUIT y la clave pública Ed25519 de la marca infractora son inyectados en la lista de bloqueo inmutable de la red. Esto impide técnica y criptográficamente que cualquier nodo federado procese o firme nuevas e-OPs con dicha razón social o con el DNI de sus beneficiarios finales (UBO).
+
+### **Canal de Denuncias y Reserva de Identidad Tuitiva**
+Dispositivo bimodal de protección institucional (Addenda II, Sección VIII.F) integrado por un canal digital con cifrado asimétrico y buzones físicos lacrados en municipios y sindicatos. Permite a los talleristas denunciar extorsiones, coimas o imposición de precios abusivos. Su activación dispara de inmediato: (a) reserva estricta de identidad; (b) inmunidad fiscal temporaria de 180 días contra inspecciones presenciales de ARCA; y (c) orden de perimetral administrativa que inhabilita al inspector denunciado para actuar en la zona.
+
 ---
 
 ## 9. Régimen Impositivo, Fiscal y Previsional
@@ -243,31 +301,70 @@ Mecanismo de choque para la formalización del empleo asalariado en talleres de 
 ### **Pacto Fiscal Productivo y Exención de Tasas Locales**
 Acuerdo institucional suscripto entre la Nación, la Provincia de Buenos Aires (ARBA) y los Municipios del Conurbano: los talleres y fábricas adheridos gozan de **exención total por 10 años de la Tasa de Seguridad e Higiene municipal y alícuota cero en Ingresos Brutos** sobre la porción de mano de obra de confección, compensado a los municipios con transferencias directas de infraestructura industrial.
 
+### **Cláusula de No Retroactividad Fiscal**
+Garantía legal y doctrinaria indispensable para desarmar el temor histórico del tallerista informal a formalizarse (Addenda II, Sección VIII.A). La ley FIMCA establece taxativamente que el alta en el Monotributo Productivo no habilita a los organismos de recaudación (ARCA, ARBA ni municipios) a iniciar inspecciones retroactivas, determinar deudas de oficio o ejecutar fiscalmente actividades económicas informales previas a la fecha de ingreso al régimen.
+
+### **Cuenta de IVA Sectorial y Crédito Fiscal Presunto (25%)**
+Mecanismo de descompresión financiera para unidades productivas (Addenda II, Sección VIII.L):
+* **Diferimiento por Clearing:** El IVA sobre la mano de obra no sigue el régimen general de devengamiento mensual inflexible; se retiene y liquida únicamente al momento del cobro efectivo de cada hito bancario. Si el comitente no paga la orden, el tallerista no acumula deuda tributaria.
+* **Crédito Fiscal Presunto:** Se habilita a las unidades SAS adheridas a computar un crédito presunto del veinticinco por ciento (25%) sobre el valor de la e-OP, garantizando la perfecta deducibilidad de costos en Ganancias e IVA para las marcas comitentes y absorbiendo la informalidad de insumos de base.
+
+### **Puente SAS para Responsables Inscriptos Humanos**
+Programa de migración asistida que desactiva el "purgatorio fiscal" (Addenda II, Sección VIII.L). Permite a los talleres consolidados y diseñadores individuales atrapados en el régimen de Responsable Inscripto constituir de forma gratuita y en 48 horas una Sociedad por Acciones Simplificada (SAS) en la Ventanilla Única Municipal. Esto escinde el patrimonio personal del productor ante eventuales embargos, suspende ejecuciones fiscales previas por 180 días de paraguas productivo y permite facturar hasta los topes MiPyME en lugar de las categorías asfixiantes del Monotributo.
+
+### **Tarifa Plana Industrial Manufacturera (Desacople Energético)**
+Dispositivo de soberanía tarifaria (Addenda II, Sección VIII.L) que desacopla el costo de la energía eléctrica consumida por los talleres adheridos de las cotizaciones internacionales o precios dolarizados. Se fija una tarifa plana calculada en pesos según costos reales de generación local más margen auditado. La diferencia con el mercado spot es compensada a las distribuidoras por el FDI mediante la asignación específica de Derechos de Exportación sobre hidrocarburos y minería.
+
 ---
 
-## 10. Tabla Rápida de Siglas y Acrónimos
+## 10. Resiliencia de Software, Integración y Operaciones Técnicas
+
+### **Dead-Letter Queue (DLQ) e Idempotencia de Webhooks**
+Mecanismos de robustez y tolerancia a fallas en la arquitectura asincrónica distribuida (Celery / Redis / PostgreSQL):
+* **Idempotencia Transaccional:** Toda llamada API entrante proveniente de pasarelas bancarias o webhooks de comercio electrónico (WooCommerce) viaja sellada con un UUID y cabecera `X-Idempotency-Key`. Ante reintentos por caída de red, el sistema retorna `200 OK` pero omite duplicar asientos contables o disparar nuevamente las APIs de clearing.
+* **Dead-Letter Queue (DLQ):** Si un webhook saliente dirigido a un taller con servidor local intermitente falla tras 24 horas de reintentos exponenciales, el mensaje se traslada a una cola de mensajes muertos (DLQ) en Redis para diagnóstico, evitando la pérdida de transacciones y alertando a la infraestructura MES.
+
+### **Topología Offline-First con Sincronización por Polling**
+Esquema de comunicación asincrónica saliente (*outbound polling*) diseñado para talleres físicos con conectividad intermitente o detrás de firewalls y NATs sin IP pública fija. Los clientes móviles o servidores locales firman y encolan las aprobaciones de hitos en almacenamiento seguro local con estampado de tiempo criptográfico. Al restablecerse la conexión, transmiten el payload canónico. Si ocurrieran colisiones (ej. cancelación simultánea por la marca), el nodo MES aplica arbitraje por vector temporal de firmas digitales.
+
+---
+
+## 11. Tabla Rápida de Siglas y Acrónimos
 
 | Sigla | Significado Completo | Ámbito de Aplicación |
 | :--- | :--- | :--- |
+| **AML** | *Anti-Money Laundering* (Prevención de Lavado de Activos) | Filtros de volumen fiduciario y alertas UIF |
+| **ARCA** | Agencia de Recaudación y Control Aduanero (ex-AFIP) | Administración tributaria y aduanera nacional |
 | **BAPRO** | Banco de la Provincia de Buenos Aires | Entidad fiduciaria y agente de clearing bancario |
 | **BOM** | *Bill of Materials* (Lista / Receta de Materiales) | Especificación técnica de ingeniería fabril |
 | **CCCN** | Código Civil y Comercial de la Nación (Ley 26.994) | Marco legal contractual (Arts. 1251 y 1356) |
 | **CCT** | Convenio Colectivo de Trabajo de Rama | Normativa salarial paritaria de base (UTICRA/SETIA) |
 | **CIFO** | Centro de Integración y Formación de Oficios | Banco comunitario de maquinaria pesada y capacitación |
+| **CRL** | *Certificate Revocation List* | Padrón criptográfico de claves y dispositivos revocados |
+| **DLQ** | *Dead-Letter Queue* | Cola de contingencia para webhooks y mensajes fallidos |
 | **Ed25519** | Edwards-curve Digital Signature Algorithm | Criptografía asimétrica de firma digital rápida |
 | **e-OP** | Orden de Producción Electrónica | Primitiva digital y título de crédito fiduciario |
 | **ERP** | *Enterprise Resource Planning* | Módulo de compras, tesorería y contabilidad |
 | **FDI** | Fideicomiso de Desarrollo Industrial | Bóveda fiduciaria de segundo piso y liquidez |
+| **FIMCA** | Formalización e Incentivo a la Manufactura del Calzado Argentino | Proyecto de Ley y marco general del ecosistema Indinopy |
 | **INTI** | Instituto Nacional de Tecnología Industrial | Organismo técnico neutral, certificador de mermas y normas |
 | **IPIM** | Índice de Precios Internos al Por Mayor (INDEC) | Referencia de indexación de la Unidad de Cuenta Industrial |
+| **KYC** | *Know Your Customer* | Verificación biométrica y tributaria de identidad |
 | **MES** | Mesa de Enlace Sectorial (Federal / Local) | Órgano paritario de gobierno de la cadena (7 sillas) |
 | **MES** | *Manufacturing Execution System* (en Indinopy) | Sistema de tracking de planta y partes de producción |
+| **mTLS** | *Mutual Transport Layer Security* | Canal criptográfico de autenticación mutua entre nodos |
+| **PKI** | *Public Key Infrastructure* | Infraestructura de claves públicas gobernada por la MES |
+| **PoPW** | *Proof of Productive Work* | Consenso fáctico y auditoría territorial descentralizada |
 | **PTF** | Promotor Territorial de Formalización | Representante territorial par y veedor del Escrow |
-| **FIMCA** | Formalización e Incentivo a la Manufactura del Calzado Argentino | Proyecto de Ley y marco general del ecosistema Indinopy |
+| **RENAPER** | Registro Nacional de las Personas | Validación biométrica de identidad en tiempo real |
+| **ROS** | Reporte de Operación Sospechosa | Alerta antilavado remitida al oficial de cumplimiento |
 | **SAS** | Sociedad por Acciones Simplificada | Figura societaria ágil para talleres de hasta 30 operarios |
 | **SBD** | Sello Buen Diseño | Distinción oficial que premia la calidad e innovación local |
+| **SLA** | *Service Level Agreement* | Acuerdos de nivel de servicio y plazos duros del sistema |
 | **UBO** | *Ultimate Beneficial Owner* (Beneficiario Final) | DNI de la persona física detrás de la persona jurídica |
 | **UCI** | Unidad de Cuenta Industrial | Moneda de indexación fiduciaria de la mano de obra |
-| **UCP** | Unidad de Crédito Productivo | Score y puntaje de prioridad aduanera para comitentes |
+| **UCP** | Unidades de Crédito Productivo | Score solidario y puntaje aduanero/energético de marcas |
+| **UIF** | Unidad de Información Financiera | Organismo nacional de control contra lavado de activos |
 | **UTICRA** | Unión Trabajadores de la Industria del Calzado | Gremio de rama con tutela territorial (Silla 6 MES) |
 | **UUID** | *Universally Unique Identifier* | Identificador universal único de la e-OP |
+

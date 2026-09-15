@@ -11,6 +11,7 @@ Este documento consolida la arquitectura funcional de **Indinopy**, integrando l
 - 🔐 [Matriz de Roles y Permisos](roles.html)
 - ⚙️ [Análisis de Implementación FIMCA](analisis_fimca_implementacion.html)
 - 🏛️ [Arquitectura MES y Gobernanza](arquitectura_mes_gobernanza.html)
+- 📚 [Glosario de Conceptos del Proyecto](glosario_conceptos_proyecto.html)
 
 ---
 
@@ -84,12 +85,45 @@ sequenceDiagram
 
 Para resolver la barrera técnica en fábricas, Indinopy opera bajo un modelo jerárquico DNS (`.ar`):
 
+```mermaid
+flowchart TD
+    subgraph ROOT["Dominio Raíz Protocolar (.ar)"]
+        R["indinopy.ar<br/><b>Nodo Root / Protocolo / CA Raíz</b>"]
+    end
+
+    subgraph MES_NODO["Nivel Jurisdiccional: MES Local"]
+        M["{municipio}-mes.indinopy.ar<br/><b>Nodo MES Local / Autoridad Certificante (CA)</b><br/>Timelock 48h · CRL / PKI · Clearing FDI"]
+    end
+
+    subgraph PATTERNS["Patrones de Despliegue y Conectividad"]
+        subgraph SAAS["SaaS Multi-tenant (Cámara / Cloud)"]
+            S1["{marca_a}.{municipio}.indinopy.ar<br/>Tenant Marca A (ERP)"]
+            S2["{taller_b}.{municipio}.indinopy.ar<br/>Tenant Taller B (MES)"]
+        end
+
+        subgraph ONPREM["On-Premise / Edge (Detrás de Firewall)"]
+            OP["Nodo Local Fábrica<br/><b>Celery Beat Polling (Outbound)</b><br/>Sin puertos abiertos"]
+        end
+
+        subgraph HEADLESS["API Headless Gateway"]
+            GW["ERP Corporativo (SAP / Tango)<br/><b>REST Gateway mTLS</b><br/>POST /api/v1/headless/e-op/"]
+        end
+
+        subgraph TRINCHERA["Fallback de Adopción & Acceso Móvil"]
+            PT["<b>Portal Web de Tallerista</b><br/>(Alojado en Nodo Marca)"]
+            MOB["<b>App Móvil PTF / Tallerista</b><br/>Secure Enclave Ed25519 + GPS"]
+        end
+    end
+
+    R -->|Gobierna y Certifica| M
+    M <-->|mTLS / REST| S1
+    M <-->|mTLS / REST| S2
+    M -.->|Pulling / Polling Asíncrono| OP
+    GW -->|Inyecta e-OP Externa| M
+    S1 ---|Acceso Web Seguro| PT
+    MOB -->|Webhooks / Firma PoPW| M
 ```
-indinopy.ar (Protocolo / Root)
- └── {municipio}-mes.indinopy.ar (Nodo MES local / Autoridad Certificante)
-      ├── {marca_a}.{municipio}... (Tenant ERP Marca A)
-      └── {taller_b}.{municipio}... (Tenant ERP Taller B)
-```
+*Figura 2: Topología de red federada y patrones de despliegue jerárquico DNS (`.ar`). Permite convivir esquemas SaaS Cloud, nodos On-Premise detrás de firewall mediante polling saliente, gateways headless para ERPs heredados y terminales móviles en territorio.*
 
 **Patrones de Comunicación:**
 *   **SaaS Multi-tenant:** Las fábricas sin infraestructura utilizan subdominios alojados por la cámara local. Escalable y preparado para picos (Celery + Redis).
@@ -158,9 +192,9 @@ sequenceDiagram
         Banco->>MES: Confirma Liquidación Final
     end
 ```
-*Figura 2: Ciclo de financiamiento productivo. El FDI asume el riesgo crediticio tomando la e-OP como colateral y ordenando al Banco (agente de clearing) el pago del Hito Cero a la cuenta inembargable del tallerista.*
+*Figura 3: Ciclo de financiamiento productivo. El FDI asume el riesgo crediticio tomando la e-OP como colateral y ordenando al Banco (agente de clearing) el pago del Hito Cero a la cuenta inembargable del tallerista.*
 
-### B. Fast Track de Aprobación en Campo (El rol del PTF)
+### C. Fast Track de Aprobación en Campo (El rol del PTF)
 
 En lugar de esperar auditorías centralizadas lentas, el sistema usa **Fast Track** mediante la figura del Promotor Territorial, que actúa como **puente humano y tutor técnico** en el territorio:
 
@@ -174,18 +208,18 @@ flowchart TD
     F --> G[Liquidación Express del Escrow]
     C -->|No cumple estándares| H[Rechazo de Hito]
 ```
-*Figura 3: Auditoría PoPW (Proof of Productive Work) descentralizada. El puente humano (PTF) valida las condiciones en el taller y su firma criptográfica destraba el flujo financiero instantáneamente.*
+*Figura 4: Auditoría PoPW (Proof of Productive Work) descentralizada. El puente humano (PTF) valida las condiciones en el taller y su firma criptográfica destraba el flujo financiero instantáneamente.*
 
-### C. El Puente de Formalización (Integración ARCA/AFIP)
+### D. El Puente de Formalización (Integración ARCA/AFIP)
 El trabajador periférico entra al sistema de forma invisible:
 *   Al aceptar su primera e-OP (vía App), el sistema llama a **RENAPER (Biometría)** y a **ARCA** para darle el *Alta de Oficio* en el Monotributo Productivo.
 *   En paralelo, abre una **cuenta inembargable BAPRO** de <i>Clearing</i>.
 *   **Suspensión Activa:** Si el taller no recibe e-OPs por 15 días, el sistema notifica la inactividad, frenando el devengo de impuestos fijos.
 
-### D. Trazabilidad Pública y Transparencia
+### E. Trazabilidad Pública y Transparencia
 Toda e-OP genera un endpoint público (`/trazabilidad/<uuid>`). Al escanear el QR del calzado en góndola, el consumidor visualiza un gráfico determinista con el desglose del costo: *% Mano de Obra, % Insumos, % Impuestos y % Marca*.
 
-### E. Circuito de Ventas (Integración WooCommerce)
+### F. Circuito de Ventas (Integración WooCommerce)
 El ERP no reemplaza al e-commerce, lo integra garantizando que la demanda traccione la producción.
 
 ```mermaid
@@ -205,9 +239,9 @@ sequenceDiagram
         I->>W: PUT /wp-json/wc/v3/orders/ ("Completado")
     end
 ```
-*Figura 4: Orquestación B2C-B2B. Los webhooks cifrados permiten que la demanda en góndola (WooCommerce) traccione y alerte automáticamente al ERP sobre la necesidad de generar nuevas e-OPs.*
+*Figura 5: Orquestación B2C-B2B. Los webhooks cifrados permiten que la demanda en góndola (WooCommerce) traccione y alerte automáticamente al ERP sobre la necesidad de generar nuevas e-OPs.*
 
-### F. Circuito de Inventario (Traslados de Maquila)
+### G. Circuito de Inventario (Traslados de Maquila)
 La materia prima viaja al taller sin transferir su dominio comercial, protegiendo a ambas partes de embargos.
 
 ```mermaid
@@ -224,7 +258,7 @@ sequenceDiagram
     T->>C: Devuelve Producto Terminado
     C->>C: Ingresa Activo Final
 ```
-*Figura 5: Trazabilidad de activos y blindaje legal. El stock enviado al taller se rige bajo contrato de Locación de Obra/Maquila, protegiendo a los insumos físicos de cualquier medida cautelar o embargo sobre el tallerista.*
+*Figura 6: Trazabilidad de activos y blindaje legal. El stock enviado al taller se rige bajo contrato de Locación de Obra/Maquila, protegiendo a los insumos físicos de cualquier medida cautelar o embargo sobre el tallerista.*
 
 ---
 
@@ -279,6 +313,8 @@ stateDiagram-v2
     RECHAZADA_POR_VETO --> [*]
     CANCELADA --> [*]
 ```
+
+*Figura 7: Máquina de estados unidireccional de la e-OP. Garantiza la consistencia del ciclo de vida financiero y productivo, previniendo inconsistencias como doble gasto, estados huérfanos o retrocesos no autorizados.*
 
 ### B. Payload Canónico de la e-OP (Contrato API)
 El intercambio de información entre nodos no transfiere tablas SQL, sino un **Payload Canónico JSON** determinista. 
@@ -416,7 +452,7 @@ Para evitar operaciones fraudulentas, el protocolo ejecuta dos motores paralelos
 
 ### C. SLAs Operativos (Tiempos de Respuesta)
 Para evitar la burocratización, el código impone SLAs duros (*Hard Deadlines*):
-* **Timelock de Homologación MES:** 48 horas hábiles. Superado este plazo $\rightarrow$ *Silencio Positivo Automático*.
+* **Timelock de Homologación MES:** 48 horas hábiles. Superado este plazo → *Silencio Positivo Automático*.
 * **Inspección PTF:** 24 horas hábiles desde que el Tallerista marca el lote como "Terminado".
 * **Tribunal de Arbitraje (Disputas):** 72 horas hábiles para emitir el laudo de arbitraje técnico.
 

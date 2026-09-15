@@ -141,7 +141,7 @@ Al ingresar al sistema, los insumos y productos semielaborados quedan documentad
 
 ### 3.2. Puente de Transición Fiscal (Propuesta Normativa)
 
-> **⚠️ Nota:** Los mecanismos descritos en esta sección —el Crédito Fiscal Presunto y la Cuenta de IVA Sectorial Diferida— son **propuestas legislativas** incluidas en el Dossier Proyecto FIMCA (2026) como extensión al proyecto de Ley de Salvataje Nacional. No están vigentes en el derecho tributario argentino actual. La versión operativa del sistema bajo la ley vigente utiliza la deducción presunta transitoria del 35% sobre costos de mano de obra informal prevista en la propuesta como medida puente.
+> **⚠️ Nota:** Los mecanismos descritos en esta sección —el Crédito Fiscal Presunto y la Cuenta de IVA Sectorial Diferida— son **propuestas legislativas** incluidas en el Dossier Proyecto FIMCA (2026) como extensión al proyecto de Ley de Salvataje Nacional. No están vigentes en el derecho tributario argentino actual. La versión operativa del sistema bajo la ley vigente utiliza la deducción presunta transitoria del 25% sobre costos de mano de obra informal prevista en la propuesta como medida puente.
 
 Para modelar la absorción formal del eslabón manual sin fricción tributaria punitiva, el protocolo desacopla la liquidación fiscal en dos funciones complementarias procesadas en el clearing del FDI:
 
@@ -158,9 +158,9 @@ Para modelar la absorción formal del eslabón manual sin fricción tributaria p
 2. **Crédito Fiscal Presunto y Deducibilidad para la Marca Comitente ($\mathcal{CF}_M$):**  
    Para subsanar el "purgatorio fiscal" en el que la marca formal no puede deducir la mano de obra contratada a prestadores no inscriptos o monotributistas, el sistema computa a favor de la comitente:
 
-   $$\mathcal{CF}_M(\mathcal{OP}) = 0.35 \cdot \mathcal{P}_{\text{MOD}}$$
+   $$\mathcal{CF}_M(\mathcal{OP}) = 0.25 \cdot \mathcal{V}(\text{e-OP})$$
 
-   Este valor opera como **Crédito Fiscal Presunto del 35%** reconocible por ARCA contra el Débito Fiscal del IVA y como gasto computable en el Impuesto a las Ganancias, neutralizando la tributación sobre utilidades ficticias al vender el bien terminado.
+   Este valor opera como **Crédito Fiscal Presunto del 25%** reconocible por ARCA contra el Débito Fiscal del IVA y como gasto computable en el Impuesto a las Ganancias, neutralizando la tributación sobre utilidades ficticias al vender el bien terminado.
 
 ### 3.3. Modelo de Confianza y Auditoría Criptográfica
 

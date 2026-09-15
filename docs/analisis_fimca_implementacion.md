@@ -77,7 +77,7 @@ flowchart TD
 ### 2.1. El Nudo de la Informalidad y el "Purgatorio Fiscal"
 
 - **Diagnóstico:** El aparador o costurero cobra en efectivo porque el salto al régimen general o las cuotas fijas de monotributo devengan deudas impositivas incluso en períodos de parálisis fabril. Al no facturar, la pyme o diseñador formal pierde la deducción de mano de obra en el Impuesto a las Ganancias (30% a 50% del costo) y no puede computar crédito fiscal de IVA, tributando sobre utilidades ficticias.
-- **Respuesta en el Sistema:** Indinopy debe admitir la convivencia entre proveedores formales y en proceso de regularización, calcular la **Brecha Fiscal de Costos** y preparar las estructuras para la deducción presunta transitoria (hasta 35%) prevista en el proyecto de ley.
+- **Respuesta en el Sistema:** Indinopy debe admitir la convivencia entre proveedores formales y en proceso de regularización, calcular la **Brecha Fiscal de Costos** y preparar las estructuras para el Crédito Fiscal Presunto (25% sobre la e-OP) previsto en el proyecto de ley (Addenda II).
 
 ### 2.2. La Orden de Producción como Activo Financiero y Colateral
 
