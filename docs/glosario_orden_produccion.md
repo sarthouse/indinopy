@@ -1,12 +1,12 @@
 <span class="doc-header-badge">📖 Glosario</span>
-# Glosario Integral de Conceptos: Mockup e-OP y Gobernanza Industrial
+# Glosario Integral de Conceptos: Protocolo e-OP y Gobernanza FIMCA
 ### *Guía Taxonómica de Términos Legales, Criptográficos, Técnicos, Financieros y de Trinchera*
 
 **Sistema de Gestión Indinopy ERP/MES · Mesa de Enlace Sectorial (MES Federal / Nodo Conurbano)**
 
 ---
 
-Este glosario documenta y define en profundidad cada uno de los conceptos, siglas, fórmulas, procedimientos e instituciones presentes en el título de crédito industrial de ejemplo (**`mockup_orden_produccion.html`**) y en la arquitectura de gobernanza de la **Orden de Producción Electrónica (e-OP)**.
+Este glosario documenta y define en profundidad cada uno de los conceptos, siglas, fórmulas, procedimientos e instituciones presentes en el modelo de orden de producción (**`modelo_orden_produccion.html`**) y en la arquitectura de gobernanza de la **Orden de Producción Electrónica (e-OP)** y el marco **FIMCA**.
 
 ```mermaid
 flowchart TD
@@ -91,7 +91,7 @@ Persona física titular, socio gerente o director real de la marca comitente, id
 Microempresa, taller familiar o consorcio barrial (cortadores, aparadores, armadores) que aporta la capacidad de trabajo físico y la maquinaria de trinchera. Opera adherido a la Bolsa de Trabajo bajo la figura de Monotributo Productivo o Sociedad por Acciones Simplificada (SAS).
 
 ### **Promotor Territorial de Formalización (PTF)**
-Trabajador de base del oficio con antigüedad mínima comprobable de 12 meses y aval de 5 talleres vecinos, designado por la MES local y rentado con honorario de 2 Salarios Mínimos, Vitales y Móviles financiados por el FDI. Actúa como **agente fiduciario de proximidad**: inspecciona talleres, constata avances de lote, ayuda a cargar partes por WhatsApp y da fe ante la MES para la liberación de los hitos del Escrow digital.
+Trabajador de base del oficio con antigüedad mínima comprobable de 12 meses y aval de 5 talleres vecinos, designado por la MES local y rentado con honorario de 2 Salarios Mínimos, Vitales y Móviles financiados por el FDI. Opera como un **Puente Humano y Tutor Técnico**; actúa como agente fiduciario de proximidad: inspecciona talleres, constata avances de lote, asiste digitalmente a los talleres en la plataforma y da fe ante la MES para la liberación de los hitos del Escrow digital.
 
 ### **Score Solidario de la Bolsa de Trabajo**
 Algoritmo de reputación cooperativa que reemplaza al *scoring* bancario tradicional. Califica a marcas y talleres sobre una escala de 0 a 100 puntos en base a variables reales: índice de cumplimiento de plazos, calidad de entrega, bajo nivel de desperdicio de cuero y cumplimiento de pisos salariales.
@@ -263,7 +263,7 @@ Acuerdo institucional suscripto entre la Nación, la Provincia de Buenos Aires (
 | **MES** | Mesa de Enlace Sectorial (Federal / Local) | Órgano paritario de gobierno de la cadena (7 sillas) |
 | **MES** | *Manufacturing Execution System* (en Indinopy) | Sistema de tracking de planta y partes de producción |
 | **PTF** | Promotor Territorial de Formalización | Representante territorial par y veedor del Escrow |
-| **RIGI** | Régimen de Incentivo a las Grandes Inversiones | Marco de contraste que fundamenta el régimen PyME |
+| **FIMCA** | Formalización e Incentivo a la Manufactura del Calzado Argentino | Proyecto de Ley y marco general del ecosistema Indinopy |
 | **SAS** | Sociedad por Acciones Simplificada | Figura societaria ágil para talleres de hasta 30 operarios |
 | **SBD** | Sello Buen Diseño | Distinción oficial que premia la calidad e innovación local |
 | **UBO** | *Ultimate Beneficial Owner* (Beneficiario Final) | DNI de la persona física detrás de la persona jurídica |

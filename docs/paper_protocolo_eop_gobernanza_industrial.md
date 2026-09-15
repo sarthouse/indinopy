@@ -199,7 +199,7 @@ stateDiagram-v2
     IN_PROCESS --> SETTLED: Retorno Terminado + Conformidad Calidad
     IN_PROCESS --> DISPUTED: Alerta Tutela Sindical / Cuello de Botella
     
-    DISPUTED --> ARBITRATION: Tribunal de Trinchera (72h)
+    DISPUTED --> ARBITRATION: Tribunal de Arbitraje (72h)
     ARBITRATION --> REALLOCATED: Fragmentación Solidaria de Lote
     ARBITRATION --> SETTLED: Laudo de Fianza / Repago
     SETTLED --> [*]
@@ -364,7 +364,7 @@ En el régimen tradicional informal, la defección patronal ($D_M$) era frecuent
 - Quita inmediata de hasta el $50\%$ de las Unidades de Crédito Productivo (UCP) de la marca defectora.
 - Congelamiento preventivo del último tramo de escrow (20%) durante 48h para el tallerista defector.
 
-**Penalizaciones post-laudo (tras resolución del Tribunal de Trinchera en 72h hábiles):**
+**Penalizaciones post-laudo (tras resolución del Tribunal de Arbitraje en 72h hábiles):**
 - Ejecución de la **Cláusula de Garantía Líquida por Continuidad Operativa**. **Nota de diseño:** Al no existir un depósito previo de capital inmovilizado, si la marca comitente entra en disputa y pretende retirar su stock del taller para no perder la temporada comercial, está obligada a depositar en el FDI el $100\%$ del monto reclamado como fianza de urgencia. La ejecución post-laudo recae sobre este depósito ad-hoc, sumado al bloqueo de fondeo para futuras e-OPs.
 - Retención automática del $30\%$ sobre flujos futuros del taller hasta resarcir el daño. La asimetría punitiva (exigencia de depósito en efectivo a la marca para liberar stock vs. descuento de ingresos futuros al taller) balancea la asimetría patrimonial intrínseca.
 - Publicación de la infracción en el Boletín Oficial Sectorial.

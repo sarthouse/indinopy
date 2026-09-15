@@ -272,7 +272,7 @@ stateDiagram-v2
     EN_PROCESO --> LIQUIDADA : Último hito aprobado y pagado
     
     SUSPENDIDA --> EN_REVISION_MES : Resolución de fondos
-    DISPUTA --> EN_PROCESO : Resolución Tribunal de Trinchera
+    DISPUTA --> EN_PROCESO : Resolución Tribunal de Arbitraje
     DISPUTA --> CANCELADA : Laudo negativo definitivo
     
     LIQUIDADA --> [*]
@@ -336,3 +336,121 @@ En Nodos Talleristas On-Premise que operan con conectividad intermitente (Pollin
 ### F. Edge Cases de Negocio
 1. **Default del Comitente (Crédito Impago):** Si a los 60 días la marca no le devuelve la plata al FDI, la e-OP entra en `DEFAULT`. El FDI asume la pérdida contable, pero el Smart Contract aplica un **Hard Ban** a la firma criptográfica (CUIT) de la marca en toda la Red Federada hasta saldar la deuda. El Tallerista conserva el 100% de la plata porque ya le fue liquidada.
 2. **Cancelación Parcial (Fuerza Mayor):** Si se incendia el taller o hay faltantes a mitad del lote, el sistema emite una enmienda ("Addenda e-OP"). Recalcula los hitos (ej: paga el 50% de los pares salvados) y devuelve la garantía sobrante retenida en custodia a la cuenta del FDI.
+
+---
+
+## 9. Modelo de Datos Relacional (Django ERD)
+
+A diferencia del *Payload Canónico JSON* que opera como contrato de red para interoperabilidad, la persistencia interna en los nodos está gobernada por el ORM de Django. Para optimizar la inmutabilidad y la trazabilidad, las firmas criptográficas no usan tablas separadas, sino campos `JSONB` versionados mediante `django-simple-history`.
+
+```mermaid
+erDiagram
+    CONFIGURACION_EMPRESA ||--o{ ORDEN_PRODUCCION : "emite (Nodo Local)"
+    CONTACTO ||--o{ ORDEN_PRODUCCION : "ejecuta (Tallerista / PTF)"
+    
+    ORDEN_PRODUCCION ||--|| CONTRATO_ESCROW : "garantiza"
+    CONTRATO_ESCROW ||--o{ HITO_ESCROW : "se divide en"
+    
+    CONFIGURACION_EMPRESA {
+        int id PK "Singleton (Single-Tenant)"
+        string cuit
+        string nodo_mes_identificador
+    }
+    
+    ORDEN_PRODUCCION {
+        uuid uuid_identificador PK
+        int cliente_id FK
+        int ptf_asignado_id FK
+        string estado_escrow "Choices: no_aplica, fondeado_fdi..."
+        string hash_seguridad "SHA-256 (DocumentoFirmableMixin)"
+        jsonb firmas_digitales "Firmas (Comitente, Tallerista)"
+    }
+    
+    CONTRATO_ESCROW {
+        int id PK
+        uuid eop_uuid FK
+        decimal monto_total_uci
+        string estado
+    }
+    
+    HITO_ESCROW {
+        uuid uuid_identificador PK
+        int contrato_id FK
+        string nombre
+        decimal porcentaje
+        boolean requiere_auditoria_ptf
+        jsonb firmas_digitales "Firma Criptográfica del PTF"
+    }
+```
+
+* **DocumentoFirmableMixin:** Tanto la e-OP como el Hito heredan de este mixin. Almacenan su propio `hash_seguridad` y un JSON de `firmas_digitales`. Esto asegura que cuando se audita la base de datos, el registro histórico contiene la "foto" exacta de la OP en el milisegundo en que el PTF o el Tallerista inyectó su firma.
+
+---
+
+## 10. Especificación de API, Seguridad y Topología de Red
+
+### A. Aislamiento Físico y Despliegue (Topología Single-Tenant)
+En lugar de centralizar los datos comerciales en un clúster SaaS monolítico con riesgos de fuga, la red utiliza una **topología federada On-Premise/Cloud Privada (Single-Tenant)**. 
+* Cada Marca Comitente despliega su propio ERP/Nodo, gobernado por el modelo `ConfiguracionEmpresa` (Singleton). 
+* El aislamiento de datos de negocio (qué vende la marca, a quién, sus recetarios secretos) es total y físico. Solo los hashes SHA-256 y el payload de la e-OP federada viajan al Nodo MES para gestionar el Clearing Financiero.
+
+### B. Contrato OpenAPI y Autenticación
+La API Gateway expone una especificación **OpenAPI 3.1 (Swagger)** completa, versionada en la URI (`/api/v1/...`).
+* **Node-to-Node (Federación):** El Nodo de la Marca y el Nodo MES se comunican mediante **mTLS (Mutual TLS)**. El Nodo MES solo acepta payloads de IPs o nodos con certificados x509 emitidos por la CA Raíz de la red.
+* **Clientes de Usuario (App Móvil PTF / Web Tallerista):** Utilizan **JWT (JSON Web Tokens)** con corto tiempo de vida (15 min) y Refresh Tokens almacenados en cookies `HttpOnly` `Secure` para evitar ataques XSS.
+* **Compatibilidad hacia atrás:** Si un nodo *legacy* envía un payload v1.0 a una MES que opera en v2.0, un *Adapter Layer* transforma el payload antes de la validación canónica.
+
+---
+
+## 11. Riesgo, AML/KYC y Acuerdos de Nivel de Servicio (SLAs)
+
+### A. Prevención de Lavado de Activos (AML) y KYC
+Dado que el FDI inyecta liquidez y el Banco ejecuta *clearing*, Indinopy incorpora controles fiduciarios estrictos:
+* **KYC (Know Your Customer):** Integración biográfica y biométrica con RENAPER y ARCA. Ningún CUIT opera sin padrón validado.
+* **AML (Anti-Money Laundering):** El sistema escanea volúmenes inusuales. Si un tallerista de Categoría A recibe Hitos que superan el umbral establecido por la Unidad de Información Financiera (UIF), se bloquea el clearing bancario transitoriamente y se genera un ROS (Reporte de Operación Sospechosa) interno para el oficial de cumplimiento del FDI.
+
+### B. Algoritmos de Riesgo y Anti-Colusión
+Para evitar operaciones fraudulentas, el protocolo ejecuta dos motores paralelos:
+1. **Scoring de Capacidad (Load Balancing):** Si el taller tiene asignadas OPs que superan el 90% de su capacidad nominal declarada (Pares/Semana), el sistema exige revisión manual o derivación para evitar ahogos financieros.
+2. **Geo-Fencing Anti-Colusión (PostGIS):** El sistema previene el "fraude de escritorio" (donde un PTF firma aprobaciones remotamente sin ir al taller). Al momento de firmar un hito, la App captura la latitud/longitud del celular. La capa de servicios (`services.py`) utiliza funciones espaciales de PostGIS (`ST_Distance`) para verificar que el PTF esté dentro de un radio de **150 metros** del domicilio productivo homologado del tallerista. Discrepancias mayores disparan un **Alerta de Colusión**, bloquean la firma Ed25519 e inician una auditoría al PTF.
+
+### C. SLAs Operativos (Tiempos de Respuesta)
+Para evitar la burocratización, el código impone SLAs duros (*Hard Deadlines*):
+* **Timelock de Homologación MES:** 48 horas hábiles. Superado este plazo $\rightarrow$ *Silencio Positivo Automático*.
+* **Inspección PTF:** 24 horas hábiles desde que el Tallerista marca el lote como "Terminado".
+* **Tribunal de Arbitraje (Disputas):** 72 horas hábiles para emitir el laudo de arbitraje técnico.
+
+---
+
+## 12. Infraestructura, Disaster Recovery y CI/CD
+
+### A. Disaster Recovery (DR) y Alta Disponibilidad
+* **Topología:** El Nodo MES (Autoridad Certificante) corre en un clúster Kubernetes (K8s) con auto-scaling.
+* **Base de Datos:** PostgreSQL con replicación *Streaming* síncrona (Multi-AZ).
+* **Backup de Infraestructura de Claves (PKI):** Las Listas de Revocación de Certificados (CRL) y las claves públicas raíz se respaldan cada 6 horas en *Cold Storage* geográficamente separado (fuera del país o en data centers secundarios) para garantizar que ante un desastre físico total, el ecosistema no pierda el ancla criptográfica de las e-OPs.
+
+### B. Estrategia de Testing y CI/CD
+El ciclo de desarrollo en Indinopy obliga a pasar por un pipeline estricto (ej. GitHub Actions / GitLab CI):
+* **Unit Testing (Pytest):** 100% de cobertura obligatoria en la capa `services.py` (límites transaccionales y máquinas de estado).
+* **Contract Testing:** Tests que simulan el intercambio de payloads JSON entre versiones distintas de nodos para garantizar que el `hash SHA-256` se calcule de forma idéntica en cualquier plataforma (Windows, Linux, ARM).
+* **Integración y Despliegue (CI/CD):** Builds de contenedores Docker inmutables, escaneo de vulnerabilidades (Trivy) y despliegue automatizado sin downtime (Blue/Green Deployment) en los nodos SaaS.
+
+---
+
+## 13. Workflows de Denuncias, Vetos y Resolución Arbitral
+
+La red federada asume que los conflictos son inevitables. Para evitar la parálisis judicial tradicional, Indinopy implementa *Smart Contracts* de resolución de disputas directamente sobre el Escrow.
+
+### A. Canal de Denuncias y Tribunal de Arbitraje
+Cuando ocurre un diferendo de calidad o faltante de materiales entre el Comitente y el Tallerista, el sistema ejecuta esta máquina de estados:
+1. **Trigger de Alerta:** El afectado pulsa "Reportar Incumplimiento" en la plataforma. El `ContratoEscrow` cambia automáticamente de `ejecutando` a `en_disputa`. Los pagos futuros se congelan de inmediato.
+2. **Aportación de Pruebas (24hs):** Se habilita un canal de subida donde ambas partes adjuntan evidencia (fotos de cuero marcado, PDF de ficha técnica). Los archivos son hasheados (SHA-256) para garantizar que la prueba es inmutable y no fue alterada a posteriori.
+3. **Conformación del Panel (Matchmaking):** El sistema asigna acceso de lectura al perito del INTI y sortea algorítmicamente a dos vocales de la Bolsa de Trabajo (un Taller y una Marca, ajenos al conflicto) para que auditen el caso en el Dashboard MES.
+4. **Laudo y Ejecución Criptográfica (72hs SLA):** El Tribunal emite su fallo. Al ingresar 2 de las 3 firmas Ed25519 requeridas, el contrato ejecuta automáticamente el laudo: liquida forzosamente al tallerista o reintegra los fondos al FDI, aplicando simultáneamente el *Slashing* (descuento de reputación UCP) a la parte declarada culpable.
+
+### B. Veto de Auditoría Ex-Post (Tutela Sindical)
+A diferencia de los regímenes burocráticos donde el Sindicato sella permisos antes de empezar (frenando la agilidad), en FIMCA la auditoría gremial ocurre *durante o después* del proceso productivo, garantizando que no se bloquee el Hito Cero.
+1. **Inspección In-Situ o Algorítmica:** Si el Sindicato (Silla 6) detecta operarios no registrados o una tarifa base inferior al Convenio Colectivo, dispara el Veto Ex-Post desde su nodo.
+2. **Bloqueo del Hito Final:** El sistema no frena las máquinas. Lo que hace es interceptar y congelar exclusivamente el **Hito de Cierre (15% final)** y suspender la autorización de remito de salida de los zapatos.
+3. **Fianza Líquida de Continuidad:** Para evitar que la Marca pierda la temporada comercial y los zapatos queden de rehenes, el sistema le permite transferir al FDI una "Fianza Líquida" por el valor en litigio. Al impactar la transferencia, el sistema libera inmediatamente la mercadería.
+4. **Resolución:** El conflicto se eleva automáticamente al Tribunal de Arbitraje para que decida el destino de la fianza depositada.

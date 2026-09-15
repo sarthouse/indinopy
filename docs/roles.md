@@ -49,7 +49,7 @@ Una marca estructurada requiere segregación de funciones para evitar fraudes in
 *   **Promotor Territorial (PTF):** Puente Humano y Tutor Técnico. App móvil con enclave. Disuelve la brecha digital, labra el Dictamen de Transición Asistida, y valida coordenadas GPS/Biometría para emitir la firma "Conformidad en Campo".
 *   **Comisión de Homologación Técnica (INTI / Sindicato):** Perfil técnico. Auditan mermas, homologan maquinaria (arancel cero) y realizan la tutela laboral en territorio (Sindicato).
 *   **Comisión de Crédito y Riesgo (Talleres / Marcas):** Oficiales del Nodo MES que analizan viabilidad y recomiendan la aprobación financiera al FDI.
-*   **Árbitro Jurisdiccional (Municipio):** Preside la Mesa Local (Silla 7) con voto de desempate. Dirige el Tribunal de Trinchera para conciliaciones obligatorias en 72h.
+*   **Árbitro Jurisdiccional (Municipio):** Preside la Mesa Local (Silla 7) con voto de desempate. Dirige el Tribunal de Arbitraje para conciliaciones obligatorias en 72h.
 
 ---
 

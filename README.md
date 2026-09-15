@@ -20,12 +20,12 @@ Toda la documentación arquitectónica, política y técnica (incluyendo el **Ma
 
 Indinopy es un sistema de grado industrial preparado para despliegues SaaS, On-Premise y en topologías federadas (Nodos MES).
 
-- **Backend / Core**: Python 3.12+, Django 5+ (Server Side Rendering - MVT).
-- **Base de Datos**: PostgreSQL / SQLite (entorno local).
+- **Backend / Core**: Python 3.12+, Django 6.1 (Server Side Rendering - MVT).
+- **Base de Datos**: PostgreSQL + PostGIS (requerido para los campos geoespaciales de auditoría). No soporta SQLite.
 - **Inventario**: Motor de **partida doble** con ubicaciones físicas/virtuales, Quants en tiempo real, remitos y trazabilidad estricta.
-- **Manufactura**: Fichas Técnicas (BOM), **Órdenes de Producción Electrónicas (e-OP)** con firma criptográfica (SHA-256), tracking por etapas, Escrow y liquidación de fasón.
-- **Asincronismo**: Celery + Redis para sincronización de stock con WooCommerce (modo Headless) y procesamiento de hitos de producción (Timelocks de 48h).
-- **Contabilidad y Tributación**: Módulo de partida doble preparado para ARCA/AFIP (retenciones, percepciones y liquidaciones).
+- **Manufactura**: Fichas Técnicas (BOM), **Órdenes de Producción Electrónicas (e-OP)** con firma criptográfica (SHA-256), tracking por etapas e hitos por Escrow, al mismo tiempo que soporta operatoria privada simple.
+- **Asincronismo**: Celery + Redis para procesamiento masivo en background (sincronización con APIs, notificaciones push, reglas de negocio y Timelocks).
+- **Contabilidad**: Módulo de partida doble preparado para asentar automáticamente los movimientos de stock y tesorería en el Libro Diario y Libro Mayor.
 
 ---
 
@@ -36,15 +36,17 @@ El sistema está dividido en módulos atómicos interconectados:
 ```text
 indinopy/
 ├── apps/
-│   ├── base/          # Modelos abstractos y auditoría (HistoricalRecords)
-│   ├── mes/           # Gobernanza, PTF, Nodos de Mesa de Enlace Sectorial (MES)
+│   ├── base/          # ConfiguracionEmpresa (Singleton) y DocumentoFirmableMixin
+│   ├── mes/           # Portal Fiduciario, Comisiones, PTF y Gobernanza FIMCA
+│   ├── federacion/    # API Gateway, Contratos OpenAPI y Networking mTLS
 │   ├── documentos/    # Gestor de adjuntos, firmas criptográficas y Hash SHA-256
 │   ├── contactos/     # Libreta unificada (Clientes, Talleristas, CUIT, Condición IVA)
 │   ├── inventario/    # Stock por partida doble, Quants, Reservas y Remitos
 │   ├── produccion/    # Recetas (BOM), e-OPs (Activo Fiduciario), hitos y liquidación
 │   ├── contabilidad/  # Plan de cuentas, Libro Diario, Libro Mayor, Impuestos
-│   ├── tesoreria/     # Cajas duales (Escrow Digital), cobros, pagos a talleristas
+│   ├── tesoreria/     # Cajas duales (Escrow Digital / Hitos), cobros y pagos
 │   ├── compras/       # Órdenes de compra y recepción física de insumos
+│   ├── nomina/        # Aportes patronales FDI, Sindicato y recursos humanos
 │   └── ventas/        # Pedidos B2C (WooCommerce) y B2B, motor Headless ERP
 ```
 

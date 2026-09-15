@@ -506,7 +506,7 @@ gantt
     Mesa Local en La Matanza y San Martín   :a1, 2026-09-15, 30d
     Módulo de Software e-OP 48h en Indinopy :p2, 2026-10-15, 25d
     section Fase 2: Tribunal e INTI
-    Constitución Tribunal de Trinchera      :p3, 2026-11-10, 20d
+    Constitución Tribunal de Arbitraje      :p3, 2026-11-10, 20d
     Tablas de Tecnología Conveniente INTI   :p4, 2026-11-20, 20d
     section Fase 3: Integración Financiera
     Enlace de Clearing FDI / Banco Provincia:p5, 2026-12-10, 30d
