@@ -7,85 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Inyectar botón de Imprimir
     const tabsContainer = document.querySelector('.tabs');
     if (tabsContainer) {
-        const printBtn = document.createElement('button');
+        const printBtn = document.createElement('a'); // Cambiamos a 'a' tag para mejor semántica de link
         printBtn.className = 'tab-btn';
         printBtn.style.marginLeft = 'auto'; // empuja a la derecha
         printBtn.style.backgroundColor = '#10b981';
         printBtn.style.color = '#fff';
-        printBtn.innerHTML = '🖨️ Exportar a PDF / Imprimir';
+        printBtn.style.textDecoration = 'none';
+        printBtn.style.display = 'inline-block';
+        printBtn.innerHTML = '📥 Descargar PDF Oficial';
+        printBtn.href = 'dossier_fimca_compilado.pdf';
+        printBtn.target = '_blank';
         
-        printBtn.onclick = async () => {
-            printBtn.innerHTML = '⏳ Preparando imágenes...';
-            printBtn.disabled = true;
-
-            const wrappers = document.querySelectorAll('.mermaid-wrapper');
-            const originalContents = [];
-
-            // Reemplazar cada diagrama por su imagen PNG de Kroki
-            for (let i = 0; i < wrappers.length; i++) {
-                const wrapper = wrappers[i];
-                const codeEnc = wrapper.getAttribute('data-code');
-                if (codeEnc && window.pako) {
-                    const code = decodeURIComponent(codeEnc);
-                    
-                    // Comprimir y codificar base64 URL-safe (mismo algoritmo que md_to_docx.py)
-                    const data = new TextEncoder().encode(code);
-                    const compressed = pako.deflate(data, { level: 9 });
-                    
-                    let binary = '';
-                    for (let j = 0; j < compressed.length; j++) {
-                        binary += String.fromCharCode(compressed[j]);
-                    }
-                    const b64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-                    
-                    const url = `https://kroki.io/mermaid/png/${b64}`;
-                    
-                    // Guardar referencia al wrapper y sus hijos para restaurarlos
-                    originalContents.push({ wrapper, border: wrapper.style.border, bg: wrapper.style.background });
-                    
-                    // Ocultar los elementos interactivos temporalmente
-                    const children = Array.from(wrapper.children);
-                    children.forEach(child => child.style.display = 'none');
-                    
-                    // Inyectar la imagen limpia para impresión
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.className = 'print-kroki-img';
-                    img.style.cssText = 'max-width: 100%; display: block; margin: 0 auto; background: white; padding: 20px;';
-                    
-                    wrapper.appendChild(img);
-                    wrapper.style.border = 'none';
-                    wrapper.style.background = 'transparent';
-                    
-                    // Esperar a que la imagen cargue
-                    await new Promise(resolve => {
-                        img.onload = resolve;
-                        img.onerror = resolve; // si falla, seguimos
-                    });
-                }
-            }
-
-            // Llamar a imprimir
-            window.print();
-
-            // Restaurar el DOM original después de imprimir
-            setTimeout(() => {
-                originalContents.forEach(item => {
-                    // Remover la imagen inyectada
-                    const img = item.wrapper.querySelector('.print-kroki-img');
-                    if (img) img.remove();
-                    
-                    // Volver a mostrar los elementos interactivos
-                    const children = Array.from(item.wrapper.children);
-                    children.forEach(child => child.style.display = '');
-                    
-                    item.wrapper.style.border = item.border;
-                    item.wrapper.style.background = item.bg;
-                });
-                printBtn.innerHTML = '🖨️ Exportar a PDF / Imprimir';
-                printBtn.disabled = false;
-            }, 1000);
-        };
         tabsContainer.appendChild(printBtn);
     }
 
