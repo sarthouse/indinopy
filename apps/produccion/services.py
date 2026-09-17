@@ -1,5 +1,5 @@
 import datetime
-import uuid
+import uuid6
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
@@ -172,11 +172,10 @@ class ProduccionService:
                 mimetype="application/json",
                 descripcion="Payload canónico inmutable con hash SHA-256 de la Orden de Producción.",
             )
-            
+
             # TODO: Aquí el ERP Producción (Nodo Marca) debe disparar un Webhook
             # o llamada HTTP hacia la URL del Nodo MES usando el payload generado.
             # No debe acceder directamente a la BD de la MES ni Tesorería.
-
 
     @staticmethod
     @transaction.atomic
@@ -365,10 +364,12 @@ class ProduccionService:
         """
         Crea una Orden de Producción en estado borrador generada por el MRP.
         """
-        numero_op = f"OP-MRP-{str(uuid.uuid4())[:6].upper()}"
+        nuevo_uuid = uuid6.uuid7()
+        numero_op = f"OP-MRP-{str(nuevo_uuid)[:6].upper()}"
 
         # En la vida real, se buscaría la receta (BOM) activa para este producto
         op = OrdenProduccion.objects.create(
+            uuid_identificador=nuevo_uuid,
             numero=numero_op,
             tipo="interna",
             fecha_planificada=datetime.date.today(),

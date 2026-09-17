@@ -38,13 +38,13 @@ La arquitectura del proyecto se sostiene sobre cuatro pilares vertebrales cuyos 
 Plataforma de software libre (bajo licencia abierta) diseñada específicamente para la planificación de recursos empresariales (**ERP - Enterprise Resource Planning**) y la ejecución de manufactura en planta (**MES - Manufacturing Execution System**) en cadenas de valor de calzado, confección y marroquinería. **No es una empresa fabricante ni una marca comercial**, sino la infraestructura técnica digital que procesa las órdenes, audita los stocks por partida doble y gestiona la interacción con la Mesa de Enlace Sectorial.
 
 ### **Orden de Producción Electrónica (e-OP)**
-Primitiva digital que transforma la orden de fabricación tradicional en un **título de afectación productiva, colateral crediticio fiduciario e instrumento de pago en custodia (*Escrow*)**. No es un simple comprobante interno; al ser convalidada por la MES, adquiere fuerza ejecutiva crediticia ante el Fondo Fiduciario (FDI) y valor probatorio de gasto computable ante las autoridades fiscales.
+Instrumento digital que transforma la orden de fabricación tradicional en un **título de afectación productiva, colateral crediticio fiduciario e instrumento de anticipo contra hitos (*Escrow Digital*)**. Al ser convalidada por la MES, adquiere fuerza ejecutiva crediticia ante el Fondo Fiduciario (FDI) —habilitando el adelanto de liquidez al tallerista mientras la marca repaga a plazo— y constituye un valor probatorio de gasto computable ante las autoridades fiscales.
 
 ### **Mesa de Enlace Sectorial (MES Federal y Local)**
 Órgano colegiado de gobernanza policéntrica paritaria integrado por 7 sillas representativas de la cadena: (1) Cámaras de Marcas Comitentes; (2) Cámaras de Fabricantes Integrados; (3) Talleres Consolidados (SAS/Cooperativas); (4) Talleres Individuales (Monotributo Productivo); (5) Estado Municipal/Provincial (Árbitro de Crédito); (6) Sindicato de Rama (UTICRA/SETIA); y (7) Organismo Tecnológico Neutral (INTI). Articula a nivel macro (**MES Federal**) y en el territorio operativo (**MES Municipal / Nodos Regionales**).
 
 ### **Fideicomiso de Desarrollo Industrial (FDI)**
-Fondo fiduciario de segundo piso administrado con la participación del **Banco de la Provincia de Buenos Aires (BAPRO)** y cajas de crédito cooperativo. Desintermedia el crédito bancario comercial operando con un ratio de apalancamiento prudencial ($K=3$), financiando el capital de trabajo de los talleres contra el colateral de las e-OPs activas.
+Fondo fiduciario de segundo piso administrado con la participación del **Banco de la Provincia de Buenos Aires (BAPRO)** y cajas de crédito cooperativo. Desintermedia el crédito bancario comercial financiando el capital de trabajo de los talleres contra el colateral de las e-OPs activas.
 
 ### **Contrato Timelock (Bloqueo Temporal de 48 Horas)**
 Algoritmo de control temporal programado en el sistema informático. Establece una ventana máxima e improrrogable de **48 horas hábiles** desde la carga de una e-OP para que la Comisión de Crédito de la MES emita un dictamen fundado de objeción técnica. Si la comisión no se pronuncia en ese lapso, el sistema desbloquea automáticamente el anticipo.
@@ -64,8 +64,11 @@ Mecanismo de modificación formal inmutable de una e-OP en ejecución. Ante cont
 
 ## <a id="sec-2"></a>2. Primitivas Criptográficas y de Trazabilidad Inmutable
 
-### **UUID (Universally Unique Identifier)**
-Identificador universal único pseudoaleatorio de 128 bits (ej. `e8b7c934-8fa4-4e1a-ad35-c02cd6ac65d1`). Garantiza la unicidad matemática global de cada e-OP emitida en el sistema, vinculando en una sola clave todas las transacciones físicas, remitos, movimientos de inventario y transferencias bancarias asociadas.
+### **UUID (Universally Unique Identifier - Versión 7)**
+Identificador universal único de 128 bits (ej. `018b7c93-48fa-74e1-aad3-5c02cd6ac65d`). En la arquitectura de Indinopy se prioriza el estándar **UUIDv7**, el cual combina una marca de tiempo (*timestamp* en milisegundos) con entropía aleatoria. Esto garantiza la unicidad matemática global de cada e-OP, a la vez que permite un ordenamiento cronológico nativo que evita la fragmentación de índices en PostgreSQL al procesar millones de remitos y transacciones bancarias.
+
+### **Árbol de Merkle (Merkle Tree)**
+Estructura de datos criptográfica en forma de árbol invertido donde cada "hoja" (nodo inferior) contiene el hash (huella digital) de una porción de información, y cada nodo superior agrupa esos hashes hasta llegar a una única cima (**Raíz de Merkle**). En la arquitectura de Indinopy, se utiliza para registrar la receta de la Orden de Producción (BOM): permite auditar y demostrar matemáticamente ante la MES que un insumo o merma específica forma parte del acuerdo original, sin necesidad de revelar públicamente el resto de la fórmula o los secretos industriales de la marca.
 
 ### **Merkle Root BOM ($\mathcal{M}_{BOM}$)**
 Raíz criptográfica de un **Árbol de Merkle** generado a partir de las hojas que contienen cada insumo, consumo unitario y tolerancia de merma de la receta técnica. Permite verificar matemáticamente que la lista de materiales no fue adulterada a posteriori sin necesidad de exponer en público la totalidad de la fórmula industrial protegida de la marca.
@@ -101,15 +104,18 @@ Directriz de privacidad y seguridad implementada en la integración de enrolamie
 
 ## <a id="sec-3"></a>3. Actores de Gobernanza y Velo Societario
 
-### **Marca Comitente**
-Empresa que encarga la producción, aporta el diseño, provee las materias primas bajo régimen de custodia, comercializa el producto terminado e integra el fondeo de la mano de obra en la bóveda de Escrow del FDI.
+### **Marca Comitente u Organización Comercial**
+Empresa o PyME de diseño que encarga la producción, aporta el diseño, compra y provee las materias primas (entregándolas al taller exclusivamente para su transformación bajo figura de custodia) y comercializa el producto terminado. Para emitir e-OPs financiadas, debe estar inscrita en el **Registro de Marcas Comitentes Homologadas**, cumpliendo con la validación de historial en ARCA, el depósito de reserva del 2% en el FDI y la firma del Código de Conducta Antitrust territorial.
 
 ### **Beneficiario Final Real (UBO - Ultimate Beneficial Owner)**
-Persona física titular, socio gerente o director real de la marca comitente, identificado fehacientemente mediante su DNI y constatación biométrica ante RENAPER. 
-* **Doctrina contra Quiebras Fraudulentas:** Si la marca quiebra una razón social ("Calzados Fantasma S.R.L.") dejando pasivos salariales, la penalización (*Slashing*) y la pérdida de score no quedan en la persona jurídica vaciada, sino que **se heredan en el DNI del titular real**, exigiéndole 100% de fianza líquida si intenta operar con una nueva sociedad.
+Persona física titular, socio gerente o director real de la marca comitente, identificado fehacientemente mediante su DNI y constatación biométrica ante RENAPER (normas KYC/AML). 
+* **Doctrina contra Quiebras Fraudulentas:** Si la marca quiebra una razón social ("Calzados Fantasma S.R.L.") dejando pasivos salariales o deudas con el FDI, la penalización (*Slashing*) y la pérdida de score no mueren en la persona jurídica vaciada, sino que **se heredan ineludiblemente en el DNI del titular real**, exigiéndole 100% de fianza líquida si intenta operar con una nueva sociedad comercial en la red.
 
-### **Tallerista Ejecutor / Unidad Productiva Territorial**
-Microempresa, taller familiar o consorcio barrial (cortadores, aparadores, armadores) que aporta la capacidad de trabajo físico y la maquinaria de taller. Opera adherido a la Bolsa de Trabajo bajo la figura de Monotributo Productivo o Sociedad por Acciones Simplificada (SAS).
+### **Taller Gestor / Unidad Productiva Territorial**
+Microempresa, fábrica o consorcio barrial que aporta la capacidad de trabajo físico centralizado, matricería y maquinaria pesada. Puede operar bajo cualquier figura societaria existente (SA, SRL), como persona humana Responsable Inscripto o bajo el régimen de Monotributo general. Sin embargo, FIMCA fomenta y facilita a través del *Puente SAS* su constitución o transición hacia la figura de **Sociedad por Acciones Simplificada (SAS)**, aislando el patrimonio personal del emprendedor.
+
+### **Prestador Eventual / Operario de Base (Monotributo Productivo)**
+Costurero a destajo, aparador o cortador manual que presta servicios específicos a un Taller Gestor o directamente a una Marca. Se formaliza mediante el **Monotributo Productivo**, un régimen de alta automatizada (sin trámites burocráticos) que se activa con la primera e-OP. No tiene cuota fija mensual; el impuesto se cobra mediante una micro-retención del 1% o 2% ejecutada directamente en el *clearing* bancario al cobrar la orden. Tiene un límite de facturación anual igual a la Categoría A del monotributo general; superado ese tope, el sistema induce su transición hacia una figura superior.
 
 ### **Promotor Territorial de Formalización (PTF)**
 Trabajador de base del oficio con antigüedad mínima comprobable de 12 meses y aval de 5 talleres vecinos, designado por la MES local y rentado con honorario de 2 Salarios Mínimos, Vitales y Móviles financiados por el FDI. Opera como un **Puente Humano y Tutor Técnico**; actúa como agente fiduciario de proximidad: inspecciona talleres, constata avances de lote, asiste digitalmente a los talleres en la plataforma y da fe ante la MES para la liberación de los hitos del Escrow digital.

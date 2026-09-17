@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import uuid
+import uuid6
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -59,7 +60,7 @@ class DocumentoFirmableMixin(models.Model):
 
     # Identificador único global inmutable
     uuid_identificador = models.UUIDField(
-        default=uuid.uuid4,
+        default=uuid6.uuid7,
         editable=False,
         unique=True,
         verbose_name="Identificador Único Criptográfico",

@@ -1,6 +1,7 @@
 import hashlib
 import json
 import uuid
+import uuid6
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -118,11 +119,13 @@ class RecetaEtapa(TimeStampedModel):
         ),
     )
     porcentaje_hito_pago = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
+        max_digits=5,
+        decimal_places=2,
         default=0.00,
         verbose_name=_("% de Pago al finalizar etapa"),
-        help_text=_("Define el cronograma de liberación de fondos (Ej: 20% al terminar Corte)")
+        help_text=_(
+            "Define el cronograma de liberación de fondos (Ej: 20% al terminar Corte)"
+        ),
     )
 
     class Meta:
