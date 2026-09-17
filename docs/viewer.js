@@ -322,30 +322,34 @@ async function loadMarkdown() {
         // Strip YAML frontmatter si existe
         markdownText = markdownText.replace(/^---\r?\n[\s\S]*?\n---\r?\n/, '');
 
-        // 1. Extraer bloques matemáticos para que Marked no convierta los guiones bajos (_) en <em>
+        // 1. Proteger moneda: extraemos los precios a un array temporal (Regla estricta: espacio-dólar-espacio-número)
+        const currencyBlocks = [];
+        let textWithTokens = markdownText.replace(/(^|\s)\$\s+(\d)/g, (match, spaceBefore, digit) => {
+            currencyBlocks.push(`${spaceBefore}<span class="math-ignore">&#36; </span>${digit}`);
+            return `@@CURRENCY_${currencyBlocks.length - 1}@@`;
+        });
+
+        // 2. Extraer bloques matemáticos (block e inline)
         const mathBlocks = [];
-        
-        // 1. Proteger símbolos de moneda aislando el signo peso en su propio nodo DOM (un span). 
-        // Como KaTeX procesa los nodos de texto de a uno y no cruza etiquetas HTML para matemática inline,
-        // al ver un span que solo contiene un $ (sin su par de cierre adentro), lo ignora por completo.
-        let textWithTokens = markdownText.replace(/\$(\s*\d)/g, '<span class="math-ignore">$</span>$1').replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+        textWithTokens = textWithTokens.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
             mathBlocks.push(match);
             return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
         });
         
-        // Inline math, excluyendo espacios después del $ para no agarrar monedas
-        const inlineMathRegex = /(?<!\\)\$([\s\S]+?)(?<!\\)\$/g;
-        textWithTokens = textWithTokens.replace(inlineMathRegex, (match) => {
+        textWithTokens = textWithTokens.replace(/(?<!\\)\$([\s\S]+?)(?<!\\)\$/g, (match) => {
             mathBlocks.push(match);
             return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
         });
 
-        // 2. Parseamos el markdown a HTML en memoria
+        // 3. Parseamos a HTML
         let htmlContent = marked.parse(textWithTokens);
 
-        // 3. Restaurar los bloques matemáticos intactos usando función para evitar que JS evalúe $$ como $
+        // 4. Restaurar todo
         mathBlocks.forEach((block, index) => {
             htmlContent = htmlContent.replace(`@@MATH_BLOCK_${index}@@`, () => block);
+        });
+        currencyBlocks.forEach((block, index) => {
+            htmlContent = htmlContent.replace(`@@CURRENCY_${index}@@`, () => block);
         });
 
         // Inyectamos el HTML dinámicamente

@@ -264,6 +264,13 @@ Todo sistema descentralizado enfrenta el problema de *Cold Start*: cómo asignar
 1. **Oráculo Humano de Tutela (Talleristas):** Durante las primeras tres (3) e-OPs de un tallerista novato, la validación de Proof-of-Productive-Work (PoPW) no es $100\%$ autónoma. El Promotor Territorial (PTF) actúa como un oráculo de datos físico, acompañando la carga y certificando in situ la capacidad productiva. A partir de la cuarta e-OP exitosa, el tallerista genera su historial inmutable en la Bolsa de Trabajo, el cual sustituye al historial crediticio y le permite operar de forma autónoma.
 2. **Capping de Riesgo Inicial (Marcas):** Para mitigar ataques de Sybil o empresas fantasma, las marcas sin historial previo en el régimen tienen un tope duro (*hard-cap*) en el volumen de e-OPs financiables simultáneamente (acotado a 2 Salarios Mínimos, Vitales y Móviles por hito). Este techo de cristal financiero se rompe automáticamente tras completar con éxito sus primeras tres certificaciones físicas en territorio.
 
+### 4.5. Protocolo de Alerta de Asistencia Recíproca ante Cuellos de Botella
+
+Si un tallerista detecta de forma anticipada una imposibilidad técnica o de capacidad instalada para cumplir con el vencimiento de un hito, el protocolo incorpora un mecanismo de **Suspensión Activa de Oficio**. El tallerista debe activar la *Alerta de Asistencia Recíproca* en la plataforma digital con una antelación mínima de setenta y dos (72) horas.
+
+* **Redistribución Solidaria de Lotes:** La Comisión de Homologación Técnica de la MES local estará facultada para fragmentar el lote remanente y reasignarlo de forma automatizada a talleres linderos con capacidad ociosa verificada en la Bolsa de Trabajo.
+* **Liquidación Proporcional:** El pago final de la e-OP en Escrow se liquidará de forma estrictamente proporcional a la cantidad de pares o prendas terminadas y certificadas por cada taller participante, evitando el *slashing* punitivo sobre el tallerista original y garantizando la entrega a tiempo para la marca comitente.
+
 ---
 
 ## 5. Arquitectura Financiera, Liquidez y Solvencia del FDI
@@ -312,7 +319,7 @@ Donde:
 
 ### 5.2. Proposición 1 — Esbozo de Solvencia del Fondo
 
-> **Nota metodológica:** Lo que sigue es una **proposición con esbozo de demostración**, no un teorema en sentido matemático riguroso. La demostración formal requiere el análisis de estabilidad del sistema dinámico de la EDO anterior (ecuación diferencial ordinaria), incluyendo condiciones de Lyapunov, que excede el alcance de este position paper y constituye una línea de trabajo futuro (§9.1). Asimismo, los valores paramétricos adoptados ($K=3$, $\tau=30$ días, $\mu_{\text{mora}} \le 0.08$) representan estimaciones de diseño iniciales que deberán ser calibradas empíricamente durante el piloto territorial.
+> **Nota metodológica:** Lo que sigue es una **proposición con esbozo de demostración**, no un teorema en sentido matemático riguroso. La demostración formal requiere el análisis de estabilidad del sistema dinámico de la EDO anterior (ecuación diferencial ordinaria), incluyendo condiciones de Lyapunov, que excede el alcance de este position paper y constituye una línea de trabajo futuro (§9.1). Asimismo, los valores paramétricos adoptados (K=3, $\tau=30$ días, $\mu_{\text{mora}} \le 0.08$) representan estimaciones de diseño iniciales que deberán ser calibradas empíricamente durante el piloto territorial.
 
 **Proposición 1 (Condición Suficiente de No-Iliquidez):**  
 *Sea un fondo con capital base $C_0$, ratio de apalancamiento $K=3$, plazo medio de rotación de cartera $\tau = 30$ días, y tasa de pérdida de primer piso por contingencias de taller $\mu_{\text{mora}}$. Bajo las hipótesis (H1) $\mu_{\text{mora}} \le 0.08$ y (H2) la tasa de recapitalización exógena satisface:*
@@ -489,7 +496,7 @@ graph TD
 
 2. **Generador del Sello QR de Trazabilidad Socioproductiva:**  
    Al completarse la orden, el sistema computa la descomposición factorial de costos y genera una URI pública para el etiquetado del calzado terminado:
-   $$\text{URL}_{\text{trazabilidad}} = \text{https://indino.ar/t/}\{\text{UUID}\}$$
+   $$\text{URL}_{\text{trazabilidad}} = \text{https://indinopy.ar/t/}\{\text{UUID}\}$$
    Mostrando en tiempo real: (a) Municipio de confección; (b) Porcentaje de retribución directa al tallerista; (c) Porcentaje de insumos nacionales; (d) Carga fiscal agregada; y (e) Margen bruto de comercialización.
 
 ### 8.2. Modelo de Amenazas y Mitigaciones
