@@ -322,11 +322,20 @@ async function loadMarkdown() {
         // Strip YAML frontmatter si existe
         markdownText = markdownText.replace(/^---\r?\n[\s\S]*?\n---\r?\n/, '');
 
-        // 1. Extraer bloques matemáticos (inline y block) para protegerlos de Marked
+        // 1. Extraer bloques matemáticos para que Marked no convierta los guiones bajos (_) en <em>
         const mathBlocks = [];
-        // La regex ahora evita hacer match cruzando saltos de línea en el $ inline y verifica que no esté escapado con \
-        const mathRegex = /(\$\$[\s\S]*?\$\$|(?<!\\)\$(?:\\.|[^\$\\\n])*?(?<!\\)\$)/g;
-        const textWithTokens = markdownText.replace(mathRegex, (match) => {
+        
+        // 1. Proteger símbolos de moneda aislando el signo peso en su propio nodo DOM (un span). 
+        // Como KaTeX procesa los nodos de texto de a uno y no cruza etiquetas HTML para matemática inline,
+        // al ver un span que solo contiene un $ (sin su par de cierre adentro), lo ignora por completo.
+        let textWithTokens = markdownText.replace(/\$(\s*\d)/g, '<span class="math-ignore">$</span>$1').replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+            mathBlocks.push(match);
+            return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
+        });
+        
+        // Inline math, excluyendo espacios después del $ para no agarrar monedas
+        const inlineMathRegex = /(?<!\\)\$([\s\S]+?)(?<!\\)\$/g;
+        textWithTokens = textWithTokens.replace(inlineMathRegex, (match) => {
             mathBlocks.push(match);
             return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
         });
@@ -334,9 +343,9 @@ async function loadMarkdown() {
         // 2. Parseamos el markdown a HTML en memoria
         let htmlContent = marked.parse(textWithTokens);
 
-        // 3. Restaurar los bloques matemáticos intactos
+        // 3. Restaurar los bloques matemáticos intactos usando función para evitar que JS evalúe $$ como $
         mathBlocks.forEach((block, index) => {
-            htmlContent = htmlContent.replace(`@@MATH_BLOCK_${index}@@`, block);
+            htmlContent = htmlContent.replace(`@@MATH_BLOCK_${index}@@`, () => block);
         });
 
         // Inyectamos el HTML dinámicamente
@@ -448,8 +457,26 @@ async function loadMarkdown() {
                 let markdownText = e.target.result;
                 markdownText = markdownText.replace(/^---\r?\n[\s\S]*?\n---\r?\n/, '');
 
+                // 1. Extraer bloques matemáticos para que Marked no convierta los guiones bajos (_) en <em>
+                const mathBlocks = [];
+                let textWithTokens = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+                    mathBlocks.push(match);
+                    return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
+                });
+                
+                const inlineMathRegex = /(?<!\\)\$([\s\S]+?)(?<!\\)\$/g;
+                textWithTokens = textWithTokens.replace(inlineMathRegex, (match) => {
+                    mathBlocks.push(match);
+                    return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
+                });
+
                 // Parsear y renderizar (misma lógica que el try)
-                const htmlContent = marked.parse(markdownText);
+                let htmlContent = marked.parse(textWithTokens);
+
+                mathBlocks.forEach((block, index) => {
+                    htmlContent = htmlContent.replace(`@@MATH_BLOCK_${index}@@`, () => block);
+                });
+
                 const contentDiv = document.getElementById('content');
                 contentDiv.innerHTML = htmlContent;
 

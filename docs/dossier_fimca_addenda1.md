@@ -76,26 +76,26 @@ Toda propuesta de gasto público que no cuantifica su costo es atacable como irr
 
 | Concepto | Valor estimado |
 | :---- | :---- |
-| Salario bruto promedio convenio textil/calzado | <span>$</span>650.000 mensuales (a junio 2026) |
+| Salario bruto promedio convenio textil/calzado | $ 650.000 mensuales (a junio 2026) |
 | Alícuota de aportes patronales | 27% del salario bruto |
-| Costo patronal mensual por trabajador | <span>$</span>175.500 |
-| Costo patronal anual por trabajador | <span>$</span>2.106.000 |
+| Costo patronal mensual por trabajador | $ 175.500 |
+| Costo patronal anual por trabajador | $ 2.106.000 |
 | Duración del beneficio | 24 meses |
-| Costo total por trabajador durante el período | <span>$</span>4.212.000 |
+| Costo total por trabajador durante el período | $ 4.212.000 |
 
 ### C. Costo Total del Programa (Año 1 — Adhesión Parcial)
 
 | Escenario | Trabajadores alcanzados | Costo total 24 meses |
 | :---- | :---- | :---- |
-| Conservador (30% adhesión) | 6.750 | <span>$</span>28.431 millones |
-| Moderado (50% adhesión) | 11.250 | <span>$</span>47.385 millones |
-| Optimista (70% adhesión) | 15.750 | <span>$</span>66.339 millones |
+| Conservador (30% adhesión) | 6.750 | $ 28.431 millones |
+| Moderado (50% adhesión) | 11.250 | $ 47.385 millones |
+| Optimista (70% adhesión) | 15.750 | $ 66.339 millones |
 
 ### D. Fuente de Financiamiento y Sustentabilidad
 
-El escenario conservador (<span>$</span>28.431 millones en 24 meses, equivalente a <span>$</span>1.185 millones mensuales) representa aproximadamente el 0,03% del PBI y puede financiarse mediante:
+El escenario conservador ($ 28.431 millones en 24 meses, equivalente a $ 1.185 millones mensuales) representa aproximadamente el 0,03% del PBI y puede financiarse mediante:
 
-* Afectación del 0,5% de los Derechos de Exportación sobre hidrocarburos y litio (flujo mensual estimado: superior a <span>$</span>3.000 millones a valores corrientes).
+* Afectación del 0,5% de los Derechos de Exportación sobre hidrocarburos y litio (flujo mensual estimado: superior a $ 3.000 millones a valores corrientes).
 
 * Reasignación de partidas de fondos fiduciarios de fomento productivo nacional con baja ejecución.
 
@@ -324,7 +324,7 @@ Una herramienta financiera sin parámetros es una intención sin sustento. El FD
 
 | Parámetro | Valor propuesto | Fundamento |
 | :---- | :---- | :---- |
-| Capital inicial del FDI | <span>$</span>15.000 millones (pesos) | Reasignación de fondos fiduciarios nacionales existentes |
+| Capital inicial del FDI | $ 15.000 millones (pesos) | Reasignación de fondos fiduciarios nacionales existentes |
 | Adelanto máximo por unidad | Equivalente a 3 meses de facturación promedio declarada | Alineado al ciclo productivo del calzado (temporada) |
 | Ratio de apalancamiento | 1:3 (1 peso garantiza hasta 3 pesos de adelanto) | Estándar de fondos de garantía de segundo piso en Argentina |
 | Tasa de incobrabilidad sostenible | Hasta 8% anual sin capitalización extraordinaria | Margen conservador con garantía de hitos productivos |
