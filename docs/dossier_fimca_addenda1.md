@@ -159,8 +159,7 @@ El quórum para sesionar es de cinco (5) miembros. Las decisiones ordinarias se 
 
 * La reasignación de partidas excepcionales del Fondo de Fomento del FDI local ante situaciones de emergencia o baches estacionales de la cadena.
 
-| *Cláusula de protección del nodo productivo: Cualquier votación sobre estas materias reservadas requerirá de forma obligatoria el voto concurrente de al menos un (1) representante del nodo de Talleristas y Aparadores, garantizando que el capital concentrado o la burocracia circunstancial no resuelvan por encima del interés directo de los trabajadores de base.* |
-| :---- |
+> **Cláusula de protección del nodo productivo:** Cualquier votación sobre estas materias reservadas requerirá de forma obligatoria el voto concurrente de al menos un (1) representante del nodo de Talleristas y Aparadores, garantizando que el capital concentrado o la burocracia circunstancial no resuelvan por encima del interés directo de los trabajadores de base.
 
 ### B. Separación de Funciones: Comisiones Especializadas
 
@@ -421,7 +420,7 @@ flowchart TD
 
 Los primeros seis (6) meses desde el alta automática, la micro-retención es la única obligación del prestador. Sin categorización, sin declaraciones juradas, sin ningún trámite adicional.
 
-*Cláusula de no retroactividad: el alta en el Monotributo Productivo no genera deudas por períodos anteriores no registrados. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen.*
+> **Cláusula de no retroactividad:** el alta en el Monotributo Productivo no genera deudas por períodos anteriores no registrados. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen.*
 
 Esta cláusula debe comunicarse con la misma jerarquía que el beneficio principal y figurar en los primeros 100 caracteres de cualquier pieza dirigida al sector.
 

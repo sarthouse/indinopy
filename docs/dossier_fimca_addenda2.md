@@ -142,7 +142,8 @@ graph LR
     BT -.->|Califica Puntualidad| T2
     BT -.->|Califica Pago a Término| M1
 ```
-**Figura 5: Ecosistema de la Bolsa de Trabajo Sectorial.** *Grafo que representa la interacción del mercado de la Comunidad Organizada. Oferta y demanda se cruzan mediadas por el "Score Solidario", un sistema de evaluación bidireccional donde tanto las marcas como los talleristas se auditan mutuamente, premiando el cumplimiento y aislando los abusos.*
+
+> **Figura 5: Ecosistema de la Bolsa de Trabajo Sectorial.** Grafo que representa la interacción del mercado de la Comunidad Organizada. Oferta y demanda se cruzan mediadas por el "Score Solidario", un sistema de evaluación bidireccional donde tanto las marcas como los talleristas se auditan mutuamente, premiando el cumplimiento y aislando los abusos.
 
 ### C. Articulación con las Organizaciones Libres del Pueblo
 
@@ -205,7 +206,7 @@ sequenceDiagram
         M->>E: 7b. Libera Fianza a la Marca
     end
 ```
-**Figura 6: Acción de Tutela de Urgencia y Veto Ex-Post.** *Diagrama de secuencia que detalla la intervención sindical ante abusos. El mecanismo garantiza que el conflicto no frene la logística productiva de la marca, obligándola a inmovilizar una fianza líquida (Escrow) para poder retirar su mercadería mientras el Tribunal de Arbitraje resuelve la disputa de fondo.*
+> **Figura 6: Acción de Tutela de Urgencia y Veto Ex-Post.** Diagrama de secuencia que detalla la intervención sindical ante abusos. El mecanismo garantiza que el conflicto no frene la logística productiva de la marca, obligándola a inmovilizar una fianza líquida (Escrow) para poder retirar su mercadería mientras el Tribunal de Arbitraje resuelve la disputa de fondo.
 
 **Como socios de la formalización:**
 
@@ -271,7 +272,7 @@ flowchart TD
     H --> F
     F -->|Ciclo completado| I[Historial Positivo en Bolsa de Trabajo]
 ```
-**Figura 7: El Camino de la Confianza (PTF e Hito Cero).** *Diagrama de flujo que ilustra la rampa de inclusión financiera y fiscal. El Promotor Territorial (PTF) actúa como puente humano para que el tallerista obtenga el alta automática, la cuenta bancaria y el desembolso del Hito Cero, construyendo su primer historial crediticio comunitario.*
+> **Figura 7: El Camino de la Confianza (PTF e Hito Cero).** Diagrama de flujo que ilustra la rampa de inclusión financiera y fiscal. El Promotor Territorial (PTF) actúa como puente humano para que el tallerista obtenga el alta automática, la cuenta bancaria y el desembolso del Hito Cero, construyendo su primer historial crediticio comunitario.
 
 ### E. Idoneidad y Elección del Promotor Territorial de Formalización (PTF)
 
