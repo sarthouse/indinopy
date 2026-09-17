@@ -54,8 +54,7 @@ Muchos talleristas evitan cualquier contacto con sistemas de registro porque asu
 
 La Cláusula de No Retroactividad es la garantía más importante del Monotributo Productivo y debe comunicarse con la misma jerarquía que el beneficio principal:
 
-| *"La inscripción en el Monotributo Productivo no genera deuda, cargo ni reclamación alguna por períodos anteriores a la fecha de alta automática. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen."* |
-| :---- |
+> "La inscripción en el Monotributo Productivo no genera deuda, cargo ni reclamación alguna por períodos anteriores a la fecha de alta automática. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen."
 
 Esta renuncia del Estado es la condición de confianza sin la cual ningún otro beneficio tiene credibilidad. Debe figurar en los primeros 100 caracteres de cualquier pieza de comunicación dirigida al sector.
 
