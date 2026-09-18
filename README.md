@@ -82,8 +82,8 @@ Indinopy es un proyecto moderno que utiliza [`uv`](https://docs.astral.sh/uv/) (
 ### 1. Preparar el Sistema Operativo
 Primero, instalá las dependencias de sistema (PostgreSQL, PostGIS, GDAL, compiladores) ejecutando el script incluido:
 ```bash
-chmod +x install_sys_deps.sh
-./install_sys_deps.sh
+chmod +x install.sh
+./install.sh
 ```
 
 ### 2. Instalar `uv`

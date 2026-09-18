@@ -259,6 +259,8 @@ Durante las primeras tres (3) e-OP operadas por el tallerista novato, el PTF eje
 
 La entrega a término de los lotes de las primeras e-OP generará un récord positivo de cumplimiento dentro de la Bolsa de Trabajo. Este historial sustituirá de manera permanente al scoring financiero clásico, habilitando al tallerista —a partir de la cuarta operación exitosa— a aplicar de forma autónoma a las líneas de crédito de capitalización de la MES para la adquisición de bienes de capital y maquinaria pesada.
 
+Una operación se considera **exitosa y completada** a todos los efectos del historial comunitario —incluyendo la acreditación de puntos en la Bolsa de Trabajo y la liberación del Hito Final— únicamente cuando se verifican de forma acumulativa: (1) la entrega física del lote auditado por el PTF; y (2) la emisión del comprobante fiscal oficial por parte del tallerista, constatada automáticamente por el sistema mediante interoperabilidad con ARCA. El FDI retiene el tramo final del pago (20%) en estado de **Cierre Fiscal Pendiente** hasta que ambas condiciones se cumplan. Esto hace que la emisión de la factura no sea una obligación formal separada, sino una parte constitutiva e ineludible del ciclo productivo: **no hay historial sin factura**.
+
 ```mermaid
 flowchart TD
     A[Tallerista Informal] -->|Visita territorial| B(Promotor PTF)
@@ -272,6 +274,7 @@ flowchart TD
     F -->|Ciclo completado| I[Historial Positivo en Bolsa de Trabajo]
 ```
 > **Figura 7: El Camino de la Confianza (PTF e Hito Cero).** Diagrama de flujo que ilustra la rampa de inclusión financiera y fiscal. El Promotor Territorial (PTF) actúa como puente humano para que el tallerista obtenga el alta automática, la cuenta bancaria y el desembolso del Hito Cero, construyendo su primer historial crediticio comunitario.
+
 
 ### E. Idoneidad y Elección del Promotor Territorial de Formalización (PTF)
 
@@ -408,7 +411,7 @@ Cada hito productivo declarado por el tallerista mediante la aplicación móvil 
 
 En virtud del carácter tuitivo del presente régimen y de la naturaleza jurídica del contrato de maquila industrial regulado por la extensión de la Ley 25.113, se establece que las materias primas, insumos, avíos y productos semielaborados o terminados que se encuentren físicamente dentro de un taller adherido bajo una e-OP activa, constituyen **activos intangibles de afectación productiva territorial**. Queda taxativamente prohibida su ejecución, secuestro, embargo preventivo o retención judicial por parte de magistrados de la justicia ordinaria ante quiebras, concursos o pasivos comerciales o tributarios de la marca comitente. El derecho al cobro de las e-OP de los talleristas y la regularidad laboral de la dotación gozarán de **privilegio absoluto de primer orden** por sobre cualquier acreedor hipotecario, prendario o fiscal del comitente, garantizando que el eslabón de base territorial perciba su clearing de fomento de forma inalterable.
 
-### L. De los Responsables Inscriptos Humanos y el Puente de Inclusión Fiscal
+### J. De los Responsables Inscriptos Humanos y el Puente de Inclusión Fiscal
 
 #### 1. Diagnóstico: El Purgatorio Fiscal y las Identidades Prestadas
 
@@ -431,6 +434,8 @@ El régimen general actual castiga la transición del microemprendimiento hacia 
 
 4. **Crédito Fiscal Presunto para la Absorción de la Informalidad:** se autoriza a los Responsables Inscriptos y SAS del régimen a computar un Crédito Fiscal Presunto de IVA e inclusión de costos en Ganancias equivalente al veinticinco por ciento (25%) del valor de la e-OP registrada, condicionado a que el servicio se preste en un taller localizado en los distritos adheridos al Proyecto FIMCA.
 
+5. **Cierre Fiscal Condicionante (`FISCAL_PENDING`):** Para neutralizar de forma definitiva la distorsión del *proveedor que no factura* (diagnosticada en el punto 1 de esta sección) y garantizar la computabilidad del Crédito Fiscal Presunto del 25% y la deducción en Ganancias para el comitente, el FDI retiene el Hito Final (20%) en custodia bajo el estado de **Cierre Fiscal Pendiente**. El desembolso efectivo a favor del taller se ejecuta de manera automatizada única y exclusivamente cuando los servicios web de ARCA validan la emisión del comprobante electrónico oficial (factura de Monotributo Productivo o de SAS). De este modo, la formalización tributaria deja de ser una carga post-cobro que el productor puede eludir, transformándose en la llave operativa indispensable para percibir la totalidad de su retribución.
+
 #### 3. Misión de Detección y Dictamen de Transición por el PTF
 
 1. **Relevamiento Activo del "Purgatorio Fiscal":** Los Promotores Territoriales de Formalización (PTF) tendrán la misión explícita de identificar en su radio de actuación territorial a aquellos talleristas, aparadores artesanales y micro-diseñadores humanos que se encuentren bajo la figura de Responsable Inscripto o que utilicen identidades fiscales prestadas debido al estrangulamiento de las categorías tradicionales.
@@ -447,7 +452,7 @@ El régimen general actual castiga la transición del microemprendimiento hacia 
 * Prohibición de Denuncia Fiscal: Queda taxativamente prohibido el uso de los datos relevados en territorio para iniciar fiscalizaciones retroactivas, labrar actas de infracción o cursar intimaciones de oficio por vías administrativas o judiciales respecto a deudas tributarias devengadas en la etapa informal.  
 * Inmunidad por el Pasado Informal: Consistente con el principio de irretroactividad del programa, la información contenida en el legajo tiene como único objeto habilitar el puente hacia la formalidad digitalizada, rigiendo un secreto profesional absoluto para el PTF y los miembros de la Mesa. La estructura comunitaria tiene vedada por ley cualquier función de juzgamiento, penalización o delación ante los organismos de recaudación centralizados."
 
-### J. De la Administración Estratégica del Comercio y las Unidades de Crédito Productivo ("Score Solidario")
+### K. De la Administración Estratégica del Comercio y las Unidades de Crédito Productivo ("Score Solidario")
 
 #### 1. Criterio de Administración Estratégica del Comercio Exterior
 
@@ -479,7 +484,7 @@ Para gozar de los derechos de emisión de e-OP con factoring del FDI, prioridad 
 
 3. **Conducción de la Diplomacia Comercial de Escala:** utilizar la estructura del servicio exterior y las representaciones diplomáticas de la Nación para traccionar las ofertas consolidadas de la Bolsa de Trabajo en mercados extranjeros, transformando la defensa de la producción nacional en una política de inserción inteligente y sistemática en el comercio global.
 
-### K. De la IA Algorética y la Conducción Tecnológica de la Cadena
+### L. De la IA Algorética y la Conducción Tecnológica de la Cadena
 
 #### 1. Fundamento Doctrinario y Magisterial
 
@@ -499,11 +504,11 @@ La arquitectura digital de la MES Federal integrará modelos de IA de código ab
 
 Se ratifica el principio ético de que ninguna decisión vinculante, sanción, exclusión de marca o baja de un tallerista podrá ser ejecutada de manera unilateral por un sistema automatizado. La IA se define estrictamente como una herramienta consultiva y de soporte técnico. La soberanía de la conducción productiva reside de forma indelegable en los miembros humanos del Consejo Superior de la MES Federal y sus Nodos Regionales, garantizando que el corazón de la política industrial siga respondiendo a la sensibilidad de la Comunidad Organizada.
 
-**4. Detección Automatizada de Fragmentación Artificial (Talleres Espejo)**
+#### 4. Detección Automatizada de Fragmentación Artificial (Talleres Espejo)
 
 El sistema de IA Algorética del régimen auditará de forma continua los metadatos de georreferenciación, direcciones IP y códigos de validación de las transacciones de las e-OP de los Prestadores Eventuales Individuales. Ante la detección sistemática de operaciones simultáneas radicadas en una misma coordenada física que denoten la existencia de una unidad productiva centralizada bajo máscara de prestadores independientes, la plataforma suspenderá de oficio la aprobación express de las órdenes vinculadas y cursará una alerta de inspección al Promotor Territorial (PTF) y al Nodo de Tutela Laboral (Sindicato) por presunto fraude a la escala del Puente SAS y evasión del convenio colectivo de trabajo. 
 
-### L. De la Competitividad de Costos, Neutralidad en Cascada y Desacople Energético
+### M. De la Competitividad de Costos, Neutralidad en Cascada y Desacople Energético
 
 #### 1. Objeto de Escala para Grandes Marcas Comitentes
 
@@ -523,7 +528,7 @@ A los fines de transformar el presente régimen en una plataforma atractiva para
 
 3. **Incentivo por Score Solidario:** aquellas marcas comitentes que sostengan un Score Solidario elevado (UCP) en el trimestre corriente recibirán un descuento adicional de hasta el veinte por ciento (20%) en el componente energético de la e-OP asignada a sus talleres subcontratados, transfiriendo la eficiencia macroeconómica del Estado al costo final unitario del producto terminado.
 
-### M. Del Régimen de Transparencia Radical de Costos y Elección del Consumidor
+### N. Del Régimen de Transparencia Radical de Costos y Elección del Consumidor
 
 #### 1. Fundamento y Respeto a la Libertad de Pricing
 
@@ -549,7 +554,7 @@ En consonancia con la doctrina nacional de respeto a la libre iniciativa económ
 
 2. **Alineación de la Preferencia del Consumidor:** este mecanismo confía la regulación del margen de ganancia excesivo al juicio soberano del consumidor en el mercado, premiando la honestidad comercial de las marcas transparentes con prioridad en los beneficios logísticos, cambiarios y de diplomacia comercial que administra el Consejo Superior.
 
-### N. Síntesis: La Cadena de Valor como Comunidad Organizada
+### O. Síntesis: La Cadena de Valor como Comunidad Organizada
 
 El mapa de actores de este régimen no es una estructura jerárquica donde el Estado diseña y los demás obedecen. Es una red de organizaciones libres que aportan cada una lo que le es propio:
 
@@ -565,7 +570,7 @@ El mapa de actores de este régimen no es una estructura jerárquica donde el Es
 
 Cuando cada actor hace lo que le es propio y el Estado articula sin invadir, el pueblo se organiza libremente. Esa es la única forma de reconstrucción industrial que no depende de que cambie el gobierno.
 
-### O. Del Régimen de Abastecimiento de Materia Prima Crítica y Logística Federal Protegida
+### P. Del Régimen de Abastecimiento de Materia Prima Crítica y Logística Federal Protegida
 
 **Objeto de Resguardo de Insumos de la Cadena** A los fines de garantizar la sustentabilidad operativa del Proyecto FIMCA, neutralizar maniobras de desabastecimiento especulativo y asegurar la disponibilidad de materias primas e insumos críticos (cueros, hilados, caucho y avíos), se instituye el Régimen de Abastecimiento Federal Protegido, bajo la órbita de control de la MES Federal en coordinación con la Secretaría de Comercio de la Nación.
 

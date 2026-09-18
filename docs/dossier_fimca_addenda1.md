@@ -26,11 +26,15 @@ Se propone que el BCRA encuadre la Orden de Producción digital registrada como 
 
 * **La ejecutabilidad ante incumplimiento recae en el FDI,** no en el sistema judicial ordinario. El FDI absorbe la incobrabilidad y en ningún caso afecta la calificación del tallerista en la Central de Deudores del BCRA.
 
-### B. Interoperabilidad con Infraestructura Existente
+### B. Infraestructura Abierta e Interoperabilidad Federal
 
-La e-OP digital se registra en la misma plataforma de Facturas de Crédito Electrónicas de ARCA/AFIP, con un campo adicional que la identifica como instrumento del régimen de maquila industrial. No se crea infraestructura nueva desde cero: se extiende la infraestructura existente con un módulo específico.
+La emisión, convalidación y seguimiento de la e-OP no requiere depender de desarrollos burocráticos centralizados ni de sistemas cerrados. El esquema operativo podría sustentarse en la red federada de **Indinopy ERP/MES**, una plataforma de software libre y código abierto diseñada para desplegarse en los nodos territoriales de la cadena (talleres, marcas y sedes de la MES).
 
-La entidad bancaria o billetera digital habilitada actúa exclusivamente como agente de clearing técnico automatizado. La decisión de crédito ya fue adoptada por la MES; el banco solo liquida.
+A través de estándares abiertos, Indinopy podría garantizar la inmutabilidad de los compromisos industriales (recetas BOM con verificación de árbol de Merkle y firmas digitales Ed25519) e **interoperar mediante APIs seguras con la infraestructura estatal y bancaria existente**:
+
+1. **Con ARCA:** para validar en tiempo real la identidad fiscal de las partes y habilitar el Monotributo Productivo automatizado. La e-OP se registraría como un contrato sectorial de locación de obra (y no como una factura comercial devengada), garantizando que no se compute hecho imponible ni anticipos de IVA hasta la liquidación efectiva del servicio y la verificación de la factura oficial en el cierre (`FISCAL_PENDING`).
+2. **Con el Sistema Financiero (BAPRO / FDI):** la e-OP homologada por la MES se transmitiría al fideicomiso como colateral crediticio líquido. Las entidades bancarias y billeteras digitales actuarían exclusivamente como agentes de clearing técnico automatizado: ejecutarían los desembolsos de hitos ordenados por el protocolo sin intermediación de scoring bancario discrecional.
+3. **Con RENAPER:** para articular la verificación biométrica de la Prueba de Trabajo Productivo (PoPW) en territorio.
 
 ### C. Hito Cero: Anticipo de Arranque para Talleres sin Historial
 
@@ -428,7 +432,10 @@ Esta cláusula debe comunicarse con la misma jerarquía que el beneficio princip
 
 Las facturas emitidas bajo el Monotributo Productivo están estrictamente vinculadas a una e-OP sectorial registrada y topadas anualmente hasta el límite de la Categoría A del Monotributo general. Un prestador sin OP registrada vinculada no puede emitir factura bajo este régimen.
 
-La legislación garantizará el derecho del taller a solicitar el adelanto del FDI de manera autónoma, utilizando la e-OP registrada como respaldo financiero, sin depender de que la MiPyME comitente inicie el trámite. Este derecho de acceso autónomo emancipa al eslabón productivo y es la condición necesaria para que el historial crediticio construido bajo el Monotributo Productivo tenga valor real en el futuro.
+* **Liquidación del Tramo Final y Cierre Fiscal (`FISCAL_PENDING`):** La acreditación definitiva del saldo final de cobro en el clearing del FDI está supeditada a la efectiva emisión del comprobante fiscal oficial constatada por interoperabilidad con ARCA. Esta regla rige tanto para el tallerista ejecutor integral de la orden como para los prestadores eventuales externos e independientes (aparadores artesanales, cortadores a destajo bajo Monotributo Productivo) que lleven adelante fases intermedias.
+* **Tope de Retención de Etapa para Prestadores Eventuales:** Con el objeto de resguardar el sustento diario del trabajador de base y la liquidez inmediata de la economía popular, a los prestadores eventuales independientes se les podrá retener únicamente una porción de resguardo de la etapa específica que llevaron adelante, la cual **en ningún caso podrá ser superior al treinta por ciento (30%)** del valor presupuestado para dicha fase. El porcentaje restante (al menos el 70%) se liquida de manera automática e inmediata contra la certificación física de la etapa (PoPW), quedando el tramo retenido a la espera de la emisión del comprobante electrónico en ARCA, sin devengar mora comercial.
+
+La legislación garantizará el derecho del taller y del prestador a presentarse ante el FDI de manera autónoma para reclamar el desembolso de los anticipos y liquidaciones devengadas por su labor en la e-OP homologada, sin requerir intermediación ni autorizaciones adicionales de la empresa comitente. Esta autonomía crediticia y procesal emancipa al eslabón productivo de base y constituye la condición indispensable para que el historial generado bajo el Monotributo Productivo adquiera valor financiero real.
 
 ### D. Mecanismo de "Suspensión Activa de Oficio" contra la Acumulación de Pasivos Cíclicos
 
