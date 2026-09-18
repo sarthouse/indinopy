@@ -394,37 +394,35 @@ A los fines de neutralizar el desabastecimiento financiero y garantizar la agili
 
 El aparador de barrio, el cortador a destajo y la costurera que cobra en efectivo son el eslabón más vulnerable y más numeroso de la cadena. La SAS resuelve el problema del industrial que presta su CUIT; el Monotributo Productivo resuelve el problema del trabajador que no tiene CUIT propio ni razón práctica para obtenerlo bajo el sistema actual.
 
-### A. Alta Automatizada: El Circuito
+### A. Alta Automatizada y Retención en la Fuente: El Circuito
 
-El Monotributo Productivo se activa por el trabajo, no por la burocracia:
+El Monotributo Productivo está concebido con un alcance estrictamente delimitado: **no aplica a las marcas comitentes ni a las unidades productivas** (las cuales tributan bajo sus regímenes societarios e impositivos correspondientes), sino **exclusivamente a las personas humanas que prestan servicios manuales, artesanales o a destajo de forma individual y eventual** (aparadores de barrio, cortadores, costureras).
 
-1. Una MiPyME o SAS registra una e-OP digital en la plataforma habilitada, incorporando el CUIL del prestador de servicios.
+El régimen se activa por el flujo real del trabajo y opera sin fricción burocrática:
 
-2. La emisión de esa primera OP y su consecuente pago electrónico generan, en una sola operación automatizada, la inscripción de oficio del prestador en el Monotributo Productivo.
-
-3. La autenticación se realiza mediante DNI digital con validación biométrica a través del RENAPER integrado a ARCA. No se requiere turno, tramitación presencial ni clave fiscal previa.
-
-4. El sistema sustituye la cuota plana mensual por micro-retenciones automáticas del 1% o 2% sobre cada cobro digital. No hay deuda acumulada ni declaraciones juradas.
-
+1. **Asociación en la e-OP:** Una marca comitente registra una e-OP digital en la plataforma incorporando el CUIL del prestador del servicio eventual en la etapa correspondiente.
+2. **Alta de Oficio Instantánea:** La emisión de esa primera orden gatilla de forma automática la inscripción de oficio del prestador en el Monotributo Productivo, validando su identidad mediante DNI digital y biometría con RENAPER integrada a ARCA. El trabajador no debe trasladarse a ninguna dependencia pública, no requiere tramitar clave fiscal ni gestionar turnos.
+3. **Descuento en la Fuente sobre el Monto a Liberar:** El sistema elimina la cuota fija mensual tradicional (que generaba deudas artificiales en períodos de inactividad). El tributo se recauda mediante una **micro-retención automática del 1% o 2% (promedio 1.5%) que el FDI debita directamente del monto bruto que tiene que liquidar y liberar a favor del prestador eventual**.
+4. **Exclusión Expresa de la Marca y del Taller Gestor:** Esta micro-retención **no se le cobra ni se le descuenta a la marca comitente ni al taller gestor subcontratante**, cuyo compromiso de pago respecto al valor acordado de la orden es invariable. Es una retención tributaria y de seguridad social practicada en la fuente sobre la remuneración bruta del propio prestador.
+5. **Acreditación Neta Inmediata:** El FDI deriva automáticamente la micro-retención del 1%-2% hacia la cuenta recaudadora unificada de ARCA, y acredita de forma instantánea el remanente neto (98% a 99%) en la cuenta de clearing o billetera virtual del prestador eventual, con libre disponibilidad absoluta y sin declaraciones juradas.
 
 ```mermaid
 flowchart TD
-    A([Pago Liberado desde Escrow]) --> B{Clearing Automático FDI}
-    B -->|7% al 10%| C[Cuota de Repago FDI]
-    B -->|Aportes y Cargas| D[ARCA / AFIP - Cuenta Única]
-    B -->|1%| E[Fondo de Mantenimiento CIFO]
-    B -->|Remanente Neto| F((Billetera Virtual del Tallerista))
+    A([Monto Bruto de la Etapa a Liquidar]) --> B{Clearing Técnico FDI}
+    B -->|Micro-retención 1% a 2%| D[ARCA - Monotributo Productivo]
+    B -->|Remanente Neto 98% a 99% Líquido| F((Billetera / Cuenta del Prestador Eventual))
     
     style B fill:#8b5cf6,stroke:#5b21b6,color:#fff
+    style D fill:#3b82f6,stroke:#1d4ed8,color:#fff
     style F fill:#10b981,stroke:#047857,color:#fff
 ```
-> **Figura 4.** Arquitectura de Formalización "Sin Estrés" (Alta Automatizada). El trabajador no debe destinar tiempo ni esfuerzo mental a la liquidación fiscal; el contrato inteligente debita las cargas y deposita el neto de libre disponibilidad.
+> **Figura 4.** Arquitectura de Formalización "Sin Estrés" para Prestadores Eventuales. La micro-retención del 1% o 2% se descuenta de forma automatizada exclusivamente del monto bruto que el FDI libera al trabajador eventual por su servicio (sustituyendo la cuota fija mensual). No representa retención ni sobrecosto para la marca comitente ni para el taller principal. El trabajador percibe su neto de forma instantánea sin trámites ni liquidaciones manuales.
 
 ### B. Período de Gracia y No Acumulación de Deuda Retroactiva
 
 Los primeros seis (6) meses desde el alta automática, la micro-retención es la única obligación del prestador. Sin categorización, sin declaraciones juradas, sin ningún trámite adicional.
 
-> **Cláusula de no retroactividad:** el alta en el Monotributo Productivo no genera deudas por períodos anteriores no registrados. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen.*
+> **Cláusula de no retroactividad:** el alta en el Monotributo Productivo no genera deudas por períodos anteriores no registrados. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen.
 
 Esta cláusula debe comunicarse con la misma jerarquía que el beneficio principal y figurar en los primeros 100 caracteres de cualquier pieza dirigida al sector.
 
