@@ -545,8 +545,38 @@
             border-color: #059669;
         }
 
-        /* SOPORTE MÓVIL Y TOUCH PARA DIAGRAMAS MERMAID */
+        /* SOPORTE MÓVIL Y TOUCH (General + Diagramas) */
         @media (max-width: 768px) {
+            /* Layout General Móvil */
+            body {
+                padding: 12px;
+                font-size: 15px; /* Ligeramente más grande para lectura en móvil */
+            }
+            .doc-container {
+                padding: 20px 16px;
+                border-radius: 6px;
+            }
+            
+            /* Ajuste de Tipografía */
+            h1 { font-size: 24px; margin-top: 16px; margin-bottom: 16px; }
+            h2 { font-size: 20px; margin-top: 24px; }
+            h3 { font-size: 18px; }
+            h4 { font-size: 16px; }
+            
+            /* Ajuste de Tablas (Scroll horizontal) */
+            table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            th, td {
+                padding: 10px 12px;
+                font-size: 13px;
+                white-space: nowrap; /* Evita que las columnas se aplasten */
+            }
+
+            /* Mermaid Header y Controles */
             .mermaid-header {
                 padding: 10px 12px;
                 flex-wrap: wrap;

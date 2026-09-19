@@ -36,6 +36,7 @@
             margin-bottom: 20px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
+            flex-wrap: wrap; /* Permite que los botones bajen a la siguiente línea en móvil */
         }
 
         .tab-btn {
@@ -47,6 +48,8 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.2s;
+            flex: 1 1 auto; /* Permite que se estiren de forma fluida */
+            text-align: center;
         }
 
         .tab-btn:hover {
@@ -59,9 +62,18 @@
             color: #fff;
             border-color: #2563eb;
         }
+
+        /* Ajuste específico de botones para celular */
+        @media (max-width: 768px) {
+            .tab-btn {
+                padding: 6px 10px;
+                font-size: 13px;
+                flex: 1 1 calc(33% - 10px); /* 3 por fila o 2 por fila dependiendo del ancho */
+            }
+        }
     </style>
     <script>
-        window.mdOverride = 'dossier_fimca_base.md';
+        window.mdOverride = 'dossier_fimca_ejecutivo.md';
 
         function switchTab(filename, btnElement) {
             window.mdOverride = filename;
@@ -83,9 +95,12 @@
         <span class="doc-header-badge">📚 Visor Nativo Markdown</span>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('dossier_fimca_base.md', this)">Documento Base</button>
+            <button class="tab-btn active" onclick="switchTab('dossier_fimca_ejecutivo.md', this)">Resumen
+                Ejecutivo</button>
+            <button class="tab-btn" onclick="switchTab('dossier_fimca_base.md', this)">Documento Base</button>
             <button class="tab-btn" onclick="switchTab('dossier_fimca_addenda1.md', this)">Addenda I</button>
             <button class="tab-btn" onclick="switchTab('dossier_fimca_addenda2.md', this)">Addenda II</button>
+            <button class="tab-btn" onclick="switchTab('dossier_fimca_addenda3.md', this)">Addenda III</button>
         </div>
 
         <div id="content">
