@@ -54,6 +54,7 @@ CORE_APPS = [
     "apps.documentos",
     "apps.contactos",
     "apps.federacion",
+    "apps.afip",
 ]
 
 # Apps específicas de ERP (Marcas y Talleres)
@@ -66,6 +67,7 @@ ERP_APPS = [
     "apps.inventario",
     "apps.tesoreria",
     "apps.nomina",
+    "apps.integraciones.woocommerce",
 ]
 
 # Apps específicas de la Mesa de Enlace Sectorial
@@ -117,6 +119,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "core.wsgi.application"
+ASGI_APPLICATION = "core.asgi.application"
 
 
 # Database

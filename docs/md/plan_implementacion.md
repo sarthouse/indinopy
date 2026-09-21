@@ -91,9 +91,10 @@ Siempre usar `ProduccionService.confirmar_op(op)`.
 | `inventario` | Stock en tiempo real (Quants, doble entrada) | `StockService` |
 | `produccion` | e-OP, BOM, Recetas, Etapas MES | `ProduccionService` |
 | `tesoreria` | Escrow Digital, Cajas, Comprobantes | `EscrowService`, `TesoreriaService` |
-| `compras` | Órdenes de Compra, Recepciones | `ComprasService` |
-| `ventas` | Órdenes de Venta, WooCommerce | `VentasService` |
-| `contabilidad` | Facturas AFIP, Conciliación | `FacturadorAFIP` |
+| `ventas` | Órdenes de Venta (B2B/B2C agnósticas), Facturación, Remitos | `VentasService` |
+| `integraciones` | Conectores externos (WooCommerce, MercadoLibre, etc.) | `WooCommerceSyncService` |
+| `afip` | Conector oficial AFIP/ARCA (Padrón WSSR, Facturación WSFE/WSFEX) | `PadronAFIPService`, `FacturadorAFIP` |
+| `contabilidad` | Partida Doble, Libro Diario y Balances | `ContabilidadService` |
 | `mes` | Gobernanza MES, RegistroEOP, PTF, Timelock | [pendiente] |
 
 ---
@@ -142,12 +143,34 @@ Siempre usar `ProduccionService.confirmar_op(op)`.
 - `WooCommerceAPIClient` — Cliente REST activo para polling fallback
 - Mapeo completo de `line_items`, `fee_lines`, `shipping_lines`, `coupon_lines`, `meta_data`
 
-#### Facturación AFIP
-- `FacturadorAFIP` — Adapter para afip-py (WSFE)
-- Soporte para IVA discriminado por línea
-- Lee entorno (homologación/producción) desde `ConfiguracionEmpresa`
+#### Facturación AFIP y Títulos FCE
+- `apps.afip` — Módulo desacoplado para servicios fiscales de AFIP/ARCA.
+- `AFIPClientFactory` — Singleton centralizado de autenticación y certificados X.509.
+- `PadronAFIPService` — Consulta de Padrón Tributario WSSR con caché Redis de 24 horas y sincronización con `Contacto`.
+- `FacturadorAFIP.validar_compatibilidad_fiscal()` — Validación estricta y previa entre condición IVA del emisor (`ConfiguracionEmpresa`) y receptor (`Contacto`), impidiendo la emisión de comprobantes A/B/C incompatibles.
+- `AFIPQRGenerator` — Generador de código QR oficial en Data URI Base64 según Resolución General 4291/2018.
+- `TituloCreditoFCE` — Administración de Factura de Crédito Electrónica MiPyME (Ley 27.440) en `apps.tesoreria`, con control de los 21 días de plazo y circulación (SCA / ADC).
 
----
+#### Arquitectura de Reportes y Documentos
+- Motor base universal desacoplado en `apps/base/reports/base.py`:
+  - `BaseReport`: Protocolo agnóstico con generación a bytes y exportación a HttpResponse.
+  - `BasePDFReport`: Renderizado HTML/CSS Paged Media con soporte WeasyPrint y fallback imprimible en navegador.
+  - `BaseTabularReport`: Generación de planillas Excel `.xlsx` corporativas (`openpyxl`) con fallback a CSV delimite `;` y BOM UTF-8 regional.
+- `RemitoPDFReport` (`apps/inventario/reports/remito_report.py`) con template de Remito de Despacho JiT e inyección obligatoria de la cláusula de inembargabilidad (Arts. 1251 y 1356 CCCN).
+- `InventarioStockExcelReport` (`apps/inventario/reports/inventario_stock_report.py`): Foto de existencias físicas, reservas comprometidas, stock neto disponible y valuación económica por almacén y lote.
+- `MovimientosStockExcelReport` (`apps/inventario/reports/movimientos_stock_report.py`): Kardex general y trazabilidad cronológica de remitos por partida doble.
+- `LibroIVAVentasExcelReport` (`apps/contabilidad/reports/libro_iva_report.py`) con desglose de columnas fiscales AFIP.
+- `LibroIVAComprasExcelReport` (`apps/contabilidad/reports/libro_iva_report.py`) para liquidación mensual de crédito fiscal y percepciones sufridas.
+- `ConvenioMultilateralCoeficientesReport` (`apps/contabilidad/reports/convenio_multilateral_report.py`):
+  - Determinación de coeficientes unificados anuales CM05 (50% ingresos / 50% gastos) agregados sobre las 24 jurisdicciones de la República Argentina.
+  - Filtro estricto de **gastos no computables** conforme al Art. 3° del Convenio Multilateral (`gasto_computable_convenio=True`, excluyendo bienes de uso, intereses financieros e impuestos).
+  - Estimación mensual/anual de base imponible atribuida y liquidación de anticipos provinciales CM03 aplicando las alícuotas configuradas en el modelo `Impuesto` por código SIFERE.
+- `ComprobanteFiscalPDFReport` (`apps/contabilidad/reports/comprobante_report.py`) con template unificado paramétrico para Facturas A/B/C, Notas de Crédito, Notas de Débito y Comprobantes X, con QR AFIP oficial e insignias fiscales.
+
+#### Modelo de Producción y Validaciones JiT de Avance
+- Techo de Rendimiento Estequiométrico (`capacidad_maxima_por_insumos` en `OPEtapaTracking`): el avance físico de la etapa inicial queda condicionado matemáticamente a la materia prima en custodia despachada al taller mediante remito JiT ($E_{\text{net}} \le V_{\text{fase}}$).
+- Circuitos de entregas parciales y recepción física en planta con discriminación de 1ra, 2da selección y descarte.
+
 
 ## 4. Primitivas Criptográficas
 
@@ -528,30 +551,160 @@ class PerfilPTF(TimeStampedModel):
 
 ---
 
-## 7. Integración WooCommerce Multitienda
+## 7. Integración de Canales y Desacople Arquitectónico (Ventas vs WooCommerce)
 
-### 7.1. Arquitectura
+### 7.1. Diagnóstico del Acoplamiento Actual y Necesidad de Desacople
 
-Cada tienda WooCommerce es un `TiendaWooCommerce` vinculado a la `ConfiguracionEmpresa`. Las credenciales son por tienda (no globales).
+Actualmente, `apps.ventas` sufre de un **alto acoplamiento de infraestructura y proveedor**:
+1. **Modelos Contaminados con Dependencias Externas:** `OrdenVenta` y `LineaOrdenVenta` en `apps.ventas.models` tienen campos específicos de WooCommerce (`tienda`, `wc_order_id`, `wc_order_number`, `wc_status`, `wc_line_id`), además del modelo `TiendaWooCommerce` alojado directamente dentro de la app del core comercial.
+2. **Servicio Monolítico Bifurcado:** `VentasService` en `apps.ventas.services` mezcla la gestión del ciclo de vida de ventas del ERP (confirmación, remitos de entrega, reserva de inventario) con el parseo de payloads crudos de la API REST v3 de WooCommerce (`procesar_orden_woocommerce`, `procesar_producto_woocommerce`, `procesar_cupon_woocommerce`).
+3. **Endpoints y Clientes HTTP de Terceros dentro del Core:** `webhooks.py`, `woo_client.py` y `tasks.py` residen dentro de `apps/ventas/`, forzando a la app de ventas a conocer secretos HMAC, cabeceras HTTP de WooCommerce y URLs de WordPress.
+4. **Barrera de Escalabilidad Omnicanal:** Si la empresa desea sumar MercadoLibre, Shopify, Tiendanube o venta mayorista física B2B mediante viajantes, agregar nuevos campos a `OrdenVenta` (`meli_order_id`, `shopify_order_id`) generaría una deuda técnica exponencial y violaría el Principio Abierto/Cerrado (OCP).
 
-### 7.2. Flujo de Sincronización (Híbrido)
+### 7.2. Arquitectura Objetivo Desacoplada (Puertos y Adaptadores / Arquitectura Hexagonal)
+
+Se define la separación en dos dominios con responsabilidades claramente delimitadas:
+* **Core de Ventas (`apps.ventas`):** Dominio puro y agnóstico de canales. Administra la `OrdenVenta` canónica (B2B, B2C, POS de mostrador), clientes, remitos de salida vía `StockService` y facturación.
+* **Módulo de Canales e Integraciones (`apps.integraciones` / `apps.integraciones.woocommerce`):** Adaptador externo. Aloja las credenciales multitienda, clientes de polling, validadores de firmas HMAC de webhooks, traducción de payloads y despacho asíncrono.
+
+```
+[ WooCommerce Webhook / Polling API ]
+               │
+               ▼
+[ apps.integraciones.woocommerce ]  ◄── Capa Adaptadora (Driver)
+   ├── TiendaWooCommerce (Model)
+   ├── Webhooks / Views (HMAC Validation)
+   ├── WooCommerceAPIClient (HTTP / Polling)
+   ├── WooCommerceNormalizer (Parser a DTO Canónico)
+   └── Celery Tasks (Retry & Ingest)
+               │
+               ▼ (Invoca API canónica agnóstica / Signal)
+[ apps.ventas ]                     ◄── Capa de Dominio (Core ERP)
+   ├── OrdenVenta / LineaOrdenVenta (Canónica)
+   ├── CanalVenta / ReferenciaExterna (Mapeo M:1)
+   └── VentasService.crear_orden_desde_canal(dto_orden)
+               │
+               ▼
+[ apps.inventario ]                 ◄── Efectos Secundarios (Stock / Logística)
+   └── StockService.reservar_linea() -> Remito de Entrega
+```
+
+### 7.3. Especificación de Modelos Desacoplados
+
+#### A. Modelo Canónico en `apps.ventas` (Limpio de WooCommerce)
+```python
+# apps/ventas/models.py
+class CanalVenta(TimeStampedModel):
+    """Canal de origen de la venta (ej. 'WooCommerce B2C', 'MercadoLibre Oficial', 'Mostrador Fábrica')."""
+    TIPO_CHOICES = [
+        ("woocommerce", "WooCommerce"),
+        ("mercadolibre", "MercadoLibre"),
+        ("manual", "Venta Manual / B2B"),
+        ("pos", "Punto de Venta"),
+    ]
+    nombre = models.CharField(max_length=100)
+    codigo = models.CharField(max_length=20, unique=True)
+    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES, default="manual")
+    almacen_predeterminado = models.ForeignKey(
+        "inventario.Ubicacion", on_delete=models.RESTRICT, null=True, blank=True
+    )
+    activo = models.BooleanField(default=True)
+
+class OrdenVenta(DocumentoBase):
+    SECUENCIA_CODIGO = "ventas.ov"
+    
+    canal = models.ForeignKey(CanalVenta, on_delete=models.RESTRICT, related_name="ordenes")
+    # Referencia genérica al identificador de la orden en el canal externo
+    referencia_externa = models.CharField(max_length=100, blank=True, db_index=True, help_text="ID externo en Woo/MeLi")
+    numero_externo = models.CharField(max_length=100, blank=True, help_text="Número legible externo")
+    estado_canal_externo = models.CharField(max_length=50, blank=True)
+    
+    cliente = models.ForeignKey("contactos.Contacto", on_delete=models.RESTRICT, related_name="ordenes_venta")
+    monto_total = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
+    # ... totales, logística y metadatos JSON estándar ...
+    
+    class Meta:
+        unique_together = [("canal", "referencia_externa")]
+```
+
+#### B. Modelo de Integración en `apps.integraciones.woocommerce`
+```python
+# apps/integraciones/woocommerce/models.py
+class TiendaWooCommerce(TimeStampedModel):
+    canal_venta = models.OneToOneField("ventas.CanalVenta", on_delete=models.CASCADE, related_name="config_woocommerce")
+    empresa = models.ForeignKey("base.ConfiguracionEmpresa", on_delete=models.CASCADE)
+    url = models.URLField()
+    consumer_key = models.CharField(max_length=100)
+    consumer_secret = models.CharField(max_length=100)
+    webhook_secret = models.CharField(max_length=100, blank=True)
+    sincronizar_stock = models.BooleanField(default=True)
+```
+
+### 7.4. Matriz Integral de Sincronización y Mapeo de Recursos (WooCommerce API v3)
+
+El módulo de integraciones no se limita a recibir pedidos; implementa una sincronización bidireccional completa (Push vía Webhooks y Pull vía Polling/Cron) cubriendo todas las entidades comerciales:
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                 MÓDULO DE INTEGRACIONES (apps.integraciones)                     │
+│                                                                                  │
+│   [WooCommerce API v3]                                       [Core ERP]          │
+│   • Orders (order.*)         ── Webhook / Polling ──►   • OrdenVenta (ventas)    │
+│   • Customers (customer.*)   ◄── Bidireccional ────►   • Contacto (contactos)   │
+│   • Products (product.*)     ◄── Sync Pull/Push ───►   • Producto (inventario)  │
+│   • Coupons (coupon.*)       ── Ingesta / Sync ────►   • CuponDescuento (ventas)│
+│   • Shipping (zones/methods) ── Mapeo Logístico ───►   • MetodoEnvio / Remitos  │
+│   • Fees (fee_lines)         ── Mapeo Financiero ──►   • LineaRecargo (ventas)  │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 1. Sincronización de Clientes (`customers` / `customer.*`)
+* **Push (Webhooks):** Escucha `customer.created` y `customer.updated`. Cuando un cliente se registra o actualiza su perfil en la tienda web, el adaptador normaliza su DNI/CUIL (`meta_data._billing_dni`, `_billing_cuit`), condición fiscal frente al IVA y dirección postal, sincronizándolo en `apps.contactos.models.Contacto`.
+* **Pull (Consulta / On-demand):** Durante la ingesta de órdenes o en auditorías nocturnas (`GET /wp-json/wc/v3/customers`), se recupera el perfil completo del cliente para mantener actualizados los teléfonos, emails y domicilios de entrega.
+* **Push desde ERP (Opcional):** Actualización de datos fiscales o condición de crédito desde el ERP hacia los metadatos de WordPress (`PUT /wp-json/wc/v3/customers/<id>`).
+
+#### 2. Sincronización de Catálogo y Stock de Productos (`products` / `product.*`)
+* **Pull (Ingesta de Catálogo desde Woo):**
+  * Webhooks `product.created`, `product.updated`, `product.deleted`.
+  * Fallback Polling (`GET /wp-json/wc/v3/products?after=...`).
+  * Mapeo estricto por `sku`. Actualiza `nombre`, `descripcion`, `precio_venta` y estado `activo` (inactivando en el ERP si el producto se elimina o pasa a borrador en WooCommerce).
+* **Push (Actualización de Stock y Precios desde el ERP hacia Woo):**
+  * Cuando un remito o ajuste de inventario en `StockService` altera el stock disponible de un SKU (`StockQuant`), se dispara un evento asíncrono en Celery.
+  * El conector ejecuta `PUT /wp-json/wc/v3/products/<id>` o actualizaciones en lote (`POST /wp-json/wc/v3/products/batch`) actualizando `manage_stock=true` y `stock_quantity = stock_disponible` en la tienda remota, previniendo sobreventas (*overselling*).
+
+#### 3. Sincronización de Cupones y Promociones (`coupons` / `coupon.*`)
+* **Webhooks:** `coupon.created`, `coupon.updated`, `coupon.deleted`.
+* **Modelo Canónico:** En `apps.ventas`, se registra el catálogo de promociones (`CuponDescuento`) con código, tipo de descuento (`percent`, `fixed_cart`, `fixed_product`) y fecha de caducidad.
+* **Conciliación en la Orden:** En cada pedido, las `coupon_lines` se cotejan contra las reglas de auditoría para verificar la validez del descuento aplicado.
+
+#### 4. Métodos de Envío y Zonas Logísticas (`shipping_methods` / `shipping/zones`)
+* **Mapeo Logístico:** WooCommerce estructura el envío en Zonas (`/shipping/zones`) y Métodos de Zona (`/shipping/zones/<id>/methods`: `flat_rate`, `free_shipping`, `local_pickup`, Correo Argentino, Andreani).
+* **Traducción en ERP:** El adaptador traduce `shipping_lines[0].method_id` e `instance_id` a la tabla canónica de transportes y operadores logísticos del ERP, permitiendo que el remito de salida (`REM-OV-...`) seleccione automáticamente la plantilla de despacho y etiqueta correspondiente.
+
+#### 5. Recargos de Pasarela y Tasas (`fee_lines`)
+* **Ingesta Financiera:** Mapeo de `fee_lines` (Mercado Pago, comisiones de pasarela, costos de embalaje o descuentos por transferencia bancaria).
+* **Impacto:** Se normalizan como `RecargoDTO` para impactar en `LineaRecargoOrden` y conciliar la liquidación neta de fondos en `apps.tesoreria`.
+
+---
+
+### 7.5. Flujo de Ingesta Asíncrona con Celery y Normalizadores
 
 ```
 WEBHOOKS (Tiempo Real — Push)
-  WooCommerce → POST /ventas/webhooks/woocommerce/{tienda_id}/
-  ↓ Valida HMAC-SHA256 (X-WC-Webhook-Signature)
-  ↓ Rutea por tópico (order.*, product.*, coupon.*)
-  ↓ Delega a VentasService [ACK inmediato < 2 segundos]
-
-POLLING API (Fallback — Pull)
-  Celery Beat → cada 15 minutos
-  WooCommerceAPIClient.sincronizar_ordenes_recientes()
-  ↓ GET /wp-json/wc/v3/orders?after={ultima_sync}
-  ↓ Compara date_modified_gmt para evitar sobreescrituras
-  ↓ Delega al mismo VentasService (código DRY)
+  WooCommerce → POST /integraciones/woocommerce/{tienda_id}/webhook/
+  ↓ 1. Valida HMAC-SHA256 (X-WC-Webhook-Signature)
+  ↓ 2. Encola en Celery por Tópico (order.*, customer.*, product.*, coupon.*)
+  ↓ 3. Ack HTTP 200 inmediato (< 150ms) para evitar desactivación de Woo
+  ↓
+Celery Worker
+  ↓ 4. Ruteo según Tópico:
+       ├── 'order.*'    ➔ WooCommerceOrderNormalizer ➔ VentasService.ingestar_orden_canal(dto)
+       ├── 'customer.*' ➔ WooCommerceCustomerNormalizer ➔ ContactosService.sincronizar_cliente(dto)
+       ├── 'product.*'  ➔ WooCommerceProductNormalizer ➔ InventarioService.sincronizar_producto(dto)
+       └── 'coupon.*'   ➔ WooCommerceCouponNormalizer ➔ VentasService.sincronizar_cupon(dto)
 ```
 
-### 7.3. Mapeo de Campos Críticos para Argentina
+### 7.6. Mapeo de Campos Críticos para Argentina
 
 | Campo WooCommerce | Campo ERP | Nota |
 |---|---|---|
@@ -562,47 +715,47 @@ POLLING API (Fallback — Pull)
 | `shipping_lines[0].method_id` | `OrdenVenta.metodo_envio_id` | Para remito de logística |
 | `coupon_lines[]` | `OrdenVenta.cupones_aplicados` | JSONField de cupones aplicados |
 
-### 7.4. Secuencia Estricta de Procesamiento de Órdenes (Pipeline de Ingesta)
+### 7.7. Secuencia Estricta de Procesamiento de Órdenes (Pipeline de Ingesta Canónica)
 
-El servicio `VentasService.procesar_orden_woocommerce(tienda_id, payload)` ejecuta de manera transaccional (`@transaction.atomic`) el siguiente pipeline ordenado:
+El servicio `VentasService.ingestar_orden_canal(dto_orden)` ejecuta de manera transaccional (`@transaction.atomic`) el siguiente pipeline normalizado, independientemente de si la orden provino de WooCommerce, MercadoLibre o un POS:
 
 1. **`get_or_create` de Cliente (`Contacto`) con Clave en DNI/CUIL:**
-   * **Extracción de Identidad Fiscal:** Extrae `billing_dni` directamente de `payload["billing"]` o, en su defecto, busca `_billing_dni` / `_billing_cuit` dentro de `payload["meta_data"]`.
+   * **Extracción de Identidad Fiscal:** Extrae el DNI/CUIL normalizado desde el DTO del cliente (`dto_orden.cliente_cuit`).
    * **Búsqueda por DNI/CUIL:** Se busca primeramente `Contacto.objects.filter(cuil=cuit).first()`.
    * **Fallback por Email:** Si no hay DNI/CUIL disponible, se busca por `Contacto.objects.filter(email=email).first()`.
-   * **Creación:** Si no existe, se crea el contacto con `tipo="CLIENTE"`, `cuil=cuit`, `nombre`, `email`, `telefono` y `direccion` provistos en el bloque `billing`.
+   * **Creación:** Si no existe, se crea el contacto con `tipo="CLIENTE"`, `cuil=cuit`, `nombre`, `email`, `telefono` y `direccion` provistos en el DTO.
 
 2. **Creación o Actualización de `OrdenVenta` (Cabecera):**
-   * Vincula la `tienda` y el `wc_order_id` (upsert idempotente vía `update_or_create`).
-   * Asigna número interno concatenado (`{tienda.codigo_prefijo}-{wc_order_number}`).
+   * Vincula el `canal` y la `referencia_externa` (upsert idempotente vía `update_or_create`).
+   * Asigna número interno concatenado (`{canal.codigo}-{numero_externo}`).
    * Determina estado de la orden en el ERP:
-     * `processing` o `completed` ➔ `estado = "confirmado"`.
-     * `cancelled`, `failed` o `refunded` ➔ `estado = "cancelado"`.
-     * Otros estados (`pending`, `on-hold`) ➔ `estado = "borrador"`.
-   * Persiste importes totales (`monto_total`, `total_descuentos`, `total_envio`, `total_impuestos`), método de pago y el ID de transacción de Mercado Pago.
+     * Estados de pago confirmado ➔ `estado = "confirmado"`.
+     * Estados cancelados o reembolsados ➔ `estado = "cancelado"`.
+     * Otros estados pendientes ➔ `estado = "borrador"`.
+   * Persiste importes totales (`monto_total`, `total_descuentos`, `total_envio`, `total_impuestos`), método de pago y el ID de transacción de la pasarela.
 
 3. **Obtención de Productos y Generación de `LineaOrdenVenta`:**
-   * Itera sobre `payload["line_items"]`.
-   * **Validación por SKU:** Busca en el catálogo `Producto.objects.filter(sku=item["sku"]).first()`. Si el SKU no existe, la línea se excluye y se registra advertencia de conciliación de catálogo.
+   * Itera sobre los items normalizados del DTO.
+   * **Validación por SKU:** Busca en el catálogo `Producto.objects.filter(sku=item.sku).first()`. Si el SKU no existe, la línea se excluye y se registra advertencia de conciliación de catálogo.
    * Inserta cada `LineaOrdenVenta` con `cantidad`, `precio_unitario`, calculando subtotal y total de línea.
 
-4. **Registro de Logística y Envío (`shipping_lines`):**
-   * Extrae la línea principal de envío (`shipping_lines[0]`), mapeando `metodo_envio_titulo` y `metodo_envio_id` (ej: retiro en sucursal, envío a domicilio).
+4. **Registro de Logística y Envío:**
+   * Mapea `metodo_envio_titulo` y `metodo_envio_id` para remitos de despacho.
 
-5. **Registro de Cupones de Descuento (`coupon_lines`):**
-   * Itera sobre `payload["coupon_lines"]` y registra los cupones utilizados en `OrdenVenta.cupones_aplicados` (`code` y `discount`).
+5. **Registro de Cupones de Descuento:**
+   * Registra los cupones en `OrdenVenta.cupones_aplicados` (`code` y `discount`).
 
 6. **Ingesta de Recargos y Descuentos de Pasarela (`fee_lines`):**
-   * Itera sobre `payload["fee_lines"]` y crea registros en `LineaRecargoOrden(orden, nombre, monto, impuesto)`.
-   * Actualiza el acumulador global `OrdenVenta.total_recargos_fees` con la suma neta de los fees.
+   * Crea registros en `LineaRecargoOrden(orden, nombre, monto, impuesto)`.
+   * Actualiza el acumulador global `OrdenVenta.total_recargos_fees`.
 
 7. **Disparo de Remito de Salida y Reserva de Stock:**
    * Si la orden resulta con estado `"confirmado"` y es creada por primera vez (`created=True`):
      * Invoca `VentasService.generar_remito_salida(orden)`.
-     * Genera un `MovimientoStock` de tipo `entrega` (`REM-OV-{orden.id}`) desde el almacén de la tienda hacia la ubicación del cliente.
+     * Genera un `MovimientoStock` de tipo `entrega` (`REM-OV-{orden.id}`) desde el almacén predeterminado del canal hacia la ubicación del cliente.
      * Reserva el stock correspondiente en el inventario mediante `StockService.reservar_linea(lms)`.
 
-### 7.5. Semántica y Tratamiento de `fee_lines` en el Sistema
+### 7.8. Semántica y Tratamiento de `fee_lines` en el Sistema
 
 Las `fee_lines` corresponden a conceptos monetarios que **no son productos de inventario** ni corresponden a la **tarifa base de flete** (`shipping_lines`):
 
@@ -707,9 +860,21 @@ sequenceDiagram
 5. **Despacho Protegido de Suelas (Armado):** Las suelas y bases inyectadas —el componente de mayor valor unitario y con mayor riesgo de reducción en el mercado secundario— **nunca se envían al inicio**. Se despachan únicamente cuando las capelladas aparadas están convalidadas físicamente.
 6. **Reconciliación de Mermas y Devolución:** Al concluir la fabricación, el remito `DEV-<OP>-XX` reingresa sobrantes al almacén central; el sistema calcula `costo_total_insumos_real` y audita que la merma no haya superado el 10% tolerado por el INTI.
 
----
+### 8.5. Control de Rendimiento Estequiométrico (BOM Yield Cap) y Recepciones Parciales
 
+Para blindar operativamente la producción y evitar asunciones de responsabilidad inter-talleres:
 
+1. **Deslinde de Responsabilidad en Tránsito Intermedio:**
+   - La marca **no genera remitos de traslado entre talleres para etapas intermedias** (ej: de corte a aparado). Administrativamente la empresa no asume la custodia de ese tránsito.
+   - El control de avance en planta opera mediante **Partes de Avance Físico / PoPW** cargados por cada tallerista en el sistema.
+2. **Techo de Rendimiento Estequiométrico (Yield Cap):**
+   - En la primera etapa (o etapas que consumen materia prima de la empresa), el avance máximo declarable queda limitado por la cantidad de insumos que efectivamente le fueron remitidos al taller en custodia:
+     $$\text{Capacidad Máxima} = \min_{i} \left( \left\lfloor \frac{\text{Stock Insumo } i \text{ Despachado al Taller}}{\text{Consumo Unitario del Insumo } i \text{ en Receta}} \right\rfloor \right)$$
+   - Si se remitieron $20\text{ m}$ de cuero para un modelo que insume $0.4\text{ m/par}$, el tallerista tiene un límite estricto de **50 pares**. Cualquier intento de declarar más unidades es rechazado por el sistema informando el insumo limitante.
+3. **Entregas y Recepciones Físicas Parciales en Planta:**
+   - Los talleres pueden realizar entregas parciales a medida que terminan tandas.
+   - Planta emite remitos de recepción correlativos (`ING-<OP>-P1`, `ING-<OP>-P2`), controlando calidad (primera selección, segunda selección y descarte), ingresando de inmediato el stock al Almacén Principal y consumiendo de manera proporcional los insumos reservados.
+   - La OP permanece en estado `"confirmado"` hasta completar la cantidad total o cerrarse con faltantes justificados (`cerrar_con_faltantes()`).
 
 ---
 
@@ -739,12 +904,43 @@ sequenceDiagram
 - [ ] Endpoints DRF en `apps/produccion/` para recibir OPs crudas (`POST /api/v1/interna/e-op/`)
 - [ ] Webhooks de retorno al ERP Legacy para informar liberación de hitos del Escrow
 
-### Fase E — Integración Fiscal Completa
-- [ ] Implementación completa WSFE (Factura A, B, C)
-- [ ] WSFEX (Facturas de Exportación)
-- [ ] Factura de Crédito Electrónica (FCE / MiPyME)
+### Fase E — Integración Fiscal Completa, Títulos FCE y Motor de Reportes
+- [x] **Módulo de Integración AFIP/ARCA Desacoplado (`apps.afip`):**
+  - [x] Factoría centralizada de autenticación y certificados (`AFIPClientFactory`).
+  - [x] Consulta de Padrón Tributario WSSR con caché Redis (`PadronAFIPService`).
+  - [x] Emisión de Facturación Electrónica WSFE/WSFEX (`FacturadorAFIP`).
+  - [x] Validación estricta y previa de compatibilidad fiscal (`FacturadorAFIP.validar_compatibilidad_fiscal`): impide emisión de Facturas A/B desde Monotributistas o Factura C desde Responsables Inscriptos.
+  - [x] Generador de Código QR oficial de AFIP RG 4291/2018 (`AFIPQRGenerator`) en Data URI Base64.
+- [x] **Notas de Crédito, Notas de Débito y Comprobantes Asociados:**
+  - [x] Modelo `DocumentoDeuda` con FK reflexiva `comprobante_asociado` y método `desglosar_punto_venta_y_numero()`.
+  - [x] Inyección estricta del array `CbtesAsoc` en el payload de `createVoucher` de AFIP WSFE (requisito legal inexcusable de AFIP para comprobantes rectificativos).
+  - [x] Servicio transaccional `ContabilidadService.crear_nota_credito_desde_comprobante()` con reversión de asientos de partida doble en el Libro Diario.
+- [x] **Tratamiento Fiscal de Descuentos, Cupones y Recargos (`fee_lines`):**
+  - [x] Desglose explícito de `monto_descuentos` y `monto_recargos` en `DocumentoDeuda` y su visualización en el PDF fiscal.
+  - [x] Deducción del neto gravado global antes del cálculo de IVA conforme a las directivas de WSFE (que no admite importes negativos en `FECAESolicitar`).
+- [x] **Régimen de Transparencia Fiscal al Consumidor (Ley N° 27.743 / RG 5614/2024 ARCA):**
+  - [x] Discriminación visual obligatoria en Facturas B y C emitidas a consumidores finales de "IVA Contenido" y "Otros Tributos Nacionales Indirectos".
+  - [x] Mención al Régimen Simplificado para emisores Monotributistas.
+- [x] **Gestión Integral de Tributos y Percepciones (Ventas y Compras):**
+  - [x] Modelo `TributoDocumentoDeuda` con enlace a `Impuesto` y mapeo al nodo `Tributos` / `ImpTrib` de AFIP WSFE.
+  - [x] Imputación automática en el Libro Diario de Percepciones Cobradas en Venta (Pasivo fiscal al Haber) y Percepciones Sufridas en Compras (Activo/Crédito fiscal al Debe).
+  - [x] Interfaz de administración `TributoDocumentoDeudaAdmin` e inline en `DocumentoDeudaAdmin`.
+  - [x] Generación automática de Facturas de Venta desde Órdenes omnicanal (`VentasService.generar_factura_desde_orden`) mapeando ítems, bonificaciones, recargos y percepciones de IIBB para agentes fiscales.
+- [x] **Factura de Crédito Electrónica MiPyME (FCE - Ley 27.440):**
+  - [x] Soporte en `FacturadorAFIP` con inyección obligatoria de CBU del emisor (Opcional AFIP 2101) y Sistema de Circulación (Opcional AFIP 27 SCA/ADC).
+  - [x] Campos `cbu_emisor` y `fce_sistema_circulacion` incorporados en `DocumentoDeuda` (`apps.contabilidad`).
+  - [x] Modelo satélite `TituloCreditoFCE` implementado en `apps.tesoreria` para administrar los 21 días de plazo, estados de aceptación expresa/tácita, rechazos y negociación/descuento ante el FDI o bancos.
+- [x] **Arquitectura Universal de Reportes (`apps/base/reports/`):**
+  - [x] `BaseReport`, `BasePDFReport` (HTML/CSS Paged Media) y `BaseTabularReport` (Excel con openpyxl + CSV fallback delimitado por `;`).
+  - [x] Reporte y Template de **Remito de Despacho JiT** con Cláusula de Inembargabilidad (Arts. 1251 y 1356 CCCN).
+  - [x] Reporte de **Libro IVA Ventas en Excel** (`LibroIVAVentasExcelReport`) con desglose oficial de alícuotas AFIP, notas de crédito negativas y percepciones provinciales/nacionales.
+  - [x] Reporte de **Libro IVA Compras en Excel** (`LibroIVAComprasExcelReport`) discriminando crédito fiscal IVA y percepciones sufridas (IIBB e IVA) para liquidación ante ARCA/DGR.
+  - [x] Reporte de **Convenio Multilateral / SIFERE (CM05)** (`ConvenioMultilateralCoeficientesReport`) con matriz de atribución de ingresos y gastos computables por las 24 provincias argentinas, determinando coeficientes de ingresos, gastos y coeficiente unificado (Art. 2° CM).
+  - [x] Reporte y Template Unificado de **Comprobante Fiscal** (Facturas A/B/C, NC, ND, X) con QR oficial RG 4291, insignias, Transparencia Fiscal Ley 27.743 y condiciones de venta.
+  - [x] Endpoints y rutas CBV de descarga inline/attachment en `contabilidad` e `inventario`.
+- [ ] WSFEX (Facturas de Exportación avanzadas con permisos de embarque)
 - [ ] Liquidaciones de Fasón (Monotributo Productivo)
-- [ ] Integración ARCA (ex-AFIP) para seguimiento tributario
+- [ ] Webhooks de interoperabilidad ARCA / FDI para destrabe de retención `FISCAL_PENDING`
 
 ### Fase F — App Móvil PTF (Fuera del scope Django)
 - [ ] App Flutter/React Native
@@ -957,6 +1153,46 @@ El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la m
 - [ ] Rutar los endpoints de federación (`/federacion/eop/...`) para interactuar con `ContratoEOP`.
 - [ ] Implementar frontend del **Portal del Tallerista** (PWA móvil con WebAuthn y WebCrypto Ed25519).
 - [ ] Deprecar campos fiduciarios de `OrdenProduccion` en `apps/produccion/models.py` convirtiéndolos en properties delegadas (`@property def contrato_eop`).
+
+### Fase H — Desacople Arquitectónico de Ventas y Canales Externos (`apps.integraciones`)
+
+#### 1. Justificación y Objetivos de la Refactorización
+- **Aislamiento del Dominio de Ventas:** `apps.ventas` debe representar únicamente la lógica comercial de la empresa (órdenes mayoristas, minoristas, listas de precios, asignación de remitos de entrega y facturación).
+- **Extracción de WooCommerce:** Mover `TiendaWooCommerce`, endpoints de webhooks (`webhooks.py`), cliente de la API v3 (`woo_client.py`) y tareas de sincronización (`tasks.py`) a una nueva aplicación: `apps.integraciones.woocommerce` (o módulo satélite `apps.integraciones`).
+- **Abstracción por DTO Canónico:** La ingesta de pedidos debe realizarse mediante un objeto intermedio agnóstico (`OrdenVentaDTO`), desacoplando los campos JSON propietarios de WordPress/WooCommerce de las columnas de base de datos de `OrdenVenta`.
+- **Soporte Nativo Omnicanal:** Dejar la arquitectura lista para incorporar conectores adicionales (MercadoLibre, Tiendanube, Shopify) sin alterar una sola línea de código en `apps.ventas`.
+
+#### 2. Plan de Migración Paso a Paso
+1. **Creación de `CanalVenta` en `apps.ventas`:**
+   - Crear el modelo `CanalVenta` para identificar el origen comercial de cada orden.
+   - Reemplazar en `OrdenVenta` las columnas fijas `tienda`, `wc_order_id`, `wc_order_number`, `wc_status` por `canal` (FK a `CanalVenta`), `referencia_externa` (CharField indexado) y `estado_canal_externo`.
+2. **Creación de `apps.integraciones.woocommerce`:**
+   - Registrar la app en `INSTALLED_APPS`.
+   - Migrar el modelo `TiendaWooCommerce` hacia `apps.integraciones.woocommerce.models`, enlazándolo 1:1 con `CanalVenta`.
+   - Mover `WooCommerceWebhookView`, `WooCommerceAPIClient` y `tasks.py` al nuevo paquete.
+3. **DataMigration de Compatibilidad:**
+   - Migración de datos que cree un `CanalVenta` de tipo `woocommerce` por cada `TiendaWooCommerce` preexistente y migre `tienda_id` / `wc_order_id` hacia `canal_id` / `referencia_externa`.
+4. **Refactor de la Capa de Servicios:**
+   - Crear `WooCommerceNormalizer` en `apps.integraciones.woocommerce.normalizers` encargado de mapear el payload JSON de Woo hacia `OrdenVentaDTO`.
+   - Modificar `VentasService`: eliminar métodos `procesar_*_woocommerce` y consolidar un único punto de entrada: `VentasService.ingestar_orden_canal(canal_id, dto)`.
+5. **Aislamiento de Rutas y Señales:**
+   - Mover la URL `webhooks/woocommerce/<tienda_id>/` de `apps.ventas.urls` a `apps.integraciones.woocommerce.urls`.
+   - Desacoplar la señal de notificación de despacho (`signals.py`): en lugar de que `ventas.signals` intente llamar a WooCommerce, emitir una señal interna de dominio `orden_venta_despachada` y que `integraciones.woocommerce` la escuche para actualizar el tracking en la tienda externa.
+
+#### 3. Checklist de Implementación de la Fase H (Integración Integral Omnicanal)
+- [x] **Dominio Core (`apps/ventas` y `apps/contactos`):**
+  - [x] Crear modelo `CanalVenta` y refactorizar `OrdenVenta` en `apps/ventas/models.py`.
+  - [x] Implementar DTOs agnósticos en `apps/ventas/dtos.py` (`OrdenVentaDTO`, `ClienteDTO`, `LineaOrdenDTO`, `RecargoDTO`, `EnvioDTO`, `CuponDTO`).
+  - [x] Refactorizar `VentasService` para exponer API de ingesta canónica desacoplada: `ingestar_orden_canal(canal_id, dto)`.
+  - [x] Implementar servicio de sincronización de clientes `ContactosService.sincronizar_cliente(dto)` para resolver altas/bajas de usuarios.
+- [x] **Módulo Satélite (`apps/integraciones/woocommerce`):**
+  - [x] Crear aplicación `apps/integraciones/woocommerce/` con sus modelos (`TiendaWooCommerce`), vistas de webhook y cliente API.
+  - [x] Implementar `WooCommerceNormalizer` cubriendo normalización de órdenes, clientes, productos, cupones, logística y tasas.
+  - [x] Tareas Celery de procesamiento asíncrono desacopladas en `apps/integraciones/woocommerce/tasks.py`.
+- [x] **Infraestructura y Rutas:**
+  - [x] Registrar `apps.integraciones.woocommerce` en `INSTALLED_APPS`.
+  - [x] Actualizar URLs del proyecto exponiendo `/integraciones/woocommerce/` con backward-compatibility en `/ventas/webhooks/woocommerce/`.
+  - [x] Escribir tests unitarios que comprueben la creación de `OrdenVenta` y `Contacto` desde DTO sin dependencia de WooCommerce (`apps/ventas/tests.py`).
 
 ---
 

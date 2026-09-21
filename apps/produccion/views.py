@@ -119,9 +119,27 @@ class DeclararParteActionView(LoginRequiredMixin, View):
         try:
             habilitadas = etapa.unidades_habilitadas_para_declarar
             ya_declaradas = etapa.unidades_ya_declaradas
-            
+            saldo_posible = max(0, habilitadas - ya_declaradas)
+
             if (ya_declaradas + cantidad_terminada) > habilitadas:
-                raise ValueError(f"No puedes declarar {cantidad_terminada} unidades. Solo tienes {habilitadas - ya_declaradas} unidades habilitadas por la etapa anterior.")
+                ant = etapa.etapa_anterior
+                if not ant:
+                    info_yield = etapa.capacidad_maxima_por_insumos
+                    if info_yield["capacidad_maxima"] is not None and info_yield["capacidad_maxima"] < etapa.op.cantidad_total:
+                        insumo_nom = info_yield["insumo_limitante"] or "materia prima"
+                        raise ValueError(
+                            f"No puedes declarar {cantidad_terminada} unidades. "
+                            f"El rendimiento del insumo '{insumo_nom}' entregado al taller limita la producción a {info_yield['capacidad_maxima']} unidades "
+                            f"(ya declaradas: {ya_declaradas}, saldo disponible: {saldo_posible})."
+                        )
+                    raise ValueError(
+                        f"No puedes declarar {cantidad_terminada} unidades. Supera el total planificado de la orden "
+                        f"(saldo disponible: {saldo_posible})."
+                    )
+                else:
+                    raise ValueError(
+                        f"No puedes declarar {cantidad_terminada} unidades. Solo tienes {saldo_posible} unidades habilitadas por la etapa anterior ({ant.etapa_origen.servicio.nombre})."
+                    )
 
             # Crear el parte físico
             parte = OPParteProduccion.objects.create(
@@ -131,7 +149,7 @@ class DeclararParteActionView(LoginRequiredMixin, View):
                 responsable=request.user
             )
             
-            # (Simplificación) Impactamos la primera variación de la OP
+            # Impactamos la primera variación de la OP (o la seleccionada)
             variacion = etapa.op.variaciones.first()
             if variacion:
                 OPParteProduccionLinea.objects.create(

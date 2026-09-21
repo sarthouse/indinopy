@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo_documento }} {{ letra }} {{ pto_vta_str }}-{{ nro_cmp_str }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 10mm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: Arial, sans-serif;
+                font-size: 8pt;
+                color: #777;
+            }
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            color: #111;
+            line-height: 1.25;
+            margin: 0;
+            padding: 0;
+        }
+        .borde-caja {
+            border: 1px solid #111;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .header-container {
+            display: flex;
+            position: relative;
+            border: 1px solid #111;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            min-height: 135px;
+        }
+        .header-col-left {
+            width: 48%;
+            padding: 10px 14px;
+            box-sizing: border-box;
+        }
+        .header-col-right {
+            width: 48%;
+            padding: 10px 14px;
+            box-sizing: border-box;
+            border-left: 1px solid #111;
+        }
+        .letra-badge-box {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            width: 46px;
+            height: 48px;
+            background: #fff;
+            border-left: 1px solid #111;
+            border-right: 1px solid #111;
+            border-bottom: 1px solid #111;
+            border-radius: 0 0 4px 4px;
+            text-align: center;
+            z-index: 10;
+        }
+        .letra-badge-char {
+            font-size: 24pt;
+            font-weight: 900;
+            line-height: 32px;
+            margin: 0;
+            color: #000;
+        }
+        .letra-badge-cod {
+            font-size: 6pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: -2px;
+        }
+        .empresa-logo {
+            max-height: 45px;
+            max-width: 180px;
+            margin-bottom: 6px;
+        }
+        .empresa-nombre {
+            font-size: 13pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .empresa-datos {
+            font-size: 8pt;
+            color: #333;
+            line-height: 1.3;
+        }
+        .doc-titulo {
+            font-size: 15pt;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .doc-numero {
+            font-size: 11pt;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .doc-meta-item {
+            font-size: 8.5pt;
+            margin-bottom: 3px;
+        }
+        .doc-meta-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 120px;
+        }
+        .seccion-cliente {
+            border: 1px solid #111;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background-color: #fafafa;
+        }
+        .grid-2col {
+            display: flex;
+            justify-content: space-between;
+        }
+        .grid-col {
+            width: 49%;
+        }
+        .info-row {
+            font-size: 8.5pt;
+            margin-bottom: 3px;
+        }
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 110px;
+            color: #333;
+        }
+        .table-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+        .table-items th {
+            background-color: #f2f2f2;
+            border: 1px solid #111;
+            padding: 5px 6px;
+            font-size: 8pt;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-align: left;
+        }
+        .table-items td {
+            border: 1px solid #ccc;
+            padding: 5px 6px;
+            font-size: 8pt;
+        }
+        .table-items tr:nth-child(even) {
+            background-color: #fdfdfd;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .totales-wrapper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .totales-left {
+            width: 58%;
+        }
+        .totales-right {
+            width: 40%;
+        }
+        .box-iva {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 6px;
+            margin-bottom: 6px;
+        }
+        .box-iva table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 7.5pt;
+        }
+        .box-iva th, .box-iva td {
+            padding: 2px 4px;
+        }
+        .table-totales {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+        }
+        .table-totales td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #eee;
+        }
+        .table-totales tr.total-destacado td {
+            font-size: 11pt;
+            font-weight: bold;
+            background-color: #f2f2f2;
+            border: 1px solid #111;
+        }
+        .pie-fiscal-container {
+            display: flex;
+            border: 1px solid #111;
+            border-radius: 4px;
+            padding: 8px 12px;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .qr-col {
+            width: 110px;
+            text-align: center;
+            padding-right: 12px;
+        }
+        .qr-col img {
+            width: 95px;
+            height: 95px;
+        }
+        .afip-datos-col {
+            flex-grow: 1;
+        }
+        .afip-badge {
+            font-size: 10pt;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .afip-cae-item {
+            font-size: 8.5pt;
+            margin-bottom: 2px;
+        }
+        .alerta-x {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 8.5pt;
+            text-align: center;
+        }
+        .clausula-fce {
+            border: 1px solid #004085;
+            background-color: #cce5ff;
+            color: #004085;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 7.5pt;
+            margin-top: 6px;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CABECERA FISCAL / COMERCIAL BIPARTITA -->
+    <div class="header-container">
+        <!-- Insignia Central con Letra y Código AFIP -->
+        <div class="letra-badge-box">
+            <div class="letra-badge-char">{{ letra }}</div>
+            <div class="letra-badge-cod">COD. {{ codigo_afip }}</div>
+        </div>
+
+        <!-- Columna Izquierda: Datos Emisor -->
+        <div class="header-col-left">
+            {% if logo_data_uri %}
+                <img src="{{ logo_data_uri }}" class="empresa-logo" alt="Logo">
+            {% endif %}
+            <div class="empresa-nombre">{{ empresa.razon_social }}</div>
+            <div class="empresa-datos">
+                {% if empresa.nombre_fantasia and empresa.nombre_fantasia != empresa.razon_social %}
+                    <div><strong>Nombre Comercial:</strong> {{ empresa.nombre_fantasia }}</div>
+                {% endif %}
+                <div><strong>Domicilio Comercial:</strong> {{ empresa.direccion|default:"-" }}</div>
+                <div><strong>Condición frente al IVA:</strong> {{ empresa.get_condicion_iva_display }}</div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Datos Documento -->
+        <div class="header-col-right">
+            <div class="doc-titulo">{{ titulo_documento }}</div>
+            <div class="doc-numero">Punto de Venta: {{ pto_vta_str }} &nbsp; Comp. Nro: {{ nro_cmp_str }}</div>
+            <div class="doc-meta-item">
+                <span class="doc-meta-label">Fecha de Emisión:</span>
+                {{ documento.fecha_emision|date:"d/m/Y" }}
+            </div>
+            {% if documento.fecha_vencimiento %}
+            <div class="doc-meta-item">
+                <span class="doc-meta-label">Fecha de Vto. Pago:</span>
+                <strong>{{ documento.fecha_vencimiento|date:"d/m/Y" }}</strong>
+            </div>
+            {% endif %}
+            <div class="doc-meta-item">
+                <span class="doc-meta-label">CUIT:</span>
+                <strong>{{ empresa.cuit }}</strong>
+            </div>
+            <div class="doc-meta-item">
+                <span class="doc-meta-label">Ingresos Brutos:</span>
+                {{ empresa.ingresos_brutos|default:empresa.cuit }}
+            </div>
+            <div class="doc-meta-item">
+                <span class="doc-meta-label">Fecha Inicio Activ.:</span>
+                {{ empresa.fecha_inicio_actividades|date:"d/m/Y"|default:"-" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- DATOS DEL CLIENTE / RECEPTOR -->
+    <div class="seccion-cliente">
+        <div class="grid-2col">
+            <div class="grid-col">
+                <div class="info-row">
+                    <span class="info-label">CUIT / DNI:</span>
+                    <strong>{{ contacto.cuit|default:contacto.cuil|default:"-" }}</strong>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Apellido y Nombre / Razón Social:</span>
+                    <strong>{{ contacto.razon_social|default:contacto.nombre }}</strong>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Condición IVA:</span>
+                    {{ contacto.get_condicion_iva_display|default:"Consumidor Final" }}
+                </div>
+            </div>
+            <div class="grid-col">
+                <div class="info-row">
+                    <span class="info-label">Domicilio:</span>
+                    {{ contacto.direccion|default:"-" }}
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Condición de Venta:</span>
+                    {{ documento.condicion_pago.nombre|default:"Contado" }}
+                </div>
+                {% if es_nota_credito or es_nota_debito %}
+                <div class="info-row" style="color: #721c24;">
+                    <span class="info-label">Comprobante Asoc.:</span>
+                    <strong>
+                        {% if documento.comprobante_asociado %}
+                            {{ documento.comprobante_asociado.get_tipo_display }} {{ documento.comprobante_asociado.numero }} ({{ documento.comprobante_asociado.fecha_emision|date:"d/m/Y" }})
+                        {% else %}
+                            -
+                        {% endif %}
+                    </strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA DE LÍNEAS / PRODUCTOS -->
+    <table class="table-items">
+        <thead>
+            <tr>
+                <th style="width: 12%;">Código</th>
+                <th>Descripción / Concepto</th>
+                <th style="width: 8%;" class="text-right">Cantidad</th>
+                <th style="width: 8%;" class="text-center">U.M.</th>
+                <th style="width: 12%;" class="text-right">Precio Unit.</th>
+                {% if discrimina_iva %}
+                <th style="width: 8%;" class="text-center">% IVA</th>
+                <th style="width: 12%;" class="text-right">Subtotal</th>
+                {% else %}
+                <th style="width: 14%;" class="text-right">Subtotal</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for linea in lineas %}
+            <tr>
+                <td>{{ linea.producto.sku|default:"-" }}</td>
+                <td>{{ linea.descripcion }}</td>
+                <td class="text-right">{{ linea.cantidad|floatformat:2 }}</td>
+                <td class="text-center">
+                    {{ linea.producto.template.unidad_medida.simbolo|default:"u" }}
+                </td>
+                <td class="text-right">${{ linea.precio_unitario|floatformat:2 }}</td>
+                {% if discrimina_iva %}
+                <td class="text-center">
+                    {% if linea.impuesto and linea.impuesto.tipo == "iva" %}
+                        {{ linea.impuesto.alicuota|floatformat:1 }}%
+                    {% else %}
+                        0.0%
+                    {% endif %}
+                </td>
+                <td class="text-right">${{ linea.subtotal|floatformat:2 }}</td>
+                {% else %}
+                <td class="text-right">${{ linea.subtotal|floatformat:2 }}</td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center" style="padding: 15px; color: #777;">
+                    Sin conceptos registrados.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- TOTALES Y DESGLOSE DE IMPUESTOS -->
+    <div class="totales-wrapper">
+        <div class="totales-left">
+            {% if discrimina_iva and alicuotas_iva %}
+            <div class="box-iva">
+                <div style="font-weight: bold; font-size: 7.5pt; text-transform: uppercase; margin-bottom: 3px;">
+                    Desglose de Alícuotas de IVA
+                </div>
+                <table>
+                    <thead>
+                        <tr style="background-color: #eee;">
+                            <th>Alícuota</th>
+                            <th class="text-right">Base Imponible</th>
+                            <th class="text-right">Importe Impuesto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in alicuotas_iva %}
+                        <tr>
+                            <td>IVA {{ item.alicuota|floatformat:1 }}%</td>
+                            <td class="text-right">${{ item.base|floatformat:2 }}</td>
+                            <td class="text-right">${{ item.importe|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if es_mipyme_fce %}
+            <div class="clausula-fce">
+                <strong>FACTURA DE CRÉDITO ELECTRÓNICA MiPyME (Ley N° 27.440)</strong><br>
+                <span>CBU Emisor: <strong>{{ documento.cbu_emisor }}</strong></span><br>
+                <span>Sistema de Circulación: <strong>{{ documento.get_fce_sistema_circulacion_display }}</strong></span><br>
+                <span>Régimen de Aceptación/Rechazo: 21 días corridos desde la recepción.</span>
+            </div>
+            {% endif %}
+
+            {% if es_comprobante_x %}
+            <div class="alerta-x">
+                DOCUMENTO NO VÁLIDO COMO FACTURA
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="totales-right">
+            <table class="table-totales">
+                {% if documento.monto_descuentos > 0 or documento.monto_recargos > 0 %}
+                <tr>
+                    <td>Subtotal Bruto:</td>
+                    <td class="text-right">${{ documento.monto_neto|add:documento.monto_descuentos|floatformat:2 }}</td>
+                </tr>
+                {% if documento.monto_descuentos > 0 %}
+                <tr style="color: #28a745;">
+                    <td>Descuentos / Cupones:</td>
+                    <td class="text-right">- ${{ documento.monto_descuentos|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+                {% if documento.monto_recargos > 0 %}
+                <tr style="color: #17a2b8;">
+                    <td>Recargos / Tasas:</td>
+                    <td class="text-right">+ ${{ documento.monto_recargos|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+                {% endif %}
+
+                {% if discrimina_iva %}
+                <tr>
+                    <td><strong>Subtotal Neto Gravado:</strong></td>
+                    <td class="text-right">${{ documento.monto_neto|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td><strong>IVA Total:</strong></td>
+                    <td class="text-right">${{ documento.monto_impuestos|floatformat:2 }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td><strong>Subtotal:</strong></td>
+                    <td class="text-right">${{ documento.monto_neto|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+
+                {% if documento.monto_tributos > 0 or tributos %}
+                {% for trib in tributos %}
+                <tr style="color: #6c757d; font-size: 8pt;">
+                    <td>{{ trib.descripcion }}:</td>
+                    <td class="text-right">${{ trib.importe|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr style="color: #6c757d; font-size: 8pt;">
+                    <td>Otros Tributos / Percepciones:</td>
+                    <td class="text-right">${{ documento.monto_tributos|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+
+                <tr class="total-destacado">
+                    <td><strong>IMPORTE TOTAL:</strong></td>
+                    <td class="text-right"><strong>${{ documento.monto_total|floatformat:2 }}</strong></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- RÉGIMEN DE TRANSPARENCIA FISCAL AL CONSUMIDOR (Ley N° 27.743 - RG 5614/2024 ARCA) -->
+    {% if es_consumidor_final and not discrimina_iva %}
+    <div style="border: 1px dashed #6c757d; background-color: #f8f9fa; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-size: 7.5pt; color: #495057;">
+        <strong>RÉGIMEN DE TRANSPARENCIA FISCAL AL CONSUMIDOR (Ley N° 27.743 / RG 5614/2024)</strong><br>
+        {% if letra == "B" %}
+            <span>IVA Contenido: <strong>${{ documento.monto_impuestos|floatformat:2 }}</strong></span> &nbsp;|&nbsp;
+            <span>Otros Tributos Nacionales Indirectos: <strong>${{ documento.monto_tributos|floatformat:2 }}</strong></span>
+        {% else %}
+            <span>Emisor en Régimen Simplificado (Monotributo): La operación no genera débito fiscal discriminado de IVA.</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- PIE FISCAL OFICIAL (AFIP QR + CAE) -->
+    {% if es_fiscal %}
+    <div class="pie-fiscal-container">
+        {% if qr_data_uri %}
+        <div class="qr-col">
+            <img src="{{ qr_data_uri }}" alt="QR AFIP">
+        </div>
+        {% endif %}
+        <div class="afip-datos-col">
+            <div class="afip-badge">COMPROBANTE AUTORIZADO POR AFIP / ARCA</div>
+            <div class="afip-cae-item">
+                <strong>CAE N°:</strong> {{ documento.afip_cae }}
+            </div>
+            <div class="afip-cae-item">
+                <strong>Fecha de Vto. de CAE:</strong> {{ documento.afip_vencimiento_cae|date:"d/m/Y" }}
+            </div>
+            <div style="font-size: 7pt; color: #555; margin-top: 4px;">
+                La autenticidad de este comprobante puede ser verificada escaneando el código QR con cualquier dispositivo móvil o accediendo al sitio oficial de AFIP.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</body>
+</html>

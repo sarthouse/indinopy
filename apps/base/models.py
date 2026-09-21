@@ -233,12 +233,57 @@ class ConfiguracionEmpresa(TimeStampedModel):
         ("produccion", "Producción (Real)"),
     ]
 
+    CONDICION_IVA_CHOICES = [
+        ("responsable_inscripto", "Responsable Inscripto"),
+        ("monotributista", "Monotributista"),
+        ("exento", "Exento"),
+    ]
+
     # Datos Comerciales
     razon_social = models.CharField(max_length=200, verbose_name="Razón Social")
     nombre_fantasia = models.CharField(
         max_length=200, blank=True, verbose_name="Nombre de Fantasía"
     )
     cuit = models.CharField(max_length=20, verbose_name="CUIT (Empresa)")
+    condicion_iva = models.CharField(
+        max_length=30,
+        choices=CONDICION_IVA_CHOICES,
+        default="responsable_inscripto",
+        verbose_name="Condición frente al IVA",
+    )
+    ingresos_brutos = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Número de Ingresos Brutos",
+        help_text="Número de inscripción en IIBB o Convenio Multilateral",
+    )
+    fecha_inicio_actividades = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de Inicio de Actividades",
+    )
+
+    # Regímenes Especiales / Agentes Fiscales
+    es_agente_percepcion_iva = models.BooleanField(
+        default=False,
+        verbose_name="Es Agente de Percepción de IVA",
+        help_text="Habilita la liquidación de Percepciones de IVA en ventas a clientes.",
+    )
+    es_agente_percepcion_iibb = models.BooleanField(
+        default=False,
+        verbose_name="Es Agente de Percepción de IIBB",
+        help_text="Habilita la liquidación de Percepciones de Ingresos Brutos (ARBA, AGIP, etc.).",
+    )
+    es_agente_retencion_iva = models.BooleanField(
+        default=False,
+        verbose_name="Es Agente de Retención de IVA",
+        help_text="Exige retener IVA a proveedores según RG 2854 al efectuar pagos.",
+    )
+    es_agente_retencion_ganancias = models.BooleanField(
+        default=False,
+        verbose_name="Es Agente de Retención de Ganancias",
+        help_text="Exige retener Impuesto a las Ganancias según RG 830 al efectuar pagos.",
+    )
     direccion = models.CharField(
         max_length=250, blank=True, verbose_name="Dirección Comercial"
     )

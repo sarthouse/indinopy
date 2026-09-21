@@ -18,6 +18,7 @@ from apps.inventario.models import (
     Ubicacion,
     MovimientoStock,
     LineaMovimientoStock,
+    StockQuant,
 )
 
 
@@ -148,8 +149,8 @@ class OrdenProduccion(DocumentoBase):
     Documento rector de la fabricación del Lote.
     Hereda de DocumentoBase y DocumentoFirmableMixin.
     """
-    SECUENCIA_CODIGO = "produccion.op"
 
+    SECUENCIA_CODIGO = "produccion.op"
 
     SUBESTADO_CHOICES = [
         ("espera", _("En Espera")),
@@ -167,7 +168,7 @@ class OrdenProduccion(DocumentoBase):
     @property
     def es_eop_federada(self):
         """Devuelve True si esta OP está vinculada a un Smart Contract FIMCA."""
-        return hasattr(self, 'contrato_eop')
+        return hasattr(self, "contrato_eop")
 
     fecha_entrega = models.DateField(
         blank=True, null=True, verbose_name=_("Fecha est. entrega")
@@ -717,8 +718,11 @@ class OPParteProduccion(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.numero_parte:
-            self.numero_parte = SecuenciaService.obtener_siguiente_numero("produccion.parte")
+            self.numero_parte = SecuenciaService.obtener_siguiente_numero(
+                "produccion.parte"
+            )
         super().save(*args, **kwargs)
+
 
 class OPParteProduccionLinea(TimeStampedModel):
     """Línea de cantidades por variante terminadas en un parte específico."""
@@ -930,34 +934,134 @@ class OPEtapaTracking(TimeStampedModel):
     @property
     def etapa_anterior(self):
         """Retorna la etapa de tracking inmediatamente anterior basada en el orden de ejecución."""
-        return self.op.tracking_etapas.filter(
-            etapa_origen__orden_ejecucion__lt=self.etapa_origen.orden_ejecucion
-        ).order_by('-etapa_origen__orden_ejecucion').first()
+        return (
+            self.op.tracking_etapas.filter(
+                etapa_origen__orden_ejecucion__lt=self.etapa_origen.orden_ejecucion
+            )
+            .order_by("-etapa_origen__orden_ejecucion")
+            .first()
+        )
+
+    @property
+    def capacidad_maxima_por_insumos(self):
+        """
+        Calcula el techo máximo de unidades producibles en función de la materia prima
+        despachada al taller en custodia (BOM Yield Cap).
+        Ejemplo: Si se remitieron 20 m de cuero y cada par consume 0.4 m, el techo es 50 pares.
+        Retorna un dict con {'capacidad_maxima': int|None, 'insumo_limitante': str|None, 'detalle': list}
+        """
+        if not self.op.receta:
+            return {"capacidad_maxima": None, "insumo_limitante": None, "detalle": []}
+
+        # Buscamos la ubicación de custodia del tallerista asignado
+        ubicacion_fason = None
+        if self.tallerista_asignado:
+            ubicacion_fason = Ubicacion.objects.filter(
+                tipo="fason",
+                contacto=self.tallerista_asignado,
+            ).first()
+
+        capacidad_minima = None
+        insumo_limitante = None
+        detalle = []
+
+        for req in self.op.insumos_requeridos.filter(origen="empresa"):
+            receta_insumo = self.op.receta.insumos.filter(insumo=req.insumo).first()
+            if not receta_insumo or receta_insumo.cantidad <= 0:
+                continue
+
+            consumo_unitario = receta_insumo.cantidad
+
+            # Buscamos cuánto de este insumo fue efectivamente despachado para esta OP
+            # a través de remitos de traslado hacia el taller o fábrica
+            ct_op = ContentType.objects.get_for_model(self.op)
+            despachado = LineaMovimientoStock.objects.filter(
+                movimiento__content_type_origen=ct_op,
+                movimiento__object_id_origen=self.op.id,
+                movimiento__tipo="traslado",
+                movimiento__estado__in=["confirmado", "finalizado"],
+                producto=req.insumo,
+            ).aggregate(total=models.Sum("cantidad_hecha"))["total"] or Decimal("0.0")
+
+            # Si no hay remito individualizado pero hay stock en quant del taller, consultamos el quant
+            if despachado <= 0 and ubicacion_fason:
+                quant = StockQuant.objects.filter(
+                    producto=req.insumo,
+                    ubicacion=ubicacion_fason,
+                ).first()
+                if quant:
+                    despachado = quant.cantidad_fisica
+
+            if despachado > 0:
+                unidades_posibles = int(despachado // consumo_unitario)
+                detalle.append(
+                    {
+                        "insumo": req.insumo.nombre,
+                        "despachado": despachado,
+                        "consumo_unitario": consumo_unitario,
+                        "unidades_posibles": unidades_posibles,
+                    }
+                )
+                if capacidad_minima is None or unidades_posibles < capacidad_minima:
+                    capacidad_minima = unidades_posibles
+                    insumo_limitante = req.insumo.nombre
+
+        return {
+            "capacidad_maxima": capacidad_minima,
+            "insumo_limitante": insumo_limitante,
+            "detalle": detalle,
+        }
 
     @property
     def unidades_habilitadas_para_declarar(self):
         """
-        Retorna la cantidad de unidades procesadas exitosamente por la etapa anterior.
-        Si es la primera etapa, el límite es el total planificado de la OP.
-        Diseñado abstractamente para cualquier industria.
+        Retorna la cantidad máxima acumulada de unidades que pueden ser declaradas en esta etapa.
+        - Si es la primera etapa: el límite es el mínimo entre la cantidad planificada de la OP
+          y el rendimiento de los insumos despachados al taller (Yield Cap).
+        - Si es una etapa intermedia: el límite es lo procesado por la etapa inmediatamente anterior.
         """
         ant = self.etapa_anterior
         if not ant:
-            from django.db.models import Sum
-            return self.op.variaciones.aggregate(total=Sum('cantidad_planificada'))['total'] or 0
-        from django.db.models import Sum
-        # Se suman las cantidades de primera y segunda selección (lo que pasó el control y sigue vivo)
-        total_primera = ant.partes_produccion.aggregate(t=Sum('lineas__cantidad'))['t'] or 0
-        total_segunda = ant.partes_produccion.aggregate(t=Sum('lineas__cantidad_segunda'))['t'] or 0
+            total_planificado = (
+                self.op.variaciones.aggregate(total=models.Sum("cantidad"))["total"]
+                or self.op.cantidad_total
+                or 0
+            )
+            yield_cap = self.capacidad_maxima_por_insumos["capacidad_maxima"]
+            if yield_cap is not None:
+                return min(total_planificado, yield_cap)
+            return total_planificado
+
+        # Para etapas subsecuentes, manda lo aprobado en la etapa anterior (1ra + 2da)
+        total_primera = (
+            ant.partes_produccion.aggregate(t=models.Sum("lineas__cantidad"))["t"] or 0
+        )
+        total_segunda = (
+            ant.partes_produccion.aggregate(t=models.Sum("lineas__cantidad_segunda"))[
+                "t"
+            ]
+            or 0
+        )
         return total_primera + total_segunda
 
     @property
     def unidades_ya_declaradas(self):
         """Retorna cuántas unidades ya fueron declaradas y procesadas en esta etapa."""
-        from django.db.models import Sum
-        total_primera = self.partes_produccion.aggregate(t=Sum('lineas__cantidad'))['t'] or 0
-        total_segunda = self.partes_produccion.aggregate(t=Sum('lineas__cantidad_segunda'))['t'] or 0
-        total_descarte = self.partes_produccion.aggregate(t=Sum('lineas__cantidad_descarte'))['t'] or 0
+        total_primera = (
+            self.partes_produccion.aggregate(t=models.Sum("lineas__cantidad"))["t"] or 0
+        )
+        total_segunda = (
+            self.partes_produccion.aggregate(t=models.Sum("lineas__cantidad_segunda"))[
+                "t"
+            ]
+            or 0
+        )
+        total_descarte = (
+            self.partes_produccion.aggregate(t=models.Sum("lineas__cantidad_descarte"))[
+                "t"
+            ]
+            or 0
+        )
         return total_primera + total_segunda + total_descarte
 
 

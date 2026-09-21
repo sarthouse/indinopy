@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitud de Cotización {{ oc.numero }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 10mm 12mm 12mm 12mm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }
+            @bottom-left {
+                content: "INDINOPY ERP - Abastecimiento Industrial";
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            color: #0f172a;
+            line-height: 1.35;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* HEADER */
+        .header-container {
+            display: table;
+            width: 100%;
+            border: 1px solid #0f172a;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .header-col-left {
+            display: table-cell;
+            width: 48%;
+            padding: 10px 14px;
+            vertical-align: top;
+            border-right: 1px solid #0f172a;
+        }
+
+        .header-col-right {
+            display: table-cell;
+            width: 52%;
+            padding: 10px 16px;
+            vertical-align: top;
+        }
+
+        .empresa-nombre {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #0f172a;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .empresa-datos, .doc-datos {
+            font-size: 8.5pt;
+            color: #334155;
+            line-height: 1.35;
+        }
+
+        .doc-titulo {
+            font-size: 13pt;
+            font-weight: 900;
+            color: #4338ca;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .doc-numero {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        /* SECCIÓN PROVEEDOR / CONDICIONES */
+        .info-box {
+            display: table;
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 8.5pt;
+        }
+
+        .info-col {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .info-row {
+            margin-bottom: 3px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #334155;
+            display: inline-block;
+            min-width: 95px;
+        }
+
+        /* TABLA DE PRODUCTOS */
+        table.tabla-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            font-size: 8.5pt;
+        }
+
+        table.tabla-items th {
+            background-color: #312e81;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 8pt;
+            padding: 5px 6px;
+            text-align: left;
+            border: 1px solid #312e81;
+        }
+
+        table.tabla-items td {
+            padding: 5px 6px;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        table.tabla-items tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-mono { font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; }
+
+        .form-cell {
+            border: 1px dashed #94a3b8 !important;
+            background-color: #fafafa;
+            height: 22px;
+        }
+
+        .clausula-box {
+            border: 1px dashed #cbd5e1;
+            background-color: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 8pt;
+            color: #334155;
+            line-height: 1.4;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER INSTITUCIONAL -->
+    <div class="header-container">
+        <div class="header-col-left">
+            <div class="empresa-nombre">{{ empresa.razon_social|default:"EMPRESA INDUSTRIAL S.A." }}</div>
+            <div class="empresa-datos">
+                <strong>CUIT:</strong> {{ empresa.cuit|default:"30-00000000-0" }}<br>
+                <strong>Dirección:</strong> {{ empresa.direccion|default:"Sede Central" }}<br>
+                {% if empresa.telefono %}<strong>Tel:</strong> {{ empresa.telefono }} | {% endif %}
+                {% if empresa.email %}<strong>Email:</strong> {{ empresa.email }}{% endif %}
+            </div>
+        </div>
+
+        <div class="header-col-right">
+            <div class="doc-titulo">SOLICITUD DE COTIZACIÓN (RFQ)</div>
+            <div class="doc-numero font-mono">{{ oc.numero }}</div>
+            <div class="doc-datos">
+                <strong>Fecha de Emisión:</strong> {{ oc.fecha|date:"d/m/Y" }}<br>
+                {% if oc.fecha_entrega_esperada %}
+                <strong>Plazo Límite Requerido:</strong> {{ oc.fecha_entrega_esperada|date:"d/m/Y" }}<br>
+                {% endif %}
+                <strong>Moneda Solicitada:</strong> {{ oc.moneda.nombre }} ({{ oc.moneda.simbolo }})<br>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATOS DEL PROVEEDOR -->
+    <div class="info-box">
+        <div class="info-col">
+            <div class="info-row"><span class="info-label">Señores:</span> <strong>{{ proveedor.nombre }}</strong></div>
+            <div class="info-row"><span class="info-label">CUIT/Doc:</span> {{ proveedor.cuil|default:proveedor.cuit|default:"-" }}</div>
+            <div class="info-row"><span class="info-label">Dirección:</span> {{ proveedor.direccion|default:"-" }}</div>
+        </div>
+        <div class="info-col">
+            <div class="info-row"><span class="info-label">Email / Contacto:</span> {{ proveedor.email|default:"-" }}</div>
+            <div class="info-row"><span class="info-label">Cond. de Pago:</span> {{ oc.condicion_pago.nombre }}</div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 8px; font-size: 8.5pt; color: #334155;">
+        Les solicitamos tengan a bien cotizarnos los siguientes insumos indicando precio unitario, alícuotas de IVA aplicables y plazo de entrega:
+    </div>
+
+    <!-- DETALLE DE PRODUCTOS A COTIZAR -->
+    <table class="tabla-items">
+        <thead>
+            <tr>
+                <th style="width: 5%;" class="text-center">#</th>
+                <th style="width: 20%;">Código / SKU</th>
+                <th style="width: 45%;">Descripción del Insumo / Especificación Técnica</th>
+                <th style="width: 8%;" class="text-center">U.M.</th>
+                <th style="width: 10%;" class="text-right">Cantidad</th>
+                <th style="width: 12%; text-align: center;">Precio Unit. Cotizado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linea in lineas %}
+            <tr>
+                <td class="text-center font-mono">{{ forloop.counter }}</td>
+                <td class="font-mono"><strong>{{ linea.producto.sku }}</strong></td>
+                <td>
+                    {{ linea.descripcion|default:linea.producto.template.nombre }}
+                    {% if linea.producto.variantes_texto %}
+                    <br><small style="color: #64748b;">{{ linea.producto.variantes_texto }}</small>
+                    {% endif %}
+                </td>
+                <td class="text-center">{{ linea.unidad_medida.codigo|default:"UN" }}</td>
+                <td class="text-right font-mono"><strong>{{ linea.cantidad|floatformat:2 }}</strong></td>
+                <td class="form-cell"></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center" style="padding: 16px; color: #94a3b8;">
+                    No hay líneas en esta solicitud.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- INSTRUCCIONES AL PROVEEDOR -->
+    <div class="clausula-box">
+        <strong>Pautas de Cotización:</strong>
+        <ul style="margin: 4px 0 0 16px; padding: 0; color: #475569;">
+            <li>Favor de indicar validez de la oferta (7, 15 o 30 días).</li>
+            <li>Especificar condición de pago y modalidad de flete (puesto en fábrica o retiro).</li>
+            <li>En caso de sustitutos técnicos equivalentes, adjuntar marca y ficha técnica en la respuesta.</li>
+        </ul>
+        {% if oc.observaciones %}
+        <div style="margin-top: 6px; border-top: 1px dashed #cbd5e1; padding-top: 4px;">
+            <strong>Observaciones particulares:</strong> {{ oc.observaciones }}
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

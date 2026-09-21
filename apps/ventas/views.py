@@ -25,15 +25,26 @@ class OrdenVentaDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
+class PresupuestoPDFDownloadView(LoginRequiredMixin, View):
+    """Descarga o previsualización inline del Presupuesto o Nota de Pedido en PDF."""
+    def get(self, request, pk):
+        from .reports.presupuesto_report import PresupuestoPDFReport
+        ov = get_object_or_404(OrdenVenta, pk=pk)
+        report = PresupuestoPDFReport(ov)
+        inline = request.GET.get("inline", "true").lower() == "true"
+        return report.to_http_response(inline=inline)
+
+
 class ConfirmarOVActionView(LoginRequiredMixin, View):
     def post(self, request, pk):
         ov = get_object_or_404(OrdenVenta, pk=pk)
         
         try:
-            # TODO: Crear VentasService y generar remito de salida
+            from .services import VentasService
             ov.estado = "confirmado"
             ov.save(update_fields=["estado"])
-            messages.success(request, f"Orden de Venta {ov.numero} confirmada.")
+            VentasService.generar_remito_salida(ov)
+            messages.success(request, f"Orden de Venta {ov.numero} confirmada y remito de salida generado.")
         except Exception as e:
             messages.error(request, f"Error al confirmar la OV: {str(e)}")
         

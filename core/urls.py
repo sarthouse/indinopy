@@ -36,6 +36,7 @@ if "apps.produccion" in settings.INSTALLED_APPS:
         path('contabilidad/', include('apps.contabilidad.urls', namespace='contabilidad')),
         path('ventas/', include('apps.ventas.urls', namespace='ventas')),
         path('nomina/', include('apps.nomina.urls', namespace='nomina')),
+        path('integraciones/woocommerce/', include('apps.integraciones.woocommerce.urls', namespace='integraciones_woocommerce')),
     ]
 
 # Si el nodo carga la app de Gobernanza (MES), exponemos sus URLs

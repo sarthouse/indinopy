@@ -265,3 +265,105 @@ class Cheque(TimeStampedModel):
         return (
             f"{self.get_tipo_display()} - {self.banco} #{self.numero} (${self.monto})"
         )
+
+
+class TituloCreditoFCE(TimeStampedModel):
+    """
+    Título Ejecutivo y Activo Financiero derivado de una Factura de Crédito Electrónica MiPyME (Ley 27.440).
+    Administra los 21 días de plazo para aceptación/rechazo en AFIP y su posterior negociación,
+    cesión al FDI o descuento bancario/bursátil.
+    """
+
+    ESTADO_FCE_CHOICES = [
+        ("emitida_pendiente", "Emitida (Pendiente en AFIP - 21 días)"),
+        ("aceptada_expresa", "Aceptada Expresa (Título Ejecutivo Firme)"),
+        ("aceptada_tacita", "Aceptada Tácita (Silencio Positivo AFIP)"),
+        ("rechazada", "Rechazada por el Comprador"),
+        ("cancelada_cliente", "Cancelada / Pagada Directamente por Cliente"),
+        ("cedida_fdi", "Cedida al FDI (Fideicomiso de Desarrollo Industrial)"),
+        ("descontada_banco", "Descontada en Banco / Factoring Bursátil"),
+        ("cobrada", "Cobrada Totalmente"),
+    ]
+
+    SISTEMA_CIRCULACION_CHOICES = [
+        ("SCA", "Sistema de Circulación Abierta (BCRA)"),
+        ("ADC", "Agente de Depósito Colectivo (Caja de Valores)"),
+    ]
+
+    documento_deuda = models.OneToOneField(
+        "contabilidad.DocumentoDeuda",
+        on_delete=models.CASCADE,
+        related_name="titulo_fce",
+        verbose_name="Factura de Crédito MiPyME Origen",
+    )
+
+    estado = models.CharField(
+        max_length=30,
+        choices=ESTADO_FCE_CHOICES,
+        default="emitida_pendiente",
+        verbose_name="Estado de la FCE en AFIP",
+    )
+
+    sistema_circulacion = models.CharField(
+        max_length=10,
+        choices=SISTEMA_CIRCULACION_CHOICES,
+        default="SCA",
+        verbose_name="Sistema de Circulación",
+    )
+
+    fecha_notificacion_dfe = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de Notificación DFE",
+        help_text="Fecha en que la factura fue notificada en el Domicilio Fiscal Electrónico del comprador.",
+    )
+
+    fecha_limite_aceptacion = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha Límite para Aceptación Tácita",
+        help_text="Fecha máxima (21 días corridos) antes de que opere la aceptación de oficio en AFIP.",
+    )
+
+    fecha_aceptacion = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha Efectiva de Aceptación",
+    )
+
+    causal_rechazo = models.TextField(
+        blank=True,
+        verbose_name="Motivo / Causal de Rechazo en AFIP",
+        help_text="Causal taxativa de la Ley 27.440 informada por el comprador si fue rechazada.",
+    )
+
+    # Cesión y descuento financiero
+    tenedor_actual = models.CharField(
+        max_length=150,
+        blank=True,
+        default="Emisor Original",
+        verbose_name="Tenedor del Título",
+        help_text="Ej: 'FDI FIMCA', 'Banco Provincia', 'Caja de Valores'.",
+    )
+
+    monto_neto_negociable = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        verbose_name="Monto Neto Negociable",
+        help_text="Monto neto de la factura descontadas retenciones preliminares.",
+    )
+
+    class Meta:
+        verbose_name = "Título de Crédito FCE (Factura MiPyME)"
+        verbose_name_plural = "Títulos de Crédito FCE (Facturas MiPyME)"
+        ordering = ["-fecha_limite_aceptacion", "-id"]
+
+    def __str__(self):
+        return f"FCE #{self.documento_deuda.numero} - {self.get_estado_display()} (${self.monto_neto_negociable})"
+
+    @property
+    def es_titulo_ejecutivo_firme(self) -> bool:
+        """Indica si el título ya puede ser descontado, transferido o ejecutado judicialmente."""
+        return self.estado in ["aceptada_expresa", "aceptada_tacita", "cedida_fdi", "descontada_banco"]
+

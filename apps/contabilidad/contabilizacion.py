@@ -48,6 +48,13 @@ class ContabilizacionDocumentoService:
                     if monto_impuesto > 0:
                         lineas.append({'cuenta_codigo': linea.impuesto.cuenta_imputacion.codigo, 'debe': 0, 'haber': monto_impuesto, 'contacto': doc.contacto})
 
+            # Percepciones Cobradas en Venta (Pasivo fiscal a ingresar al Fisco al Haber)
+            for trib in doc.tributos.all():
+                if trib.importe > 0:
+                    cta_trib = trib.impuesto.cuenta_imputacion if trib.impuesto and trib.impuesto.cuenta_imputacion else None
+                    if cta_trib:
+                        lineas.append({'cuenta_codigo': cta_trib.codigo, 'debe': 0, 'haber': trib.importe, 'contacto': doc.contacto})
+
         elif doc.tipo in ['factura_proveedor', 'nota_debito_proveedor', 'liquidacion_fason']:
             # Proveedores o Talleristas
             cta_pagar = contacto_perfil.cuenta_a_pagar if contacto_perfil and contacto_perfil.cuenta_a_pagar else config_contable.cuenta_proveedores_defecto
@@ -66,6 +73,61 @@ class ContabilizacionDocumentoService:
                     monto_impuesto = linea.subtotal * (linea.impuesto.alicuota / 100)
                     if monto_impuesto > 0:
                         lineas.append({'cuenta_codigo': linea.impuesto.cuenta_imputacion.codigo, 'debe': monto_impuesto, 'haber': 0, 'contacto': doc.contacto})
+
+            # Percepciones Sufridas en Compra (Crédito fiscal / Activo impositivo al Debe)
+            for trib in doc.tributos.all():
+                if trib.importe > 0:
+                    cta_trib = trib.impuesto.cuenta_imputacion if trib.impuesto and trib.impuesto.cuenta_imputacion else None
+                    if cta_trib:
+                        lineas.append({'cuenta_codigo': cta_trib.codigo, 'debe': trib.importe, 'haber': 0, 'contacto': doc.contacto})
+
+        elif doc.tipo == 'nota_credito_cliente':
+            # Anulación de venta: Deudores por Ventas al HABER, Ingreso al DEBE, IVA Débito al DEBE
+            cta_cobrar = contacto_perfil.cuenta_a_cobrar if contacto_perfil and contacto_perfil.cuenta_a_cobrar else config_contable.cuenta_clientes_defecto
+            lineas.append({'cuenta_codigo': cta_cobrar.codigo, 'debe': 0, 'haber': doc.monto_total, 'contacto': doc.contacto})
+
+            for linea in doc.lineas.all():
+                if linea.subtotal > 0:
+                    perfil_prod = getattr(linea.producto, 'perfil_contable', None) if linea.producto else None
+                    cta_ingreso = perfil_prod.cuenta_ingreso if perfil_prod and perfil_prod.cuenta_ingreso else config_contable.cuenta_ventas_defecto
+                    lineas.append({'cuenta_codigo': cta_ingreso.codigo, 'debe': linea.subtotal, 'haber': 0, 'contacto': doc.contacto})
+
+            for linea in doc.lineas.all():
+                if linea.impuesto and linea.impuesto.cuenta_imputacion:
+                    monto_impuesto = linea.subtotal * (linea.impuesto.alicuota / 100)
+                    if monto_impuesto > 0:
+                        lineas.append({'cuenta_codigo': linea.impuesto.cuenta_imputacion.codigo, 'debe': monto_impuesto, 'haber': 0, 'contacto': doc.contacto})
+
+            # Reversión de Percepciones Cobradas en Venta (Pasivo fiscal al Debe)
+            for trib in doc.tributos.all():
+                if trib.importe > 0:
+                    cta_trib = trib.impuesto.cuenta_imputacion if trib.impuesto and trib.impuesto.cuenta_imputacion else None
+                    if cta_trib:
+                        lineas.append({'cuenta_codigo': cta_trib.codigo, 'debe': trib.importe, 'haber': 0, 'contacto': doc.contacto})
+
+        elif doc.tipo == 'nota_credito_proveedor':
+            # Anulación de compra: Proveedores al DEBE, Gasto al HABER, IVA Crédito al HABER
+            cta_pagar = contacto_perfil.cuenta_a_pagar if contacto_perfil and contacto_perfil.cuenta_a_pagar else config_contable.cuenta_proveedores_defecto
+            lineas.append({'cuenta_codigo': cta_pagar.codigo, 'debe': doc.monto_total, 'haber': 0, 'contacto': doc.contacto})
+
+            for linea in doc.lineas.all():
+                if linea.subtotal > 0:
+                    perfil_prod = getattr(linea.producto, 'perfil_contable', None) if linea.producto else None
+                    cta_gasto = perfil_prod.cuenta_gasto if perfil_prod and perfil_prod.cuenta_gasto else config_contable.cuenta_gastos_defecto
+                    lineas.append({'cuenta_codigo': cta_gasto.codigo, 'debe': 0, 'haber': linea.subtotal, 'contacto': doc.contacto})
+
+            for linea in doc.lineas.all():
+                if linea.impuesto and linea.impuesto.cuenta_imputacion:
+                    monto_impuesto = linea.subtotal * (linea.impuesto.alicuota / 100)
+                    if monto_impuesto > 0:
+                        lineas.append({'cuenta_codigo': linea.impuesto.cuenta_imputacion.codigo, 'debe': 0, 'haber': monto_impuesto, 'contacto': doc.contacto})
+
+            # Reversión de Percepciones Sufridas en Compra (Activo fiscal al Haber)
+            for trib in doc.tributos.all():
+                if trib.importe > 0:
+                    cta_trib = trib.impuesto.cuenta_imputacion if trib.impuesto and trib.impuesto.cuenta_imputacion else None
+                    if cta_trib:
+                        lineas.append({'cuenta_codigo': cta_trib.codigo, 'debe': 0, 'haber': trib.importe, 'contacto': doc.contacto})
 
         if not lineas:
             return None

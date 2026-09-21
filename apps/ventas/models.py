@@ -3,53 +3,103 @@ from apps.base.models import DocumentoBase, TimeStampedModel
 from apps.inventario.models import Producto, Ubicacion
 from apps.base.models import ConfiguracionEmpresa
 
-class TiendaWooCommerce(TimeStampedModel):
-    """Configuración y credenciales de cada tienda WooCommerce conectada (Multi-Tenant)."""
-    empresa = models.ForeignKey(ConfiguracionEmpresa, on_delete=models.CASCADE, related_name="tiendas_woocommerce")
+class CanalVenta(TimeStampedModel):
+    """
+    Canal de origen de la venta (ej. 'WooCommerce B2C', 'MercadoLibre Oficial', 'Mostrador Fábrica').
+    Aísla al ERP del proveedor de ecommerce o canal de comercialización.
+    """
+    TIPO_CHOICES = [
+        ("woocommerce", "WooCommerce"),
+        ("mercadolibre", "MercadoLibre"),
+        ("shopify", "Shopify"),
+        ("tiendanube", "Tiendanube"),
+        ("manual", "Venta Manual / B2B"),
+        ("pos", "Punto de Venta"),
+    ]
+
+    empresa = models.ForeignKey(ConfiguracionEmpresa, on_delete=models.CASCADE, related_name="canales_venta")
     nombre = models.CharField(max_length=100, unique=True, help_text="Ej: Tienda Oficial B2C")
-    codigo_prefijo = models.CharField(max_length=10, unique=True, help_text="Ej: WC-B2C")
-    url = models.URLField(help_text="https://mitienda.com")
-    consumer_key = models.CharField(max_length=100)
-    consumer_secret = models.CharField(max_length=100) 
-    webhook_secret = models.CharField(max_length=100, blank=True)
-    activa = models.BooleanField(default=True)
-    
-    almacen_origen = models.ForeignKey(
+    codigo = models.CharField(max_length=20, unique=True, help_text="Ej: WC-B2C, ML-OFICIAL, POS-01")
+    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES, default="manual")
+    almacen_predeterminado = models.ForeignKey(
         Ubicacion,
         on_delete=models.RESTRICT,
-        help_text="Ubicación física de stock de donde se reserva/despacha esta tienda",
-        null=True, blank=True
+        help_text="Ubicación física de stock de donde se reserva/despacha este canal",
+        null=True,
+        blank=True,
     )
-    sincronizar_stock = models.BooleanField(default=True)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Canal de Venta"
+        verbose_name_plural = "Canales de Venta"
+        ordering = ["nombre"]
 
     def __str__(self):
-        return f"{self.nombre} ({self.codigo_prefijo})"
+        return f"{self.nombre} ({self.codigo})"
 
 
 class OrdenVenta(DocumentoBase):
     """
     Representa un Pedido de Venta (B2C o B2B).
     Genera remitos de salida y facturas de venta.
+    Completamente agnóstico del canal de captura externo.
     """
     SECUENCIA_CODIGO = "ventas.ov"
 
-    tienda = models.ForeignKey(
-        TiendaWooCommerce,
+    ESTADO_CHOICES = [
+        ("presupuesto", "Presupuesto / Cotización"),
+        ("nota_pedido", "Nota de Pedido (Borrador)"),
+        ("confirmado", "Orden Confirmada"),
+        ("finalizado", "Finalizado (Entregado y Facturado)"),
+        ("cancelado", "Cancelado"),
+        ("anulado", "Anulado"),
+    ]
+
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADO_CHOICES,
+        default="presupuesto",
+        verbose_name="Estado",
+    )
+    fecha_validez = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de Validez del Presupuesto",
+        help_text="Fecha límite de vigencia de las condiciones y precios cotizados.",
+    )
+
+    canal = models.ForeignKey(
+        CanalVenta,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="ordenes"
+        related_name="ordenes",
     )
-    wc_order_id = models.PositiveBigIntegerField(null=True, blank=True, db_index=True)
-    wc_order_number = models.CharField(max_length=50, blank=True)
-    wc_status = models.CharField(max_length=50, blank=True)
+    # Referencia genérica al identificador de la orden en el canal externo
+    referencia_externa = models.CharField(
+        max_length=100,
+        blank=True,
+        db_index=True,
+        help_text="Identificador único en el sistema externo (ID de orden en Woo, MeLi, etc.)",
+    )
+    numero_externo = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Número legible de comprobante o pedido en el canal externo",
+    )
+    estado_canal_externo = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Estado original en el canal externo (ej. processing, completed, paid)",
+    )
 
     cliente = models.ForeignKey(
         "contactos.Contacto",
         on_delete=models.RESTRICT,
-        related_name="ordenes_venta"
+        related_name="ordenes_venta",
     )
-    
+
     # Totales monetarios desglosados
     subtotal_productos = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
     total_descuentos = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
@@ -63,26 +113,50 @@ class OrdenVenta(DocumentoBase):
     metodo_envio_id = models.CharField(max_length=100, blank=True)
     metodo_pago = models.CharField(max_length=100, blank=True)
     transaccion_id = models.CharField(max_length=150, blank=True)
-    cupones_aplicados = models.JSONField(default=list, blank=True) # [{code, discount}]
-    
+    cupones_aplicados = models.JSONField(default=list, blank=True)  # [{code, discount}]
+
     # Metadatos flexibles no mapeados a columnas
     datos_adicionales_meta = models.JSONField(default=dict, blank=True)
+
+    # Propiedades de compatibilidad regresiva controlada
+    @property
+    def tienda(self):
+        """Compatibilidad con código previo que consultaba orden.tienda."""
+        if hasattr(self.canal, "config_woocommerce"):
+            return self.canal.config_woocommerce
+        return self.canal
+
+    @property
+    def wc_order_id(self):
+        return int(self.referencia_externa) if self.referencia_externa and self.referencia_externa.isdigit() else self.referencia_externa
+
+    @property
+    def wc_order_number(self):
+        return self.numero_externo
+
+    @property
+    def wc_status(self):
+        return self.estado_canal_externo
 
     class Meta:
         verbose_name = "Orden de Venta"
         verbose_name_plural = "Órdenes de Venta"
-        unique_together = [("tienda", "wc_order_id")]
+        unique_together = [("canal", "referencia_externa")]
 
 
 class LineaOrdenVenta(models.Model):
     orden = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, related_name="lineas")
     producto = models.ForeignKey(Producto, on_delete=models.RESTRICT)
-    wc_line_id = models.PositiveBigIntegerField(null=True, blank=True)
+    referencia_linea_externa = models.CharField(max_length=100, null=True, blank=True)
     cantidad = models.DecimalField(max_digits=10, decimal_places=2)
     precio_unitario = models.DecimalField(max_digits=15, decimal_places=2)
     subtotal = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
     descuento = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
     total_linea = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
+
+    @property
+    def wc_line_id(self):
+        return int(self.referencia_linea_externa) if self.referencia_linea_externa and self.referencia_linea_externa.isdigit() else self.referencia_linea_externa
 
     def save(self, *args, **kwargs):
         self.subtotal = self.cantidad * self.precio_unitario
@@ -91,7 +165,7 @@ class LineaOrdenVenta(models.Model):
 
 
 class LineaRecargoOrden(models.Model):
-    """Mapeo de fee_lines para recargos de pasarelas (MercadoPago) o servicios extra."""
+    """Mapeo de recargos de pasarelas (MercadoPago, intereses) o servicios extra."""
     orden = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, related_name="recargos")
     nombre = models.CharField(max_length=200)
     monto = models.DecimalField(max_digits=15, decimal_places=2)

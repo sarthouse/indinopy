@@ -69,6 +69,22 @@ class OrdenCompra(DocumentoBase):
     SECUENCIA_CODIGO = "compras.oc"
 
 
+    ESTADO_CHOICES = [
+        ("cotizacion", _("Solicitud de Cotización (RFQ)")),
+        ("borrador", _("Borrador")),
+        ("confirmado", _("Orden Confirmada")),
+        ("finalizado", _("Finalizado")),
+        ("cancelado", _("Cancelado")),
+        ("anulado", _("Anulado")),
+    ]
+
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADO_CHOICES,
+        default="cotizacion",
+        verbose_name=_("Estado"),
+    )
+
     proveedor = models.ForeignKey(
         "contactos.Contacto",
         on_delete=models.RESTRICT,

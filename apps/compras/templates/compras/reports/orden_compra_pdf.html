@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Orden de Compra {{ oc.numero }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 10mm 12mm 12mm 12mm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }
+            @bottom-left {
+                content: "INDINOPY ERP - Abastecimiento Industrial";
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            color: #0f172a;
+            line-height: 1.35;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* HEADER */
+        .header-container {
+            display: table;
+            width: 100%;
+            border: 1px solid #0f172a;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .header-col-left {
+            display: table-cell;
+            width: 48%;
+            padding: 10px 14px;
+            vertical-align: top;
+            border-right: 1px solid #0f172a;
+        }
+
+        .header-col-right {
+            display: table-cell;
+            width: 52%;
+            padding: 10px 16px;
+            vertical-align: top;
+        }
+
+        .empresa-nombre {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #0f172a;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .empresa-datos, .doc-datos {
+            font-size: 8.5pt;
+            color: #334155;
+            line-height: 1.35;
+        }
+
+        .doc-titulo {
+            font-size: 13pt;
+            font-weight: 900;
+            color: #1e3a8a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .doc-numero {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        /* SECCIÓN PROVEEDOR / CONDICIONES */
+        .info-box {
+            display: table;
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 8.5pt;
+        }
+
+        .info-col {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .info-row {
+            margin-bottom: 3px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #334155;
+            display: inline-block;
+            min-width: 95px;
+        }
+
+        /* TABLA DE PRODUCTOS */
+        table.tabla-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            font-size: 8.5pt;
+        }
+
+        table.tabla-items th {
+            background-color: #1e293b;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 8pt;
+            padding: 5px 6px;
+            text-align: left;
+            border: 1px solid #1e293b;
+        }
+
+        table.tabla-items td {
+            padding: 5px 6px;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        table.tabla-items tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-mono { font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; }
+
+        /* TOTALES Y OBSERVACIONES */
+        .totales-wrapper {
+            display: table;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .totales-left {
+            display: table-cell;
+            width: 56%;
+            vertical-align: top;
+            padding-right: 14px;
+        }
+
+        .totales-right {
+            display: table-cell;
+            width: 44%;
+            vertical-align: top;
+        }
+
+        .table-totales {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+        }
+
+        .table-totales td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-totales tr.total-destacado td {
+            font-size: 10.5pt;
+            font-weight: bold;
+            color: #0f172a;
+            background-color: #f1f5f9;
+            border: 1px solid #0f172a;
+            padding: 6px;
+        }
+
+        .clausula-box {
+            border: 1px dashed #cbd5e1;
+            background-color: #f8fafc;
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 7.5pt;
+            color: #475569;
+            line-height: 1.35;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER INSTITUCIONAL -->
+    <div class="header-container">
+        <div class="header-col-left">
+            <div class="empresa-nombre">{{ empresa.razon_social|default:"EMPRESA INDUSTRIAL S.A." }}</div>
+            <div class="empresa-datos">
+                <strong>CUIT:</strong> {{ empresa.cuit|default:"30-00000000-0" }}<br>
+                <strong>Condición IVA:</strong> {{ empresa.get_condicion_iva_display|default:"Responsable Inscripto" }}<br>
+                <strong>Dirección:</strong> {{ empresa.direccion|default:"Sede Central" }}<br>
+                {% if empresa.telefono %}<strong>Tel:</strong> {{ empresa.telefono }} | {% endif %}
+                {% if empresa.email %}<strong>Email:</strong> {{ empresa.email }}{% endif %}
+            </div>
+        </div>
+
+        <div class="header-col-right">
+            <div class="doc-titulo">ORDEN DE COMPRA</div>
+            <div class="doc-numero font-mono">{{ oc.numero }}</div>
+            <div class="doc-datos">
+                <strong>Fecha de Emisión:</strong> {{ oc.fecha|date:"d/m/Y" }}<br>
+                <strong>Estado:</strong> {{ oc.get_estado_display|upper }}<br>
+                {% if oc.fecha_entrega_esperada %}
+                <strong>Entrega Requerida:</strong> {{ oc.fecha_entrega_esperada|date:"d/m/Y" }}<br>
+                {% endif %}
+                {% if oc.origen_op %}
+                <strong>Orden de Producción:</strong> {{ oc.origen_op.codigo }}<br>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- DATOS DEL PROVEEDOR Y CONDICIONES -->
+    <div class="info-box">
+        <div class="info-col">
+            <div class="info-row"><span class="info-label">Proveedor:</span> <strong>{{ proveedor.nombre }}</strong></div>
+            <div class="info-row"><span class="info-label">CUIT/Doc:</span> {{ proveedor.cuil|default:proveedor.cuit|default:"-" }}</div>
+            <div class="info-row"><span class="info-label">Dirección:</span> {{ proveedor.direccion|default:"-" }}</div>
+        </div>
+        <div class="info-col">
+            <div class="info-row"><span class="info-label">Cond. de Pago:</span> {{ oc.condicion_pago.nombre }}</div>
+            <div class="info-row"><span class="info-label">Moneda:</span> {{ oc.moneda.nombre }} ({{ oc.moneda.simbolo }})</div>
+            {% if oc.tipo_cambio != 1.0 %}
+            <div class="info-row"><span class="info-label">Cotización:</span> ARS {{ oc.tipo_cambio }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- DETALLE DE PRODUCTOS E INSUMOS -->
+    <table class="tabla-items">
+        <thead>
+            <tr>
+                <th style="width: 5%;" class="text-center">#</th>
+                <th style="width: 18%;">Código / SKU</th>
+                <th style="width: 38%;">Descripción del Insumo / Producto</th>
+                <th style="width: 7%;" class="text-center">U.M.</th>
+                <th style="width: 10%;" class="text-right">Cantidad</th>
+                <th style="width: 11%;" class="text-right">Precio Unit.</th>
+                <th style="width: 11%;" class="text-right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linea in lineas %}
+            <tr>
+                <td class="text-center font-mono">{{ forloop.counter }}</td>
+                <td class="font-mono"><strong>{{ linea.producto.sku }}</strong></td>
+                <td>
+                    {{ linea.descripcion|default:linea.producto.template.nombre }}
+                    {% if linea.producto.variantes_texto %}
+                    <br><small style="color: #64748b;">{{ linea.producto.variantes_texto }}</small>
+                    {% endif %}
+                </td>
+                <td class="text-center">{{ linea.unidad_medida.codigo|default:"UN" }}</td>
+                <td class="text-right font-mono"><strong>{{ linea.cantidad|floatformat:2 }}</strong></td>
+                <td class="text-right font-mono">{{ oc.moneda.simbolo }} {{ linea.precio_unitario|floatformat:2 }}</td>
+                <td class="text-right font-mono">{{ oc.moneda.simbolo }} {{ linea.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center" style="padding: 16px; color: #94a3b8;">
+                    No hay insumos o productos registrados en esta orden de compra.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- TOTALES Y CONDICIONES -->
+    <div class="totales-wrapper">
+        <div class="totales-left">
+            {% if oc.observaciones %}
+            <div style="font-size: 8pt; margin-bottom: 6px;">
+                <strong>Instrucciones / Observaciones:</strong>
+                <p style="margin: 2px 0; color: #334155; white-space: pre-line;">{{ oc.observaciones }}</p>
+            </div>
+            {% endif %}
+            <div class="clausula-box">
+                <strong>Condiciones de Recepción:</strong> Toda entrega de mercadería debe acompañarse de su correspondiente Remito indicando expresamente el número de esta Orden de Compra. No se aceptarán entregas discordantes sin previa conformidad escrita.
+            </div>
+        </div>
+
+        <div class="totales-right">
+            <table class="table-totales">
+                <tr>
+                    <td class="text-right"><strong>Subtotal Neto:</strong></td>
+                    <td class="text-right font-mono" style="width: 45%;">{{ oc.moneda.simbolo }} {{ oc.subtotal|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>IVA:</strong></td>
+                    <td class="text-right font-mono">{{ oc.moneda.simbolo }} {{ oc.total_iva|floatformat:2 }}</td>
+                </tr>
+                <tr class="total-destacado">
+                    <td class="text-right">TOTAL:</td>
+                    <td class="text-right font-mono">{{ oc.moneda.simbolo }} {{ oc.total|floatformat:2 }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

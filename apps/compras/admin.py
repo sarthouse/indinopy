@@ -53,6 +53,7 @@ class OrdenCompraAdmin(admin.ModelAdmin):
         "estado",
         "badge_recepcion",
         "badge_facturacion",
+        "enlaces_pdf",
         "origen_op",
         "fecha_entrega_esperada",
     ]
@@ -172,23 +173,37 @@ class OrdenCompraAdmin(admin.ModelAdmin):
             return format_html('<span style="color: #6B7280;">○ Pendiente</span>')
         return "-"
 
+    @admin.display(description=_("PDF / Docs"))
+    def enlaces_pdf(self, obj):
+        if not obj.pk:
+            return "-"
+        from django.urls import reverse
+        url_oc = reverse("compras:oc_pdf", kwargs={"pk": obj.pk})
+        url_rfq = reverse("compras:oc_rfq_pdf", kwargs={"pk": obj.pk})
+        return format_html(
+            '<a href="{}" target="_blank" style="margin-right: 8px; font-weight: bold; color: #2563eb;">📄 OC</a>'
+            '<a href="{}" target="_blank" style="font-weight: bold; color: #4f46e5;">📋 RFQ</a>',
+            url_oc,
+            url_rfq,
+        )
+
     @admin.action(description=_("Confirmar órdenes de compra seleccionadas"))
     def confirmar_ordenes_seleccionadas(self, request, queryset):
+        from .services import ComprasService
         count = 0
         for oc in queryset.filter(estado="borrador"):
-            oc.estado = "confirmado"
-            oc.save()
+            ComprasService.confirmar_oc(oc)
             count += 1
         self.message_user(request, f"{count} órdenes de compra confirmadas (remitos de recepción generados).")
 
     @admin.action(description=_("Cancelar órdenes seleccionadas"))
     def cancelar_ordenes_seleccionadas(self, request, queryset):
+        from .services import ComprasService
         count = 0
         for oc in queryset.exclude(estado__in=["finalizado", "cancelado"]):
-            oc.estado = "cancelado"
-            oc.save()
+            ComprasService.cancelar_oc(oc)
             count += 1
-        self.message_user(request, f"{count} órdenes canceladas.")
+        self.message_user(request, f"{count} órdenes canceladas y remitos pendientes anulados.")
 
     @admin.action(description=_("Recalcular recepciones desde remitos de stock"))
     def actualizar_recepciones_seleccionadas(self, request, queryset):

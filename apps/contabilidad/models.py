@@ -59,9 +59,39 @@ class LineaCondicionPago(models.Model):
         ordering = ["dias"]
 
 
+# Atribución territorial de ingresos y gastos para Convenio Multilateral (SIFERE / CM05 / CM03)
+JURISDICCIONES_CONVENIO = [
+    ("901", "901 - Ciudad Autónoma de Buenos Aires (CABA)"),
+    ("902", "902 - Buenos Aires"),
+    ("903", "903 - Catamarca"),
+    ("904", "904 - Córdoba"),
+    ("905", "905 - Corrientes"),
+    ("906", "906 - Chaco"),
+    ("907", "907 - Chubut"),
+    ("908", "908 - Entre Ríos"),
+    ("909", "909 - Formosa"),
+    ("910", "910 - Jujuy"),
+    ("911", "911 - La Pampa"),
+    ("912", "912 - La Rioja"),
+    ("913", "913 - Mendoza"),
+    ("914", "914 - Misiones"),
+    ("915", "915 - Neuquén"),
+    ("916", "916 - Río Negro"),
+    ("917", "917 - Salta"),
+    ("918", "918 - San Juan"),
+    ("919", "919 - San Luis"),
+    ("920", "920 - Santa Cruz"),
+    ("921", "921 - Santa Fe"),
+    ("922", "922 - Santiago del Estero"),
+    ("923", "923 - Tucumán"),
+    ("924", "924 - Tierra del Fuego"),
+]
+
+
 class Impuesto(TimeStampedModel):
     """
     Modelo para alícuotas impositivas, retenciones y percepciones.
+    Permite configurar alícuotas nacionales (IVA/Ganancias) y provinciales (IIBB / Convenio Multilateral).
     """
 
     TIPO_IMPUESTO_CHOICES = [
@@ -96,11 +126,19 @@ class Impuesto(TimeStampedModel):
     alicuota = models.DecimalField(
         max_digits=5, decimal_places=2, verbose_name="Alícuota %"
     )
+    jurisdiccion_sifere = models.CharField(
+        max_length=3,
+        choices=JURISDICCIONES_CONVENIO,
+        null=True,
+        blank=True,
+        verbose_name="Jurisdicción SIFERE / Provincia",
+        help_text="Jurisdicción provincial aplicable (ej. 901 para CABA, 902 para PBA). Obligatorio para retenciones/percepciones de IIBB y alícuotas CM03.",
+    )
     afip_id = models.PositiveIntegerField(
         null=True,
         blank=True,
-        verbose_name="ID AFIP (IVA)",
-        help_text="Ej: 5 para 21%, 4 para 10.5%, 6 para 27%",
+        verbose_name="ID AFIP (IVA / Tributo)",
+        help_text="Ej: 5 para 21%, 4 para 10.5%, 6 para 27%, o código de tributo AFIP (ej. 1=Nacionales, 2=Provinciales, 3=Municipales)",
     )
     cuenta_imputacion = models.ForeignKey(
         "Cuenta",
@@ -299,8 +337,26 @@ class DocumentoDeuda(TimeStampedModel):
     monto_neto = models.DecimalField(
         max_digits=15, decimal_places=2, default=0, verbose_name="Monto Neto"
     )
+    monto_descuentos = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        verbose_name="Monto Descuentos / Bonificaciones",
+    )
+    monto_recargos = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        verbose_name="Monto Recargos / Tasas",
+    )
     monto_impuestos = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0, verbose_name="Monto Impuestos"
+        max_digits=15, decimal_places=2, default=0, verbose_name="Monto Impuestos (IVA)"
+    )
+    monto_tributos = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        verbose_name="Monto Tributos / Percepciones (ImpTrib)",
     )
     monto_total = models.DecimalField(
         max_digits=15, decimal_places=2, default=0, verbose_name="Monto Total"
@@ -316,6 +372,36 @@ class DocumentoDeuda(TimeStampedModel):
         blank=True, null=True, verbose_name="Vto. CAE"
     )
 
+    # Datos de Factura de Crédito Electrónica MiPyME (FCE - Ley 27.440)
+    cbu_emisor = models.CharField(
+        max_length=22,
+        blank=True,
+        verbose_name="CBU Emisor (FCE)",
+        help_text="CBU obligatorio para la emisión de Factura de Crédito MiPyME (Opcional AFIP 2101).",
+    )
+    fce_sistema_circulacion = models.CharField(
+        max_length=10,
+        choices=[
+            ("SCA", "Sistema de Circulación Abierta (BCRA)"),
+            ("ADC", "Agente de Depósito Colectivo (Caja de Valores)"),
+        ],
+        default="SCA",
+        blank=True,
+        verbose_name="Sistema de Circulación (FCE)",
+        help_text="Destino del título ejecutivo al ser aceptado (Opcional AFIP 27).",
+    )
+
+    # Enlace a comprobante original (obligatorio para Notas de Crédito y Débito ante AFIP)
+    comprobante_asociado = models.ForeignKey(
+        "self",
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True,
+        related_name="comprobantes_rectificativos",
+        verbose_name="Comprobante Asociado",
+        help_text="Factura o comprobante original que esta Nota de Crédito o Débito rectifica o anula.",
+    )
+
     # FK opcional para enlazar automáticamente la liquidación con la OP interna que la originó
     orden_produccion = models.ForeignKey(
         "produccion.OrdenProduccion",
@@ -324,6 +410,47 @@ class DocumentoDeuda(TimeStampedModel):
         blank=True,
         related_name="facturas",
         verbose_name="Orden de Producción Origen",
+    )
+    # FK opcional para enlazar la factura con la Orden de Venta comercial que la originó
+    orden_venta = models.ForeignKey(
+        "ventas.OrdenVenta",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="facturas",
+        verbose_name="Orden de Venta Origen",
+    )
+    # FK opcional para enlazar la factura de proveedor con la Orden de Compra que la originó
+    orden_compra = models.ForeignKey(
+        "compras.OrdenCompra",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="facturas_proveedor",
+        verbose_name="Orden de Compra Origen",
+    )
+
+    # Atribución territorial de ingresos y gastos para Convenio Multilateral (SIFERE / CM05 / CM03)
+    jurisdiccion_sifere = models.CharField(
+        max_length=3,
+        choices=JURISDICCIONES_CONVENIO,
+        blank=True,
+        null=True,
+        verbose_name="Jurisdicción SIFERE / Convenio",
+        help_text="Código de provincia según Comisión Arbitral del Convenio Multilateral (ej. 901=CABA, 902=PBA).",
+    )
+
+    provincia_destino = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Provincia de Destino / Entrega",
+        help_text="Provincia donde se entrega la mercadería o se presta el servicio (atribución directa de ingresos Art. 2 CM).",
+    )
+
+    gasto_computable_convenio = models.BooleanField(
+        default=True,
+        verbose_name="¿Gasto computable en Convenio Multilateral?",
+        help_text="Marcar desmarcado si es un gasto no computable según Art. 3 del Convenio (bienes de uso, intereses financieros, tributos/impuestos).",
     )
 
     class Meta:
@@ -334,11 +461,19 @@ class DocumentoDeuda(TimeStampedModel):
     def __str__(self):
         return f"{self.get_tipo_display()} {self.numero} - {self.contacto.nombre} (${self.monto_total})"
 
-    def save(self, *args, **kwargs):
-        if not self.numero:
-            codigo = f"contabilidad.{self.tipo}"
-            self.numero = SecuenciaService.obtener_siguiente_numero(codigo, fecha=self.fecha_emision)
-        super().save(*args, **kwargs)
+    def desglosar_punto_venta_y_numero(self):
+        """
+        Retorna una tupla (pto_vta: int, nro_cmp: int) a partir del string del número
+        o los metadatos del comprobante.
+        """
+        try:
+            partes = str(self.numero).split("-")
+            if len(partes) >= 2:
+                return int(partes[0].strip()[-4:]), int(partes[1].strip()[-8:])
+        except Exception:
+            pass
+        pto = self.diario.punto_venta_afip or 1
+        return pto, self.id
 
     @property
     def saldo_pendiente(self):
@@ -399,6 +534,63 @@ class LineaDocumentoDeuda(models.Model):
     def save(self, *args, **kwargs):
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
+
+
+class TributoDocumentoDeuda(models.Model):
+    """
+    Tributos adicionales, percepciones y retenciones que componen el comprobante fiscal.
+    Se mapean directamente al array 'Tributos' (ImpTrib) de AFIP WSFE:
+    - Id 1: Impuestos nacionales
+    - Id 2: Impuestos provinciales (Percepciones IIBB ARBA/AGIP)
+    - Id 3: Impuestos municipales
+    - Id 4: Impuestos internos
+    - Id 99: Otros
+    """
+    TRIBUTO_AFIP_ID_CHOICES = [
+        (1, "Impuestos Nacionales / Percepción IVA"),
+        (2, "Impuestos Provinciales / Percepción IIBB"),
+        (3, "Impuestos Municipales"),
+        (4, "Impuestos Internos"),
+        (99, "Otros Tributos"),
+    ]
+
+    documento = models.ForeignKey(
+        DocumentoDeuda, on_delete=models.CASCADE, related_name="tributos"
+    )
+    impuesto = models.ForeignKey(
+        Impuesto,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tributos_documento",
+        verbose_name="Impuesto Asociado",
+        help_text="Define la cuenta contable de imputación (activo/pasivo) según el impuesto.",
+    )
+    afip_tributo_id = models.PositiveSmallIntegerField(
+        choices=TRIBUTO_AFIP_ID_CHOICES,
+        default=2,
+        verbose_name="Tipo de Tributo AFIP (Id)",
+    )
+    descripcion = models.CharField(
+        max_length=150,
+        verbose_name="Descripción (Ej. Percepción IIBB Buenos Aires)",
+    )
+    base_imponible = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0, verbose_name="Base Imponible"
+    )
+    alicuota = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0, verbose_name="Alícuota %"
+    )
+    importe = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0, verbose_name="Importe Tributo"
+    )
+
+    class Meta:
+        verbose_name = "Tributo / Percepción de Comprobante"
+        verbose_name_plural = "Tributos y Percepciones de Comprobante"
+
+    def __str__(self):
+        return f"{self.descripcion}: ${self.importe}"
 
 
 class AplicacionPago(TimeStampedModel):

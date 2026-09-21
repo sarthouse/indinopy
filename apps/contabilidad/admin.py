@@ -10,39 +10,44 @@ from .models import (
     Diario,
     DocumentoDeuda,
     LineaDocumentoDeuda,
+    TributoDocumentoDeuda,
     AplicacionPago,
     Cuenta,
     Asiento,
     Apunte,
 )
 
+
 # === IMPORT EXPORT PARA PLAN DE CUENTAS ===
 class CuentaResource(resources.ModelResource):
     class Meta:
         model = Cuenta
-        import_id_fields = ('codigo',)
+        import_id_fields = ("codigo",)
         skip_unchanged = True
         report_skipped = False
+
 
 @admin.register(Cuenta)
 class CuentaAdmin(ImportExportModelAdmin):
     resource_class = CuentaResource
-    list_display = ('codigo', 'nombre', 'padre', 'tipo', 'naturaleza', 'imputable')
-    list_filter = ('tipo', 'naturaleza', 'imputable')
-    search_fields = ('codigo', 'nombre')
+    list_display = ("codigo", "nombre", "padre", "tipo", "naturaleza", "imputable")
+    list_filter = ("tipo", "naturaleza", "imputable")
+    search_fields = ("codigo", "nombre")
+
 
 class ApunteInline(admin.TabularInline):
     model = Apunte
     extra = 0
-    readonly_fields = ('cuenta', 'debe', 'haber', 'contacto', 'descripcion_linea')
+    readonly_fields = ("cuenta", "debe", "haber", "contacto", "descripcion_linea")
+
 
 @admin.register(Asiento)
 class AsientoAdmin(admin.ModelAdmin):
-    list_display = ('numero', 'fecha', 'diario', 'descripcion', 'estado')
-    list_filter = ('estado', 'diario', 'fecha')
-    search_fields = ('numero', 'descripcion')
+    list_display = ("numero", "fecha", "diario", "descripcion", "estado")
+    list_filter = ("estado", "diario", "fecha")
+    search_fields = ("numero", "descripcion")
     inlines = [ApunteInline]
-    readonly_fields = ('numero', 'estado')
+    readonly_fields = ("numero", "estado")
 
 
 @admin.register(Diario)
@@ -87,14 +92,34 @@ class CondicionPagoAdmin(SimpleHistoryAdmin):
 
 @admin.register(Impuesto)
 class ImpuestoAdmin(SimpleHistoryAdmin):
-    list_display = ["nombre", "tipo", "aplicacion", "alicuota", "activo"]
-    list_filter = ["tipo", "aplicacion", "activo"]
+    list_display = [
+        "nombre",
+        "tipo",
+        "aplicacion",
+        "alicuota",
+        "jurisdiccion_sifere",
+        "activo",
+    ]
+    list_filter = ["tipo", "aplicacion", "jurisdiccion_sifere", "activo"]
     search_fields = ["nombre"]
 
 
 class LineaDocumentoDeudaInline(admin.TabularInline):
     model = LineaDocumentoDeuda
     extra = 1
+
+
+class TributoDocumentoDeudaInline(admin.TabularInline):
+    model = TributoDocumentoDeuda
+    extra = 0
+    fields = (
+        "afip_tributo_id",
+        "descripcion",
+        "impuesto",
+        "base_imponible",
+        "alicuota",
+        "importe",
+    )
 
 
 class AplicacionPagoInline(admin.TabularInline):
@@ -117,9 +142,21 @@ class DocumentoDeudaAdmin(SimpleHistoryAdmin):
         "estado",
         "afip_cae",
     )
-    list_filter = ("diario", "tipo", "estado", "fecha_emision", "tipo_comprobante_afip")
+    list_filter = (
+        "diario",
+        "tipo",
+        "estado",
+        "fecha_emision",
+        "tipo_comprobante_afip",
+        "jurisdiccion_sifere",
+        "gasto_computable_convenio",
+    )
     search_fields = ("numero", "contacto__nombre", "afip_cae")
-    inlines = [LineaDocumentoDeudaInline, AplicacionPagoInline]
+    inlines = [
+        LineaDocumentoDeudaInline,
+        TributoDocumentoDeudaInline,
+        AplicacionPagoInline,
+    ]
     date_hierarchy = "fecha_emision"
     readonly_fields = ("afip_cae", "afip_vencimiento_cae", "creado_en", "modificado_en")
 
@@ -133,6 +170,7 @@ class DocumentoDeudaAdmin(SimpleHistoryAdmin):
                     "tipo",
                     "tipo_comprobante_afip",
                     "contacto",
+                    "comprobante_asociado",
                     "orden_produccion",
                     "estado",
                 )
@@ -149,12 +187,35 @@ class DocumentoDeudaAdmin(SimpleHistoryAdmin):
                     "moneda",
                     "tasa_cambio",
                     "monto_neto",
+                    "monto_descuentos",
+                    "monto_recargos",
                     "monto_impuestos",
+                    "monto_tributos",
                     "monto_total",
                 )
             },
         ),
-        ("Fiscal / AFIP", {"fields": ("afip_cae", "afip_vencimiento_cae")}),
+        (
+            "Fiscal / AFIP",
+            {
+                "fields": (
+                    "afip_cae",
+                    "afip_vencimiento_cae",
+                    "cbu_emisor",
+                    "fce_sistema_circulacion",
+                )
+            },
+        ),
+        (
+            "Convenio Multilateral (IIBB)",
+            {
+                "fields": (
+                    "jurisdiccion_sifere",
+                    "provincia_destino",
+                    "gasto_computable_convenio",
+                )
+            },
+        ),
         (
             "Auditoría",
             {"fields": ("creado_en", "modificado_en"), "classes": ("collapse",)},
@@ -176,3 +237,18 @@ class AplicacionPagoAdmin(SimpleHistoryAdmin):
     )
     search_fields = ("documento_deuda__numero", "comprobante_pago__numero")
     readonly_fields = ("fecha_aplicacion", "creado_en", "modificado_en")
+
+
+@admin.register(TributoDocumentoDeuda)
+class TributoDocumentoDeudaAdmin(admin.ModelAdmin):
+    list_display = (
+        "documento",
+        "descripcion",
+        "afip_tributo_id",
+        "impuesto",
+        "base_imponible",
+        "alicuota",
+        "importe",
+    )
+    list_filter = ("afip_tributo_id", "impuesto")
+    search_fields = ("descripcion", "documento__numero")
