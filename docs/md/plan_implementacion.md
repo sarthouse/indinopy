@@ -49,13 +49,15 @@ Indinopy es un **ERP/MES para PyMEs de la industria del calzado y la indumentari
 
 ```
 Backend:        Django 6.1 (MVT + REST API)
-Base de Datos:  PostgreSQL + PostGIS (coordenadas GPS)
+Servidor Web:   Uvicorn (ASGI) / Gunicorn (WSGI)
+Base de Datos:  PostgreSQL 16 + PostGIS (coordenadas GPS)
 ORM History:    django-simple-history (auditoría inmutable)
 Criptografía:   hashlib (SHA-256) + PyNaCl (Ed25519)
 Geoespacial:    django.contrib.gis (PointField, MultiPolygonField)
 Facturación:    afip-py (WSFE/WSFEX)
 E-Commerce:     WooCommerce REST API v3 (Webhooks + Polling)
-Async / Tareas: Celery + Redis (Timelock 48h y encolamiento de Webhooks masivos)
+Async / Tareas: Celery + Redis 7 (Timelock 48h y encolamiento de Webhooks masivos)
+Contenedores:   Docker (Dockerfile multi-stage) + Docker Compose
 ```
 
 ### Patrones de Despliegue de Infraestructura y Enrutamiento
@@ -86,16 +88,18 @@ Siempre usar `ProduccionService.confirmar_op(op)`.
 
 | App | Responsabilidad | Service |
 |---|---|---|
-| `base` | Mixins criptográficos, ConfiguracionEmpresa | — |
-| `contactos` | Directorio de Clientes, Proveedores, Talleristas | — |
-| `inventario` | Stock en tiempo real (Quants, doble entrada) | `StockService` |
-| `produccion` | e-OP, BOM, Recetas, Etapas MES | `ProduccionService` |
-| `tesoreria` | Escrow Digital, Cajas, Comprobantes | `EscrowService`, `TesoreriaService` |
-| `ventas` | Órdenes de Venta (B2B/B2C agnósticas), Facturación, Remitos | `VentasService` |
-| `integraciones` | Conectores externos (WooCommerce, MercadoLibre, etc.) | `WooCommerceSyncService` |
-| `afip` | Conector oficial AFIP/ARCA (Padrón WSSR, Facturación WSFE/WSFEX) | `PadronAFIPService`, `FacturadorAFIP` |
-| `contabilidad` | Partida Doble, Libro Diario y Balances | `ContabilidadService` |
-| `mes` | Gobernanza MES, RegistroEOP, PTF, Timelock | [pendiente] |
+| `base` | Mixins criptográficos, ConfiguracionEmpresa, secuencias alfanuméricas, BaseReports | `SecuenciaService` |
+| `contactos` | Directorio de Clientes, Proveedores, Talleristas, geocercas GPS | `ContactosService` |
+| `inventario` | Stock en tiempo real (Quants, doble entrada, remitos de traslado/entrega) | `StockService` |
+| `produccion` | e-OP, BOM, Recetas, Etapas MES, rendimientos y mermas | `ProduccionService` |
+| `compras` | Solicitudes de Cotización (RFQ), Órdenes de Compra, Tarifas, 3-Way Matching | `ComprasService` |
+| `ventas` | Presupuestos, Notas de Pedido, Órdenes de Venta omnicanal, Remitos | `VentasService` |
+| `integraciones` | Adaptadores satélite externos (`woocommerce` con normalizador DTO) | `WooCommerceNormalizer`, `tasks` |
+| `afip` | Conector oficial AFIP/ARCA (Padrón WSSR, Facturación WSFE/WSFEX, QR fiscal) | `PadronAFIPService`, `FacturadorAFIP` |
+| `contabilidad` | Partida Doble, Facturación A/B/C/X, Deudas, Convenio Multilateral CM05/CM03 | `ContabilidadService` |
+| `tesoreria` | Escrow Digital, Cajas, Comprobantes, Títulos FCE | `EscrowService`, `TesoreriaService` |
+| `eop` | Contratos e-OP fiduciarios, hitos de clearing, verificación de avance | `EOPService` |
+| `mes` | Gobernanza MES, RegistroEOP, PTF, Timelock 48h | `PTFService` |
 
 ---
 
@@ -156,16 +160,37 @@ Siempre usar `ProduccionService.confirmar_op(op)`.
   - `BaseReport`: Protocolo agnóstico con generación a bytes y exportación a HttpResponse.
   - `BasePDFReport`: Renderizado HTML/CSS Paged Media con soporte WeasyPrint y fallback imprimible en navegador.
   - `BaseTabularReport`: Generación de planillas Excel `.xlsx` corporativas (`openpyxl`) con fallback a CSV delimite `;` y BOM UTF-8 regional.
-- `RemitoPDFReport` (`apps/inventario/reports/remito_report.py`) con template de Remito de Despacho JiT e inyección obligatoria de la cláusula de inembargabilidad (Arts. 1251 y 1356 CCCN).
-- `InventarioStockExcelReport` (`apps/inventario/reports/inventario_stock_report.py`): Foto de existencias físicas, reservas comprometidas, stock neto disponible y valuación económica por almacén y lote.
-- `MovimientosStockExcelReport` (`apps/inventario/reports/movimientos_stock_report.py`): Kardex general y trazabilidad cronológica de remitos por partida doble.
-- `LibroIVAVentasExcelReport` (`apps/contabilidad/reports/libro_iva_report.py`) con desglose de columnas fiscales AFIP.
-- `LibroIVAComprasExcelReport` (`apps/contabilidad/reports/libro_iva_report.py`) para liquidación mensual de crédito fiscal y percepciones sufridas.
-- `ConvenioMultilateralCoeficientesReport` (`apps/contabilidad/reports/convenio_multilateral_report.py`):
-  - Determinación de coeficientes unificados anuales CM05 (50% ingresos / 50% gastos) agregados sobre las 24 jurisdicciones de la República Argentina.
-  - Filtro estricto de **gastos no computables** conforme al Art. 3° del Convenio Multilateral (`gasto_computable_convenio=True`, excluyendo bienes de uso, intereses financieros e impuestos).
-  - Estimación mensual/anual de base imponible atribuida y liquidación de anticipos provinciales CM03 aplicando las alícuotas configuradas en el modelo `Impuesto` por código SIFERE.
-- `ComprobanteFiscalPDFReport` (`apps/contabilidad/reports/comprobante_report.py`) con template unificado paramétrico para Facturas A/B/C, Notas de Crédito, Notas de Débito y Comprobantes X, con QR AFIP oficial e insignias fiscales.
+  - **Criterio de Diseño Unificado:** Estandarización tipográfica y estética en todos los comprobantes PDF (geometría A4, márgenes de 10mm/12mm, tipografía Arial/Slate-900 `9pt`, cabecera institucional perimetral de dos columnas, cajas `.info-box` con fondo `#f8fafc`, tablas `.tabla-items` con encabezado institucional oscuro o verde esmeralda, y totales `.total-destacado`).
+- **Remito Oficial de Logística** (`apps/inventario/reports/remito_report.py`):
+  - Soporta tres modalidades operativas: Remito de Entrega a Clientes (Ventas), **Remito de Traslado a Producción** (Talleres/Fasón con inyección obligatoria de la cláusula de custodia e inembargabilidad Arts. 1251 y 1356 CCCN) y Traslados Internos entre depósitos.
+- **Inventario y Trazabilidad:**
+  - `InventarioStockExcelReport` (`apps/inventario/reports/inventario_stock_report.py`): Foto de existencias físicas, reservas comprometidas, stock neto disponible y valuación económica por almacén y lote.
+  - `MovimientosStockExcelReport` (`apps/inventario/reports/movimientos_stock_report.py`): Kardex general y trazabilidad cronológica de remitos por partida doble.
+- **Módulo de Compras:**
+  - `OrdenCompraPDFReport` (`apps/compras/reports/orden_compra_report.py`): Documento formal de compra valorizado con desglose de IVA y términos de recepción.
+  - `SolicitudCotizacionPDFReport` (`apps/compras/reports/solicitud_cotizacion_report.py`): Solicitud de Cotización / Presupuesto a Proveedores (RFQ) sin compromiso de compra ni exposición de precios de catálogo, con campos para cotización de precio y validez.
+  - `RecepcionesPendientesExcelReport` (`apps/compras/reports/recepciones_pendientes_report.py`): Reporte tabular de abastecimiento (Backorders de Compras) que monitorea cantidades pedidas vs recibidas y demoras en días.
+- **Módulo de Ventas:**
+  - `PresupuestoPDFReport` (`apps/ventas/reports/presupuesto_report.py`): Renderiza dinámicamente Presupuestos / Cotizaciones Comerciales (con fecha de validez y cláusula de no reserva de stock) o Notas de Pedido en firme.
+- **Módulo Contable y Fiscal:**
+  - `LibroIVAVentasExcelReport` (`apps/contabilidad/reports/libro_iva_report.py`): Planilla fiscal con desglose oficial de alícuotas AFIP, notas de crédito y percepciones.
+  - `LibroIVAComprasExcelReport` (`apps/contabilidad/reports/libro_iva_report.py`): Liquidación mensual de crédito fiscal y percepciones sufridas (IIBB e IVA).
+  - `ConvenioMultilateralCoeficientesReport` (`apps/contabilidad/reports/convenio_multilateral_report.py`): Matriz CM05 anual (50/50 ingresos y gastos computables Art. 3 CM) y anticipos provinciales CM03 por código SIFERE.
+  - `ComprobanteFiscalPDFReport` (`apps/contabilidad/reports/comprobante_report.py`): Facturas A/B/C, NC, ND y Comprobantes X con QR oficial ARCA, Transparencia Fiscal Ley 27.743 y cláusulas FCE.
+  - *(Roadmap)* `LibroDiarioGeneralReport`: Cronológico de asientos contables cuadrados (`Asiento` / `Apunte`) por rango de fechas y diarios.
+  - *(Roadmap)* `LibroMayorExcelReport`: Mayores auxiliares analíticos con saldo progresivo por cuenta contable.
+  - *(Roadmap)* `BalanceSumasYSaldosReport`: Balance de comprobación de 8 columnas (Sumas Debe/Haber y Saldos Deudor/Acreedor) para auditoría de cierre.
+- **Módulo de Tesorería y Cobranzas/Pagos:**
+  - *(Roadmap)* `OrdenPagoReciboPDFReport` (`apps/tesoreria/reports/comprobante_tesoreria_report.py`): Recibos de cobranza a clientes y Órdenes de Pago a proveedores con desglose de medios de cobro/pago (efectivo, transferencias, retenciones, e-cheqs) y aplicaciones contra comprobantes devengados.
+  - *(Roadmap)* `CertificadoRetencionPDFReport` (`apps/tesoreria/reports/certificado_retencion_report.py`): Certificados oficiales de retención practicada (Ganancias / IVA / IIBB) con número correlativo y base imponible.
+  - *(Roadmap)* `CashflowProyectadoExcelReport` (`apps/tesoreria/reports/cashflow_report.py`): Posición diaria/semanal de liquidez consolidando saldos en cuentas/cajas, vencimientos de cartera de cheques propios/terceros y deuda corriente.
+  - *(Roadmap)* `CarteraChequesExcelReport` (`apps/tesoreria/reports/cartera_cheques_report.py`): Padrón y trazabilidad de cheques físicos y E-cheqs agrupados por estado (`en_cartera`, `depositado`, `entregado`) y fecha de cobro diferido.
+  - *(Roadmap)* `DeudaCorrienteAgingExcelReport` (`apps/tesoreria/reports/deuda_aging_report.py`): Antigüedad de saldos a cobrar y a pagar (corriente, 30, 60, 90+ días) basado en `DocumentoDeuda` y condiciones de pago.
+- **Módulo de Nómina y Recursos Humanos (`apps.nomina`):**
+  - *(Roadmap)* `ReciboSueldoPDFReport` (`apps/nomina/reports/recibo_sueldo_report.py`): Recibo formal de haberes (A4 doble vía / duplicado) con discriminación de conceptos remunerativos, no remunerativos, retenciones de ley, Fondo de Cese Laboral (Ley Bases) y firma del empleado.
+  - *(Roadmap)* `LibroSueldosDigitalTxtReport` (`apps/nomina/reports/lsd_report.py`): Exportador oficial de texto de longitud fija para ARCA (Registros 1 Cabecera, 2 Datos Trabajador/Bases Imponibles, 3 Conceptos y 4 Relación Laboral).
+  - *(Roadmap)* `LiquidacionNominaExcelReport` (`apps/nomina/reports/liquidacion_excel_report.py`): Planilla mensual consolidada de haberes, retenciones de empleados y costo patronal total de la empresa (F931 + ART + Fondo Cese).
+  - *(Roadmap)* `AcreditacionHaberesTxtReport` (`apps/nomina/reports/acreditacion_haberes_report.py`): Archivo plano estándar de transferencias masivas a cuentas sueldo bancarias (Galicia, Santander, Red Link / Interbanking).
 
 #### Modelo de Producción y Validaciones JiT de Avance
 - Techo de Rendimiento Estequiométrico (`capacidad_maxima_por_insumos` en `OPEtapaTracking`): el avance físico de la etapa inicial queda condicionado matemáticamente a la materia prima en custodia despachada al taller mediante remito JiT ($E_{\text{net}} \le V_{\text{fase}}$).
@@ -596,6 +621,7 @@ Se define la separación en dos dominios con responsabilidades claramente delimi
 # apps/ventas/models.py
 class CanalVenta(TimeStampedModel):
     """Canal de origen de la venta (ej. 'WooCommerce B2C', 'MercadoLibre Oficial', 'Mostrador Fábrica')."""
+
     TIPO_CHOICES = [
         ("woocommerce", "WooCommerce"),
         ("mercadolibre", "MercadoLibre"),
@@ -610,19 +636,28 @@ class CanalVenta(TimeStampedModel):
     )
     activo = models.BooleanField(default=True)
 
+
 class OrdenVenta(DocumentoBase):
     SECUENCIA_CODIGO = "ventas.ov"
-    
-    canal = models.ForeignKey(CanalVenta, on_delete=models.RESTRICT, related_name="ordenes")
+
+    canal = models.ForeignKey(
+        CanalVenta, on_delete=models.RESTRICT, related_name="ordenes"
+    )
     # Referencia genérica al identificador de la orden en el canal externo
-    referencia_externa = models.CharField(max_length=100, blank=True, db_index=True, help_text="ID externo en Woo/MeLi")
-    numero_externo = models.CharField(max_length=100, blank=True, help_text="Número legible externo")
+    referencia_externa = models.CharField(
+        max_length=100, blank=True, db_index=True, help_text="ID externo en Woo/MeLi"
+    )
+    numero_externo = models.CharField(
+        max_length=100, blank=True, help_text="Número legible externo"
+    )
     estado_canal_externo = models.CharField(max_length=50, blank=True)
-    
-    cliente = models.ForeignKey("contactos.Contacto", on_delete=models.RESTRICT, related_name="ordenes_venta")
+
+    cliente = models.ForeignKey(
+        "contactos.Contacto", on_delete=models.RESTRICT, related_name="ordenes_venta"
+    )
     monto_total = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
     # ... totales, logística y metadatos JSON estándar ...
-    
+
     class Meta:
         unique_together = [("canal", "referencia_externa")]
 ```
@@ -631,7 +666,9 @@ class OrdenVenta(DocumentoBase):
 ```python
 # apps/integraciones/woocommerce/models.py
 class TiendaWooCommerce(TimeStampedModel):
-    canal_venta = models.OneToOneField("ventas.CanalVenta", on_delete=models.CASCADE, related_name="config_woocommerce")
+    canal_venta = models.OneToOneField(
+        "ventas.CanalVenta", on_delete=models.CASCADE, related_name="config_woocommerce"
+    )
     empresa = models.ForeignKey("base.ConfiguracionEmpresa", on_delete=models.CASCADE)
     url = models.URLField()
     consumer_key = models.CharField(max_length=100)
@@ -770,123 +807,20 @@ Las `fee_lines` corresponden a conceptos monetarios que **no son productos de in
 
 ---
 
-## 8. Modelo de Entrega de Insumos Just-in-Time (JiT)
+## 8. Traslado Escalonado de Insumos a Producción
 
-### 8.1. Fundamentación y Vector de Riesgo (Mitigación del *Exit Scam*)
-* **Referencia canónica:** [`docs/paper_protocolo_eop_gobernanza_industrial.md` (§4.2: *Blindaje contra vectores de fraude en planta — Despacho Escalonado de Insumos*)](docs/paper_protocolo_eop_gobernanza_industrial.md#L240-L242).
-* **Diagnóstico de asimetría:** Si la marca comitente transfiere el 100% de la materia prima al inicio junto al desembolso del 35-40% del Hito Cero, un tallerista defector podría incurrir en un *Exit Scam* (apropiación ilegítima del lote completo de cuero, suelas y avíos, sumado al capital de trabajo anticipado) antes de la primera inspección física.
-* **Mecanismo de mitigación:** El protocolo institucionaliza el **Despacho Escalonado Just-in-Time (JiT)**. En lugar de una entrega masiva inicial, los insumos se fragmentan por fases productivas. La exposición patrimonial neta acumulada ($E_{\text{net}}$) en cualquier momento del ciclo queda estrictamente acotada al valor residual de la fase en curso ($E_{\text{net}} \le V_{\text{fase}}$).
+Para consultar la fundamentación teórica, doctrina legal (Arts. 1251 y 1356 CCCN) y mitigación de riesgo de apropiación indebida de materiales, ver:
+> 🔗 [`docs/paper_protocolo_eop_gobernanza_industrial.html` (§4.2: Blindaje contra vectores de fraude en planta)](paper_protocolo_eop_gobernanza_industrial.html).
 
-### 8.2. Blindaje Jurídico y Régimen de Custodia
-* **Normativa aplicable:** Contrato de Locación de Obra (Arts. 1251 y ss. CCCN) y Depósito Regular en Custodia (Arts. 1356 y ss. CCCN), complementado por el régimen de Maquila Industrial (Reforma Ley 25.113).
-* **Cláusula de Inembargabilidad:** Las materias primas y piezas semielaboradas remitidas al taller continúan siendo propiedad inembargable y exclusiva de la marca comitente. El tallerista actúa jurídicamente como depositario, custodio y transformador del material.
-* **Inyección documental automática:** En [`OPEtapaTracking.generar_remito_traslado_taller()`](file:///C:/Users/tiago/programacion/indinopy/apps/produccion/models.py#L988-L1033), el sistema inyecta de forma obligatoria en el campo `observaciones` del remito de traslado (`TRA-...`) la leyenda legal de salvaguarda ante allanamientos, ejecuciones fiscales o quiebras del taller.
-
-### 8.3. Mapeo Arquitectónico y Modelos de Datos (`inventario` vs `produccion`)
-
-El modelo JiT descansa sobre la coordinación estrecha de dos aplicaciones core:
-
-```
-[apps.produccion]                                       [apps.inventario]
-  Receta / RecetaEtapa                                    Ubicacion (tipo='interna')
-    ├── Orden de Ejecución (1: Corte, 2: Aparado...)        └── Almacén Principal Marca
-    └── % Hito de Pago asociado                           Ubicacion (tipo='fason')
-  RecetaInsumo                                              └── Taller Externo Custodio
-    ├── Insumo SKU / Variantes Destino                    MovimientoStock (tipo='traslado')
-    └── Merma Técnica Admisible (INTI ≤10%)                 ├── TRA-<OP>-E1 (Corte)
-  OPEtapaTracking                                           ├── TRA-<OP>-E2 (Aparado)
-    ├── Tallerista asignado                                 └── Cláusula CCCN 1251/1356
-    ├── Remito Traslado (Despacho JiT)                    StockQuant (Foto física por taller)
-    └── Remito Retorno (Semielaborado)                    MovimientoStock.dividir_backorder()
-  OPParteProduccion (PoPW)                                  └── Control de saldos remanentes
-    ├── Geolocalización GPS + Biometría RENAPER           MovimientoStock (tipo='traslado')
-    └── OPParteProduccionLinea (1ra, 2da, Descarte)         └── DEV-<OP>-XX (Sobrantes)
-```
-
-1. **Topología de Doble Entrada ([`apps.inventario`](apps/inventario/models.py)):**
-   - `Ubicacion(tipo="interna")`: Depósito central de materias primas de la marca.
-   - `Ubicacion(tipo="fason", contacto=tallerista)`: Almacén satélite del tallerista. Al trasladar material, este no se descuenta como consumo ni venta; permanece en el activo de la empresa pero en custodia externa.
-   - `StockQuant`: Brinda visibilidad en tiempo real de cuántos metros de cuero o pares de bases tiene físicamente cada tallerista en su planta.
-   - `MovimientoStock.dividir_backorder()`: Si un despacho de insumos no puede ser completado en un solo flete, gestiona el saldo remanente automáticamente como un backorder sin romper la trazabilidad.
-
-2. **Desglose Secuencial y Mermas ([`apps.produccion`](apps/produccion/models.py)):**
-   - `RecetaEtapa`: Define el orden tecnológico (1: Corte → 2: Rebajado → 3: Aparado → 4: Armado/Pegado → 5: Terminado/Empaque) y el porcentaje de pago liberable.
-   - `RecetaInsumo`: Fija el consumo unitario y la merma técnica tolerable (ej. 8-10% en cuero flor/descarne, 5% en forro textil homologado por INTI).
-   - `OPInsumoRequerido.alerta_desvio_merma`: Auditoría algorítmica. Si el taller reporta un consumo real que supera el límite admisible (teórico + merma INTI), se dispara una alerta y se congela el avance automático hasta revisión del PTF.
-   - `generar_devolucion_sobrantes()`: Emite remitos `DEV-<OP>-XX` para reintegrar al almacén central el sobrante de materias primas tras finalizar una etapa.
-
-### 8.4. Flujo Transaccional Paso a Paso
-
-```mermaid
-sequenceDiagram
-    participant M as Marca (Almacén Central)
-    participant E as ERP Producción / Inventario
-    participant FDI as Mesa de Enlace / FDI
-    participant T as Tallerista (Planta)
-    participant P as PTF (Auditor de Campo)
-
-    Note over M,T: Fase 0: Confirmación e-OP y Reserva Lógica
-    E->>E: Reserva Lógica RES-<OP> en Almacén Central
-    FDI->>T: Desembolsa Hito Cero (35-40% Capital de Trabajo)
-    
-    Note over M,T: Fase 1: Despacho JiT - Exclusivamente Corte
-    M->>T: Despacha TRA-<OP>-E1 (Chapa de Cuero y Forro Crudo)
-    Note over T: Operación de Corte y marcado
-    T->>E: Declara OPParteProduccion (Pares 1ra, 2da, Descarte + GPS)
-    P->>E: Firma PoPW (Auditoría física y pesaje de merma)
-    
-    Note over M,T: Fase 2: Certificación y Despacho JiT - Aparado
-    FDI->>T: Liquida Hito de Corte al taller
-    M->>T: Despacha TRA-<OP>-E2 (Hilos, Cemento, Refuerzos, Avíos)
-    Note over T: Operación de Aparado (Costura)
-    T->>E: Declara avance de aparado (PoPW)
-    
-    Note over M,T: Fase 3: Despacho Crítico JiT - Armado y Suelas
-    FDI->>T: Liquida Hito de Aparado
-    M->>T: Despacha TRA-<OP>-E3 (Bases/Suelas inyectadas, Plantillas)
-    Note over T: Montado en horma, pegado de base y empaque
-    
-    Note over M,T: Fase 4: Cierre, Reingreso y Devolución
-    T->>M: Entrega Lote Terminado (Remito ING-<OP>-FINAL)
-    T->>M: Retorna recortes / sobrantes (Remito DEV-<OP>-XX)
-    E->>E: Reconciliación de Mermas (alerta_desvio_merma)
-    FDI->>T: Liquidación final sujeta a factura ARCA (FISCAL_PENDING)
-```
-
-1. **Confirmación y Reserva Lógica:** Al confirmarse la e-OP (`ProduccionService.confirmar_op()`), se genera el movimiento de reserva `RES-<OP>`, comprometiendo el stock teórico en el Almacén Central sin despacharlo en bloque.
-2. **Hito Cero y Despacho de Fase 1 (Corte):** Con el Hito Cero acreditado en la cuenta del tallerista, el pañolero de la marca emite el remito `TRA-<OP>-E1` despachando **únicamente** la chapa de cuero requerida para el corte.
-3. **Certificación PoPW del Corte:** El tallerista reporta el lote cortado mediante `OPParteProduccionLinea` discriminando primera calidad, segunda y descarte. El PTF constata el corte in situ (o se valida por geocercado satelital PostGIS si la coordenada dista <150m del domicilio catastral registrado).
-4. **Despacho Escalonado de Fase 2 (Aparado):** Verificado el corte, el FDI liquida el hito de corte y la marca remite los insumos de aparado (adhesivos, forros, avíos).
-5. **Despacho Protegido de Suelas (Armado):** Las suelas y bases inyectadas —el componente de mayor valor unitario y con mayor riesgo de reducción en el mercado secundario— **nunca se envían al inicio**. Se despachan únicamente cuando las capelladas aparadas están convalidadas físicamente.
-6. **Reconciliación de Mermas y Devolución:** Al concluir la fabricación, el remito `DEV-<OP>-XX` reingresa sobrantes al almacén central; el sistema calcula `costo_total_insumos_real` y audita que la merma no haya superado el 10% tolerado por el INTI.
-
-### 8.5. Control de Rendimiento Estequiométrico (BOM Yield Cap) y Recepciones Parciales
-
-Para blindar operativamente la producción y evitar asunciones de responsabilidad inter-talleres:
-
-1. **Deslinde de Responsabilidad en Tránsito Intermedio:**
-   - La marca **no genera remitos de traslado entre talleres para etapas intermedias** (ej: de corte a aparado). Administrativamente la empresa no asume la custodia de ese tránsito.
-   - El control de avance en planta opera mediante **Partes de Avance Físico / PoPW** cargados por cada tallerista en el sistema.
-2. **Techo de Rendimiento Estequiométrico (Yield Cap):**
-   - En la primera etapa (o etapas que consumen materia prima de la empresa), el avance máximo declarable queda limitado por la cantidad de insumos que efectivamente le fueron remitidos al taller en custodia:
-     $$\text{Capacidad Máxima} = \min_{i} \left( \left\lfloor \frac{\text{Stock Insumo } i \text{ Despachado al Taller}}{\text{Consumo Unitario del Insumo } i \text{ en Receta}} \right\rfloor \right)$$
-   - Si se remitieron $20\text{ m}$ de cuero para un modelo que insume $0.4\text{ m/par}$, el tallerista tiene un límite estricto de **50 pares**. Cualquier intento de declarar más unidades es rechazado por el sistema informando el insumo limitante.
-3. **Entregas y Recepciones Físicas Parciales en Planta:**
-   - Los talleres pueden realizar entregas parciales a medida que terminan tandas.
-   - Planta emite remitos de recepción correlativos (`ING-<OP>-P1`, `ING-<OP>-P2`), controlando calidad (primera selección, segunda selección y descarte), ingresando de inmediato el stock al Almacén Principal y consumiendo de manera proporcional los insumos reservados.
-   - La OP permanece en estado `"confirmado"` hasta completar la cantidad total o cerrarse con faltantes justificados (`cerrar_con_faltantes()`).
+### Mecanismo Operativo en el Software
+1. **Remitos de Traslado a Producción (`TRA-<OP>-EX`):** Los insumos no se despachan en bloque al inicio; se remiten de manera escalonada por etapa técnica (Corte $\to$ Aparado $\to$ Armado/Suelas).
+2. **Topología de Doble Entrada:** El material enviado a talleres externos se traslada a ubicaciones de tipo `fason`. No se computa como salida definitiva ni venta; permanece en el activo de la empresa bajo custodia del tallerista con cláusula legal inyectada automáticamente.
+3. **Techo de Rendimiento Estequiométrico (`Yield Cap`):** En `OPEtapaTracking`, el avance físico máximo declarable por el taller está restringido matemáticamente por el stock de materia prima efectivamente remitido al taller en custodia.
+4. **Recepciones Físicas Parciales:** La fábrica emite remitos correlativos de ingreso (`ING-<OP>-PX`) controlando calidad (1ra, 2da, descarte) y devoluciones de sobrantes (`DEV-<OP>-XX`).
 
 ---
 
 ## 9. Roadmap de Implementación (Pendientes)
-
-### Fase A — Frontend, UX y Portales (En curso)
-- [ ] Template base (`base.html`) con sistema de diseño portado de los mockups HTML.
-- [ ] Formularios dinámicos de alta de e-OP en Django.
-- [ ] Dashboard de producción (OPs activas, stock, alertas).
-- [ ] Panel de Escrow y Hitos para el Comitente.
-- [ ] Panel del Tallerista (OPs asignadas, partes de producción).
-- [ ] Portal web del PTF (`/mes/ptf/portal/`) con WebCrypto API para firmas en navegador.
 
 ### Fase B — Red Federada (Módulo MES)
 - [ ] **Oráculo de Precios Federado**: Modelo `TarifaConvenio` con nomenclatura universal (ej: `MES-SRV-APARADO`) desacoplada.
@@ -932,12 +866,22 @@ Para blindar operativamente la producción y evitar asunciones de responsabilida
   - [x] Modelo satélite `TituloCreditoFCE` implementado en `apps.tesoreria` para administrar los 21 días de plazo, estados de aceptación expresa/tácita, rechazos y negociación/descuento ante el FDI o bancos.
 - [x] **Arquitectura Universal de Reportes (`apps/base/reports/`):**
   - [x] `BaseReport`, `BasePDFReport` (HTML/CSS Paged Media) y `BaseTabularReport` (Excel con openpyxl + CSV fallback delimitado por `;`).
-  - [x] Reporte y Template de **Remito de Despacho JiT** con Cláusula de Inembargabilidad (Arts. 1251 y 1356 CCCN).
+  - [x] Reporte y Template de **Remito Oficial de Logística** (`remito_report.py`) con soporte para Entrega a Clientes, Traslados Internos y **Traslado a Producción** con Cláusula de Custodia e Inembargabilidad (Arts. 1251 y 1356 CCCN).
   - [x] Reporte de **Libro IVA Ventas en Excel** (`LibroIVAVentasExcelReport`) con desglose oficial de alícuotas AFIP, notas de crédito negativas y percepciones provinciales/nacionales.
   - [x] Reporte de **Libro IVA Compras en Excel** (`LibroIVAComprasExcelReport`) discriminando crédito fiscal IVA y percepciones sufridas (IIBB e IVA) para liquidación ante ARCA/DGR.
   - [x] Reporte de **Convenio Multilateral / SIFERE (CM05)** (`ConvenioMultilateralCoeficientesReport`) con matriz de atribución de ingresos y gastos computables por las 24 provincias argentinas, determinando coeficientes de ingresos, gastos y coeficiente unificado (Art. 2° CM).
   - [x] Reporte y Template Unificado de **Comprobante Fiscal** (Facturas A/B/C, NC, ND, X) con QR oficial RG 4291, insignias, Transparencia Fiscal Ley 27.743 y condiciones de venta.
   - [x] Endpoints y rutas CBV de descarga inline/attachment en `contabilidad` e `inventario`.
+  - [ ] **Reportes Contables Nucleares:**
+    - [ ] `LibroDiarioGeneralReport`: Exportación cronológica del Libro Diario (`Asiento`/`Apunte`) en PDF y Excel.
+    - [ ] `LibroMayorExcelReport`: Mayores analíticos con saldo progresivo por cuenta contable.
+    - [ ] `BalanceSumasYSaldosReport`: Balance de 8 columnas para auditoría y cierre contable.
+  - [ ] **Reportes de Tesorería y Cobranzas/Pagos:**
+    - [ ] `OrdenPagoReciboPDFReport`: Recibos de Cobranza y Órdenes de Pago a Proveedores con desglose de valores y aplicaciones.
+    - [ ] `CertificadoRetencionPDFReport`: Certificados de retención de IVA, Ganancias e IIBB con base imponible y alícuota.
+    - [ ] `CashflowProyectadoExcelReport`: Proyección de liquidez diaria/semanal por caja, banco y vencimiento de cheques/deuda.
+    - [ ] `CarteraChequesExcelReport`: Trazabilidad de cheques físicos y E-cheqs por estado y fecha de pago.
+    - [ ] `DeudaCorrienteAgingExcelReport`: Reporte de antigüedad de saldos de cuentas por cobrar y por pagar (Aging 30/60/90+).
 - [ ] WSFEX (Facturas de Exportación avanzadas con permisos de embarque)
 - [ ] Liquidaciones de Fasón (Monotributo Productivo)
 - [ ] Webhooks de interoperabilidad ARCA / FDI para destrabe de retención `FISCAL_PENDING`
@@ -1010,11 +954,13 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import DocumentoBase, DocumentoFirmableMixin
 
+
 class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
     """
     Título de Crédito Ejecutivo y Contrato Fiduciario de la Red Federada FIMCA.
     Opera como activo negociable colateralizable ante el FDI y la MES.
     """
+
     SECUENCIA_CODIGO = "eop.contrato"
 
     # Enlace débil/opcional a la manufactura local (NULL si la marca opera vía SAP/Tango)
@@ -1025,14 +971,18 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
         blank=True,
         related_name="contrato_eop",
         verbose_name=_("Orden de Producción Física Local"),
-        help_text=_("Asociación a la orden de planta en Indinopy. Si es NULL, la orden proviene de un ERP externo (Headless)."),
+        help_text=_(
+            "Asociación a la orden de planta en Indinopy. Si es NULL, la orden proviene de un ERP externo (Headless)."
+        ),
     )
 
     # Identidad y Ruteo en la Red Federada (Snapshot capturado de ConfiguracionEmpresa)
     nodo_mes = models.CharField(
         max_length=100,
         verbose_name=_("Nodo MES de Destino"),
-        help_text=_("Snapshot inmutable capturado automáticamente de ConfiguracionEmpresa.nodo_mes_identificador al emitir"),
+        help_text=_(
+            "Snapshot inmutable capturado automáticamente de ConfiguracionEmpresa.nodo_mes_identificador al emitir"
+        ),
     )
     ptf_asignado = models.ForeignKey(
         "contactos.Contacto",
@@ -1061,12 +1011,27 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
     )
 
     # Vector C: Costos Homologados (en UCI o indexado)
-    costo_mod = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("MOD"))
-    costo_cs = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Cargas Sociales"))
-    costo_bom = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Insumos"))
-    costo_fdi = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Reserva FDI (2%)"))
-    costo_tax = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Monotributo / Tax"))
-    costo_mg = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Margen"))
+    costo_mod = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("MOD")
+    )
+    costo_cs = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Cargas Sociales")
+    )
+    costo_bom = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Insumos")
+    )
+    costo_fdi = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Reserva FDI (2%)")
+    )
+    costo_tax = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0.0,
+        verbose_name=_("Monotributo / Tax"),
+    )
+    costo_mg = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Margen")
+    )
 
     # Sello de Calidad
     es_sello_buen_diseno = models.BooleanField(default=False)
@@ -1194,6 +1159,39 @@ El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la m
   - [x] Actualizar URLs del proyecto exponiendo `/integraciones/woocommerce/` con backward-compatibility en `/ventas/webhooks/woocommerce/`.
   - [x] Escribir tests unitarios que comprueben la creación de `OrdenVenta` y `Contacto` desde DTO sin dependencia de WooCommerce (`apps/ventas/tests.py`).
 
+### Fase I — Consolidación de Nómina, Régimen Previsional y Libro de Sueldos Digital (`apps.nomina`)
+
+#### 1. Diagnóstico y Estado Actual
+El módulo `apps.nomina` cuenta con la modelización básica de legajos (`Empleado`), convenios (`Sindicato`), licencias (`Licencia`), conceptos (`ConceptoLiquidacion`) y recibos (`LiquidacionNomina`). Ya contempla la reforma laboral de la Ley Bases (Fondo de Cese Laboral en reemplazo del Art. 245 CCCN) y el circuito SoD con aprobación dual de Tesorería (`aprobador_tesoreria`) que dispara automáticamente el asiento contable y la Orden de Pago.
+
+#### 2. Checklist de Implementación
+- [ ] **Documentos y Reportes Oficiales:**
+  - [ ] Implementar `ReciboSueldoPDFReport` (`apps/nomina/reports/recibo_sueldo_report.py`) basado en `BasePDFReport`: diseño A4 de doble vía (Original Empresa / Duplicado Empleado), desagregando haberes remunerativos, conceptos no remunerativos, retenciones de ley, cargas patronales y espacio de firma hológrafa o digital.
+  - [ ] Implementar `LibroSueldosDigitalTxtReport` (`apps/nomina/reports/lsd_report.py`) con los 4 registros de longitud fija requeridos por ARCA / AFIP:
+    - Registro 1: Empleador y período liquidado.
+    - Registro 2: Bases imponibles 1 a 10 de Seguridad Social y días tope.
+    - Registro 3: Detalle de conceptos con código AFIP oficial.
+    - Registro 4: Modalidad de contratación y pluriempleo.
+  - [ ] Implementar `LiquidacionNominaExcelReport` (`apps/nomina/reports/liquidacion_excel_report.py`): Planilla mensual consolidada de haberes brutos, retenciones de empleados, netos de bolsillo y costo laboral total empresa (SIPA, Obra Social, ART, FNE, Fondo Cese).
+  - [ ] Implementar `AcreditacionHaberesTxtReport` (`apps/nomina/reports/acreditacion_haberes_report.py`): Formato plano estándar de transferencias bancarias masivas a cuentas sueldo (Interbanking / Red Link / bancos comerciales).
+- [ ] **Motor de Liquidación y Reglas Tributarias/Previsionales:**
+  - [ ] Topes previsionales periódicos de ARCA/ANSES (Bases mínimas y máximas para cálculo de aportes SIPA/Ley 19032/Obra Social).
+  - [ ] Algoritmo de retención de Impuesto a las Ganancias (4ta Categoría / Ingresos Personales) con deducciones SiRADIG (F. 572) y tabla progresiva acumulada.
+  - [ ] Módulo de Novedades Variables mensuales: modelo o formulador dinámico para Horas Extras (50% y 100%), feriados trabajados y premios sin hardcode en servicios.
+- [ ] **Integración Financiera y Datos Bancarios:**
+  - [ ] Campos en `Empleado` para acreditación de haberes: `cbu_sueldo`, `banco` y `tipo_cuenta`.
+  - [ ] Servicio de liquidación masiva de período: procesamiento en lote de toda la nómina activa del mes en un único clic, con previsualización y pase grupal a revisión de Tesorería.
+
+### Fase A — Frontend, UX y Portales (Fase Final de Cierre)
+> **Estrategia de Desarrollo:** Esta fase se posterga al cierre del proyecto para garantizar que toda la maquinaria de backend, reglas de integridad criptográfica, motores de partida doble, servicios tributarios y flujos federados estén 100% estabilizados antes de construir las capas visuales.
+
+- [ ] Template base (`base.html`) con sistema de diseño portado de los mockups HTML.
+- [ ] Formularios dinámicos de alta de e-OP en Django.
+- [ ] Dashboard de producción (OPs activas, stock, alertas).
+- [ ] Panel de Escrow y Hitos para el Comitente.
+- [ ] Panel del Tallerista (OPs asignadas, partes de producción).
+- [ ] Portal web del PTF (`/mes/ptf/portal/`) con WebCrypto API para firmas en navegador.
+
 ---
 
 ## 10. Deuda Técnica Identificada
@@ -1205,9 +1203,6 @@ El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la m
 | Actualizar Serializador Federado | `federacion/serializers.py` | `EntradaEOPSerializer` debe aceptar el array de hitos/etapas y sus porcentajes (`cronograma_pagos`) para armar el Escrow dinámico. |
 | Escrow Dinámico en Recepción e-OP | `federacion/views.py` | `RecepcionEOPView.post` debe leer el array de etapas del payload (si existe) y generar los `HitoEscrow` proporcionalmente en lugar de hardcodear 2 hitos. |
 | Disparo de Webhook e-OP | `produccion/services.py:178` | Reemplazar el `TODO` por la emisión HTTP real (POST vía `requests` o Celery) del payload canónico hacia la URL de la MES. |
-| Cancelación de stock en OV eliminada | `ventas/services.py:175` | `eliminar_orden_woocommerce` no llama a `StockService.cancelar_linea()` |
-| `ConfirmarOVActionView` sin servicio | `ventas/views.py:33` | No llama a `VentasService.generar_remito_salida()` |
-| Celery para Webhooks WooCommerce | `ventas/webhooks.py:46` | En producción el webhook sincrónico puede tardar >2s y ser desactivado |
 
 ### Media Prioridad
 | Item | Descripción |
@@ -1231,7 +1226,7 @@ El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la m
 - Protocolo e-OP y Mitigación de Fraude en Planta: `docs/paper_protocolo_eop_gobernanza_industrial.md` (§4.2)
 - Dossier FIMCA Base y Sistema de Adelantos: `docs/dossier_fimca_base.md` (Sección II)
 - Glosario de Conceptos Unificados del Proyecto: `docs/glosario_conceptos_proyecto.md`
-- Flujos Documentales y Circuitos de e-OP: `docs/flujos_documentales_indino.md`
+- Flujos Documentales y Circuitos de e-OP: `docs/md/flujos_documentales.md`
 - Documentación técnica del protocolo: `docs/explicacion_tecnica_proyecto.md`
 - Arquitectura MES y Gobernanza: `docs/arquitectura_mes_gobernanza.md`
 - WooCommerce REST API v3: https://woocommerce.github.io/woocommerce-rest-api-docs/

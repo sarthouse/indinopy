@@ -57,11 +57,21 @@ Si un taller deja de recibir órdenes por 15 días corridos, el sistema muta su 
 *   **Prevención de Cuellos de Botella:** Si al asignarle una nueva OP a un tallerista su ocupación supera el 100% para la fecha de entrega, el sistema alerta y sugiere fragmentar el lote en un taller secundario de la Bolsa Distrital.
 *   **Auditoría Algorética de Tarifas:** Compara el valor pactado por par con la tabla oficial de precios mínimos paritarios de la MES; si está por debajo del piso de convenio, bloquea la homologación automática.
 
-### D. Módulo Inventario y Partida Doble `apps.inventario`
-*   **Disociación de Dominio:** Sistema de inventario por partida doble que diferencia con precisión jurídica entre *Propietario* (Comitente) y *Custodio* (Tallerista).
-*   **Remitos de Traslado de Maquila:** Emisión de comprobantes digitales de movimiento de cuero y avíos con código QR y leyenda legal expresa de los Arts. 1251 y 1356 del Código Civil y Comercial de la Nación.
+### D. Módulo Inventario y Trazabilidad de Almacén `apps.inventario`
+*   **Disociación de Dominio y Doble Entrada:** Sistema de inventario por partida doble (`StockQuant`) que diferencia entre *Propietario* y *Custodio* (ubicaciones internas vs fason).
+*   **Remitos Oficiales de Traslado a Producción:** Emisión de remitos de materias primas y semielaborados hacia la línea fabril o talleres externos, con código QR y cláusula jurídica de inembargabilidad (Arts. 1251 y 1356 CCCN).
+*   **Remitos de Entrega a Clientes y Traslados Internos:** Trazabilidad de despachos comerciales y traspasos entre sucursales o depósitos.
 
-### E. Vista Pública de Trazabilidad Socioproductiva `/t/<uuid>/`
+### E. Módulo Compras y Abastecimiento `apps.compras`
+*   **Solicitudes de Cotización (RFQ):** Emisión de pedidos de presupuesto a proveedores para consulta de precios y plazos sin compromiso de compra.
+*   **Órdenes de Compra y Tarifas:** Gestión de listas de precios de insumos por proveedor con cantidades mínimas y tiempos de entrega (lead time).
+*   **Conciliación 3-Way Matching:** Cruce estricto entre lo pedido en la OC, lo ingresado en el remito de recepción y lo facturado por el proveedor, previniendo sobrepagos y desvíos de costos.
+
+### F. Módulo Ventas y Omnicanalidad `apps.ventas`
+*   **Presupuestos vs Notas de Pedido:** Gestión comercial desacoplada donde los presupuestos cotizan sin bloquear existencias, y las notas de pedido confirmadas reservan stock físico en firme en `StockQuant`.
+*   **Desacople Omnicanal (`apps.integraciones`):** Ingesta canónica a través de DTOs independientes, aislando el ERP de conectores de e-commerce como WooCommerce o marketplaces.
+
+### G. Vista Pública de Trazabilidad Socioproductiva `/t/<uuid>/`
 *   **Endpoint Público sin Login:** Interfaz móvil ultra-liviana a la que accede el consumidor final al escanear la etiqueta del calzado.
 *   **Gráfico Dinámico de Participación:** Desglosa el 100% del precio de góndola en: mano de obra territorial del Conurbano, cuero y materias primas nacionales, carga fiscal neta y margen comercial.
 
