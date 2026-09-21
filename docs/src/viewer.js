@@ -310,7 +310,8 @@ function initMermaidInteractivity() {
 async function loadMarkdown() {
     try {
         // Hacemos el fetch() al archivo MD que está en la misma carpeta
-        const mdFileName = window.mdOverride || window.location.pathname.split('/').pop().replace('.html', '.md');
+        let mdFileName = window.mdOverride || window.location.pathname.split('/').pop().replace('.html', '.md');
+        mdFileName = "md/" + mdFileName;
         const response = await fetch(mdFileName);
 
         if (!response.ok) {
@@ -434,124 +435,16 @@ async function loadMarkdown() {
         }
 
     } catch (error) {
-        console.warn('Error loading Markdown via fetch (CORS block on file://). Falling back to manual file input.', error);
-
+        console.warn('Error loading Markdown via fetch:', error);
         document.getElementById('content').innerHTML = `
-                    <div class="error" style="background-color: transparent; border-color: #ef4444; text-align: center;">
-                        <h3 style="color: #f87171;">Error Real de Renderizado</h3>
-                        <p style="color: #cbd5e1; margin-bottom: 20px;">El archivo markdown no pudo cargarse o procesarse correctamente.</p>
-                        <div style="background: rgba(0,0,0,0.5); padding: 15px; color: #fca5a5; font-family: monospace; text-align: left; overflow-x: auto; font-size: 12px; margin-bottom: 20px; border-radius: 6px;">
-                            <strong>Message:</strong> ${error.message}<br>
-                            <strong>Stack:</strong><br><pre>${error.stack}</pre>
-                        </div>
-                        <div style="padding: 20px; border: 2px dashed #3b82f6; border-radius: 8px; background: rgba(59, 130, 246, 0.05); display: inline-block;">
-                            <p style="margin-top: 0; font-weight: bold; color: #93c5fd;">Por favor, seleccioná manualmente el archivo .md para forzar la carga:</p>
-                            <input type="file" id="file-input" accept=".md,.txt" style="color: #e2e8f0; font-size: 14px; padding: 10px; cursor: pointer;">
-                        </div>
-                    </div>
-                `;
-
-        // Agregar listener para el selector de archivos
-        document.getElementById('file-input').addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async function (e) {
-                let markdownText = e.target.result;
-                markdownText = markdownText.replace(/^---\r?\n[\s\S]*?\n---\r?\n/, '');
-
-                // 1. Extraer bloques matemáticos para que Marked no convierta los guiones bajos (_) en <em>
-                const mathBlocks = [];
-                let textWithTokens = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
-                    mathBlocks.push(match);
-                    return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
-                });
-                
-                const inlineMathRegex = /(?<!\\)\$([\s\S]+?)(?<!\\)\$/g;
-                textWithTokens = textWithTokens.replace(inlineMathRegex, (match) => {
-                    mathBlocks.push(match);
-                    return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
-                });
-
-                // Parsear y renderizar (misma lógica que el try)
-                let htmlContent = marked.parse(textWithTokens);
-
-                mathBlocks.forEach((block, index) => {
-                    htmlContent = htmlContent.replace(`@@MATH_BLOCK_${index}@@`, () => block);
-                });
-
-                const contentDiv = document.getElementById('content');
-                contentDiv.innerHTML = htmlContent;
-
-                        // Generar Índice de Contenidos Automático
-        generateTOC(contentDiv);
-        if (window.hljs) {
-            contentDiv.querySelectorAll('pre code').forEach((block) => {
-                if (!block.classList.contains('mermaid') && !block.parentElement.classList.contains('mermaid-wrapper')) {
-                    hljs.highlightElement(block);
-                }
-            });
-        }
-
-        // Highlight.js para bloques de código y Botón de Copiar
-        if (window.hljs) {
-            contentDiv.querySelectorAll('pre').forEach((pre) => {
-                const block = pre.querySelector('code');
-                if (block && !block.classList.contains('mermaid') && !pre.classList.contains('mermaid-wrapper')) {
-                    
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'code-wrapper';
-                    pre.parentNode.insertBefore(wrapper, pre);
-                    wrapper.appendChild(pre);
-                    
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-copy';
-                    btn.textContent = 'Copiar';
-                    
-                    btn.addEventListener('click', () => {
-                        navigator.clipboard.writeText(block.innerText).then(() => {
-                            btn.textContent = '¡Copiado!';
-                            btn.classList.add('copied');
-                            setTimeout(() => {
-                                btn.textContent = 'Copiar';
-                                btn.classList.remove('copied');
-                            }, 2000);
-                        });
-                    });
-                    
-                    wrapper.appendChild(btn);
-                    hljs.highlightElement(block);
-                }
-            });
-        }
-                generateTOC(contentDiv);
-        if (window.hljs) {
-            contentDiv.querySelectorAll('pre code').forEach((block) => {
-                if (!block.classList.contains('mermaid') && !block.parentElement.classList.contains('mermaid-wrapper')) {
-                    hljs.highlightElement(block);
-                }
-            });
-        }
-
-                renderMathInElement(contentDiv, {
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false },
-                        { left: '\\(', right: '\\)', display: false },
-                        { left: '\\[', right: '\\]', display: true }
-                    ],
-                    throwOnError: false
-                });
-
-                const mermaidElements = document.querySelectorAll('.mermaid');
-                if (mermaidElements.length > 0) {
-                    await mermaid.run({ nodes: mermaidElements });
-                    initMermaidInteractivity();
-                }
-            };
-            reader.readAsText(file);
-        });
+            <div class="error" style="background-color: transparent; border-color: #ef4444; text-align: center;">
+                <h3 style="color: #f87171;">Error de Renderizado</h3>
+                <p style="color: #cbd5e1;">El archivo markdown no pudo cargarse. (¿Error 404?)</p>
+                <div style="background: rgba(0,0,0,0.5); padding: 15px; color: #fca5a5; font-family: monospace; text-align: left; overflow-x: auto; font-size: 12px; margin-top: 20px; border-radius: 6px;">
+                    <strong>Message:</strong> ${error.message}<br>
+                </div>
+            </div>
+        `;
     }
 }
 
