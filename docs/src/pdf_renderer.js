@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
         printBtn.style.textDecoration = 'none';
         printBtn.style.display = 'inline-block';
         printBtn.innerHTML = '📥 Descargar PDF Oficial';
-        printBtn.href = 'dossier_fimca_compilado.pdf';
+        printBtn.href = 'pdf/dossier_fimca_compilado.pdf';
         printBtn.target = '_blank';
-        
+
         tabsContainer.appendChild(printBtn);
     }
 
