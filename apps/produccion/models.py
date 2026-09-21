@@ -10,6 +10,7 @@ from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import TimeStampedModel, DocumentoBase, DocumentoFirmableMixin
+from apps.base.services import SecuenciaService
 from apps.inventario.models import (
     ProductoTemplate,
     Producto,
@@ -142,11 +143,13 @@ class RecetaEtapa(TimeStampedModel):
 # ==========================================
 
 
-class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
+class OrdenProduccion(DocumentoBase):
     """
     Documento rector de la fabricación del Lote.
     Hereda de DocumentoBase y DocumentoFirmableMixin.
     """
+    SECUENCIA_CODIGO = "produccion.op"
+
 
     SUBESTADO_CHOICES = [
         ("espera", _("En Espera")),
@@ -161,25 +164,10 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         ("fason", _("A Fasón (Tercerización externa)")),
     ]
 
-    es_eop_federada = models.BooleanField(
-        default=False,
-        verbose_name=_("Es e-OP Federada (FIMCA)"),
-        help_text=_(
-            "Sistema Dual: Si está marcado, la orden requiere certificación de la MES, "
-            "Escrow en el FDI, auditoría de PTFs y está sujeta al Timelock de 48h. "
-            "Si está desmarcado, es una OP Privada Simple sin burocracia."
-        ),
-    )
-
-    ESTADO_ESCROW_CHOICES = [
-        ("no_aplica", _("No Aplica (Interna)")),
-        ("financiado_fdi", _("Financiado por FDI (Comitente en Deuda)")),
-        ("aprobado_silencio", _("Aprobado por Silencio (48h)")),
-        ("vetado_mes", _("Vetado por la MES")),
-        ("hito_cero_liberado", _("Hito Cero Liberado al Taller")),
-        ("en_disputa", _("En Disputa (Interviene PTF)")),
-        ("finalizado", _("Escrow Liquidado Totalmente")),
-    ]
+    @property
+    def es_eop_federada(self):
+        """Devuelve True si esta OP está vinculada a un Smart Contract FIMCA."""
+        return hasattr(self, 'contrato_eop')
 
     fecha_entrega = models.DateField(
         blank=True, null=True, verbose_name=_("Fecha est. entrega")
@@ -232,82 +220,14 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
         default="espera",
         verbose_name=_("Subestado operativo"),
     )
-    estado_escrow = models.CharField(
-        max_length=30,
-        choices=ESTADO_ESCROW_CHOICES,
-        default="no_aplica",
-        verbose_name=_("Estado Escrow (Protocolo e-OP)"),
-    )
-    fecha_fondeo_escrow = models.DateTimeField(
-        null=True, blank=True, verbose_name=_("Fecha de Fondeo (Inicio Timelock 48h)")
-    )
+    # El estado fiduciario ahora vive en ContratoEOP
 
     # === Protocolo e-OP ===
-    # NOTA: Tallerista_principal fue removido. La asignación de proveedores externos
-    # se hace a nivel de Etapa (OPEtapaTracking) para soportar múltiples prestadores con CBU independiente.
-    ptf_asignado = models.ForeignKey(
-        "contactos.Contacto",
-        on_delete=models.RESTRICT,
-        null=True,
-        blank=True,
-        related_name="ops_fiscalizadas",
-        verbose_name=_("PTF Asignado (Fiscalizador)"),
-        help_text=_(
-            "Promotor Territorial que debe certificar los avances físicos de esta orden"
-        ),
-    )
+    # El ptf_asignado ahora se define en el ContratoEOP
 
-    # Vector C: Desglose Factorial de Costos Inmutable (en UCI o ARS indexado)
-    costo_mod = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal("0.0"),
-        verbose_name=_("Mano de Obra Directa (MOD)"),
-    )
-    costo_cs = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal("0.0"),
-        verbose_name=_("Cargas Sociales (CS)"),
-    )
-    costo_bom = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal("0.0"),
-        verbose_name=_("Insumos (BOM)"),
-    )
-    costo_gg = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal("0.0"),
-        verbose_name=_("Gastos Generales / Amortización (GG)"),
-    )
-    costo_fdi = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal("0.0"),
-        verbose_name=_("Reserva FDI (2%)"),
-    )
-    costo_tax = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal("0.0"),
-        verbose_name=_("Impuestos / Monotributo (TAX)"),
-    )
-    costo_mg = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal("0.0"),
-        verbose_name=_("Margen (MG)"),
-    )
+    # Los costos inmutables del Vector C (mod, cs, bom, etc) se movieron a ContratoEOP
 
-    # Sigma: Firmas Criptográficas son heredadas de DocumentoFirmableMixin
-
-    es_sello_buen_diseno = models.BooleanField(
-        default=False,
-        verbose_name=_("Distinción Sello Buen Diseño (SBD)"),
-        help_text=_("Habilita condiciones preferenciales de financiamiento o anticipo"),
-    )
+    # Sello Buen Diseño y Firmas criptográficas pasaron a ContratoEOP
 
     class Meta(DocumentoBase.Meta):
         verbose_name = _("Orden de Producción (OP)")
@@ -602,55 +522,8 @@ class OrdenProduccion(DocumentoFirmableMixin, DocumentoBase):
 
             return remito_dev
 
-    def calcular_merkle_root_bom(self):
-        """
-        Calcula la Raíz del Árbol de Merkle para la lista de insumos (BOM) asignados a esta OP.
-        Cumple con la especificación M_BOM del Protocolo e-OP usando la foto transaccional inmutable.
-        """
-        insumos = list(self.insumos_requeridos.all().order_by("id"))
-        if not insumos:
-            return None
-
-        # Nivel de hojas (Leaves)
-        hojas = []
-        for req in insumos:
-            # Usamos cantidad teórica y el insumo asociado
-            data = f"{req.insumo_id}:{req.cantidad_teorica}"
-            hojas.append(hashlib.sha256(data.encode("utf-8")).hexdigest())
-
-        # Calcular raíz (implementación simplificada concatenando hashes)
-        while len(hojas) > 1:
-            if len(hojas) % 2 != 0:
-                hojas.append(hojas[-1])  # Duplicar último si es impar
-            siguiente_nivel = []
-            for i in range(0, len(hojas), 2):
-                combinado = hojas[i] + hojas[i + 1]
-                siguiente_nivel.append(
-                    hashlib.sha256(combinado.encode("utf-8")).hexdigest()
-                )
-            hojas = siguiente_nivel
-
-        return hojas[0]
-
-    def generar_payload_canonico(self):
-        """
-        Genera el payload canónico serializado para firma y hashing de la e-OP.
-        Garantiza un formato JSON determinista ordenado por claves para interoperabilidad.
-        """
-        payload = {
-            "uuid": str(self.uuid_identificador),
-            "numero": self.numero,
-            "fecha": str(self.fecha),
-            "receta_id": self.receta_id,
-            "cliente_id": self.cliente_id,
-            "cantidad_total": self.cantidad_total,
-            "merkle_root_bom": self.calcular_merkle_root_bom(),
-            "creado_en": self.creado_en.isoformat() if self.creado_en else None,
-        }
-        return json.dumps(payload, sort_keys=True, separators=(",", ":"))
-
-    # Los métodos criptográficos y de verificación ahora son heredados
-    # de DocumentoFirmableMixin (sellar_hash_seguridad, verificar_integridad_hash)
+    # Los métodos calcular_merkle_root_bom y generar_payload_canonico
+    # han sido movidos a ContratoEOP.
 
 
 class OPVariacion(TimeStampedModel):
@@ -842,6 +715,10 @@ class OPParteProduccion(TimeStampedModel):
     def __str__(self):
         return f"Parte {self.numero_parte or self.id} - OP {self.op.numero}"
 
+    def save(self, *args, **kwargs):
+        if not self.numero_parte:
+            self.numero_parte = SecuenciaService.obtener_siguiente_numero("produccion.parte")
+        super().save(*args, **kwargs)
 
 class OPParteProduccionLinea(TimeStampedModel):
     """Línea de cantidades por variante terminadas en un parte específico."""
@@ -1049,6 +926,39 @@ class OPEtapaTracking(TimeStampedModel):
         self.remito_retorno = remito
         self.save()
         return remito
+
+    @property
+    def etapa_anterior(self):
+        """Retorna la etapa de tracking inmediatamente anterior basada en el orden de ejecución."""
+        return self.op.tracking_etapas.filter(
+            etapa_origen__orden_ejecucion__lt=self.etapa_origen.orden_ejecucion
+        ).order_by('-etapa_origen__orden_ejecucion').first()
+
+    @property
+    def unidades_habilitadas_para_declarar(self):
+        """
+        Retorna la cantidad de unidades procesadas exitosamente por la etapa anterior.
+        Si es la primera etapa, el límite es el total planificado de la OP.
+        Diseñado abstractamente para cualquier industria.
+        """
+        ant = self.etapa_anterior
+        if not ant:
+            from django.db.models import Sum
+            return self.op.variaciones.aggregate(total=Sum('cantidad_planificada'))['total'] or 0
+        from django.db.models import Sum
+        # Se suman las cantidades de primera y segunda selección (lo que pasó el control y sigue vivo)
+        total_primera = ant.partes_produccion.aggregate(t=Sum('lineas__cantidad'))['t'] or 0
+        total_segunda = ant.partes_produccion.aggregate(t=Sum('lineas__cantidad_segunda'))['t'] or 0
+        return total_primera + total_segunda
+
+    @property
+    def unidades_ya_declaradas(self):
+        """Retorna cuántas unidades ya fueron declaradas y procesadas en esta etapa."""
+        from django.db.models import Sum
+        total_primera = self.partes_produccion.aggregate(t=Sum('lineas__cantidad'))['t'] or 0
+        total_segunda = self.partes_produccion.aggregate(t=Sum('lineas__cantidad_segunda'))['t'] or 0
+        total_descarte = self.partes_produccion.aggregate(t=Sum('lineas__cantidad_descarte'))['t'] or 0
+        return total_primera + total_segunda + total_descarte
 
 
 class OPEtapaLog(TimeStampedModel):

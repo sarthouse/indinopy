@@ -44,14 +44,15 @@ sequenceDiagram
     C->>C: Crea e-OP (Curva, Costos, Hitos)
     C->>T: Propone e-OP (Multifirma)
     T->>C: Firma y Acepta e-OP (Ed25519)
-    C->>M: Registra e-OP y aporta garantía de anclaje
+    C->>M: POST /federacion/eop/entrante/
     M->>E: Homologa e-OP como colateral crediticio
     E->>T: Desembolsa Hito Cero (30-40% Capital de Trabajo)
+    M->>C: Webhook POST /api/webhooks/mes/contrato-fondeado/
     C->>T: Remite insumos Fase 1 (Remito CCCN 1251/1356)
     
     Note over T,P: Tallerista produce y finaliza un lote
     P->>T: Visita de Campo (Inspección)
-    P->>M: Firma Aprobación Exprés (GPS + Ed25519)
+    P->>M: POST /firma/ (GPS + Ed25519)
     
     Note over M: Inicia Timelock 48h
     alt Veto en 48h
@@ -59,8 +60,15 @@ sequenceDiagram
     else Silencio Positivo
         M->>M: Worker aprueba e-OP de oficio
         M->>E: Ordena Liberar Hito
-        E->>T: Transfiere Fondos (Clearing)
+        E->>T: Transfiere Fondos Parciales (Clearing)
+        M->>C: Webhook POST /api/webhooks/mes/hito-liberado/
     end
+    
+    Note over M,E: Retención Fiscal (FISCAL_PENDING)
+    T->>M: Carga Factura (CAE) en el Portal
+    M->>E: Valida Factura en ARCA y Libera Retención
+    E->>T: Transfiere 20% Final
+    
     Note over C,E: Ciclo Comercial Post-Entrega (30-60 días)
     C->>E: Cancela crédito productivo ante el FDI
 ```

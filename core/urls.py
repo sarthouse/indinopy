@@ -29,6 +29,7 @@ urlpatterns = [
 if "apps.produccion" in settings.INSTALLED_APPS:
     urlpatterns += [
         path('produccion/', include('apps.produccion.urls', namespace='produccion')),
+        path('eop/', include('apps.eop.urls', namespace='eop')),
         path('tesoreria/', include('apps.tesoreria.urls', namespace='tesoreria')),
         path('inventario/', include('apps.inventario.urls', namespace='inventario')),
         path('compras/', include('apps.compras.urls', namespace='compras')),

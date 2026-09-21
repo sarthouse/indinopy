@@ -114,9 +114,15 @@ class DeclararParteActionView(LoginRequiredMixin, View):
         if not hasattr(request.user, 'perfil_contacto') or etapa.tallerista_asignado != request.user.perfil_contacto:
             raise PermissionDenied("No tienes permisos para declarar avances en esta etapa.")
         
-        cantidad_terminada = request.POST.get('cantidad', 0)
+        cantidad_terminada = int(request.POST.get('cantidad', 0))
         
         try:
+            habilitadas = etapa.unidades_habilitadas_para_declarar
+            ya_declaradas = etapa.unidades_ya_declaradas
+            
+            if (ya_declaradas + cantidad_terminada) > habilitadas:
+                raise ValueError(f"No puedes declarar {cantidad_terminada} unidades. Solo tienes {habilitadas - ya_declaradas} unidades habilitadas por la etapa anterior.")
+
             # Crear el parte físico
             parte = OPParteProduccion.objects.create(
                 op=etapa.op,
@@ -131,12 +137,12 @@ class DeclararParteActionView(LoginRequiredMixin, View):
                 OPParteProduccionLinea.objects.create(
                     parte=parte,
                     variacion=variacion,
-                    cantidad_primera=cantidad_terminada
+                    cantidad=cantidad_terminada
                 )
-                variacion.cantidad_producida += int(cantidad_terminada)
+                variacion.cantidad_producida += cantidad_terminada
                 variacion.save()
 
-            messages.success(request, f"¡Excelente! Declaraste {cantidad_terminada} pares terminados.")
+            messages.success(request, f"¡Excelente! Declaraste {cantidad_terminada} unidades procesadas.")
         except Exception as e:
             messages.error(request, f"Ocurrió un error al guardar el avance: {str(e)}")
             

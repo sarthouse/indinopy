@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.http import HttpResponseForbidden
 from apps.contactos.models import Contacto
 from django.conf import settings
 from decimal import Decimal
@@ -15,9 +16,9 @@ _ROLE = getattr(settings, "NODE_ROLE", "DEV")
 if _ROLE in ["MES", "DEV"]:
     from apps.mes.models import RegistroEOP, ScoringTallerista
     from apps.mes.services import PTFService
-    from apps.tesoreria.models import ContratoEscrow, HitoEscrow
+    from apps.eop.models import ContratoEOP, EOPHitoEscrow
 else:
-    RegistroEOP = ScoringTallerista = PTFService = ContratoEscrow = HitoEscrow = None
+    RegistroEOP = ScoringTallerista = PTFService = ContratoEOP = EOPHitoEscrow = None
 
 # Módulos de Nodos ERP (Comitente / Tallerista)
 if _ROLE in ["COMITENTE", "TALLERISTA", "DEV"]:
@@ -81,8 +82,6 @@ class RecepcionEOPView(APIView):
 
     def dispatch(self, request, *args, **kwargs):
         if _ROLE not in ["MES", "DEV"]:
-            from django.http import HttpResponseForbidden
-
             return HttpResponseForbidden(
                 "Esta vista de gobernanza solo está habilitada para el Nodo MES."
             )
@@ -137,25 +136,25 @@ class RecepcionEOPView(APIView):
                 estado=estado_inicial,
             )
 
-            # 4. Crear Contrato Escrow en el FDI (Nodo MES/Tesorería)
-            escrow = ContratoEscrow.objects.create(
-                eop_uuid=data["uuid_identificador"],
-                monto_total_uci=data["monto_total_uci"],
-                estado="borrador",
+            # 4. Crear Contrato Escrow en el FDI (Nodo MES/EOP)
+            escrow = ContratoEOP.objects.create(
+                uuid_identificador=data["uuid_identificador"],
+                costo_mod=data["monto_total_uci"], # Temporal: se asume todo como MOD
+                estado_escrow="solicitado",
             )
 
             porcentaje_hito_cero = Decimal("50.00") if posee_sbd else Decimal("35.00")
-            HitoEscrow.objects.create(
+            EOPHitoEscrow.objects.create(
                 contrato=escrow,
                 nombre="Hito Cero / Adelanto Operativo",
-                porcentaje=porcentaje_hito_cero,
+                porcentaje_tramo=porcentaje_hito_cero,
                 estado="bloqueado",
                 requiere_auditoria_ptf=False,
             )
-            HitoEscrow.objects.create(
+            EOPHitoEscrow.objects.create(
                 contrato=escrow,
                 nombre="Hito Final - Entrega Completa",
-                porcentaje=(Decimal("100.00") - porcentaje_hito_cero),
+                porcentaje_tramo=(Decimal("100.00") - porcentaje_hito_cero),
                 estado="bloqueado",
                 requiere_auditoria_ptf=True,
             )
@@ -472,8 +471,6 @@ class PollingNovedadesAPIView(APIView):
         El Nodo llama a este endpoint para marcar como recibidas las novedades (ACK),
         así no se le envían de nuevo en el próximo GET.
         """
-        from .models import NovedadFederada, NodoFederado
-
         cuit = request.headers.get("X-CUIT")
         if not cuit:
             return Response(

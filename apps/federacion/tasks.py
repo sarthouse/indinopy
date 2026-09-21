@@ -3,7 +3,8 @@ from celery import shared_task
 from django.conf import settings
 from apps.mes.models import RegistroEOP
 from apps.federacion.models import NodoFederado
-from apps.tesoreria.services import EscrowService
+from apps.eop.services import EOPService
+from apps.eop.models import ContratoEOP
 
 @shared_task
 def notificar_tallerista_nueva_eop(uuid_str, tallerista_cuit, payload_original):
@@ -29,7 +30,7 @@ def notificar_tallerista_nueva_eop(uuid_str, tallerista_cuit, payload_original):
     except NodoFederado.DoesNotExist:
         return f"El tallerista {tallerista_cuit} no tiene un Nodo Federado registrado."
     except requests.RequestException as e:
-        # Aquí Celery podría reintentar (retry) automáticamente
+        # TODO: Implementar Fallback a NovedadFederada para el Pull
         raise Exception(f"Fallo de conexión con Nodo Tallerista: {str(e)}")
 
 
@@ -41,8 +42,12 @@ def liberar_hito_escrow_async(uuid_str):
     """
     try:
         registro = RegistroEOP.objects.get(uuid_identificador=uuid_str)
-        # La MES ordena la liberación del dinero a los trabajadores
-        EscrowService.liberar_hito(str(registro.uuid_identificador))
+        # La MES ordena la liberación del dinero a los trabajadores (buscamos el Hito Cero)
+        # Por simplificación asumimos que el hito 0 es el primero o lo buscamos vía ContratoEOP
+        contrato = ContratoEOP.objects.get(uuid_identificador=uuid_str)
+        hito_cero = contrato.hitos.order_by('id').first()
+        if hito_cero:
+            EOPService.liberar_hito(hito_cero.id)
         
         return f"Escrow liberado exitosamente para e-OP {uuid_str}."
         

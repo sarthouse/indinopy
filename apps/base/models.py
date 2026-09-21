@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericRelation
 from simple_history.models import HistoricalRecords
+from apps.base.services import SecuenciaService
 
 
 class TimeStampedModel(models.Model):
@@ -156,9 +157,42 @@ class DocumentoBase(TimeStampedModel):
         related_query_name="%(app_label)s_%(class)s",
     )
 
+    SECUENCIA_CODIGO = None
+
     class Meta:
         abstract = True
         ordering = ["-fecha", "-numero"]
+
+    def save(self, *args, **kwargs):
+        if not self.numero and self.SECUENCIA_CODIGO:
+            self.numero = SecuenciaService.obtener_siguiente_numero(self.SECUENCIA_CODIGO, fecha=self.fecha)
+        super().save(*args, **kwargs)
+
+class Secuencia(TimeStampedModel):
+    """
+    Motor centralizado de secuencias alfanuméricas consecutivas para documentos.
+    Compatible con normativas AFIP/ARCA y documentos internos.
+    """
+    codigo = models.CharField(max_length=50, unique=True, verbose_name="Código de la secuencia")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    prefijo = models.CharField(max_length=20, blank=True, default="", verbose_name="Prefijo")
+    sufijo = models.CharField(max_length=20, blank=True, default="", verbose_name="Sufijo")
+    longitud_relleno = models.PositiveIntegerField(default=8, verbose_name="Longitud de relleno (Padding)")
+    siguiente_numero = models.PositiveIntegerField(default=1, verbose_name="Siguiente número")
+    incremento = models.PositiveIntegerField(default=1, verbose_name="Incremento")
+    punto_venta = models.PositiveIntegerField(blank=True, null=True, verbose_name="Punto de Venta (AFIP)")
+    
+    reinicio_anual = models.BooleanField(default=False, verbose_name="Reiniciar cada año")
+    reinicio_mensual = models.BooleanField(default=False, verbose_name="Reiniciar cada mes")
+    ultimo_reinicio = models.DateField(blank=True, null=True, verbose_name="Último reinicio")
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+
+    class Meta:
+        verbose_name = "Secuencia de documento"
+        verbose_name_plural = "Secuencias de documentos"
+
+    def __str__(self):
+        return f"{self.nombre} ({self.codigo})"
 
 
 class Moneda(TimeStampedModel):

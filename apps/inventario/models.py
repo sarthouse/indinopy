@@ -276,6 +276,8 @@ class MovimientoStock(DocumentoBase):
     Hereda de DocumentoBase: numero, fecha, estado, observaciones, creado_en, modificado_en.
     """
 
+
+
     TIPO_MOVIMIENTO_CHOICES = [
         ("recepcion", "Recepción (Ingreso)"),
         ("entrega", "Entrega (Salida)"),
@@ -353,6 +355,15 @@ class MovimientoStock(DocumentoBase):
             f" [Backorder de {self.backorder_de.numero}]" if self.backorder_de else ""
         )
         return f"{self.numero}{backorder_str} ({self.get_tipo_display()} - {fiscal}) [{self.get_estado_display()}]"
+
+    def save(self, *args, **kwargs):
+        if not self.numero:
+            if self.es_fiscal:
+                self.SECUENCIA_CODIGO = "inventario.remito_fiscal"
+            else:
+                self.SECUENCIA_CODIGO = f"inventario.{self.tipo}"
+        super().save(*args, **kwargs)
+
 
     def dividir_backorder(self, cantidades_realizadas, usuario=None):
         """

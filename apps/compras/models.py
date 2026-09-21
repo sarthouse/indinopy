@@ -66,6 +66,8 @@ class OrdenCompra(DocumentoBase):
     Hereda de DocumentoBase: numero, fecha, estado, observaciones, creado_en, modificado_en, adjuntos.
     Ciclo de vida: borrador -> confirmado -> finalizado (o cancelado/anulado).
     """
+    SECUENCIA_CODIGO = "compras.oc"
+
 
     proveedor = models.ForeignKey(
         "contactos.Contacto",

@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 from django.db.models import Sum
-from apps.base.models import TimeStampedModel, DocumentoBase
+from apps.base.models import TimeStampedModel, DocumentoBase, DocumentoFirmableMixin
 
 
 class Caja(TimeStampedModel):
@@ -43,14 +43,10 @@ class Caja(TimeStampedModel):
         return ingresos - egresos
 
 
-from apps.base.models import TimeStampedModel, DocumentoBase, DocumentoFirmableMixin
-
-
 class ComprobanteTesoreria(DocumentoFirmableMixin, DocumentoBase):
     """
     Documento maestro operativo: Recibo (Cobranza) u Orden de Pago.
     """
-
     TIPO_COMPROBANTE_CHOICES = [
         ("recibo", "Recibo (Cobranza a Cliente)"),
         ("orden_pago", "Orden de Pago (A Proveedor)"),
@@ -61,6 +57,12 @@ class ComprobanteTesoreria(DocumentoFirmableMixin, DocumentoBase):
         choices=TIPO_COMPROBANTE_CHOICES,
         verbose_name="Tipo de Operación",
     )
+
+    def save(self, *args, **kwargs):
+        if not self.numero:
+            self.SECUENCIA_CODIGO = f"tesoreria.{self.tipo}"
+        super().save(*args, **kwargs)
+
     contacto = models.ForeignKey(
         "contactos.Contacto",
         on_delete=models.RESTRICT,
@@ -69,7 +71,7 @@ class ComprobanteTesoreria(DocumentoFirmableMixin, DocumentoBase):
         verbose_name="Cliente / Proveedor",
     )
     escrow_asociado = models.ForeignKey(
-        "tesoreria.ContratoEscrow",
+        "eop.ContratoEOP",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -77,10 +79,10 @@ class ComprobanteTesoreria(DocumentoFirmableMixin, DocumentoBase):
         help_text="Usado para Fondeo (FDI) o Repago (Marca)",
     )
     referencia_bancaria_vep = models.CharField(
-        max_length=100, 
-        blank=True, 
+        max_length=100,
+        blank=True,
         verbose_name="N° VEP / Ref. Bancaria",
-        help_text="Útil para auditoría y conciliación de pagos de impuestos o transferencias agrupadas."
+        help_text="Útil para auditoría y conciliación de pagos de impuestos o transferencias agrupadas.",
     )
 
     class Meta:
@@ -263,116 +265,3 @@ class Cheque(TimeStampedModel):
         return (
             f"{self.get_tipo_display()} - {self.banco} #{self.numero} (${self.monto})"
         )
-
-
-class IndiceUCI(TimeStampedModel):
-    """
-    Índice de la Unidad de Cuenta Industrial (UCI) respecto al IPIM o inflación sectorial.
-    Garantiza que los fondos bloqueados no se carbonicen por inflación.
-    """
-
-    fecha = models.DateField(unique=True, verbose_name="Fecha de Cotización")
-    valor_ars = models.DecimalField(
-        max_digits=12, decimal_places=4, verbose_name="Valor en ARS"
-    )
-
-    class Meta:
-        verbose_name = "Cotización UCI"
-        verbose_name_plural = "Cotizaciones UCI"
-        ordering = ["-fecha"]
-
-    def __str__(self):
-        return f"UCI {self.fecha}: $ {self.valor_ars}"
-
-
-class ContratoEscrow(TimeStampedModel):
-    """
-    Contrato de bloqueo de fondos (Escrow) vinculado a una e-OP.
-    Garantiza el repago al FDI o el desembolso seguro al tallerista por tramos.
-    """
-
-    ESTADO_CHOICES = [
-        ("borrador", "Borrador / Pendiente de Fondeo"),
-        ("fondeado", "Fondeado Activo (Capital bloqueado)"),
-        ("ejecutando", "Ejecución por Hitos"),
-        ("liquidado", "Liquidado (Tallerista Pagado)"),
-        ("repago_completado", "Repago Completado (Cerrado)"),
-        ("disputa", "En Disputa / Congelado"),
-    ]
-
-    # ForeignKey indirecto a la OrdenProduccion (se usa el UUID para el puente lógico si fuera necesario desacoplar)
-    eop_uuid = models.UUIDField(unique=True, verbose_name="UUID e-OP vinculada")
-
-    # Total comprometido
-    monto_total_uci = models.DecimalField(
-        max_digits=15, decimal_places=2, verbose_name="Monto Total a Custodiar (UCI)"
-    )
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="borrador")
-
-    # Comprobante original con el que el comitente inyectó la plata al sistema
-    comprobante_fondeo = models.ForeignKey(
-        ComprobanteTesoreria, on_delete=models.RESTRICT, null=True, blank=True
-    )
-
-    class Meta:
-        verbose_name = "Contrato Escrow"
-        verbose_name_plural = "Contratos Escrow"
-
-    def __str__(self):
-        return f"Escrow e-OP {self.eop_uuid} [{self.get_estado_display()}]"
-
-
-class HitoEscrow(DocumentoFirmableMixin, TimeStampedModel):
-    """
-    Tramos de liberación de fondos (Ej: Hito 0 (Anticipo 35%), Hito 1 (Avance), Hito Final).
-    Hereda de DocumentoFirmableMixin para requerir firma criptográfica del PTF/Auditor.
-    """
-
-    contrato = models.ForeignKey(
-        ContratoEscrow, on_delete=models.CASCADE, related_name="hitos"
-    )
-    nombre = models.CharField(
-        max_length=100, help_text="Ej: Hito 0 - Anticipo de Arranque"
-    )
-    porcentaje = models.DecimalField(
-        max_digits=5, decimal_places=2, help_text="Porcentaje del total del contrato"
-    )
-
-    requiere_auditoria_ptf = models.BooleanField(
-        default=True,
-        verbose_name="Requiere Firma PTF",
-        help_text="Si está activo, el hito no se libera sin la firma criptográfica del Promotor Territorial.",
-    )
-
-    estado = models.CharField(
-        max_length=20,
-        choices=[
-            ("bloqueado", "Bloqueado"),
-            ("liberado", "Liberado al Taller"),
-            ("reintegrado", "Reintegrado al FDI"),
-        ],
-        default="bloqueado",
-    )
-
-    # Comprobante de pago que se genera automáticamente al liberar el hito
-    comprobante_pago = models.ForeignKey(
-        ComprobanteTesoreria, on_delete=models.SET_NULL, null=True, blank=True
-    )
-
-    class Meta:
-        verbose_name = "Hito de Escrow"
-        verbose_name_plural = "Hitos de Escrow"
-        ordering = ["id"]
-
-    def __str__(self):
-        return f"{self.nombre} ({self.porcentaje}%) - {self.get_estado_display()}"
-
-    def generar_payload_canonico(self):
-        payload = {
-            "uuid": str(self.uuid_identificador),
-            "contrato_uuid": str(self.contrato.eop_uuid),
-            "nombre": self.nombre,
-            "porcentaje": str(self.porcentaje),
-            "estado": self.estado,
-        }
-        return json.dumps(payload, sort_keys=True, separators=(",", ":"))

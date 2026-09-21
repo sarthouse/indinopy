@@ -2,7 +2,8 @@ import hashlib
 import json
 from datetime import timedelta
 from nacl.exceptions import BadSignatureError
-from nacl.signing import VerifyKey
+from nacl.signing import VerifyKey, SigningKey
+from django.conf import settings
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
@@ -209,14 +210,23 @@ class PTFService:
 
         # Serialización canónica determinista (claves ordenadas)
         payload_str = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+        payload_bytes = payload_str.encode("utf-8")
 
-        # Hash del payload (en Fase 3 esto será reemplazado por firma Ed25519 de la MES)
-        hash_certificado = hashlib.sha256(payload_str.encode("utf-8")).hexdigest()
+        # Generar semilla de 32 bytes a partir del SECRET_KEY para emular la clave privada de la MES
+        seed = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+        signing_key = SigningKey(seed)
+        
+        # Firmar el payload con Ed25519
+        signed = signing_key.sign(payload_bytes)
+        firma_mes_hex = signed.signature.hex()
+
+        # Hash para referencia rápida
+        hash_certificado = hashlib.sha256(payload_bytes).hexdigest()
 
         certificado = {
             **payload,
             "hash_certificado": hash_certificado,
-            # "firma_mes": "..."  ← TODO Fase 3: firma Ed25519 con clave privada MES
+            "firma_mes": firma_mes_hex
         }
 
         perfil_ptf.certificado_mes_json = certificado
@@ -305,12 +315,7 @@ class PTFService:
             perfil_ptf: PerfilPTF del firmante
 
         Returns:
-            True si la firma es válida, False si no.
-
-        TODO Fase 3: Implementar con PyNaCl:
-            from nacl.signing import VerifyKey
-            vk = VerifyKey(bytes.fromhex(perfil_ptf.clave_publica_ed25519))
-            vk.verify(bytes.fromhex(hash_eop_hex), bytes.fromhex(firma_hex))
+            True si la firma es válida (matemáticamente verificada con Ed25519), False si no.
         """
         if not perfil_ptf.clave_publica_ed25519:
             raise ValueError("El PTF no tiene clave pública registrada.")

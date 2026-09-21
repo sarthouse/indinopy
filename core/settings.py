@@ -62,6 +62,7 @@ ERP_APPS = [
     "apps.ventas",
     "apps.compras",
     "apps.produccion",
+    "apps.eop",
     "apps.inventario",
     "apps.tesoreria",
     "apps.nomina",

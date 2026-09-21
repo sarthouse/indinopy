@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from apps.base.models import TimeStampedModel
+from apps.base.services import SecuenciaService
 
 
 class CondicionPago(TimeStampedModel):
@@ -332,6 +333,12 @@ class DocumentoDeuda(TimeStampedModel):
 
     def __str__(self):
         return f"{self.get_tipo_display()} {self.numero} - {self.contacto.nombre} (${self.monto_total})"
+
+    def save(self, *args, **kwargs):
+        if not self.numero:
+            codigo = f"contabilidad.{self.tipo}"
+            self.numero = SecuenciaService.obtener_siguiente_numero(codigo, fecha=self.fecha_emision)
+        super().save(*args, **kwargs)
 
     @property
     def saldo_pendiente(self):

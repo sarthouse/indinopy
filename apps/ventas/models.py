@@ -31,6 +31,8 @@ class OrdenVenta(DocumentoBase):
     Representa un Pedido de Venta (B2C o B2B).
     Genera remitos de salida y facturas de venta.
     """
+    SECUENCIA_CODIGO = "ventas.ov"
+
     tienda = models.ForeignKey(
         TiendaWooCommerce,
         on_delete=models.SET_NULL,

@@ -1,64 +1,28 @@
-from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import ListView, DetailView, View
+from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
-from .models import ContratoEscrow, HitoEscrow
-from .services import EscrowService
+from .models import ComprobanteTesoreria
 
-class EscrowListView(LoginRequiredMixin, ListView):
-    model = ContratoEscrow
-    template_name = "tesoreria/escrow_list.html"
-    context_object_name = "escrows"
-    paginate_by = 20
+class ComprobanteTesoreriaListView(LoginRequiredMixin, ListView):
+    model = ComprobanteTesoreria
+    template_name = "tesoreria/comprobante_list.html"
+    context_object_name = "comprobantes"
+    paginate_by = 30
 
     def get_queryset(self):
-        return ContratoEscrow.objects.all().order_by('-creado_en')
+        # Ordenamos por fecha de emisión más reciente
+        return ComprobanteTesoreria.objects.all().order_by('-fecha_emision', '-id')
 
 
-class EscrowDetailView(LoginRequiredMixin, DetailView):
-    model = ContratoEscrow
-    template_name = "tesoreria/escrow_detail.html"
-    context_object_name = "escrow"
+class ComprobanteTesoreriaDetailView(LoginRequiredMixin, DetailView):
+    model = ComprobanteTesoreria
+    template_name = "tesoreria/comprobante_detail.html"
+    context_object_name = "comprobante"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['hitos'] = self.object.hitos.all().order_by('id')
+        # Pasamos las aplicaciones (pagos de facturas) vinculadas a este comprobante
+        # Esto asume que tienes un related_name="aplicaciones_emitidas" en AplicacionPago
+        context['aplicaciones'] = self.object.aplicaciones_emitidas.all()
+        # Pasamos también los movimientos de caja/banco si hicieran falta
+        context['movimientos'] = self.object.movimientos_caja.all()
         return context
-
-
-# =====================================================================
-# ACTION VIEWS
-# =====================================================================
-
-class LiberarHitoActionView(LoginRequiredMixin, View):
-    def post(self, request, pk):
-        hito = get_object_or_404(HitoEscrow, pk=pk)
-        escrow_pk = hito.contrato.pk
-        
-        # En una app real, acá se leería la firma (ej. de un campo oculto del form o un header)
-        # Por ahora lo pasamos hardcodeado o como venga en el request POST
-        # firma_ptf = request.POST.get('firma_ptf')
-        
-        try:
-            # Como aún no implementamos validación crypto completa, dejamos que el service confíe
-            # o podemos simplemente simularlo para testing.
-            EscrowService.liberar_hito(hito.pk, firma_ptf=True) 
-            messages.success(request, f"Hito '{hito.nombre}' liberado. Se generó la orden de pago.")
-        except Exception as e:
-            messages.error(request, f"Error al liberar hito: {str(e)}")
-        
-        return redirect('tesoreria:escrow_detail', pk=escrow_pk)
-
-
-class FondearEscrowActionView(LoginRequiredMixin, View):
-    def post(self, request, pk):
-        escrow = get_object_or_404(ContratoEscrow, pk=pk)
-        comprobante_id = request.POST.get('comprobante_id')
-        
-        try:
-            EscrowService.fondear_escrow(escrow.pk, comprobante_id)
-            messages.success(request, f"Contrato Escrow fondeado exitosamente.")
-        except Exception as e:
-            messages.error(request, f"Error al fondear el Escrow: {str(e)}")
-        
-        return redirect('tesoreria:escrow_detail', pk=escrow.pk)

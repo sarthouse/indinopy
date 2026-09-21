@@ -14,10 +14,9 @@
 6. [Flujo del PTF (Promotor Territorial de Formalización)](#6-flujo-del-ptf-promotor-territorial-de-formalización)
 7. [Integración WooCommerce Multitienda](#7-integración-woocommerce-multitienda)
 8. [Modelo de Entrega de Insumos Just-in-Time (JiT)](#8-modelo-de-entrega-de-insumos-just-in-time-jit)
-9. [Motor de Secuencias Alfanuméricas (Módulo Base)](#9-motor-de-secuencias-alfanuméricas-módulo-base)
-10. [Roadmap de Implementación](#10-roadmap-de-implementación)
-11. [Deuda Técnica Identificada](#11-deuda-técnica-identificada)
-12. [Referencias](#12-referencias)
+9. [Roadmap de Implementación](#9-roadmap-de-implementación)
+10. [Deuda Técnica Identificada](#10-deuda-técnica-identificada)
+11. [Referencias](#11-referencias)
 
 ---
 
@@ -104,35 +103,38 @@ Siempre usar `ProduccionService.confirmar_op(op)`.
 ### ✅ Implementado
 
 #### Modelos Core
-- `OrdenProduccion` con `DocumentoFirmableMixin` (UUID, hash, firmas JSON)
-- `calcular_merkle_root_bom()` — Árbol de Merkle del BOM
-- `generar_payload_canonico()` — Serialización determinista para hashing
-- `sellar_hash_seguridad()` — Fijación irreversible del hash al confirmar
-- `verificar_integridad_hash()` — Detección de manipulaciones post-sellado
-- `StockQuant` — Foto en tiempo real del stock (partida doble)
-- `MovimientoStock` + `LineaMovimientoStock` — Motor de doble entrada
-- `ContratoEscrow` + `HitoEscrow` — Contrato de custodia digital
-- `PerfilCriptografico` — Identidad Ed25519 de cada usuario del sistema
-- `Contacto` con `ubicacion_catastral` (GPS), `es_taller_homologado`, `ucp_score`, `clave_publica_ed25519`
-- `RegistroEOP` — Copia canónica en el nodo MES con Timelock
+- **Desacople Arquitectónico (App `eop`)**: Separación estricta de dominios (Domain-Driven Design). La lógica fiduciaria de la Orden de Producción Electrónica reside exclusivamente en `apps.eop`, manteniendo `produccion` y `tesoreria` agnósticos.
+- `OrdenProduccion` — Módulo industrial puro.
+- `ContratoEOP` + `EOPHitoEscrow` — Contrato de custodia digital y administración fiduciaria (en `eop`).
+- **Retención Fiscal (`FISCAL_PENDING`)**: Estado inyectado en `EOPHitoEscrow` (`requiere_verificacion_arca`). El Fideicomiso no libera el último 20% del pago hasta que el tallerista emite la factura electrónica en ARCA (ex-AFIP), previniendo la defección fiscal.
+- `OPEtapaTracking` — **Lógica de Avance Proporcional Abstracta**. Bloqueos matemáticos just-in-time que impiden a un tallerista declarar avances físicos si la etapa previa no habilitó las unidades suficientes, aplicable a cualquier industria.
+- `StockQuant` — Foto en tiempo real del stock (partida doble).
+- `MovimientoStock` + `LineaMovimientoStock` — Motor de doble entrada.
+- `Contacto` con `ubicacion_catastral` (GPS), `es_taller_homologado`, `ucp_score`.
+- **Motor de Secuencias Alfanuméricas (`apps.base`)**: Implementado motor centralizado con `select_for_update()` para evitar colisiones de concurrencia. Los modelos como `OrdenProduccion`, `MovimientoStock`, y `ComprobanteTesoreria` heredan dinámicamente de `DocumentoBase` determinando su sufijo fiscal o interno al vuelo.
 
-#### Gobernanza y Criptografía (Módulo MES)
+#### Gobernanza y Criptografía (Módulo Federación / MES)
+- `RegistroEOP` — Copia canónica en el nodo MES con Timelock.
 - `ComisionCredito`, `PerfilPTF`, `ResolucionOP`, `TribunalArbitraje` — Modelos de gobernanza.
-- `PTFService` — Motor criptográfico de validación Ed25519 (`PyNaCl`), verificación de firmas en campo y certificados canónicos.
+- `PTFService` — Verificación de firmas en campo y certificados canónicos (Ed25519 con PyNaCl implementado al 100%).
 - `PTFService` — Control espacial Point-in-Polygon (PostGIS) de zonas de cobertura.
 - `PTFService` — Lógica de aprobación exprés, veto de e-OPs y Silencio Positivo (Timelock 48h).
 
-#### Capa de Servicios
+#### Capa de Servicios y Background Tasks
+- `EOPService.procesar_eop()` / `fondear_escrow()` / `liberar_hito()` — Transacciones fiduciarias aisladas. Modificado para no tocar caja local; la liquidación de hitos y el fondeo (Factoring Hito Cero) los realiza exclusivamente el FDI.
+- `EOPService.firmar_contrato_tallerista()` — Sello de identidad local previo a envío a la MES.
+- `constatar_facturas_arca_pendientes()` — Celery Task que hace polling automático contra AFIP para destrabar hitos en `FISCAL_PENDING`.
+- Signals en `eop/signals.py` — Puente asíncrono para coordinar avances físicos con auditorías PTF.
 - `StockService.reservar_linea()` / `realizar_linea()` / `cancelar_linea()`
-- `ProduccionService.confirmar_op()` / `finalizar_op()` / `cancelar_op()`
-- `EscrowService.fondear_escrow()` / `liberar_hito()`
+- `ProduccionService.confirmar_op()` / `finalizar_op()` / `cancelar_op()` (Auditoría: se evita la duplicación de deuda en OPs federadas).
 - `ComprasService.confirmar_oc()` / `cancelar_oc()`
 - `VentasService.procesar_orden_woocommerce()` / `procesar_producto_woocommerce()`
 
-#### Vistas (CBVs)
-- Pattern ListViews + DetailViews en todos los módulos
-- Pattern Action Views (POST-only) para todas las transacciones críticas
-- Enrutamiento completo en `core/urls.py`
+#### Vistas (CBVs), Enrutamiento y API Federada
+- Pattern ListViews + DetailViews en todos los módulos (incluyendo la nueva app `eop` y `tesoreria`).
+- Action Views fiduciarios: `AceptarContratoEOPActionView` (firma tallerista), `CargarFacturaHitoActionView` (destrabe manual ARCA).
+- **Webhooks Federados**: `MESWebhookHitoLiberadoAPIView` y `MESWebhookContratoFondeadoAPIView` listos para recibir instrucciones PUSH de fondeo y pago desde el Fideicomiso (vía MES) hacia el ERP local.
+- Enrutamiento modular (incluyendo `eop/urls.py`, `tesoreria/urls.py`) registrado en `core/urls.py`.
 
 #### Integración WooCommerce
 - `TiendaWooCommerce` — Modelo multitienda con credenciales por instancia
@@ -173,7 +175,7 @@ El campo `firmas_digitales` (JSONField) almacena las firmas de cada rol:
 ```
 `django-simple-history` toma un snapshot inmutable del documento en cada firma, creando una cadena de evidencia auditable.
 
-> **Pendiente crítico:** La verificación matemática Ed25519 (`PyNaCl`) no está implementada. Actualmente se verifica la presencia de `firma_hex` pero no su validez criptográfica.
+> **Implementado:** La verificación matemática Ed25519 con la librería `PyNaCl` ya se encuentra plenamente integrada en `PTFService` y los Webhooks de la red.
 
 ---
 
@@ -707,261 +709,11 @@ sequenceDiagram
 
 ---
 
-## 9. Motor de Secuencias Alfanuméricas (Módulo Base)
 
-### 9.1. Diagnóstico y Objetivo Arquitectónico
-En un ERP/MES industrial, la numeración de los documentos operativos (`OrdenProduccion`, `MovimientoStock`, `OrdenCompra`, `OrdenVenta`, `DocumentoDeuda`) no puede depender de concatenaciones ad-hoc (ej: `OP-MRP-{uuid[:6]}` o contadores volátiles en memoria). 
-
-Para garantizar:
-1. **Correlatividad ininterrumpida y trazabilidad fiscal/operativa:** Los números deben ser correlativos, auditables y sin huecos arbitrarios.
-2. **Seguridad ante concurrencia (Anti-Race Condition):** Dos procesos simultáneos (ej: dos webhooks paralelos de WooCommerce o dos operarios emitiendo OPs) jamás deben generar el mismo número de documento.
-3. **Parametrización flexible:** Cada tipo de documento debe poder configurar su prefijo dinámico (con tokens de fecha como año y mes), sufijo, longitud de relleno (`padding`) con ceros y política de reinicio periódico.
-
-La arquitectura adopta un **Motor de Secuencias Centralizado** dentro de `apps.base`, desacoplado de las aplicaciones funcionales y consumido universalmente por la clase abstracta `DocumentoBase`.
-
-### 9.2. Diagrama de Arquitectura y Modelo de Datos (ERD)
-
-```mermaid
-erDiagram
-    CONFIGURACION_EMPRESA ||--o{ SECUENCIA : "posee"
-    SECUENCIA ||--o{ DOCUMENTO_BASE : "numera"
-    
-    SECUENCIA {
-        int id PK
-        string codigo UK "Slug único (ej: produccion.op)"
-        string nombre "Nombre descriptivo"
-        string prefijo "Plantilla (ej: OP-%(year)s-)"
-        string sufijo "Plantilla opcional"
-        int longitud_relleno "Padding ceros (ej: 5)"
-        int siguiente_numero "Próximo valor entero (ej: 1)"
-        int incremento "Salto (default: 1)"
-        boolean reinicio_anual "Resetea el 1° de enero"
-        boolean reinicio_mensual "Resetea el 1° de mes"
-        date ultimo_reinicio "Fecha último ciclo"
-        boolean activa
-        int empresa_id FK
-    }
-
-    DOCUMENTO_BASE {
-        string numero UK "Asignado por SecuenciaService"
-        date fecha
-        string estado
-        text observaciones
-    }
-
-    ORDEN_PRODUCCION ||--|| DOCUMENTO_BASE : "hereda (SECUENCIA = produccion.op)"
-    MOVIMIENTO_STOCK ||--|| DOCUMENTO_BASE : "hereda (SECUENCIA = inventario.traslado)"
-    ORDEN_COMPRA ||--|| DOCUMENTO_BASE : "hereda (SECUENCIA = compras.oc)"
-    ORDEN_VENTA ||--|| DOCUMENTO_BASE : "hereda (SECUENCIA = ventas.ov)"
-```
-
-### 9.3. Control de Concurrencia y Bloqueo Pesimista (Sequence Lock)
-
-Para prevenir colisiones por condición de carrera en entornos multi-worker (Gunicorn + Celery), el método de obtención del número adquiere un bloqueo pesimista a nivel de fila (`SELECT ... FOR UPDATE`) sobre el registro de la secuencia en PostgreSQL dentro de una transacción atómica:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant W1 as Worker 1 (Creando OP)
-    participant W2 as Worker 2 (Creando OP)
-    participant DB as PostgreSQL (Tabla base_secuencia)
-    
-    W1->>DB: BEGIN TRANSACTION
-    W2->>DB: BEGIN TRANSACTION
-    W1->>DB: SELECT * FROM base_secuencia WHERE codigo='produccion.op' FOR UPDATE
-    Note over DB: Fila bloqueada exclusivamente por Worker 1
-    W2->>DB: SELECT * FROM base_secuencia WHERE codigo='produccion.op' FOR UPDATE
-    Note over W2,DB: Worker 2 entra en espera (bloqueado por lock)
-    
-    W1->>W1: Genera número: "OP-2026-00042"
-    W1->>DB: UPDATE base_secuencia SET siguiente_numero = 43
-    W1->>DB: COMMIT TRANSACTION
-    Note over DB: Lock liberado. Se despacha Worker 2
-    
-    DB-->>W2: Retorna fila actualizada (siguiente_numero = 43)
-    W2->>W2: Genera número: "OP-2026-00043"
-    W2->>DB: UPDATE base_secuencia SET siguiente_numero = 44
-    W2->>DB: COMMIT TRANSACTION
-```
-
-### 9.4. Especificación Técnica de Implementación
-
-#### Modelo `Secuencia` (`apps/base/models.py`)
-```python
-class Secuencia(TimeStampedModel):
-    """
-    Motor centralizado de secuencias alfanuméricas consecutivas para documentos.
-    Gestiona numeración con prefijos de fecha, padding configurable y reinicio periódico.
-    """
-
-    empresa = models.ForeignKey(
-        "base.ConfiguracionEmpresa",
-        on_delete=models.CASCADE,
-        related_name="secuencias",
-        null=True,
-        blank=True,
-        verbose_name=_("Empresa"),
-    )
-    codigo = models.CharField(
-        max_length=50,
-        unique=True,
-        verbose_name=_("Código único"),
-        help_text=_(
-            "Slug identificador unívoco (ej: 'produccion.op', 'inventario.traslado')"
-        ),
-    )
-    nombre = models.CharField(max_length=100, verbose_name=_("Nombre descriptivo"))
-    prefijo = models.CharField(
-        max_length=50,
-        blank=True,
-        default="",
-        verbose_name=_("Prefijo"),
-        help_text=_("Variables dinámicas admitidas: %(year)s, %(month)02d, %(day)02d"),
-    )
-    sufijo = models.CharField(
-        max_length=50, blank=True, default="", verbose_name=_("Sufijo")
-    )
-    longitud_relleno = models.PositiveIntegerField(
-        default=5,
-        verbose_name=_("Longitud de relleno (Padding)"),
-        help_text=_(
-            "Cantidad de dígitos numéricos con ceros a la izquierda (ej: 5 -> 00001)"
-        ),
-    )
-    siguiente_numero = models.PositiveIntegerField(
-        default=1, verbose_name=_("Siguiente número a emitir")
-    )
-    incremento = models.PositiveIntegerField(
-        default=1, verbose_name=_("Paso de incremento")
-    )
-    reinicio_anual = models.BooleanField(
-        default=False,
-        verbose_name=_("Reiniciar anualmente"),
-        help_text=_("Si se marca, el contador vuelve a 1 cada 1° de enero"),
-    )
-    reinicio_mensual = models.BooleanField(
-        default=False,
-        verbose_name=_("Reiniciar mensualmente"),
-        help_text=_("Si se marca, el contador vuelve a 1 cada inicio de mes"),
-    )
-    ultimo_reinicio = models.DateField(
-        null=True, blank=True, verbose_name=_("Fecha de último reinicio")
-    )
-    activa = models.BooleanField(default=True, verbose_name=_("Activa"))
-
-    class Meta:
-        verbose_name = _("Secuencia de documento")
-        verbose_name_plural = _("Secuencias de documentos")
-        ordering = ["codigo"]
-
-    def __str__(self):
-        return f"{self.nombre} ({self.codigo})"
-```
-
-#### Servicio `SecuenciaService` (`apps/base/services.py`)
-```python
-class SecuenciaService:
-    @staticmethod
-    @transaction.atomic
-    def obtener_siguiente_numero(codigo, fecha=None):
-        """
-        Obtiene el siguiente número formateado para la secuencia especificada,
-        adquiriendo un bloqueo pesimista a nivel de fila (select_for_update)
-        para garantizar aislamiento absoluto y prevenir colisiones concurrentes.
-        """
-        fecha_ref = fecha or timezone.now().date()
-
-        # Bloqueo exclusivo de fila en base de datos
-        secuencia = (
-            Secuencia.objects.select_for_update()
-            .filter(codigo=codigo, activa=True)
-            .first()
-        )
-        if not secuencia:
-            raise ValueError(
-                f"No existe una secuencia activa configurada para el código '{codigo}'."
-            )
-
-        # Evaluar reglas de reinicio temporal (anual o mensual)
-        if secuencia.ultimo_reinicio:
-            if (
-                secuencia.reinicio_anual
-                and secuencia.ultimo_reinicio.year != fecha_ref.year
-            ):
-                secuencia.siguiente_numero = 1
-                secuencia.ultimo_reinicio = fecha_ref
-            elif secuencia.reinicio_mensual and (
-                secuencia.ultimo_reinicio.year != fecha_ref.year
-                or secuencia.ultimo_reinicio.month != fecha_ref.month
-            ):
-                secuencia.siguiente_numero = 1
-                secuencia.ultimo_reinicio = fecha_ref
-        else:
-            secuencia.ultimo_reinicio = fecha_ref
-
-        numero_actual = secuencia.siguiente_numero
-        secuencia.siguiente_numero += secuencia.incremento
-        secuencia.save(update_fields=["siguiente_numero", "ultimo_reinicio"])
-
-        # Formateo dinámico de tokens de fecha y ceros a la izquierda
-        contexto_fecha = {
-            "year": fecha_ref.strftime("%Y"),
-            "y": fecha_ref.strftime("%y"),
-            "month": fecha_ref.month,
-            "day": fecha_ref.day,
-        }
-        prefijo_formateado = (
-            secuencia.prefijo % contexto_fecha
-            if "%" in secuencia.prefijo
-            else secuencia.prefijo
-        )
-        sufijo_formateado = (
-            secuencia.sufijo % contexto_fecha
-            if "%" in secuencia.sufijo
-            else secuencia.sufijo
-        )
-        numero_str = str(numero_actual).zfill(secuencia.longitud_relleno)
-
-        return f"{prefijo_formateado}{numero_str}{sufijo_formateado}"
-```
-
-#### Integración en `DocumentoBase` (`apps/base/models.py`)
-```python
-class DocumentoBase(TimeStampedModel):
-    # Atributo de clase a sobreescribir en cada modelo derivado
-    SECUENCIA_CODIGO = None
-
-    numero = models.CharField(max_length=50, unique=True, verbose_name="Número")
-    # ... demás campos ...
-
-    def save(self, *args, **kwargs):
-        if not self.numero and self.SECUENCIA_CODIGO:
-            from apps.base.services import SecuenciaService
-
-            self.numero = SecuenciaService.obtener_siguiente_numero(
-                self.SECUENCIA_CODIGO, fecha=self.fecha
-            )
-        super().save(*args, **kwargs)
-```
-
-### 9.5. Matriz de Secuencias Predeterminadas del Sistema
-
-| Código de Secuencia | Modelo Destino | Plantilla Prefijo | Padding | Ejemplo Resultante |
-|---|---|---|:---:|---|
-| `produccion.op` | `OrdenProduccion` | `OP-%(year)s-` | 5 | `OP-2026-00001` |
-| `inventario.traslado` | `MovimientoStock` (traslado) | `TRA-%(year)s-` | 5 | `TRA-2026-00042` |
-| `inventario.retorno` | `MovimientoStock` (retorno) | `RET-%(year)s-` | 5 | `RET-2026-00015` |
-| `inventario.recepcion` | `MovimientoStock` (ingreso) | `REC-%(year)s-` | 5 | `REC-2026-00089` |
-| `inventario.entrega` | `MovimientoStock` (egreso) | `ENT-%(year)s-` | 5 | `ENT-2026-00102` |
-| `inventario.reserva` | `MovimientoStock` (reserva) | `RES-%(year)s-` | 5 | `RES-2026-00021` |
-| `inventario.devolucion` | `MovimientoStock` (scrap/sobrante) | `DEV-%(year)s-` | 5 | `DEV-2026-00007` |
-| `compras.oc` | `OrdenCompra` | `OC-%(year)s-` | 5 | `OC-2026-00003` |
-| `ventas.ov` | `OrdenVenta` | `OV-%(year)s-` | 5 | `OV-2026-00054` |
-| `contabilidad.liquidacion` | `DocumentoDeuda` (fason) | `LIQ-%(year)s-` | 6 | `LIQ-2026-000001` |
 
 ---
 
-## 10. Roadmap de Implementación (Pendientes)
+## 9. Roadmap de Implementación (Pendientes)
 
 ### Fase A — Frontend, UX y Portales (En curso)
 - [ ] Template base (`base.html`) con sistema de diseño portado de los mockups HTML.
@@ -975,7 +727,6 @@ class DocumentoBase(TimeStampedModel):
 - [ ] **Oráculo de Precios Federado**: Modelo `TarifaConvenio` con nomenclatura universal (ej: `MES-SRV-APARADO`) desacoplada.
 - [ ] Sincronización descentralizada de matriz de costos hacia nodos de Marcas (Webhooks).
 - [ ] Mapeo local de `ProductoTemplate.codigo_homologado_mes` en `apps.inventario` (Puente de cálculo).
-- [ ] Endpoints de federación del Nodo MES (Receptor de e-OPs entrantes).
 - [ ] Emisión, distribución y Lista de Revocación (CRL) de certificados PTF.
 - [ ] Worker Celery para Timelock de 48h (Silencio Positivo) en red.
 - [ ] Verificación GPS en `OPParteProduccion` (PoPW).
@@ -987,14 +738,6 @@ class DocumentoBase(TimeStampedModel):
 - [ ] Relajar restricción de `Receta` (BOM local) en `OrdenProduccion` usando `JSONField` (BOM dinámico externo)
 - [ ] Endpoints DRF en `apps/produccion/` para recibir OPs crudas (`POST /api/v1/interna/e-op/`)
 - [ ] Webhooks de retorno al ERP Legacy para informar liberación de hitos del Escrow
-
-### Fase D — Gobernanza Institucional (COMPLETADA)
-- [x] Completar `ComisionCredito` con las 7 sillas correctas
-- [x] Flujo de votación polimórfico (Habilitación PTFs y Crédito)
-- [x] Bolsa de Trabajo Productivo
-- [x] Tribunal de Arbitraje (72h)
-- [x] Alertas de Colusión (`AlertaColusion` con Celery)
-- [x] Portal de Denuncias de la Comunidad Organizada (Addenda II)
 
 ### Fase E — Integración Fiscal Completa
 - [ ] Implementación completa WSFE (Factura A, B, C)
@@ -1217,7 +960,7 @@ El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la m
 
 ---
 
-## 11. Deuda Técnica Identificada
+## 10. Deuda Técnica Identificada
 
 ### Alta Prioridad
 | Item | Archivo | Descripción |
@@ -1226,7 +969,6 @@ El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la m
 | Actualizar Serializador Federado | `federacion/serializers.py` | `EntradaEOPSerializer` debe aceptar el array de hitos/etapas y sus porcentajes (`cronograma_pagos`) para armar el Escrow dinámico. |
 | Escrow Dinámico en Recepción e-OP | `federacion/views.py` | `RecepcionEOPView.post` debe leer el array de etapas del payload (si existe) y generar los `HitoEscrow` proporcionalmente en lugar de hardcodear 2 hitos. |
 | Disparo de Webhook e-OP | `produccion/services.py:178` | Reemplazar el `TODO` por la emisión HTTP real (POST vía `requests` o Celery) del payload canónico hacia la URL de la MES. |
-| Verificación Ed25519 real | `tesoreria/services.py` | Hoy solo verifica que `firma_hex` existe, no que sea válida matemáticamente |
 | Cancelación de stock en OV eliminada | `ventas/services.py:175` | `eliminar_orden_woocommerce` no llama a `StockService.cancelar_linea()` |
 | `ConfirmarOVActionView` sin servicio | `ventas/views.py:33` | No llama a `VentasService.generar_remito_salida()` |
 | Celery para Webhooks WooCommerce | `ventas/webhooks.py:46` | En producción el webhook sincrónico puede tardar >2s y ser desactivado |
@@ -1248,7 +990,7 @@ El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la m
 
 ---
 
-## 12. Referencias
+## 11. Referencias
 
 - Protocolo e-OP y Mitigación de Fraude en Planta: `docs/paper_protocolo_eop_gobernanza_industrial.md` (§4.2)
 - Dossier FIMCA Base y Sistema de Adelantos: `docs/dossier_fimca_base.md` (Sección II)

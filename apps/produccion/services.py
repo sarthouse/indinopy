@@ -95,34 +95,12 @@ class ProduccionService:
         if op.estado != "borrador":
             return
 
-        # Validación de Crédito FDI solo para e-OPs financiadas
-        if op.es_eop_federada and op.estado_escrow == "financiado_fdi":
-            try:
-                datos_fdi = FederacionCreditoService.consultar_cupo_mes()
-
-                # Bloqueo por Mora
-                if datos_fdi.get("mora_activa"):
-                    raise ValidationError(
-                        "Bloqueo MES: Posees anticipos del FDI vencidos. Regulariza la situación."
-                    )
-
-                # Bloqueo por Cupo (Se financia el servicio de confección: MOD + CS)
-                costo_financiar = (op.costo_mod or 0) + (op.costo_cs or 0)
-                cupo = datos_fdi.get("cupo_disponible", 0.0)
-
-                if float(costo_financiar) > float(cupo):
-                    raise ValidationError(
-                        f"Bloqueo MES: Cupo insuficiente. Requieres ${costo_financiar}, pero dispones de ${cupo}."
-                    )
-            except ValueError as e:
-                # Falló la conexión o la marca no tiene línea asignada
-                raise ValidationError(str(e))
+    # La validación de crédito FDI fue delegada a eop.EOPService mediante signals
 
         op.estado = "confirmado"
         op.save(update_fields=["estado"])
 
         ProduccionService.calcular_insumos_requeridos_op(op)
-        op.sellar_hash_seguridad()
 
         # Si la OP se inyectó de forma externa (Headless API) y trae su propio BOM,
         # asumimos que el inventario se descuenta en el ERP principal (SAP/Odoo) y salteamos la reserva local.
@@ -157,25 +135,8 @@ class ProduccionService:
                 )
                 StockService.reservar_linea(linea)
 
-        # === Lógica del Sistema Dual (RIGI / e-OP Federada) ===
-        if op.es_eop_federada:
-            ct_doc = ContentType.objects.get_for_model(op)
-            payload_str = op.generar_payload_canonico()
-            archivo_json = ContentFile(
-                payload_str.encode("utf-8"), name=f"eOP_{op.numero}_canonical.json"
-            )
-            DocumentoAdjunto.objects.create(
-                content_type=ct_doc,
-                object_id=op.id,
-                nombre=f"Contrato Criptográfico e-OP {op.numero}",
-                archivo=archivo_json,
-                mimetype="application/json",
-                descripcion="Payload canónico inmutable con hash SHA-256 de la Orden de Producción.",
-            )
-
-            # TODO: Aquí el ERP Producción (Nodo Marca) debe disparar un Webhook
-            # o llamada HTTP hacia la URL del Nodo MES usando el payload generado.
-            # No debe acceder directamente a la BD de la MES ni Tesorería.
+        # La inyección en la red federada y la firma de contrato EOP
+        # fue delegada a apps.eop.signals.notificar_avance_fisico_eop
 
     @staticmethod
     @transaction.atomic
@@ -187,23 +148,8 @@ class ProduccionService:
         if op.estado != "confirmado":
             raise ValueError("Solo se pueden avanzar OPs confirmadas.")
 
-        if op.es_eop_federada:
-            # 🛑 Flujo Federado RIGI (Alta Seguridad)
-            if not payload_ptf:
-                raise ValueError(
-                    "Las e-OP federadas requieren firma y coordenadas GPS del PTF para avanzar."
-                )
-
-            # TODO: Llamar al PTFService para verificar_firma_campo(payload_ptf, PTF)
-            # TODO: Llamar a EscrowService para liberar_hito()
-
-            # Por ahora solo actualizamos el estado simulando éxito
-            op.subestado = nueva_etapa
-            op.save(update_fields=["subestado"])
-        else:
-            # 🟢 Flujo Privado (Simple)
-            op.subestado = nueva_etapa
-            op.save(update_fields=["subestado"])
+        op.subestado = nueva_etapa
+        op.save(update_fields=["subestado"])
 
     @staticmethod
     @transaction.atomic
@@ -271,43 +217,13 @@ class ProduccionService:
     def _liquidar_servicios_op(op):
         """
         Calcula el costo del servicio (MOD + CS) de la OP y genera la deuda contable.
-        - Si es FDI (RIGI): Crea una deuda con el FDI a 60 días.
-        - Si es Privado: Crea una deuda con cada tallerista asignado en la OP.
         """
-        # Filtramos hitos liberados o etapas completadas para liquidar
-        hitos_completados = (
-            op.escrow_hitos.filter(estado="liberado") if op.es_eop_federada else None
-        )
+        if op.es_eop_federada:
+            # Si está federada (FDI), la marca le debe al fideicomiso, no a cada tallerista.
+            # Esta deuda nace vía signals en el módulo EOP, por lo que aquí abortamos.
+            return
 
-        if op.es_eop_federada and op.estado_escrow == "financiado_fdi":
-            # Paradigma RIGI: La Marca le debe al FDI
-            contacto_fdi = Contacto.objects.filter(tipo="fdi_mes").first()
-            if not contacto_fdi:
-                return  # Si no hay FDI configurado, no liquidar
-
-            deuda = DocumentoDeuda.objects.create(
-                tipo="deuda_fdi",
-                estado="publicado",
-                contacto=contacto_fdi,
-                fecha_emision=timezone.now().date(),
-                fecha_vencimiento=timezone.now().date()
-                + timezone.timedelta(days=60),  # Regla de plazo fijo a 60 días
-                moneda="ARS",
-                observaciones=f"Crédito FDI por OP {op.numero}",
-            )
-
-            # El monto es el costo financiado
-            costo = (op.costo_mod or Decimal("0.00")) + (op.costo_cs or Decimal("0.00"))
-            LineaDocumentoDeuda.objects.create(
-                documento=deuda,
-                producto=None,
-                descripcion="Adelanto por Servicio de Confección RIGI",
-                cantidad=Decimal("1.0"),
-                precio_unitario=costo,
-                subtotal=costo,
-            )
-
-        elif op.tipo == "fason":
+        if op.tipo == "fason":
             # Paradigma Privado: La Marca le debe a cada Tallerista Externo por separado
             # Buscamos todas las etapas finalizadas y sus talleristas asignados
             for etapa in op.tracking_etapas.filter(estado="finalizada"):
