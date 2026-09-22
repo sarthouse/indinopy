@@ -67,7 +67,7 @@ class ContactoAdmin(SimpleHistoryAdmin):
                 )
             },
         ),
-        ("Tesorería", {"fields": ("limite_credito", "cbu_alias")}),
+        ("Tesorería y Condiciones Comerciales", {"fields": ("limite_credito", "lista_precio_defecto", "cbu_alias")}),
         (
             "Auditoría",
             {

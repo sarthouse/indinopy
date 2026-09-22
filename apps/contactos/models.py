@@ -178,6 +178,15 @@ class Contacto(TimeStampedModel):
         default=Decimal("0.00"),
         verbose_name=_("Límite de crédito en cuenta corriente"),
     )
+    lista_precio_defecto = models.ForeignKey(
+        "ventas.ListaPrecio",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="contactos",
+        verbose_name=_("Lista de precios predeterminada"),
+        help_text=_("Tarifa de venta asignada por defecto a este cliente"),
+    )
 
     # Identidad y Scoring Protocolo e-OP
     es_taller_homologado = models.BooleanField(

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -66,6 +67,8 @@ class RegistroEOPDetailView(LoginRequiredMixin, DetailView):
     model = RegistroEOP
     template_name = "mes/eop_detail.html"
     context_object_name = "registro"
+    slug_field = "uuid_identificador"
+    slug_url_kwarg = "uuid"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -225,7 +228,7 @@ class AprobarEOPActionView(LoginRequiredMixin, View):
                 gps_point = Point(float(lon), float(lat), srid=4326)
             except (ValueError, TypeError):
                 messages.error(request, "Coordenadas GPS inválidas.")
-                return redirect("mes:eop_detail", pk=uuid)
+                return redirect("mes:eop_detail", uuid=uuid)
 
         try:
             PTFService.aprobar_eop(uuid, perfil, firma_hex, gps_point)
@@ -233,7 +236,7 @@ class AprobarEOPActionView(LoginRequiredMixin, View):
         except Exception as e:
             messages.error(request, f"Error al aprobar la e-OP: {str(e)}")
 
-        return redirect("mes:eop_detail", pk=uuid)
+        return redirect("mes:eop_detail", uuid=uuid)
 
 
 class VetarEOPActionView(LoginRequiredMixin, View):
@@ -252,7 +255,7 @@ class VetarEOPActionView(LoginRequiredMixin, View):
         fundamento = request.POST.get("fundamento", "").strip()
         if not fundamento:
             messages.error(request, "El fundamento del veto es obligatorio.")
-            return redirect("mes:eop_detail", pk=uuid)
+            return redirect("mes:eop_detail", uuid=uuid)
 
         try:
             PTFService.vetar_eop(uuid, perfil, fundamento)
@@ -263,7 +266,7 @@ class VetarEOPActionView(LoginRequiredMixin, View):
         except Exception as e:
             messages.error(request, f"Error al vetar la e-OP: {str(e)}")
 
-        return redirect("mes:eop_detail", pk=uuid)
+        return redirect("mes:eop_detail", uuid=uuid)
 
 
 # =====================================================================
@@ -396,5 +399,62 @@ class RadicarDenunciaActionView(LoginRequiredMixin, View):
             messages.success(request, f"Denuncia {denuncia.id} radicada. Tenés Inmunidad Fiscal por 180 días.")
         except Exception as e:
             messages.error(request, f"Error al procesar la denuncia: {str(e)}")
-            
+
         return redirect("mes:eop_list")
+
+
+# =====================================================================
+# PORTAL FIDUCIARIO — Clearing y Liquidación de Escrow (FDI / BAPRO)
+# =====================================================================
+
+
+class DashboardFiduciarioView(LoginRequiredMixin, ListView):
+    """
+    Dashboard del Fideicomiso (FDI) para monitorear hitos de escrow liberados,
+    generar lotes batch de clearing para Banco Provincia y conciliar pagos.
+    """
+    template_name = "mes/fiduciaria/clearing_dashboard.html"
+    context_object_name = "hitos_pendientes"
+
+    def get_queryset(self):
+        from .services import ClearingBAPROService
+        return ClearingBAPROService.obtener_hitos_pendientes_clearing()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from apps.eop.services import UCIService
+        cotizacion = UCIService.obtener_cotizacion_actual()
+        context["cotizacion_uci"] = cotizacion
+
+        # Totales proyectados
+        total_centavos = 0
+        for hito in context["hitos_pendientes"]:
+            monto_uci = ((hito.contrato.costo_mod + hito.contrato.costo_fdi) * hito.porcentaje_tramo) / Decimal("100.00")
+            total_centavos += int((monto_uci * cotizacion) * 100)
+        context["monto_total_ars"] = Decimal(total_centavos) / Decimal("100.00")
+        return context
+
+
+class EjecutarClearingBatchActionView(LoginRequiredMixin, View):
+    """
+    Gatilla la liquidación manual o descarga del lote batch BAPRO desde la UI.
+    """
+    def post(self, request):
+        from .services import ClearingBAPROService
+        hitos_ids = request.POST.getlist("hitos_seleccionados")
+        if not hitos_ids:
+            messages.warning(request, "No seleccionaste ningún hito para liquidar.")
+            return redirect("mes:fiduciaria_dashboard")
+
+        lote_ref = f"LOTE-MANUAL-{timezone.now().strftime('%Y%m%d%H%M')}"
+        resultado = ClearingBAPROService.procesar_callback_clearing(
+            lote_referencia=lote_ref,
+            hitos_ids=[int(hid) for hid in hitos_ids],
+            estado_pago="EXITOSO",
+        )
+        messages.success(
+            request,
+            f"Lote {lote_ref} liquidado exitosamente: {resultado.get('procesados', 0)} órdenes de pago fiduciario generadas."
+        )
+        return redirect("mes:fiduciaria_dashboard")
+

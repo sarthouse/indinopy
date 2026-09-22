@@ -5,9 +5,6 @@ from .models import (
     ComprobanteTesoreria,
     MovimientoCaja,
     Cheque,
-    IndiceUCI,
-    ContratoEscrow,
-    HitoEscrow,
 )
 
 
@@ -56,25 +53,3 @@ class ChequeAdmin(SimpleHistoryAdmin):
     list_filter = ["tipo", "formato", "categoria", "estado", "banco", "fecha_pago"]
     search_fields = ["numero", "banco", "cuit_emisor", "nombre_emisor"]
     date_hierarchy = "fecha_pago"
-
-
-@admin.register(IndiceUCI)
-class IndiceUCIAdmin(SimpleHistoryAdmin):
-    list_display = ("fecha", "valor_ars")
-    search_fields = ("fecha",)
-    ordering = ("-fecha",)
-
-
-class HitoEscrowInline(admin.TabularInline):
-    model = HitoEscrow
-    extra = 0
-    fields = ("nombre", "porcentaje", "estado", "comprobante_pago")
-
-
-@admin.register(ContratoEscrow)
-class ContratoEscrowAdmin(SimpleHistoryAdmin):
-    list_display = ("eop_uuid", "monto_total_uci", "estado", "creado_en")
-    list_filter = ("estado",)
-    search_fields = ("eop_uuid",)
-    inlines = [HitoEscrowInline]
-    readonly_fields = ("creado_en", "modificado_en")

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ comunicacion.numero_oficial|default:"Cédula Oficial" }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 8pt;
+                color: #718096;
+            }
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            color: #1a202c;
+            line-height: 1.5;
+        }
+        .header {
+            border-bottom: 2px solid #2b6cb0;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+        .title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1a365d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .sub-header {
+            font-size: 8.5pt;
+            color: #4a5568;
+            margin-top: 3px;
+        }
+        .badge {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            border: 1px solid #bee3f8;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            font-weight: bold;
+        }
+        .badge-borrador {
+            background-color: #feebc8;
+            color: #c05621;
+            border: 1px solid #fbd38d;
+        }
+        .badge-cco {
+            background-color: #fed7d7;
+            color: #9b2c2c;
+            border: 1px solid #feb2b2;
+        }
+        .card {
+            border: 1px solid #e2e8f0;
+            background-color: #f7fafc;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 8pt;
+            font-weight: bold;
+            color: #718096;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .section-title {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #cbd5e0;
+            padding-bottom: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            margin-bottom: 12px;
+        }
+        th {
+            background-color: #edf2f7;
+            color: #2d3748;
+            padding: 5px 8px;
+            font-size: 8pt;
+            text-align: left;
+            border: 1px solid #cbd5e0;
+        }
+        td {
+            padding: 5px 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 8pt;
+        }
+        .cuerpo-texto {
+            font-size: 9.5pt;
+            white-space: pre-wrap;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 14px;
+            border-radius: 4px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .crypto-box {
+            background-color: #f7fafc;
+            border: 1px solid #cbd5e0;
+            padding: 8px 12px;
+            font-size: 7.5pt;
+            color: #4a5568;
+            margin-top: 15px;
+            font-family: monospace;
+        }
+        .text-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <!-- ENCABEZADO OFICIAL -->
+    <div class="header">
+        <div style="float: right; text-align: right;">
+            {% if comunicacion.estado == 'borrador' %}
+            <span class="badge badge-borrador">DOCUMENTO EN BORRADOR</span>
+            {% else %}
+            <span class="badge">OFICIAL: {{ comunicacion.numero_oficial }}</span>
+            {% endif %}
+            <div style="font-size: 8pt; color: #718096; margin-top: 5px;">
+                Emisión: <strong>{{ fecha_emision_formateada }}</strong>
+            </div>
+        </div>
+        <div class="title">
+            {% if comunicacion.tipo == 'cedula_notificacion' %}Cédula de Notificación Electrónica
+            {% elif comunicacion.tipo == 'laudo_arbitral' %}Cédula de Notificación de Laudo Arbitral
+            {% elif comunicacion.tipo == 'resolucion_comision' %}Resolución de Comisión de Crédito
+            {% elif comunicacion.tipo == 'intimacion_entrega' %}Cédula de Intimación Perentoria
+            {% else %}Comunicación Oficial Inter-Nodo{% endif %}
+        </div>
+        <div class="sub-header">
+            Red Federada Indinopy / FIMCA · Régimen de Domicilio Sectorial Electrónico Fehaciente
+        </div>
+        <div style="clear: both;"></div>
+    </div>
+
+    <!-- CARÁTULA DE IDENTIFICACIÓN DE PARTES -->
+    <div class="card">
+        <div class="card-title">Emisor del Acto Oficial</div>
+        <div style="font-size: 9.5pt; font-weight: bold; color: #2d3748;">
+            {{ comunicacion.nodo_emisor.nombre }}
+        </div>
+        <div style="font-size: 8pt; color: #718096;">
+            CUIT: <strong>{{ comunicacion.cuit_emisor }}</strong> · Tipo de Nodo: {{ comunicacion.nodo_emisor.get_tipo_nodo_display }}
+        </div>
+    </div>
+
+    <!-- AVISO DE COPIA OCULTA (SI EL OBSERVADOR ES CCO) -->
+    {% if es_observador_cco %}
+    <div class="card" style="border-left: 4px solid #e53e3e; background-color: #fff5f5;">
+        <div class="card-title" style="color: #c53030;">Aviso de Notificación Confidencial (Reserva de Identidad)</div>
+        <div style="font-size: 8.5pt; color: #9b2c2c;">
+            Ud. recibe esta copia en carácter de <strong>COPIA OCULTA (CCO)</strong>.
+            Su identidad y CUIT (<strong>{{ mi_cedula_cco.cuit_destino }}</strong>) no figuran en las copias públicas notificadas a las demás partes.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- DESTINATARIOS NOTIFICADOS -->
+    <div class="section-title">Partes Notificadas</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Carácter</th>
+                <th style="width: 45%;">Razón Social / Nodo Destinatario</th>
+                <th style="width: 30%;">CUIT / Identificador</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- DESTINATARIOS PRINCIPALES (TO) -->
+            {% for dest in destinatarios_principales %}
+            <tr>
+                <td><strong>[A] Destinatario Principal</strong></td>
+                <td>{{ dest.nodo_destino.nombre }}</td>
+                <td>{{ dest.cuit_destino }}</td>
+            </tr>
+            {% endfor %}
+
+            <!-- COPIAS PÚBLICAS (CC) -->
+            {% for dest in destinatarios_cc %}
+            <tr>
+                <td style="color: #4a5568;">[CC] Copia Institucional</td>
+                <td>{{ dest.nodo_destino.nombre }}</td>
+                <td>{{ dest.cuit_destino }}</td>
+            </tr>
+            {% endfor %}
+
+            <!-- SI ES EL EMISOR: AUDITORÍA DE DESTINATARIOS OCULTOS (CCO) -->
+            {% if es_emisor and destinatarios_cco %}
+            {% for dest in destinatarios_cco %}
+            <tr style="background-color: #fffaf0;">
+                <td style="color: #c05621;"><strong>[CCO] Copia Oculta (Reservado)</strong></td>
+                <td>{{ dest.nodo_destino.nombre }}</td>
+                <td>{{ dest.cuit_destino }}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- ASUNTO Y CUERPO -->
+    <div class="section-title">Objeto y Contenido</div>
+    <div style="margin-top: 4px; margin-bottom: 6px;">
+        <span style="font-size: 8pt; font-weight: bold; color: #718096; text-transform: uppercase;">Asunto / Carátula:</span>
+        <span style="font-size: 9.5pt; font-weight: bold; color: #1a202c;">{{ comunicacion.asunto }}</span>
+    </div>
+
+    <div class="cuerpo-texto">{{ comunicacion.cuerpo_contenido }}</div>
+
+    <!-- DOCUMENTACIÓN Y EVIDENCIA ADJUNTA -->
+    {% if comunicacion.hashes_adjuntos %}
+    <div class="section-title">Documentación Adjunta</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 35%;">Nombre de Archivo</th>
+                <th style="width: 15%;">Tipo MIME</th>
+                <th style="width: 12%;">Tamaño</th>
+                <th style="width: 38%;">Huella Criptográfica SHA-256</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for adj in comunicacion.hashes_adjuntos %}
+            <tr>
+                <td><strong>{{ adj.nombre }}</strong></td>
+                <td style="color: #4a5568;">{{ adj.mimetype }}</td>
+                <td>{{ adj.tamano }} B</td>
+                <td style="font-family: monospace; font-size: 7.5pt;">{{ adj.sha256 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- PANEL DE CONTROL DE ACUSES (SOLO VISIBLE PARA EL EMISOR) -->
+    {% if es_emisor and comunicacion.estado == 'emitida' %}
+    <div class="section-title">Tablero de Notificación Fehaciente y Acuses</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Destinatario</th>
+                <th>Modo</th>
+                <th>Estado Notificación</th>
+                <th>Fecha Fehaciente</th>
+                <th>Firma Acuse Ed25519</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in todos_destinatarios %}
+            <tr>
+                <td>{{ d.cuit_destino }} ({{ d.nodo_destino.nombre }})</td>
+                <td>{{ d.get_modo_recepcion_display }}</td>
+                <td><strong>{{ d.get_estado_notificacion_display }}</strong></td>
+                <td>{{ d.fecha_notificacion_fehaciente|date:"d/m/Y H:i"|default:"Pendiente (48h)" }}</td>
+                <td style="font-family: monospace; font-size: 7pt;">
+                    {{ d.firma_acuse_recibo|slice:":16" }}{% if d.firma_acuse_recibo %}...{% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- PIE DE SEGURIDAD CRIPTOGRÁFICA -->
+    <div class="crypto-box">
+        <div style="font-weight: bold; margin-bottom: 3px;">CONSTANCIA DE SELLADO CRIPTOGRÁFICO Y DOMICILIO ELECTRÓNICO</div>
+        <div>UUID Global: {{ comunicacion.uuid_identificador }}</div>
+        <div>Hash SHA-256 Canónico: {{ comunicacion.hash_seguridad_payload|default:"PENDIENTE DE SELLADO" }}</div>
+        {% if comunicacion.firma_emisor_ed25519 %}
+        <div>Firma Ed25519 Emisor: {{ comunicacion.firma_emisor_ed25519 }}</div>
+        <div style="color: #2b6cb0; margin-top: 3px;">
+            ✔ Documento sellado y verificable matemáticamente contra la clave pública del Nodo Emisor.
+            Notificación regida bajo el plazo perentorio de 48h (Art. 21 Ley 27.440 / FIMCA).
+        </div>
+        {% else %}
+        <div style="color: #c05621; margin-top: 3px;">
+            ⚠ Documento en borrador. Carece de validez legal fehaciente hasta su firma y emisión oficial.
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

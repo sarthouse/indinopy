@@ -65,6 +65,15 @@ class ProductoTemplate(TimeStampedModel):
 
     nombre = models.CharField(max_length=200)
     codigo_interno = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    codigo_homologado_mes = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        verbose_name=_("Código Homologado MES / Convenio"),
+        help_text=_(
+            "Código universal del Tarifario Homologado de Convenio (ej: MES-SRV-APARADO-BOTA). Permite indexar mano de obra a valores UCI oficiales."
+        ),
+    )
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
     descripcion = models.TextField(blank=True, null=True)
     tipo_producto = models.CharField(

@@ -52,6 +52,118 @@ class UCIService:
 class EOPService:
     @staticmethod
     @transaction.atomic
+    def crear_contrato_desde_op(op, ptf=None, nodo_mes="https://mes.fimca.org", porcentaje_anticipo=None):
+        """
+        Pasa una Orden de Producción (en ARS) a un ContratoEOP colateralizado en UCI.
+        Lee los costos de etapas (MOD), insumos requeridos (BOM), cargas sociales e impuestos,
+        convirtiéndolos a valor UCI vigente.
+        """
+        from apps.base.models import ConfiguracionEmpresa
+
+        cotizacion_uci = UCIService.obtener_cotizacion_actual()
+        if not cotizacion_uci or cotizacion_uci <= 0:
+            cotizacion_uci = Decimal("1.00")
+
+        # 1. Mano de Obra Directa (MOD): Suma de tarifas de servicios de façón homologadas
+        costo_mod_ars = sum(
+            (etapa.costo_servicio_total or Decimal("0.00")) for etapa in op.tracking_etapas.all()
+        )
+
+        # 2. Insumos y Materias Primas Físicas (BOM aportado por la marca comitente)
+        costo_bom_ars = Decimal("0.00")
+        for req in op.insumos_requeridos.all():
+            precio_unit = getattr(req.insumo, "costo", Decimal("0.00")) or Decimal("0.00")
+            costo_bom_ars += req.cantidad_teorica * precio_unit
+
+        # 3. Recargo Institucional de Red MES y Fondo de Riesgo FDI (1.5% s/MOD Financiada)
+        # 1.0% Micro-canon de Red MES + 0.5% Fondo de Riesgo FDI
+        costo_fdi_ars = round(costo_mod_ars * Decimal("0.015"), 2)
+
+        # 4. En el modelo e-OP oficial (Dossier FIMCA):
+        # - Las cargas sociales de nómina interna del taller (F931) son absorbidas por el taller / fomento FDI,
+        #   NO son una deuda que deba pagar la marca comitente (ver Anexo Técnico I).
+        # - La retención tributaria (Monotributo) está incluida dentro de la MOD homologada.
+        # - Margen e impuestos corporativos de balance de la marca no colateralizan el contrato fabril.
+        costo_cs_ars = Decimal("0.00")
+        costo_tax_ars = Decimal("0.00")
+        costo_mg_ars = Decimal("0.00")
+
+        # 5. Conversión a UCI
+        def _to_uci(monto_ars):
+            return round(Decimal(monto_ars) / cotizacion_uci, 2)
+
+        contrato = ContratoEOP.objects.create(
+            orden_produccion_local=op,
+            nodo_mes=nodo_mes,
+            ptf_asignado=ptf,
+            costo_mod=_to_uci(costo_mod_ars),
+            costo_cs=_to_uci(costo_cs_ars),
+            costo_bom=_to_uci(costo_bom_ars),
+            costo_fdi=_to_uci(costo_fdi_ars),
+            costo_tax=_to_uci(costo_tax_ars),
+            costo_mg=_to_uci(costo_mg_ars),
+            estado_escrow="solicitado",
+        )
+
+        # 5. Generar Árbol de Merkle del BOM
+        contrato.merkle_root_bom = contrato.calcular_merkle_root_bom()
+        contrato.save(update_fields=["merkle_root_bom"])
+
+        # 6. Crear Cronograma de Hitos: Regla obligatoria (Mínimo 2 etapas + Hito Cero)
+        etapas_tracking = list(op.tracking_etapas.all().order_by("etapa_origen__orden_ejecucion", "id"))
+        if len(etapas_tracking) < 2:
+            raise ValueError(
+                f"Una e-OP federada requiere un mínimo obligatorio de dos etapas productivas (posee {len(etapas_tracking)})."
+            )
+
+        anticipo = porcentaje_anticipo or (Decimal("50.00") if op.contrato_eop and op.contrato_eop.es_sello_buen_diseno else Decimal("35.00"))
+        if anticipo >= Decimal("100.00") or anticipo <= Decimal("0.00"):
+            anticipo = Decimal("35.00")
+
+        # Hito Cero: Anticipo Operativo de Arranque (no requiere auditoría PTF previa al desembolso)
+        EOPHitoEscrow.objects.create(
+            contrato=contrato,
+            nombre="Hito Cero - Anticipo Operativo de Arranque",
+            porcentaje_tramo=anticipo,
+            requiere_auditoria_ptf=False,
+            requiere_verificacion_arca=False,
+            estado="bloqueado",
+        )
+
+        # Hitos por Etapa: Distribuir el porcentaje restante entre las etapas productivas
+        porcentaje_remanente = Decimal("100.00") - anticipo
+        total_mod = sum((e.costo_servicio_total or Decimal("0.00")) for e in etapas_tracking)
+        porcentaje_acumulado = Decimal("0.00")
+
+        for idx, etapa in enumerate(etapas_tracking):
+            es_ultima = (idx == len(etapas_tracking) - 1)
+            servicio_nombre = etapa.etapa_origen.servicio.nombre if (etapa.etapa_origen and etapa.etapa_origen.servicio) else f"Etapa {idx + 1}"
+            orden = etapa.etapa_origen.orden_ejecucion if etapa.etapa_origen else (idx + 1)
+
+            if es_ultima:
+                # Ajuste de cierre para garantizar exactamente 100.00%
+                porc_etapa = porcentaje_remanente - porcentaje_acumulado
+            else:
+                if total_mod > 0:
+                    costo_e = etapa.costo_servicio_total or Decimal("0.00")
+                    porc_etapa = round((costo_e / total_mod) * porcentaje_remanente, 2)
+                else:
+                    porc_etapa = round(porcentaje_remanente / Decimal(len(etapas_tracking)), 2)
+                porcentaje_acumulado += porc_etapa
+
+            EOPHitoEscrow.objects.create(
+                contrato=contrato,
+                nombre=f"Hito {orden} - Avance: {servicio_nombre}",
+                porcentaje_tramo=porc_etapa,
+                requiere_auditoria_ptf=True,
+                requiere_verificacion_arca=es_ultima,
+                estado="bloqueado",
+            )
+
+        return contrato
+
+    @staticmethod
+    @transaction.atomic
     def fondear_escrow(contrato_id):
         """
         Marca un ContratoEOP como fondeado.

@@ -1,8 +1,8 @@
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import timezone
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
-from .models import OrdenVenta, CanalVenta, LineaOrdenVenta, LineaRecargoOrden
+from .models import OrdenVenta, CanalVenta, LineaOrdenVenta, LineaRecargoOrden, ListaPrecio, ItemListaPrecio
 from apps.inventario.models import MovimientoStock, LineaMovimientoStock, Ubicacion, Producto
 from apps.inventario.services import StockService
 from apps.contactos.models import Contacto
@@ -54,6 +54,7 @@ class VentasService:
                 "cupones_aplicados": [{"code": c.codigo, "discount": str(c.monto_descuento)} for c in orden_dto.cupones],
                 "datos_adicionales_meta": orden_dto.datos_adicionales_meta,
                 "fecha": timezone.now().date(),
+                "lista_precio": getattr(cliente, "lista_precio_defecto", None),
             }
         )
 
@@ -269,10 +270,11 @@ class VentasService:
         cond_receptor = getattr(orden.cliente, "condicion_iva", "consumidor_final")
 
         letra = "B"
-        if cond_emisor == "monotributista" or cond_emisor == "exento":
+        if cond_emisor in ["monotributista", "exento"]:
             letra = "C"
         elif cond_emisor == "responsable_inscripto":
-            if cond_receptor == "responsable_inscripto":
+            # Conforme RG 5003/2021 (Ley 27.618), los RI deben emitir Factura 'A' a Monotributistas
+            if cond_receptor in ["responsable_inscripto", "monotributista"]:
                 letra = "A"
             else:
                 letra = "B"
@@ -384,5 +386,38 @@ class VentasService:
         factura.save(update_fields=["monto_neto", "monto_impuestos", "monto_tributos", "monto_total"])
 
         return factura
+
+    @classmethod
+    def obtener_precio_venta(cls, producto: Producto, lista_precio: ListaPrecio = None, cantidad: Decimal = Decimal("1.0")) -> Decimal:
+        """
+        Calcula el precio unitario aplicable para un producto/variante.
+        1. Si se provee lista_precio:
+           - Busca un ItemListaPrecio que cumpla con la cantidad_minima (priorizando el tramo más alto).
+           - Verifica que esté vigente en la fecha actual.
+        2. Si no hay lista_precio o no hay ítem coincidente:
+           - Fallback: toma el precio base del ProductoTemplate + precio_extra de la variante Producto.
+        """
+        if lista_precio and lista_precio.activa:
+            hoy = timezone.now().date()
+            item = (
+                lista_precio.items.filter(
+                    producto=producto,
+                    cantidad_minima__lte=cantidad,
+                )
+                .filter(
+                    models.Q(vigencia_desde__isnull=True) | models.Q(vigencia_desde__lte=hoy),
+                    models.Q(vigencia_hasta__isnull=True) | models.Q(vigencia_hasta__gte=hoy),
+                )
+                .order_by("-cantidad_minima")
+                .first()
+            )
+            if item:
+                return item.precio_unitario
+
+        # Fallback al catálogo base
+        base_precio = Decimal(str(getattr(producto.template, "precio", "0.00")))
+        extra = Decimal(str(getattr(producto, "precio_extra", "0.00")))
+        return base_precio + extra
+
 
 

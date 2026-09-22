@@ -1,10 +1,10 @@
 from decimal import Decimal
 from django.test import TestCase
 from django.utils import timezone
-from apps.base.models import ConfiguracionEmpresa
+from apps.base.models import ConfiguracionEmpresa, Moneda
 from apps.contactos.models import Contacto
-from apps.inventario.models import Producto, Ubicacion
-from apps.ventas.models import CanalVenta, OrdenVenta, LineaOrdenVenta
+from apps.inventario.models import Producto, Ubicacion, ProductoTemplate, UnidadMedida
+from apps.ventas.models import CanalVenta, OrdenVenta, LineaOrdenVenta, ListaPrecio, ItemListaPrecio
 from apps.ventas.dtos import (
     OrdenVentaDTO,
     ClienteDTO,
@@ -343,3 +343,80 @@ class VentasDesacopleTestCase(TestCase):
         self.assertTrue(
             report_pedido.nombre_archivo.startswith("Nota_Pedido_PRE-2026-0001")
         )
+
+    def test_lista_precios_y_resolucion_tarifas(self):
+        """
+        Valida que:
+        1. Se puedan crear Listas de Precios e Items de Listas.
+        2. VentasService.obtener_precio_venta resuelva el precio de la lista activa.
+        3. Si no existe ítem en la lista, aplique fallback al precio base del template (+ extra).
+        4. Al ingestar una orden asignando un cliente con lista por defecto, la OV herede la lista.
+        """
+        moneda_ars, _ = Moneda.objects.get_or_create(
+            codigo="ARS", defaults={"nombre": "Pesos Argentinos", "simbolo": "$"}
+        )
+        uom, _ = UnidadMedida.objects.get_or_create(
+            nombre="Pares", defaults={"simbolo": "par", "tipo": "unidad"}
+        )
+        template = ProductoTemplate.objects.create(
+            nombre="Zapatilla Urbana Base",
+            precio=Decimal("30000.00"),
+            costo=Decimal("15000.00"),
+            unidad_medida=uom,
+        )
+        prod_variante = Producto.objects.create(
+            template=template,
+            sku="ZAP-URB-41",
+            precio_extra=Decimal("2000.00"),
+        )
+
+        lista_mayorista = ListaPrecio.objects.create(
+            nombre="Tarifa Mayorista B2B",
+            codigo="MAY-01",
+            moneda=moneda_ars,
+            activa=True,
+        )
+
+        # Precio específico para la variante en la lista mayorista
+        ItemListaPrecio.objects.create(
+            lista=lista_mayorista,
+            producto=prod_variante,
+            precio_unitario=Decimal("25000.00"),
+            cantidad_minima=Decimal("1.0"),
+        )
+
+        # 1. Precio con lista mayorista
+        precio_resuelto = VentasService.obtener_precio_venta(
+            prod_variante, lista_precio=lista_mayorista, cantidad=Decimal("1.0")
+        )
+        self.assertEqual(precio_resuelto, Decimal("25000.00"))
+
+        # 2. Fallback sin lista (template.precio + precio_extra = 30000 + 2000 = 32000)
+        precio_fallback = VentasService.obtener_precio_venta(prod_variante, lista_precio=None)
+        self.assertEqual(precio_fallback, Decimal("32000.00"))
+
+        # 3. Fallback en lista que no tiene el item cargado
+        lista_vacia = ListaPrecio.objects.create(
+            nombre="Lista Vacía",
+            codigo="EMPTY",
+            moneda=moneda_ars,
+            activa=True,
+        )
+        precio_lista_vacia = VentasService.obtener_precio_venta(prod_variante, lista_precio=lista_vacia)
+        self.assertEqual(precio_lista_vacia, Decimal("32000.00"))
+
+        # 4. Asignar lista por defecto al cliente y comprobar que OrdenVenta la toma
+        cliente = Contacto.objects.create(
+            codigo="CLI-DIST-01",
+            nombre="Distribuidora Calzados",
+            tipo="cliente",
+            lista_precio_defecto=lista_mayorista,
+        )
+        orden = OrdenVenta.objects.create(
+            canal=self.canal,
+            numero="OV-TEST-LP",
+            cliente=cliente,
+            lista_precio=cliente.lista_precio_defecto,
+        )
+        self.assertEqual(orden.lista_precio, lista_mayorista)
+

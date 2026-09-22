@@ -748,3 +748,110 @@ class ScoringTallerista(TimeStampedModel):
 
     def __str__(self):
         return f"Score {self.tallerista}: {self.score_global_calculado}"
+
+
+# =========================================================================
+# ORÁCULO DE PRECIOS, CRL Y BOLETÍN OFICIAL SECTORIAL (FASE 1)
+# =========================================================================
+
+class TarifaConvenio(TimeStampedModel):
+    """
+    Oráculo de Precios y Costos de Convenio fijados por la MES.
+    Establece los valores de referencia en Unidades de Cuenta Industrial (UCI).
+    """
+
+    codigo_universal = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name=_("Código Universal MES"),
+        help_text=_("Ej: MES-SRV-CORTE, MES-SRV-APARADO, MES-SRV-MONTAJE"),
+    )
+    servicio_nombre = models.CharField(
+        max_length=150, verbose_name=_("Denominación del Proceso / Servicio")
+    )
+    descripcion = models.TextField(blank=True, verbose_name=_("Alcance Técnico"))
+    precio_referencia_uci = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name=_("Tarifa de Referencia (UCI)"),
+        help_text=_("Valor homologado en unidades de cuenta industrial"),
+    )
+    vigencia_desde = models.DateField(default=timezone.now, verbose_name=_("Vigencia Desde"))
+    vigencia_hasta = models.DateField(null=True, blank=True, verbose_name=_("Vigencia Hasta"))
+    activo = models.BooleanField(default=True, verbose_name=_("Activo en Oráculo"))
+
+    class Meta:
+        verbose_name = _("Tarifa de Convenio (Oráculo MES)")
+        verbose_name_plural = _("Tarifas de Convenio (Oráculo MES)")
+        ordering = ["codigo_universal"]
+
+    def __str__(self):
+        return f"{self.codigo_universal} - {self.servicio_nombre}: {self.precio_referencia_uci} UCI"
+
+
+class RevocacionCertificadoPTF(TimeStampedModel):
+    """
+    Lista de Revocación de Certificados (CRL) de la Autoridad Certificante MES.
+    Permite invalidar credenciales de PTFs sancionados o dados de baja.
+    """
+
+    perfil_ptf = models.ForeignKey(
+        PerfilPTF, on_delete=models.CASCADE, related_name="revocaciones"
+    )
+    hash_certificado = models.CharField(
+        max_length=64, verbose_name=_("Hash SHA-256 del Certificado Revocado")
+    )
+    motivo_revocacion = models.TextField(verbose_name=_("Motivo / Causal de Revocación"))
+    fecha_revocacion = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = _("Revocación de Certificado PTF (CRL)")
+        verbose_name_plural = _("Revocaciones de Certificados PTF (CRL)")
+        ordering = ["-fecha_revocacion"]
+
+    def __str__(self):
+        return f"CRL: {self.perfil_ptf.usuario.username} ({self.fecha_revocacion.strftime('%Y-%m-%d')})"
+
+
+class EdicionBoletinSectorial(TimeStampedModel):
+    """
+    Publicación periódica oficial de la MES con resoluciones, tarifas y laudos.
+    Emite fe pública fiduciaria a toda la red federada FIMCA.
+    """
+
+    comision = models.ForeignKey(
+        ComisionCredito,
+        on_delete=models.CASCADE,
+        related_name="boletines",
+        verbose_name=_("Comisión Emisora"),
+    )
+    numero_edicion = models.PositiveIntegerField(verbose_name=_("Número de Edición"))
+    fecha_publicacion = models.DateField(default=timezone.now, verbose_name=_("Fecha de Publicación"))
+    titulo = models.CharField(max_length=200, verbose_name=_("Título / Carátula"))
+    sumario_resoluciones = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name=_("Sumario Normativo"),
+        help_text=_("Estructura de tarifas promulgadas, laudos arbitrales y talleres homologados"),
+    )
+    hash_seguridad_publicacion = models.CharField(
+        max_length=64,
+        blank=True,
+        verbose_name=_("Hash SHA-256 del Boletín"),
+    )
+    firma_mes = models.CharField(
+        max_length=128,
+        blank=True,
+        verbose_name=_("Firma Ed25519 de la MES"),
+    )
+    publicada = models.BooleanField(default=False, verbose_name=_("Publicado Oficialmente"))
+
+    class Meta:
+        verbose_name = _("Edición Boletín Oficial Sectorial")
+        verbose_name_plural = _("Ediciones Boletín Oficial Sectorial")
+        unique_together = ("comision", "numero_edicion")
+        ordering = ["-numero_edicion"]
+
+    def __str__(self):
+        return f"Boletín Oficial MES N° {self.numero_edicion} ({self.fecha_publicacion})"
+

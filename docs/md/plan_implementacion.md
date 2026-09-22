@@ -547,14 +547,14 @@ GET  /federacion/banco/clearing/pendientes/  ← Lotes de pago a ejecutar
 POST /federacion/banco/clearing/confirmar/   ← Webhook del BAPRO tras pagar
 ```
 
-### Oráculo de Precios y Nomenclador Sectorial (Vector C)
+### Tarifario Homologado de Convenio y Nomenclador Sectorial (Vector C)
 
-Para garantizar que el cálculo de la mano de obra y las cargas sociales (Vector C de la e-OP) se actualice automáticamente sin acoplar la MES a los inventarios privados de cada marca, se utilizará un patrón de **Nomenclador Sectorial (Mapping)**:
+Para garantizar que el cálculo de la mano de obra façonera (Vector C de la e-OP) se actualice automáticamente sin acoplar la MES a los inventarios privados de cada marca, se utiliza el patrón de **Tarifario Homologado de Convenio y Mapeo Sectorial**:
 
-1. **Catálogo Abstracto (Nodo MES):** El nodo central mantiene un modelo `TarifaConvenio` utilizando un código universal (ej: `MES-SRV-APARADO-BOTA`). Define los costos base de mano de obra y los porcentajes de cargas sociales, sin dependencias con `ProductoTemplate`.
-2. **Mapeo Local (Nodo Marca):** En el ERP de cada marca (`apps.inventario`), el servicio interno (ej: "Costura de mi Borcego") tiene un campo `codigo_homologado_mes` donde el usuario enlaza su servicio privado con la nomenclatura de la MES.
-3. **Sincronización (Federación):** La MES dispara webhooks firmados criptográficamente cada vez que hay una actualización paritaria. Los nodos de las marcas reciben el JSON, validan la firma de la MES y actualizan su caché local de tarifas.
-4. **Snapshot Inmutable (Producción):** Al crear una e-OP, el motor busca el `codigo_homologado_mes`, extrae la tarifa vigente del caché y guarda los montos calculados en `costo_mod` y `costo_cs` de la e-OP. Si las tarifas cambian al día siguiente, el contrato inteligente de la OP ya firmada permanece inalterable.
+1. **Catálogo Central (Nodo MES):** El nodo central mantiene el modelo `TarifaConvenio` utilizando un código universal (ej: `MES-SRV-APARADO-BOTA`). Define los precios de referencia de mano de obra en UCI homologados en paritarias, sin dependencias con `ProductoTemplate`.
+2. **Mapeo Local (Nodo Marca):** En el ERP de cada marca (`apps.inventario`), el servicio interno (ej: "Aparado de Bota") tiene un campo `codigo_homologado_mes` donde el usuario enlaza su servicio local con la nomenclatura de la MES.
+3. **Sincronización (Federación):** La MES distribuye las actualizaciones paritarias homologadas en el Boletín Oficial Sectorial y vía la API `/federacion/api/v1/tarifario/convenio/`.
+4. **Snapshot Inmutable (Producción):** Al generar una e-OP, el motor busca el `codigo_homologado_mes`, extrae la tarifa de referencia y guarda los montos calculados en `costo_mod` y `costo_fdi` de la e-OP en Unidades de Cuenta Industrial (UCI). Si las tarifas paritarias cambian posteriormente, el contrato fiduciario de la e-OP ya firmada permanece inalterable.
 
 ---
 
@@ -615,13 +615,15 @@ Para consultar la fundamentación teórica, doctrina legal (Arts. 1251 y 1356 CC
 ## 8. Roadmap de Implementación (Fases Pendientes)
 
 ### Fase 1 — Red Federada (Módulo MES)
-- [ ] **Oráculo de Precios Federado**: Modelo `TarifaConvenio` con nomenclatura universal (ej: `MES-SRV-APARADO`) desacoplada.
-- [ ] Sincronización descentralizada de matriz de costos hacia nodos de Marcas (Webhooks).
-- [ ] Mapeo local de `ProductoTemplate.codigo_homologado_mes` en `apps.inventario` (Puente de cálculo).
-- [ ] Emisión, distribución y Lista de Revocación (CRL) de certificados PTF.
-- [ ] Worker Celery para Timelock de 48h (Silencio Positivo) en red.
-- [ ] Verificación GPS en `OPParteProduccion` (PoPW).
-- [ ] **Portal Fiduciario**: Desarrollo del Dashboard de Clearing (`/mes/fiduciaria/`) con generador de lotes BAPRO y endpoint de callbacks (conciliación automática y disparo de factura AFIP).
+- [x] **Tarifario Homologado de Convenio Federado**: Modelo `TarifaConvenio` con nomenclatura universal (ej: `MES-SRV-APARADO`) desacoplada y servicio `TarifarioConvenioService`.
+- [x] **Boletín Oficial Sectorial**: Publicación consecutiva, sumario canónico firmado con Ed25519, reporte PDF institucional (`BoletinSectorialPDFReport`) y endpoint público federado.
+- [x] Sincronización descentralizada de matriz de costos hacia nodos de Marcas vía endpoint público federado `/federacion/api/v1/tarifario/convenio/`.
+- [x] Mapeo local de `ProductoTemplate.codigo_homologado_mes` en `apps.inventario` (Puente de cálculo).
+- [x] Emisión, distribución y Lista de Revocación de Certificados (CRL) de credenciales PTF (`CRLService` y endpoint federado `/federacion/api/v1/pki/crl/`).
+- [x] Worker Celery para Timelock de 48h (Silencio Positivo) en red (`procesar_silencio_positivo_timelock_async`).
+- [x] Verificación GPS en `OPParteProduccion` (PoPW): Validación geoespacial en `ProduccionService.registrar_parte_produccion_popw` y en webhook federado contra `Contacto.ubicacion_catastral`.
+- [x] **Portal Fiduciario & Clearing BAPRO**: `ClearingBAPROService` con generador de lotes batch estandarizados en texto plano (`.txt` Interbanking / BAPRO), Dashboard fiduciario MVT (`/mes/fiduciaria/`), endpoint de exportación `/federacion/api/v1/banco/clearing/pendientes/` y endpoint de callback y conciliación `/federacion/api/v1/banco/clearing/confirmar/`.
+- [x] **Comunicaciones Oficiales y Cédulas Digitales Inter-Nodo**: Modelo `ComunicacionOficialFederada` (GDE sectorial), `ComunicacionOficialService` (emisión con firma Ed25519, acuses fehacientes de entrega y worker de notificación tácita a las 48h) y endpoints de buzón electrónico.
 - [ ] **Permisos Institucionales**: Decoradores y validación de rol `OficialFiduciario` en vistas de clearing y restricción de firma Ed25519 en e-OP a apoderados legales y PTFs.
 
 ### Fase 2 — Integración Headless (API Gateway e-OP)
@@ -694,20 +696,20 @@ El módulo `apps.nomina` cuenta con la modelización básica de legajos (`Emplea
 ## 9. Deuda Técnica Identificada
 
 ### Alta Prioridad
-| Item | Archivo | Descripción |
-|---|---|---|
-| Refactor Payload Canónico (e-OP) | `produccion/models.py` | `generar_payload_canonico()` debe incluir CUITs, monto total UCI y el cronograma dinámico de etapas para acoplarse con la MES. |
-| Actualizar Serializador Federado | `federacion/serializers.py` | `EntradaEOPSerializer` debe aceptar el array de hitos/etapas y sus porcentajes (`cronograma_pagos`) para armar el Escrow dinámico. |
-| Escrow Dinámico en Recepción e-OP | `federacion/views.py` | `RecepcionEOPView.post` debe leer el array de etapas del payload (si existe) y generar los `HitoEscrow` proporcionalmente en lugar de hardcodear 2 hitos. |
-| Disparo de Webhook e-OP | `produccion/services.py:178` | Reemplazar el `TODO` por la emisión HTTP real (POST vía `requests` o Celery) del payload canónico hacia la URL de la MES. |
+| Item | Archivo | Descripción | Estado |
+|---|---|---|---|
+| Refactor Payload Canónico (e-OP) | `apps/eop/models.py` | `generar_payload_canonico()` y `calcular_merkle_root_bom()` implementados en `ContratoEOP` con CUITs, vector de costos, total UCI, cronograma dinámico de hitos y etapas productivas. | ✅ Resuelto |
+| Actualizar Serializador Federado | `apps/federacion/serializers.py` | `EntradaEOPSerializer` valida el array de hitos (`cronograma_escrow_hitos`), control de 100% de suma y firma Ed25519 sobre payload canónico. | ✅ Resuelto |
+| Escrow Dinámico en Recepción e-OP | `apps/federacion/views.py` | `RecepcionEOPView.post` instancia dinámicamente los `EOPHitoEscrow` a partir del cronograma recibido en el payload (con fallback a 35/50% SBD). | ✅ Resuelto |
+| Disparo de Webhook e-OP | `apps/federacion/services.py` | Implementado `FederacionCreditoService.transmitir_eop_a_mes()` con HTTP POST real del sobre de transporte hacia `/federacion/eop/entrante/`. | ✅ Resuelto |
 
 ### Media Prioridad
-| Item | Descripción |
-|---|---|
-| Eliminar importaciones diferidas | En `federacion/views.py`, subir el `from django.http import HttpResponseForbidden` al tope del archivo para respetar la guía de estilo, sacándolo del interior de los métodos `dispatch`. |
-| Roles PTF en `MiembroComision` | Faltan los nodos: Talleristas Mono, Talleristas SAS, Municipio |
-| Filtro por rol en OPListView | Cualquier usuario logueado ve todas las e-OPs |
-| `Producto` sin `precio_venta` verificado | El campo en `ventas/services.py` puede no existir con ese nombre |
+| Item | Descripción | Estado |
+|---|---|---|
+| Eliminar importaciones diferidas | En `federacion/views.py`, se centralizó `HttpResponseForbidden` al tope del archivo removiéndolo de todos los métodos `dispatch`. | ✅ Resuelto |
+| Roles PTF en `MiembroComision` | Faltan los nodos: Talleristas Mono, Talleristas SAS, Municipio | Pendiente |
+| Filtro por rol en OPListView | Cualquier usuario logueado ve todas las e-OPs | Pendiente |
+| `Producto` sin `precio_venta` verificado | El campo en `ventas/services.py` puede no existir con ese nombre | Pendiente |
 | `Contacto` sin campo `email` verificado | Usado en WooCommerce pero puede no estar en el modelo |
 
 ### Baja Prioridad (Mejoras)

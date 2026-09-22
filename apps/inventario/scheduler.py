@@ -94,7 +94,7 @@ class SchedulerAbastecimientoService:
                 if regla.tipo_ruta == 'comprar':
                     if ComprasService:
                         # Buscamos el proveedor principal o TarifaProveedor
-                        tarifa = regla.producto.tarifas_proveedor.order_by('precio').first() if hasattr(regla.producto, 'tarifas_proveedor') else None
+                        tarifa = regla.producto.tarifas_proveedores.order_by('precio').first() if hasattr(regla.producto, 'tarifas_proveedores') else None
                         proveedor = tarifa.proveedor if tarifa else None
                         
                         if proveedor:

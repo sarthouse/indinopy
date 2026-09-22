@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Portal Fiduciario — Clearing y Liquidación BAPRO{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Portal Fiduciario — Clearing y Liquidación (FDI)</h1>
+            <p class="text-sm text-gray-600">
+                Monitoreo de hitos de escrow liberados, generación de lotes batch para Banco Provincia y conciliación fiduciaria.
+            </p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'federacion:api_clearing_pendientes' %}?format=txt" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                Descargar Lote BAPRO (.txt)
+            </a>
+        </div>
+    </div>
+
+    <!-- Panel de Métricas Fiduciarias -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white p-5 rounded-lg shadow border-l-4 border-blue-500">
+            <div class="text-xs font-semibold text-gray-500 uppercase">Hitos Pendientes de Pago</div>
+            <div class="mt-2 text-2xl font-bold text-gray-800">{{ hitos_pendientes|length }}</div>
+            <div class="text-xs text-gray-500 mt-1">Con auditoría PTF conforme</div>
+        </div>
+        <div class="bg-white p-5 rounded-lg shadow border-l-4 border-green-500">
+            <div class="text-xs font-semibold text-gray-500 uppercase">Volumen a Liquidar (ARS)</div>
+            <div class="mt-2 text-2xl font-bold text-gray-800">$ {{ monto_total_ars|floatformat:2 }}</div>
+            <div class="text-xs text-gray-500 mt-1">Cotización UCI: $ {{ cotizacion_uci }}</div>
+        </div>
+        <div class="bg-white p-5 rounded-lg shadow border-l-4 border-purple-500">
+            <div class="text-xs font-semibold text-gray-500 uppercase">Agente de Clearing</div>
+            <div class="mt-2 text-xl font-bold text-gray-800">Banco Provincia / Interbanking</div>
+            <div class="text-xs text-gray-500 mt-1">Protocolo Lotes Batch FIMCA 2.0</div>
+        </div>
+    </div>
+
+    <!-- Formulario de Liquidación de Hitos -->
+    <form method="post" action="{% url 'mes:fiduciaria_ejecutar_clearing' %}">
+        {% csrf_token %}
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Hitos de Escrow Habilitados para Desembolso</h3>
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+                    Ejecutar Liquidación Seleccionada
+                </button>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <input type="checkbox" id="select-all" onclick="document.querySelectorAll('.select-hito').forEach(el => el.checked = this.checked)">
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">e-OP / Contrato</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hito</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taller Destino</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CBU / Clearing</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Porcentaje</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for hito in hitos_pendientes %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input type="checkbox" name="hitos_seleccionados" value="{{ hito.id }}" class="select-hito">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                            {{ hito.contrato.numero|default:hito.contrato.uuid_identificador }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ hito.nombre }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            {{ hito.contrato.orden_produccion_local.taller_gestor.nombre|default:"Taller Satélite" }}
+                            <div class="text-xs text-gray-500">CUIT: {{ hito.contrato.orden_produccion_local.taller_gestor.cuil|default:"S/D" }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
+                            {{ hito.contrato.orden_produccion_local.taller_gestor.cbu_alias|default:"No informado" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
+                            {{ hito.porcentaje_tramo }}%
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">
+                            No hay hitos de escrow pendientes de liquidación en este momento.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+{% endblock %}

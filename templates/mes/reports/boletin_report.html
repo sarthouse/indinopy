@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ boletin.titulo }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            color: #1a202c;
+            line-height: 1.4;
+        }
+        .header {
+            border-bottom: 2px solid #1a365d;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1a365d;
+            text-transform: uppercase;
+        }
+        .sub-header {
+            font-size: 9pt;
+            color: #4a5568;
+            margin-top: 4px;
+        }
+        .badge {
+            background-color: #2b6cb0;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 8pt;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        th {
+            background-color: #2b6cb0;
+            color: white;
+            padding: 6px 8px;
+            font-size: 8.5pt;
+            text-align: left;
+        }
+        td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 8.5pt;
+        }
+        .section-title {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #cbd5e0;
+            padding-bottom: 3px;
+        }
+        .crypto-box {
+            background-color: #f7fafc;
+            border: 1px solid #cbd5e0;
+            padding: 8px 12px;
+            font-size: 8pt;
+            color: #4a5568;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+        .text-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">Boletín Oficial Sectorial</div>
+        <div class="sub-header">
+            Mesa de Enlace Sectorial (MES Federal) · Fideicomiso de Desarrollo Industrial (FDI)
+        </div>
+        <div style="margin-top: 8px;">
+            <span class="badge">Edición N° {{ boletin.numero_edicion }}</span>
+            <span style="margin-left: 10px;">Fecha: <strong>{{ fecha_emision }}</strong></span>
+            <span style="margin-left: 10px;">Jurisdicción: <strong>{{ comision.nombre }} ({{ comision.region }})</strong></span>
+        </div>
+    </div>
+
+    <!-- SECCIÓN I: ORÁCULO DE TARIFAS DE CONVENIO -->
+    <div class="section-title">I. Matriz de Tarifas Paritarias Homologadas (Oráculo MES)</div>
+    <p style="font-size: 8pt; color: #4a5568;">
+        Valores de referencia paritarios en Unidades de Cuenta Industrial (UCI) indexadas a IPIM INDEC. Base de cálculo vinculante para contratos e-OP.
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Código Universal</th>
+                <th>Servicio / Proceso Productivo</th>
+                <th class="text-right">Tarifa de Referencia (UCI)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tarifas %}
+            <tr>
+                <td><strong>{{ t.codigo_universal }}</strong></td>
+                <td>{{ t.servicio_nombre }}</td>
+                <td class="text-right">{{ t.precio_referencia_uci }} UCI</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No se registran modificaciones de tarifas en esta edición.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- SECCIÓN II: TALLERES CON SELLO DE BUEN DISEÑO -->
+    <div class="section-title">II. Padrón de Talleres con Sello de Buen Diseño (SBD)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Razón Social / Taller</th>
+                <th>CUIT</th>
+                <th class="text-right">Score FIMCA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in talleres_sbd %}
+            <tr>
+                <td>{{ s.tallerista__nombre }}</td>
+                <td>{{ s.tallerista__cuil }}</td>
+                <td class="text-right">{{ s.score_global_calculado }} / 100</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">Sin novedades en padrón SBD para este período.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- SECCIÓN III: FE PÚBLICA Y FIRMA CRIPTOGRÁFICA -->
+    <div class="crypto-box">
+        <div><strong>CONSTANCIA DE FE PÚBLICA Y NO REPUDIO (Ed25519 / SHA-256)</strong></div>
+        <div>Hash de Integridad: {{ hash_seguridad }}</div>
+        <div>Firma Digital MES: {{ firma_mes }}</div>
+        <div style="margin-top: 4px; font-size: 7pt; color: #718096;">
+            Publicación certificada por la Comisión de Crédito y Riesgo. Válido como instrumento público del distrito.
+        </div>
+    </div>
+</body>
+</html>

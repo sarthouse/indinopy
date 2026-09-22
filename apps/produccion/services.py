@@ -299,3 +299,77 @@ class ProduccionService:
         )
 
         return op
+
+    @staticmethod
+    @transaction.atomic
+    def registrar_parte_produccion_popw(op_id, etapa_tracking_id, responsable_user, lineas_cantidades, gps_point=None, hash_biometrico=None, tolerancia_metros=300):
+        """
+        Proof of Physical Work (PoPW) - Registra un parte de producción con validación geoespacial (PostGIS).
+        Verifica que el reporte provenga del taller asignado a la etapa (o planta propia) dentro de un radio de tolerancia geodésica.
+        """
+        from apps.produccion.models import OPParteProduccion, OPParteProduccionLinea, OPEtapaTracking
+        from django.contrib.gis.geos import Point
+
+        op = OrdenProduccion.objects.get(pk=op_id)
+        etapa_tracking = None
+        taller_esperado = None
+
+        if etapa_tracking_id:
+            etapa_tracking = OPEtapaTracking.objects.select_related("tallerista_asignado").get(pk=etapa_tracking_id, op=op)
+            taller_esperado = etapa_tracking.tallerista_asignado
+
+        if not taller_esperado and op.taller_gestor:
+            taller_esperado = op.taller_gestor
+
+        # Verificación Geoespacial PoPW (Anti-Spoofing de taller satélite)
+        if taller_esperado and taller_esperado.ubicacion_catastral:
+            if not gps_point:
+                raise ValidationError("El registro de avance físico requiere coordenadas GPS certificadas del taller (PoPW).")
+
+            if isinstance(gps_point, (list, tuple)) and len(gps_point) == 2:
+                gps_point = Point(float(gps_point[0]), float(gps_point[1]), srid=4326)
+
+            # Distancia geodésica usando PostGIS ST_Distance en el esferoide (o aproximación en metros si srid 4326)
+            # Para srid=4326 en grados, transformamos o calculamos distancia ortodrómica:
+            # 1 grado aprox = 111,320 metros
+            distancia_grados = taller_esperado.ubicacion_catastral.distance(gps_point)
+            distancia_estimada_metros = distancia_grados * 111320
+
+            if distancia_estimada_metros > tolerancia_metros:
+                raise ValidationError(
+                    f"Violación de PoPW: La ubicación declarada está a {int(distancia_estimada_metros)}m "
+                    f"del taller homologado '{taller_esperado.nombre}' (Máximo permitido: {tolerancia_metros}m)."
+                )
+
+        parte = OPParteProduccion.objects.create(
+            op=op,
+            etapa_tracking=etapa_tracking,
+            responsable=responsable_user,
+            ubicacion_gps_declarada=gps_point if isinstance(gps_point, Point) else None,
+            hash_validacion_biometrica=hash_biometrico or "",
+        )
+
+        total_producido_parte = 0
+        for item in lineas_cantidades:
+            variacion_id = item.get("variacion_id")
+            cant_primera = int(item.get("cantidad_primera", 0))
+            cant_segunda = int(item.get("cantidad_segunda", 0))
+            cant_descarte = int(item.get("cantidad_descarte", 0))
+
+            variacion = op.variaciones.get(pk=variacion_id)
+            OPParteProduccionLinea.objects.create(
+                parte=parte,
+                variacion=variacion,
+                cantidad=cant_primera,
+                cantidad_segunda=cant_segunda,
+                cantidad_descarte=cant_descarte,
+            )
+            variacion.cantidad_producida += cant_primera
+            variacion.save(update_fields=["cantidad_producida"])
+            total_producido_parte += cant_primera
+
+        total_op = sum(v.cantidad_producida for v in op.variaciones.all())
+        OrdenProduccion.objects.filter(pk=op.pk).update(cantidad_producida=total_op)
+
+        return parte
+

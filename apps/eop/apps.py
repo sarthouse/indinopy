@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class EopConfig(AppConfig):
-    name = 'eop'
+    name = 'apps.eop'
+    verbose_name = 'Contratos e-OP'

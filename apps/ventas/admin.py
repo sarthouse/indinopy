@@ -1,5 +1,19 @@
 from django.contrib import admin
-from .models import CanalVenta, OrdenVenta, LineaOrdenVenta, LineaRecargoOrden
+from .models import CanalVenta, OrdenVenta, LineaOrdenVenta, LineaRecargoOrden, ListaPrecio, ItemListaPrecio
+
+
+class ItemListaPrecioInline(admin.TabularInline):
+    model = ItemListaPrecio
+    extra = 1
+    fields = ("producto", "precio_unitario", "cantidad_minima", "vigencia_desde", "vigencia_hasta")
+
+
+@admin.register(ListaPrecio)
+class ListaPrecioAdmin(admin.ModelAdmin):
+    list_display = ("nombre", "codigo", "moneda", "activa", "creado_en")
+    list_filter = ("activa", "moneda")
+    search_fields = ("nombre", "codigo")
+    inlines = [ItemListaPrecioInline]
 
 
 class LineaOrdenVentaInline(admin.TabularInline):
@@ -23,8 +37,8 @@ class CanalVentaAdmin(admin.ModelAdmin):
 
 @admin.register(OrdenVenta)
 class OrdenVentaAdmin(admin.ModelAdmin):
-    list_display = ("numero", "canal", "cliente", "monto_total", "estado", "enlace_pdf", "fecha", "referencia_externa")
-    list_filter = ("canal", "estado", "fecha")
+    list_display = ("numero", "canal", "cliente", "lista_precio", "monto_total", "estado", "enlace_pdf", "fecha", "referencia_externa")
+    list_filter = ("canal", "lista_precio", "estado", "fecha")
     search_fields = ("numero", "cliente__nombre", "referencia_externa", "numero_externo")
     inlines = [LineaOrdenVentaInline, LineaRecargoOrdenInline]
     actions = ["confirmar_ordenes_seleccionadas"]

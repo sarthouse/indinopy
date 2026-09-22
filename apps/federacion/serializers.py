@@ -1,6 +1,6 @@
+from decimal import Decimal
 from rest_framework import serializers
 from .models import NodoFederado
-from apps.mes.models import RegistroEOP
 import nacl.signing
 import nacl.exceptions
 from django.utils.translation import gettext_lazy as _
@@ -33,18 +33,22 @@ class VerificacionFirmaMixin:
 class EntradaEOPSerializer(serializers.Serializer, VerificacionFirmaMixin):
     """
     Serializer para recibir una nueva e-OP desde el Nodo de una Marca (Comitente).
+    Soporta el sobre de transporte con payload canónico determinista y cronograma dinámico de hitos/etapas.
     """
     uuid_identificador = serializers.UUIDField()
     hash_seguridad = serializers.CharField(max_length=64)
-    comitente_cuit = serializers.CharField(max_length=11)
-    tallerista_cuit = serializers.CharField(max_length=11)
+    comitente_cuit = serializers.CharField(max_length=20)
+    tallerista_cuit = serializers.CharField(max_length=20, required=False, allow_blank=True)
     monto_total_uci = serializers.DecimalField(max_digits=15, decimal_places=4)
     payload_canonico = serializers.JSONField()
     firma_comitente = serializers.CharField(max_length=128)
     clave_publica_comitente = serializers.CharField(max_length=64)
+    cronograma_escrow_hitos = serializers.ListField(
+        child=serializers.DictField(), required=False, allow_empty=True
+    )
 
     def validate(self, data):
-        # 1. Validar la firma matemática del JSON
+        # 1. Validar la firma matemática del JSON canónico
         if not self.validar_firma_ed25519(
             data['payload_canonico'], 
             data['firma_comitente'], 
@@ -52,9 +56,25 @@ class EntradaEOPSerializer(serializers.Serializer, VerificacionFirmaMixin):
         ):
             raise serializers.ValidationError(_("Firma criptográfica inválida o payload alterado."))
         
-        # 2. Validar que la e-OP no exista ya en la MES
-        if RegistroEOP.objects.filter(uuid_identificador=data['uuid_identificador']).exists():
-            raise serializers.ValidationError(_("Ya existe una e-OP con este UUID en la Red Federada."))
+        # 2. Validar que la e-OP no exista ya en la MES (si este nodo es MES o tiene apps.mes)
+        try:
+            from apps.mes.models import RegistroEOP
+            if RegistroEOP.objects.filter(uuid_identificador=data['uuid_identificador']).exists():
+                raise serializers.ValidationError(_("Ya existe una e-OP con este UUID en la Red Federada."))
+        except (ImportError, RuntimeError):
+            pass
+
+        # 3. Validar consistencia del cronograma de hitos si viene especificado
+        hitos = data.get('cronograma_escrow_hitos') or data['payload_canonico'].get('cronograma_escrow_hitos')
+        if hitos:
+            total_porcentaje = sum(Decimal(str(h.get('porcentaje_tramo', 0))) for h in hitos)
+            if abs(total_porcentaje - Decimal('100.00')) > Decimal('0.01'):
+                raise serializers.ValidationError(_("La suma de porcentajes del cronograma de hitos debe ser exactamente 100%."))
+
+        # 4. Validar mínimo obligatorio de 2 etapas productivas en el payload
+        etapas = data['payload_canonico'].get('etapas_productivas', [])
+        if len(etapas) < 2:
+            raise serializers.ValidationError(_("Una e-OP federada requiere un mínimo obligatorio de dos etapas productivas."))
             
         return data
 

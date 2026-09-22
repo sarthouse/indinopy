@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -5,6 +6,9 @@ from django.contrib import messages
 from .models import StockQuant, MovimientoStock, LineaMovimientoStock
 from .services import StockService
 from .reports.remito_report import RemitoPDFReport
+from .reports.inventario_stock_report import InventarioStockExcelReport
+from .reports.movimientos_stock_report import MovimientosStockExcelReport
+
 
 class StockQuantListView(LoginRequiredMixin, ListView):
     model = StockQuant
@@ -13,7 +17,9 @@ class StockQuantListView(LoginRequiredMixin, ListView):
     paginate_by = 30
 
     def get_queryset(self):
-        return StockQuant.objects.filter(cantidad_fisica__gt=0).order_by('ubicacion', 'producto')
+        return StockQuant.objects.filter(cantidad_fisica__gt=0).order_by(
+            "ubicacion", "producto"
+        )
 
 
 class MovimientoStockListView(LoginRequiredMixin, ListView):
@@ -23,7 +29,7 @@ class MovimientoStockListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return MovimientoStock.objects.all().order_by('-fecha', '-id')
+        return MovimientoStock.objects.all().order_by("-fecha", "-id")
 
 
 class MovimientoStockDetailView(LoginRequiredMixin, DetailView):
@@ -33,17 +39,13 @@ class MovimientoStockDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['lineas'] = self.object.lineas.all()
+        context["lineas"] = self.object.lineas.all()
         return context
-
-
-from datetime import datetime
-from .reports.inventario_stock_report import InventarioStockExcelReport
-from .reports.movimientos_stock_report import MovimientosStockExcelReport
 
 
 class RemitoPDFDownloadView(LoginRequiredMixin, View):
     """Descarga o previsualización inline del Remito (Entrega, Traslado a Producción o Traslado Interno)."""
+
     def get(self, request, pk):
         movimiento = get_object_or_404(MovimientoStock, pk=pk)
         report = RemitoPDFReport(movimiento)
@@ -53,6 +55,7 @@ class RemitoPDFDownloadView(LoginRequiredMixin, View):
 
 class InventarioStockExportView(LoginRequiredMixin, View):
     """Exportación en Excel o CSV del inventario físico y stock valuado."""
+
     def get(self, request):
         formato = request.GET.get("formato", "xlsx")
         ubicacion_id = request.GET.get("ubicacion_id")
@@ -62,9 +65,13 @@ class InventarioStockExportView(LoginRequiredMixin, View):
         solo_con_stock = request.GET.get("solo_con_stock", "true").lower() == "true"
 
         report = InventarioStockExcelReport(
-            ubicacion_id=int(ubicacion_id) if ubicacion_id and ubicacion_id.isdigit() else None,
+            ubicacion_id=int(ubicacion_id)
+            if ubicacion_id and ubicacion_id.isdigit()
+            else None,
             tipo_ubicacion=tipo_ubicacion,
-            categoria_id=int(categoria_id) if categoria_id and categoria_id.isdigit() else None,
+            categoria_id=int(categoria_id)
+            if categoria_id and categoria_id.isdigit()
+            else None,
             tipo_producto=tipo_producto,
             solo_con_stock=solo_con_stock,
         )
@@ -73,6 +80,7 @@ class InventarioStockExportView(LoginRequiredMixin, View):
 
 class MovimientosStockExportView(LoginRequiredMixin, View):
     """Exportación en Excel o CSV de la trazabilidad y movimientos de stock (Kardex general)."""
+
     def get(self, request):
         formato = request.GET.get("formato", "xlsx")
         fecha_desde_raw = request.GET.get("desde")
@@ -100,8 +108,12 @@ class MovimientosStockExportView(LoginRequiredMixin, View):
             fecha_desde=f_desde,
             fecha_hasta=f_hasta,
             tipo_movimiento=tipo_movimiento,
-            producto_id=int(producto_id) if producto_id and producto_id.isdigit() else None,
-            ubicacion_id=int(ubicacion_id) if ubicacion_id and ubicacion_id.isdigit() else None,
+            producto_id=int(producto_id)
+            if producto_id and producto_id.isdigit()
+            else None,
+            ubicacion_id=int(ubicacion_id)
+            if ubicacion_id and ubicacion_id.isdigit()
+            else None,
             estado=estado,
         )
         return report.to_http_response(formato=formato)
@@ -111,21 +123,24 @@ class MovimientosStockExportView(LoginRequiredMixin, View):
 # ACTION VIEWS
 # =====================================================================
 
+
 class RealizarLineaActionView(LoginRequiredMixin, View):
     def post(self, request, pk):
         linea = get_object_or_404(LineaMovimientoStock, pk=pk)
         movimiento_pk = linea.movimiento.pk
-        
+
         # Opcionalmente se puede recoger la cantidad realizada desde un input
         # qty = request.POST.get('cantidad_hecha')
         # if qty:
         #     linea.cantidad_hecha = qty
         #     linea.save()
-            
+
         try:
             StockService.realizar_linea(linea)
-            messages.success(request, f"Línea de {linea.producto} marcada como realizada.")
+            messages.success(
+                request, f"Línea de {linea.producto} marcada como realizada."
+            )
         except Exception as e:
             messages.error(request, f"Error al procesar el stock: {str(e)}")
-        
-        return redirect('inventario:movimiento_detail', pk=movimiento_pk)
+
+        return redirect("inventario:movimiento_detail", pk=movimiento_pk)

@@ -44,3 +44,34 @@ def motor_anti_colusion():
                         diferencia_horas=diferencia_tiempo,
                         estado_investigacion="abierta"
                     )
+
+
+@shared_task
+def procesar_silencio_positivo_timelock_async():
+    """
+    Worker Celery Beat que se ejecuta periódicamente (ej: cada 1 hora).
+    Busca todas las e-OPs en estado 'en_revision' cuyo timelock de 48h haya vencido.
+    Si no tienen vetos ni resoluciones negativas de la Comisión, aplica Silencio Positivo
+    y gatilla la liberación fiduciaria del Hito Cero del Escrow.
+    """
+    from apps.federacion.tasks import liberar_hito_escrow_async
+
+    ahora = timezone.now()
+    eops_a_destrabar = RegistroEOP.objects.filter(
+        estado="en_revision",
+        timelock_vencimiento__lte=ahora,
+    )
+
+    procesadas = []
+    for registro in eops_a_destrabar:
+        # Verificar que no tenga vetos vigentes
+        tiene_veto = registro.resoluciones.filter(es_veto=True).exists()
+        if not tiene_veto:
+            registro.estado = "aprobado_silencio"
+            registro.save(update_fields=["estado"])
+
+            # Disparar liberación fiduciaria asincrónica
+            liberar_hito_escrow_async.delay(str(registro.uuid_identificador))
+            procesadas.append(str(registro.uuid_identificador))
+
+    return f"Silencio Positivo ejecutado sobre {len(procesadas)} e-OPs: {procesadas}"

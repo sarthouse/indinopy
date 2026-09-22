@@ -28,6 +28,10 @@ urlpatterns = [
     path("ptf/portal/", views.PTFPortalView.as_view(), name="ptf_portal"),
     path("ptf/registrar-clave/", views.RegistrarClavePublicaActionView.as_view(), name="ptf_registrar_clave"),
 
+    # ── Portal Fiduciario (FDI / BAPRO) ────────────────────────────────
+    path("fiduciaria/", views.DashboardFiduciarioView.as_view(), name="fiduciaria_dashboard"),
+    path("fiduciaria/ejecutar-clearing/", views.EjecutarClearingBatchActionView.as_view(), name="fiduciaria_ejecutar_clearing"),
+
     # ── API FEDERADA ───────────────────────────────────────────────────
     path("api/v1/fdi/estado-credito/", views.EstadoCreditoFDIAPIView.as_view(), name="api_estado_credito"),
 ]

@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from apps.base.models import DocumentoBase, DocumentoFirmableMixin, TimeStampedModel
@@ -98,6 +99,114 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
     def monto_total_uci(self):
         """El monto total colateralizado es la suma del vector."""
         return sum([self.costo_mod, self.costo_cs, self.costo_bom, self.costo_fdi, self.costo_tax, self.costo_mg])
+
+    def calcular_merkle_root_bom(self):
+        """
+        Calcula el árbol de Merkle inmutable del BOM / insumos de la orden asociada.
+        Si la OP es headless, utiliza bom_headless. Si tiene receta o insumos requeridos,
+        hashea cada ítem individualmente y los combina en pares.
+        """
+        import hashlib
+        leaves = []
+        if self.orden_produccion_local:
+            op = self.orden_produccion_local
+            if op.bom_headless and isinstance(op.bom_headless, list):
+                for item in op.bom_headless:
+                    item_str = json.dumps(item, sort_keys=True, separators=(",", ":"))
+                    leaves.append(hashlib.sha256(item_str.encode("utf-8")).hexdigest())
+            else:
+                insumos = op.insumos_requeridos.all().order_by("id")
+                for req in insumos:
+                    leaf_str = f"{req.insumo_id}:{str(req.cantidad_teorica)}:{req.origen}"
+                    leaves.append(hashlib.sha256(leaf_str.encode("utf-8")).hexdigest())
+
+        if not leaves:
+            return hashlib.sha256(b"empty_bom").hexdigest()
+
+        # Armado binario del árbol de Merkle
+        current_layer = sorted(leaves)
+        while len(current_layer) > 1:
+            next_layer = []
+            for i in range(0, len(current_layer), 2):
+                if i + 1 < len(current_layer):
+                    combined = current_layer[i] + current_layer[i + 1]
+                else:
+                    combined = current_layer[i] + current_layer[i]
+                next_layer.append(hashlib.sha256(combined.encode("utf-8")).hexdigest())
+            current_layer = next_layer
+        return current_layer[0]
+
+    def generar_payload_canonico(self):
+        """
+        Genera el string JSON determinista de la e-OP para firma Ed25519 y validación MES.
+        Incluye CUITs, Vector C, total UCI, Merkle Root del BOM y cronograma dinámico de hitos.
+        """
+        from apps.base.models import ConfiguracionEmpresa
+
+        empresa = ConfiguracionEmpresa.objects.first()
+        comitente_cuit = empresa.cuit if empresa else ""
+
+        taller_cuit = ""
+        if self.ptf_asignado and self.ptf_asignado.cuil:
+            taller_cuit = self.ptf_asignado.cuil
+        elif self.orden_produccion_local:
+            primer_etapa = self.orden_produccion_local.tracking_etapas.filter(
+                tallerista_asignado__isnull=False
+            ).first()
+            if primer_etapa and primer_etapa.tallerista_asignado.cuil:
+                taller_cuit = primer_etapa.tallerista_asignado.cuil
+
+        hitos_data = []
+        for hito in self.hitos.all().order_by("id"):
+            hitos_data.append({
+                "uuid": str(hito.uuid_identificador),
+                "nombre": hito.nombre,
+                "porcentaje_tramo": str(hito.porcentaje_tramo),
+                "requiere_auditoria_ptf": bool(hito.requiere_auditoria_ptf),
+                "requiere_verificacion_arca": bool(hito.requiere_verificacion_arca),
+            })
+
+        etapas_data = []
+        if self.orden_produccion_local:
+            for etapa in self.orden_produccion_local.tracking_etapas.all().order_by("etapa_origen__orden_ejecucion", "id"):
+                taller = etapa.tallerista_asignado
+                etapas_data.append({
+                    "orden": etapa.etapa_origen.orden_ejecucion if etapa.etapa_origen else 0,
+                    "servicio": etapa.etapa_origen.servicio.nombre if (etapa.etapa_origen and etapa.etapa_origen.servicio) else "S/D",
+                    "tallerista": {
+                        "cuit": taller.cuil if (taller and taller.cuil) else "",
+                        "razon_social": taller.nombre if taller else "",
+                        "cuenta_clearing_cbu": taller.cbu_alias if (taller and taller.cbu_alias) else "",
+                    },
+                    "costo_servicio": str(etapa.costo_servicio_total or Decimal("0.00")),
+                })
+
+        merkle_root = self.merkle_root_bom or self.calcular_merkle_root_bom()
+
+        from apps.eop.services import UCIService
+        cotizacion_uci = UCIService.obtener_cotizacion_actual()
+
+        payload = {
+            "protocolo_version": "2.0",
+            "uuid_identificador": str(self.uuid_identificador),
+            "numero_contrato": self.numero or "",
+            "nodo_mes": self.nodo_mes or "",
+            "comitente_cuit": comitente_cuit,
+            "tallerista_cuit": taller_cuit,
+            "cotizacion_uci_ars": str(cotizacion_uci),
+            "monto_total_uci": str(self.monto_total_uci),
+            "monto_financiado_fdi_uci": str(self.costo_mod + self.costo_fdi),
+            "vector_costos": {
+                "mod_servicios": str(self.costo_mod),
+                "canon_fdi_mes": str(self.costo_fdi),
+                "insumos_bom": str(self.costo_bom),
+            },
+            "es_sello_buen_diseno": bool(self.es_sello_buen_diseno),
+            "merkle_root_bom": merkle_root,
+            "cronograma_escrow_hitos": hitos_data,
+            "etapas_productivas": etapas_data,
+        }
+        return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
     def __str__(self):
         return f"e-OP {self.numero} [{self.get_estado_escrow_display()}]"

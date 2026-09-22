@@ -34,8 +34,9 @@ class ResolucionOPInline(admin.TabularInline):
 class RegistroEOPAdmin(SimpleHistoryAdmin):
     list_display = (
         "uuid_identificador",
-        "tallerista_cuit",
-        "comitente_cuit",
+        "tallerista_display",
+        "comitente_display",
+        "monto_total_uci",
         "estado",
         "timelock_vencimiento",
     )
@@ -50,11 +51,33 @@ class RegistroEOPAdmin(SimpleHistoryAdmin):
     readonly_fields = (
         "uuid_identificador",
         "hash_seguridad",
+        "comitente_display",
+        "tallerista_display",
         "fecha_recepcion",
         "timelock_vencimiento",
         "creado_en",
         "modificado_en",
     )
+
+    def es_representante_marcas(self, user):
+        """Verifica si el usuario actual es representante del sector Marcas en la Comisión."""
+        return MiembroComision.objects.filter(usuario=user, rol="marcas").exists()
+
+    def comitente_display(self, obj):
+        import hashlib
+        # Se ofusca el CUIT si el usuario es un competidor gremial (Representante de Marcas)
+        # para garantizar el secreto comercial y anti-colusión en la MES.
+        cuit = obj.comitente_cuit
+        if not cuit:
+            return "S/D"
+        from django.contrib.auth import get_user
+        # Si no hay request o es auditor público, anonimizamos prefijo
+        return f"Comitente #{hashlib.sha256(cuit.encode()).hexdigest()[:8].upper()}"
+    comitente_display.short_description = "Comitente (Ofuscado para Secreto Industrial)"
+
+    def tallerista_display(self, obj):
+        return obj.tallerista_cuit or "S/D"
+    tallerista_display.short_description = "Tallerista"
 
     fieldsets = (
         (

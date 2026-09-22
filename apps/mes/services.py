@@ -1,5 +1,6 @@
 import hashlib
 import json
+from decimal import Decimal
 from datetime import timedelta
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey, SigningKey
@@ -10,8 +11,8 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.base.models import ConfiguracionEmpresa
-from apps.tesoreria.models import ContratoEscrow
-from apps.tesoreria.services import EscrowService
+from apps.eop.models import ContratoEOP
+from apps.eop.services import EOPService
 
 from .models import (
     ComisionCredito,
@@ -215,7 +216,7 @@ class PTFService:
         # Generar semilla de 32 bytes a partir del SECRET_KEY para emular la clave privada de la MES
         seed = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
         signing_key = SigningKey(seed)
-        
+
         # Firmar el payload con Ed25519
         signed = signing_key.sign(payload_bytes)
         firma_mes_hex = signed.signature.hex()
@@ -226,7 +227,7 @@ class PTFService:
         certificado = {
             **payload,
             "hash_certificado": hash_certificado,
-            "firma_mes": firma_mes_hex
+            "firma_mes": firma_mes_hex,
         }
 
         perfil_ptf.certificado_mes_json = certificado
@@ -509,11 +510,15 @@ class PTFService:
             tiene_veto = registro.resoluciones.filter(es_veto=True).exists()
             if not tiene_veto:
                 # Regla de Negocio: El silencio positivo NO aplica a marcas sin historial.
-                tiene_historial = RegistroEOP.objects.filter(
-                    comitente_cuit=registro.comitente_cuit,
-                    estado__in=["aprobado_silencio", "aprobado_expres"]
-                ).exclude(uuid_identificador=registro.uuid_identificador).exists()
-                
+                tiene_historial = (
+                    RegistroEOP.objects.filter(
+                        comitente_cuit=registro.comitente_cuit,
+                        estado__in=["aprobado_silencio", "aprobado_expres"],
+                    )
+                    .exclude(uuid_identificador=registro.uuid_identificador)
+                    .exists()
+                )
+
                 if not tiene_historial:
                     continue
 
@@ -528,17 +533,17 @@ class PTFService:
 
     @staticmethod
     def _liberar_escrow_por_eop(registro_eop):
-        """Busca el ContratoEscrow asociado a la e-OP y libera el hito correspondiente."""
-        escrow = ContratoEscrow.objects.filter(
-            eop_uuid=registro_eop.uuid_identificador
+        """Busca el ContratoEOP asociado a la e-OP y libera el hito correspondiente."""
+        contrato = ContratoEOP.objects.filter(
+            uuid_identificador=registro_eop.uuid_identificador
         ).first()
 
-        if not escrow:
-            return  # La e-OP puede no tener escrow si es externa o de prueba
+        if not contrato:
+            return  # La e-OP puede no tener contrato si es externa o de prueba
 
-        hito = escrow.hitos.filter(estado="bloqueado").order_by("porcentaje").first()
+        hito = contrato.hitos.filter(estado="bloqueado").order_by("id").first()
         if hito:
-            EscrowService.liberar_hito(hito)
+            EOPService.liberar_hito(hito.id)
 
     @staticmethod
     def _abrir_caso_arbitraje(registro_eop):
@@ -589,25 +594,27 @@ class DenunciaService:
             # Solo bloquea e-OPs federadas (FDI). Las OP privadas (producción propia o fasón sin fondeo)
             # viven en el Nodo Marca y no pasan por la MES, por lo que no se inmovilizan.
             ops_activas = RegistroEOP.objects.filter(
-                comitente_cuit=denunciado.cuil, 
-                estado__in=["en_revision", "aprobado_expres"]
+                comitente_cuit=denunciado.cuil,
+                estado__in=["en_revision", "aprobado_expres"],
             )
-            
+
             # Guardamos los UUIDs para notificar a la red federada
-            uuids_bloqueadas = list(ops_activas.values_list("uuid_identificador", flat=True))
+            uuids_bloqueadas = list(
+                ops_activas.values_list("uuid_identificador", flat=True)
+            )
             ops_activas.update(estado="inmovilizada_por_denuncia")
-            
+
             # Sincronizar el estado de bloqueo hacia el Nodo Marca y el Nodo Taller (OP Espejo)
             if uuids_bloqueadas:
                 FederacionService.notificar_bloqueo_op_espejo(
-                    uuids_bloqueadas, 
-                    comitente_cuit=denunciado.cuil, 
-                    tallerista_cuit=denunciante.cuil
+                    uuids_bloqueadas,
+                    comitente_cuit=denunciado.cuil,
+                    tallerista_cuit=denunciante.cuil,
                 )
-            
+
         elif motivo == "coima_funcionario":
             pass
-            
+
         return denuncia
 
 
@@ -616,6 +623,7 @@ class FederacionService:
     Capa de comunicación (Webhooks) para mantener sincronizados los estados
     entre el Nodo MES Central, los Nodos de las Marcas (Comitentes) y los Nodos de los Talleres.
     """
+
     @staticmethod
     def _encolar_o_enviar(cuit, tipo_evento, payload):
         """
@@ -624,21 +632,20 @@ class FederacionService:
         Si no tiene -> PULL (Encola en NovedadFederada para Polling)
         """
         from apps.federacion.models import NodoFederado, NovedadFederada
+
         try:
             nodo = NodoFederado.objects.get(cuit=cuit)
         except NodoFederado.DoesNotExist:
-            return # Nodo no registrado, no hay a quien notificar
+            return  # Nodo no registrado, no hay a quien notificar
 
         if nodo.url_base:
             # Tiene IP pública / Túnel (Paradigma PUSH)
             # Acá encolaríamos una tarea de Celery (requests.post a nodo.url_base)
-            pass 
+            pass
         else:
             # Paradigma On-Premise clásico (Paradigma PULL / Polling)
             NovedadFederada.objects.create(
-                nodo_destino=nodo,
-                tipo_evento=tipo_evento,
-                payload=payload
+                nodo_destino=nodo, tipo_evento=tipo_evento, payload=payload
             )
 
     @staticmethod
@@ -650,9 +657,9 @@ class FederacionService:
         payload = {
             "estado": "inmovilizada_por_denuncia",
             "motivo": "Cautelar Comunidad Organizada",
-            "uuids": [str(u) for u in uuids_bloqueadas]
+            "uuids": [str(u) for u in uuids_bloqueadas],
         }
-        
+
         FederacionService._encolar_o_enviar(comitente_cuit, "bloqueo_eop", payload)
         FederacionService._encolar_o_enviar(tallerista_cuit, "bloqueo_eop", payload)
 
@@ -661,4 +668,315 @@ class FederacionService:
         """
         Comunica una decisión de la Comisión al nodo correspondiente.
         """
-        FederacionService._encolar_o_enviar(cuit_destino, f"resolucion_{tipo_asunto}", objeto_serializado)
+        FederacionService._encolar_o_enviar(
+            cuit_destino, f"resolucion_{tipo_asunto}", objeto_serializado
+        )
+
+
+# =========================================================================
+# TARIFARIO HOMOLOGADO DE CONVENIO, CRL Y BOLETÍN OFICIAL SECTORIAL (FASE 1)
+# =========================================================================
+
+
+class TarifarioConvenioService:
+    """
+    Administra el Tarifario Homologado de Convenio en Unidades de Cuenta Industrial (UCI).
+    Fija los precios de referencia acordados en paritarias y actas de la Comisión.
+    """
+
+    @staticmethod
+    def obtener_tarifa(codigo_universal):
+        from .models import TarifaConvenio
+
+        return TarifaConvenio.objects.filter(
+            codigo_universal=codigo_universal, activo=True
+        ).first()
+
+    @staticmethod
+    @transaction.atomic
+    def promulgar_tarifa(
+        codigo_universal, servicio_nombre, precio_referencia_uci, descripcion=""
+    ):
+        from .models import TarifaConvenio
+
+        tarifa, created = TarifaConvenio.objects.update_or_create(
+            codigo_universal=codigo_universal,
+            defaults={
+                "servicio_nombre": servicio_nombre,
+                "precio_referencia_uci": precio_referencia_uci,
+                "descripcion": descripcion,
+                "activo": True,
+                "vigencia_desde": timezone.now().date(),
+            },
+        )
+        return tarifa
+
+
+class CRLService:
+    """
+    Servicio para consulta y revocación de certificados criptográficos PTF en la MES.
+    """
+
+    @staticmethod
+    def esta_revocado(hash_certificado):
+        from .models import RevocacionCertificadoPTF
+
+        return RevocacionCertificadoPTF.objects.filter(
+            hash_certificado=hash_certificado
+        ).exists()
+
+    @staticmethod
+    @transaction.atomic
+    def revocar_certificado(perfil_ptf, motivo=""):
+        from .models import RevocacionCertificadoPTF
+
+        hash_cert = ""
+        if perfil_ptf.certificado_mes_json:
+            hash_cert = perfil_ptf.certificado_mes_json.get("hash_certificado", "")
+        if not hash_cert:
+            hash_cert = hashlib.sha256(
+                perfil_ptf.clave_publica_ed25519.encode("utf-8")
+            ).hexdigest()
+
+        perfil_ptf.activo = False
+        perfil_ptf.save(update_fields=["activo"])
+
+        revocacion = RevocacionCertificadoPTF.objects.create(
+            perfil_ptf=perfil_ptf,
+            hash_certificado=hash_cert,
+            motivo_revocacion=motivo,
+        )
+        return revocacion
+
+    @staticmethod
+    def obtener_crl_completa():
+        from .models import RevocacionCertificadoPTF
+
+        return list(
+            RevocacionCertificadoPTF.objects.all().values(
+                "hash_certificado",
+                "fecha_revocacion",
+                "motivo_revocacion",
+                "perfil_ptf__usuario__username",
+            )
+        )
+
+
+class BoletinOficialService:
+    """
+    Compilador institucional y generador del Boletín Oficial Sectorial de la MES.
+    """
+
+    @staticmethod
+    @transaction.atomic
+    def compilar_edicion(comision_id, titulo=None):
+        from .models import (
+            ComisionCredito,
+            EdicionBoletinSectorial,
+            TarifaConvenio,
+            ScoringTallerista,
+            TribunalArbitraje,
+        )
+
+        comision = ComisionCredito.objects.get(pk=comision_id)
+        ultima_edicion = (
+            EdicionBoletinSectorial.objects.filter(comision=comision)
+            .order_by("-numero_edicion")
+            .first()
+        )
+        numero = (ultima_edicion.numero_edicion + 1) if ultima_edicion else 1
+
+        tarifas = list(
+            TarifaConvenio.objects.filter(activo=True).values(
+                "codigo_universal", "servicio_nombre", "precio_referencia_uci"
+            )
+        )
+        for t in tarifas:
+            t["precio_referencia_uci"] = str(t["precio_referencia_uci"])
+
+        talleres_sbd = list(
+            ScoringTallerista.objects.filter(posee_sbd=True).values(
+                "tallerista__nombre", "tallerista__cuil", "score_global_calculado"
+            )
+        )
+        for s in talleres_sbd:
+            s["score_global_calculado"] = str(s["score_global_calculado"])
+
+        sumario = {
+            "fecha": timezone.now().date().isoformat(),
+            "tarifas_vigentes_uci": tarifas,
+            "talleres_sello_buen_diseno": talleres_sbd,
+            "laudos_arbitrales_recientes": list(
+                TribunalArbitraje.objects.filter(estado="laudo_firme").values(
+                    "registro_eop__uuid_identificador", "motivo", "laudo_resolucion"
+                )[:5]
+            ),
+        }
+
+        sumario_bytes = json.dumps(
+            sumario, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        hash_publicacion = hashlib.sha256(sumario_bytes).hexdigest()
+
+        # Firma Ed25519 institucional de la MES
+        seed = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+        signing_key = SigningKey(seed)
+        firma_mes = signing_key.sign(sumario_bytes).signature.hex()
+
+        boletin = EdicionBoletinSectorial.objects.create(
+            comision=comision,
+            numero_edicion=numero,
+            fecha_publicacion=timezone.now().date(),
+            titulo=titulo
+            or f"Boletín Oficial Sectorial N° {numero} - Región {comision.region}",
+            sumario_resoluciones=sumario,
+            hash_seguridad_publicacion=hash_publicacion,
+            firma_mes=firma_mes,
+            publicada=True,
+        )
+        return boletin
+
+
+class ClearingBAPROService:
+    """
+    Servicio de Clearing y Liquidación Fiduciaria con Banco Provincia / Interbanking.
+    Genera lotes batch en texto plano para transferencias inmediatas de hitos liberados
+    y procesa callbacks bancarios de liquidación efectiva.
+    """
+
+    @staticmethod
+    def obtener_hitos_pendientes_clearing():
+        """
+        Retorna los hitos de escrow que han sido liberados (o habilitados para liquidación)
+        pero aún no cuentan con comprobante de liquidación bancaria emitida.
+        """
+        from apps.eop.models import EOPHitoEscrow
+
+        return EOPHitoEscrow.objects.filter(
+            estado="liberado",
+            comprobante_pago__isnull=True,
+        ).select_related("contrato", "contrato__orden_produccion_local")
+
+    @staticmethod
+    def generar_lote_clearing_txt(hitos_qs=None):
+        """
+        Genera el archivo batch en formato texto plano estandarizado (Interbanking / BAPRO)
+        para liquidar pagos a las cuentas CBU/CVU de los talleristas.
+
+        Estructura por línea:
+        CBU_DESTINO(22) | IMPORTE_CENTAVOS(15) | CUIT_DESTINO(11) | REFERENCIA_EOP(20) | CONCEPTO(3)
+        """
+        if hitos_qs is None:
+            hitos_qs = ClearingBAPROService.obtener_hitos_pendientes_clearing()
+
+        lineas = []
+        fecha_lote = timezone.now().strftime("%Y%m%d")
+        encabezado = f"01BAPROFIMCA{fecha_lote}{str(len(hitos_qs)).zfill(6)}"
+        lineas.append(encabezado)
+
+        total_centavos = 0
+        from apps.eop.services import UCIService
+
+        cotizacion_actual = UCIService.obtener_cotizacion_actual()
+
+        for hito in hitos_qs:
+            contrato = hito.contrato
+            # Calcular monto del hito en ARS según porcentaje de MOD + canon
+            monto_fdi_uci = contrato.costo_mod + contrato.costo_fdi
+            monto_hito_uci = (monto_fdi_uci * hito.porcentaje_tramo) / Decimal("100.00")
+            monto_hito_ars = monto_hito_uci * cotizacion_actual
+            centavos = int(monto_hito_ars * 100)
+            total_centavos += centavos
+
+            taller = None
+            if (
+                contrato.orden_produccion_local
+                and contrato.orden_produccion_local.taller_gestor
+            ):
+                taller = contrato.orden_produccion_local.taller_gestor
+
+            cbu = (
+                (taller.cbu_alias if taller and taller.cbu_alias else "")
+                .replace("-", "")
+                .strip()[:22]
+                .zfill(22)
+            )
+            cuit = (
+                (taller.cuil if taller and taller.cuil else "")
+                .replace("-", "")
+                .strip()[:11]
+                .zfill(11)
+            )
+            ref_eop = str(contrato.numero or contrato.uuid_identificador)[:20].ljust(20)
+            concepto = "FAC"  # Factura / Servicio
+
+            registro_linea = (
+                f"02{cbu}{str(centavos).zfill(15)}{cuit}{ref_eop}{concepto}"
+            )
+            lineas.append(registro_linea)
+
+        pie = f"03{str(len(hitos_qs)).zfill(6)}{str(total_centavos).zfill(18)}"
+        lineas.append(pie)
+
+        return "\r\n".join(lineas)
+
+    @staticmethod
+    @transaction.atomic
+    def procesar_callback_clearing(lote_referencia, hitos_ids, estado_pago="EXITOSO"):
+        """
+        Reconcilia el lote de pagos procesado por el BAPRO.
+        Si el pago fue exitoso, genera los comprobantes de egreso/pago en tesorería
+        y actualiza el estado del contrato fiduciario a liquidado_parcial o liquidado_total.
+        """
+        from apps.eop.models import EOPHitoEscrow
+        from apps.tesoreria.models import ComprobanteTesoreria, MovimientoCaja, Caja
+        from apps.base.models import Moneda
+
+        hitos = EOPHitoEscrow.objects.filter(id__in=hitos_ids, estado="liberado")
+        if not hitos.exists():
+            return {"status": "sin_cambios", "procesados": 0}
+
+        procesados = 0
+        caja_fdi = Caja.objects.filter(tipo="banco", activa=True).first()
+        moneda_ars = Moneda.objects.filter(codigo="ARS").first() or (
+            caja_fdi.moneda if caja_fdi else None
+        )
+
+        for hito in hitos:
+            contrato = hito.contrato
+            taller = None
+            if (
+                contrato.orden_produccion_local
+                and contrato.orden_produccion_local.taller_gestor
+            ):
+                taller = contrato.orden_produccion_local.taller_gestor
+
+            if estado_pago == "EXITOSO":
+                # Crear ComprobanteTesoreria (Orden de Pago Fiduciaria)
+                comprobante = ComprobanteTesoreria.objects.create(
+                    tipo="orden_pago",
+                    contacto=taller,
+                    caja=caja_fdi,
+                    moneda=moneda_ars,
+                    monto_total=Decimal("0.00"),  # Actualizado en base a liquidación
+                    estado="confirmado",
+                    observaciones=f"Clearing BAPRO Lote {lote_referencia} - e-OP {contrato.numero} - {hito.nombre}",
+                )
+                hito.comprobante_pago = comprobante
+                hito.save(update_fields=["comprobante_pago"])
+
+                # Verificar si todos los hitos del contrato fueron liquidados
+                hitos_totales = contrato.hitos.count()
+                hitos_liquidados = contrato.hitos.filter(
+                    comprobante_pago__isnull=False
+                ).count()
+                if hitos_totales > 0 and hitos_liquidados == hitos_totales:
+                    contrato.estado_escrow = "liquidado_total"
+                    contrato.save(update_fields=["estado_escrow"])
+                else:
+                    contrato.estado_escrow = "liquidado_parcial"
+                    contrato.save(update_fields=["estado_escrow"])
+
+                procesados += 1
+
+        return {"status": "ok", "procesados": procesados, "lote": lote_referencia}
