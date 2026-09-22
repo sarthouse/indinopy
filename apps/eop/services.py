@@ -52,13 +52,21 @@ class UCIService:
 class EOPService:
     @staticmethod
     @transaction.atomic
-    def crear_contrato_desde_op(op, ptf=None, nodo_mes="https://mes.fimca.org", porcentaje_anticipo=None):
+    def crear_contrato_desde_op(op, ptf=None, nodo_mes=None, porcentaje_anticipo=None):
         """
         Pasa una Orden de Producción (en ARS) a un ContratoEOP colateralizado en UCI.
         Lee los costos de etapas (MOD), insumos requeridos (BOM), cargas sociales e impuestos,
         convirtiéndolos a valor UCI vigente.
         """
         from apps.base.models import ConfiguracionEmpresa
+        from django.conf import settings
+
+        if not nodo_mes:
+            empresa = ConfiguracionEmpresa.objects.first()
+            nodo_mes = (
+                (empresa.nodo_mes_endpoint or empresa.nodo_mes)
+                if empresa else None
+            ) or getattr(settings, "NODO_MES_URL", "http://localhost:8000")
 
         cotizacion_uci = UCIService.obtener_cotizacion_actual()
         if not cotizacion_uci or cotizacion_uci <= 0:

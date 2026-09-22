@@ -71,6 +71,7 @@ ALLOWED_HOSTS=127.0.0.1,localhost,tudominio.ar
 
 # Rol del Nodo (COMITENTE, TALLERISTA, MES, DEV)
 NODE_ROLE=COMITENTE
+NODO_MES_URL=https://municipio-mes.indinopy.ar/
 
 # Conexión a Base de Datos (PostGIS)
 DB_NAME=indinopy
