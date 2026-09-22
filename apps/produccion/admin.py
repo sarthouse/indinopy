@@ -86,22 +86,19 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
     list_display = [
         "numero",
         "receta",
+        "tipo",
         "cantidad_total",
         "cantidad_producida",
-        "estado_escrow",
+        "subestado",
         "estado",
-        "hash_status",
     ]
     list_filter = [
         "estado",
-        "estado_escrow",
+        "subestado",
         "tipo",
-        "es_sello_buen_diseno",
     ]
     search_fields = [
         "numero",
-        "uuid_identificador",
-        "hash_seguridad",
         "cliente__nombre",
     ]
     inlines = [
@@ -111,9 +108,6 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
         OPParteProduccionInline,
     ]
     readonly_fields = [
-        "uuid_identificador",
-        "hash_seguridad",
-        "hash_status",
         "porcentaje_avance",
         "costo_total_insumos_teorico",
         "costo_total_insumos_real",
@@ -139,42 +133,27 @@ class OrdenProduccionAdmin(SimpleHistoryAdmin):
                     "cantidad_total",
                     "cantidad_producida",
                     "fecha_entrega",
-                    "es_sello_buen_diseno",
                     "observaciones",
                 )
             },
         ),
         (
-            "Protocolo e-OP & RIGI",
+            "Costos de Producción",
             {
                 "fields": (
-                    "estado_escrow",
-                    "fecha_fondeo_escrow",
-                    "firmas_digitales",
-                )
-            },
-        ),
-        (
-            "Vector de Costos Factorial (UCI)",
-            {
-                "fields": (
-                    "costo_mod",
-                    "costo_cs",
-                    "costo_bom",
-                    "costo_gg",
-                    "costo_fdi",
-                    "costo_tax",
-                    "costo_mg",
+                    "costo_total_insumos_teorico",
+                    "costo_total_insumos_real",
+                    "costo_total_fason",
+                    "costo_total_estimado",
+                    "costo_unitario_par",
                 ),
+                "classes": ("collapse",),
             },
         ),
         (
-            "Seguridad e Integridad (Inmutabilidad)",
+            "Auditoría",
             {
                 "fields": (
-                    "uuid_identificador",
-                    "hash_seguridad",
-                    "hash_status",
                     "creado_en",
                     "modificado_en",
                 ),

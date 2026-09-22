@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import OrdenProduccion
 from apps.contactos.models import Contacto
-from apps.base.models import generar_numero_documento
+from apps.base.services import SecuenciaService
 
 class OrdenProduccionHeadlessSerializer(serializers.ModelSerializer):
     tallerista_cuit = serializers.CharField(write_only=True, max_length=11)
@@ -32,7 +32,7 @@ class OrdenProduccionHeadlessSerializer(serializers.ModelSerializer):
         
         # Generar número automáticamente si no está seteado
         if not validated_data.get('numero'):
-            validated_data['numero'] = generar_numero_documento("EOP")
+            validated_data['numero'] = SecuenciaService.obtener_siguiente_numero(OrdenProduccion.SECUENCIA_CODIGO)
             
         op = OrdenProduccion.objects.create(
             tipo="fason", # Headless usualmente manda a fasón externo
