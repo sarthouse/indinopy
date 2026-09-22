@@ -28,13 +28,17 @@ Una marca estructurada requiere segregación de funciones para evitar fraudes in
 *   **Jefe de Compras:** Accede al submódulo `apps.compras`. Recibe las alertas de quiebre de stock de insumos que dispara el Jefe de Producción. Emite Órdenes de Compra (OC) a proveedores de cuero/telas.
 *   **Supervisor de Inventario / Pañol:** Solo accede a `apps.inventario`. Su rol es hacer los "Ingresos" (recepción de compras) y "Egresos" (armar los remitos de Maquila físicos para enviar al taller).
 
-### C. Módulo Comercial
-*   **Jefe de Ventas:** Administra la integración con WooCommerce (`apps.ventas`). Define políticas de precios, cupones y catálogos.
-*   **Vendedor (Mostrador/Mayorista):** Perfil ultra-limitado. Solo puede generar "Órdenes de Venta" (Pedidos), ver el stock disponible en tiempo real y cargar remitos de despacho. No ve los costos de producción ni las e-OPs.
+### C. Módulo Comercial y Canales
+*   **Jefe de Ventas:** Administra los canales de comercialización (`apps.ventas.models.CanalVenta`) y la configuración multitienda en `apps.integraciones.woocommerce` (`TiendaWooCommerce`). Define políticas de precios, cupones y sincronización de catálogos y stock.
+*   **Vendedor (Mostrador/Mayorista):** Perfil ultra-limitado. Solo puede generar "Órdenes de Venta" (Pedidos), consultar stock disponible en tiempo real y cargar remitos de despacho. No ve costos industriales ni tiene acceso a las e-OPs.
 
-### D. Módulo Administrativo Financiero
-*   **Tesorero / Jefe de Finanzas:** Opera `apps.tesoreria`. Paga el flujo Privado (Comprobantes X / Cuentas por Pagar) de forma manual. Audita los débitos automáticos del Escrow.
-*   **Analista Contable:** Opera `apps.contabilidad`. Su única función es la conciliación bancaria y revisar que las Facturas Electrónicas de AFIP se hayan generado correctamente para enviar al estudio contable externo.
+### D. Módulo Administrativo y Financiero
+*   **Tesorero / Jefe de Finanzas:** Opera `apps.tesoreria`. Administra las cajas físicas y cuentas bancarias. En el circuito FIMCA, audita los callbacks de clearing del FDI y emite las Órdenes de Pago para el **repago fiduciario del crédito al FDI** a 60 días mediante `ComprobanteTesoreria.escrow_asociado`.
+*   **Analista Contable:** Opera `apps.contabilidad`. Gestiona el Libro Diario por partida doble estricta, la conciliación bancaria, los libros de IVA Digital (Ventas y Compras) y las retenciones/percepciones fiscales (SICORE/SIFERE), fiscalizando la posición de pasivos devengados frente al FDI.
+
+### E. Módulo de Nómina y Recursos Humanos (Segregación SoD)
+*   **Jefe de Personal / Liquidación de Sueldos:** Opera `apps.nomina`. Carga legajos de empleados, licencias, novedades mensuales variables (horas extras, premios) y ejecuta las liquidaciones de sueldo individuales y masivas. Exporta los reportes oficiales (Recibo PDF doble vía, Libro de Sueldos Digital ARCA de 4 registros fijos). **Bloqueo duro:** No puede autorizar la liquidación para pago bancario.
+*   **Aprobador de Tesorería (Aprobación Dual):** Rol de finanzas que valida y aprueba en segunda instancia la `LiquidacionNomina` (`aprobador_tesoreria`), disparando atómicamente el asiento contable de costo laboral en `apps.contabilidad` y la Orden de Pago masiva para acreditación de haberes bancarios en `apps.tesoreria`.
 
 ---
 
@@ -47,6 +51,7 @@ Una marca estructurada requiere segregación de funciones para evitar fraudes in
 
 ## 4. Roles Institucionales (Gobernanza / MES)
 *   **Promotor Territorial (PTF):** Puente Humano y Tutor Técnico. App móvil con enclave. Disuelve la brecha digital, labra el Dictamen de Transición Asistida, y valida coordenadas GPS/Biometría para emitir la firma "Conformidad en Campo".
+*   **Oficial Fiduciario (FDI / Agente de Clearing):** Accede al Dashboard de Clearing (`/mes/fiduciaria/`). Supervisa las e-OPs aprobadas, valida el saldo de custodia del Fideicomiso y emite los lotes de pago bancario masivo (archivos batch `.txt` Interbanking / BAPRO Empresas o Webhooks B2B) para transferir los anticipos de Hito Cero e hitos de avance a las cuentas de los talleristas.
 *   **Comisión de Homologación Técnica (INTI / Sindicato):** Perfil técnico. Auditan mermas, homologan maquinaria (arancel cero) y realizan la tutela laboral en territorio (Sindicato).
 *   **Comisión de Crédito y Riesgo (Talleres / Marcas):** Oficiales del Nodo MES que analizan viabilidad y recomiendan la aprobación financiera al FDI.
 *   **Árbitro Jurisdiccional (Municipio):** Preside la Mesa Local (Silla 7) con voto de desempate. Dirige el Tribunal de Arbitraje para conciliaciones obligatorias en 72h.

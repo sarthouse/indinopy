@@ -22,6 +22,16 @@ Indinopy no es solo un ERP administrativo, sino una plataforma de **gobernanza c
 2. **Burocracia y Discrecionalidad:** Reemplaza el expediente analógico y la discrecionalidad burocrática por **auditoría criptográfica institucional y contratos automatizados de ejecución estanca (Escrow y Timelocks en Celery/PostgreSQL)** tutelados por la gobernanza paritaria de la MES.
 3. **Purgatorio Fiscal:** Conecta APIs de forma invisible para automatizar el alta tributaria (Monotributo Productivo) y retener impuestos solo al momento de la liquidación bancaria, evitando la acumulación de pasivos.
 
+### 1.1. Encuadre Operativo: La Marca como Núcleo Integral (Producción Mixta, Nómina y Finanzas)
+
+El sistema está concebido para **dar soporte en primera instancia a la Marca manufacturera** en toda su complejidad operativa, y en **segunda instancia al Tallerista satélite**:
+
+1. **La Marca como Núcleo Operativo (con planta propia o 100% fasón):** No es un simple intermediario de software; centraliza el diseño, los recetarios BOM, el pañol de insumos y el capital comercial. Puede operar con planta física propia (corte, embalaje y operarios directos bajo UTICRA/SOIVA) o bien bajo un modelo deslocalizado donde delega la totalidad de la transformación física en talleres a fasón. En ambos casos, administra inventario por partida doble, nómina (personal directo o administrativo) y tesorería comercial (ventas B2C WooCommerce y mayoristas).
+2. **Producción Mixta (Planta Propia + Fasón):** Las Órdenes de Producción gestionan etapas combinadas: corte y armado internos en planta comitente, y etapas tercerizadas (ej. aparado a fasón) remitidas en custodia bajo CCCN 1251/1356 y colateralizadas ante el FDI.
+3. **Impermeabilidad Laboral (Blindaje Art. 30 LCT):** La nómina de la marca (`apps.nomina`) es estrictamente hermética e inaccesible para los talleres. Los operarios y destajistas de los talleres externos jamás figuran en los libros de sueldos de la marca comitente.
+4. **Desdoblamiento Financiero:** La tesorería de la marca no le anticipa liquidez de su bolsillo al tallerista durante la fabricación; el FDI asume el fondeo del Hito Cero y de avance, y la marca programa únicamente el repago fiduciario a 60 días una vez finalizado el lote.
+5. **Integración Gradual del Taller:** El tallerista opera en segunda instancia mediante una interfaz ligera (Portal web PWA móvil con ficha técnica ciega de costos y firma Ed25519) sin necesidad de infraestructura propia, o mediante un nodo federado autónomo si se trata de un taller consolidado o cooperativa.
+
 ---
 
 ## 2. Mapa de Actores y Roles del Sistema
@@ -145,20 +155,20 @@ Para no burocratizar la planta ni forzar fricciones administrativas en los proce
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Marca as Nodo Marca
+    participant Marca as Nodo Marca (ERP)
     participant MES as Nodo MES (Celery)
     participant Taller as Nodo Tallerista
     participant FDI as Fideicomiso (FDI)
-    participant Banco as Banco (Agente Clearing)
+    participant Banco as Banco (Clearing)
     
-    Marca->>MES: e-OP Firmada (Solicita Crédito)
-    MES->>FDI: Evalúa y Aprueba Colateral (e-OP)
+    Marca->>MES: e-OP Firmada con Ed25519 (Solicita Crédito)
+    MES->>FDI: Evalúa y Aprueba Colateral (Vector C en UCI)
     
     rect rgb(50, 20, 20)
         Note right of Marca: TIMELOCK Y SILENCIO POSITIVO (Homologación)
         MES->>MES: Inicia Celery Beat (Timelock 48h)
         opt Veto de la MES (Auditoría)
-            MES->>MES: Detecta anomalía/subpago
+            MES->>MES: Detecta anomalía/subpago de tarifas
             MES->>Marca: e-OP Rechazada
         end
         Note over MES: Si pasan 48h sin veto...
@@ -170,39 +180,41 @@ sequenceDiagram
     
     rect rgb(20, 50, 20)
         Note right of Marca: HITO CERO (Financiado por FDI)
-        Marca->>Taller: Despacha Insumos Fase 1 - Corte (Remito Maquila)
-        Marca->>MES: Confirma Entrega Materiales Fase 1
+        Marca->>Taller: Despacha Insumos Fase 1 - Corte (Remito Custodia)
+        Marca->>MES: Confirma Entrega de Insumos
         FDI->>Banco: Instrucción de Anticipo (30-40%)
-        Banco-->>Taller: Transfiere a Cuenta Taller (Principal / Prestador)
+        Banco-->>Taller: Transfiere directo a CVU/CBU Taller
+        Banco-->>Marca: Callback Clearing Ejecutado
+        Note over Marca: Tesorería reconoce Pasivo con FDI (Cancela deuda Taller)
     end
     
     rect rgb(20, 50, 50)
         Note right of Marca: HITOS DE AVANCE (Fast Track PTF y Despacho Escalonado)
         Taller->>MES: Finaliza Lote Corte (Solicita Inspección)
         MES->>Taller: Despacha Promotor Territorial (PTF)
-        Taller->>MES: PTF Firma Conformidad en Campo (GPS/Biometría)
-        Marca->>Taller: Despacha Insumos Fase 2 - Aparado/Armado (Bases/Avíos)
+        Taller->>MES: PTF Firma Conformidad en Campo (GPS/Biometría PoPW)
+        Marca->>Taller: Despacha Insumos Fase 2 (Aparado/Armado)
         FDI->>Banco: Instrucción de Liquidación (Clearing Parcial)
         Banco-->>Taller: Transfiere Hito de Avance
     end
 
     rect rgb(50, 40, 20)
         Note right of Marca: CIERRE FISCAL (Estado FISCAL_PENDING)
-        Taller->>MES: Entrega Producto Terminado
-        MES->>ARCA: Verifica Emisión de Factura Electrónica Oficial
+        Taller->>MES: Entrega Producto Terminado en Planta
+        MES->>ARCA: Verifica Emisión de Factura Electrónica Oficial (CAE)
         ARCA-->>MES: Comprobante CAE Válido
-        FDI->>Banco: Liquidación Final (20% Saldo Escrow)
+        FDI->>Banco: Liquidación Final (Saldo Escrow al Taller)
         Banco-->>Taller: Acredita Saldo Final + Puntos UCP
     end
     
     rect rgb(20, 40, 60)
-        Note right of Marca: REINTEGRO Y CANCELACIÓN (30-60 Días)
-        Marca->>FDI: Pago de e-OP (Cancelación de Crédito)
+        Note right of Marca: REINTEGRO Y CANCELACIÓN (Día 60)
+        Marca->>FDI: apps.tesoreria emite Orden de Pago al FDI
         FDI->>Banco: Instrucción de Cierre de Posición
-        Banco->>MES: Confirma Liquidación Final
+        Banco->>MES: Confirma Liquidación Final y Cierre de ContratoEOP
     end
 ```
-*Figura 3: Ciclo de financiamiento productivo con despacho escalonado Just-in-Time y cierre fiscal condicionado. El FDI asume el riesgo crediticio tomando la e-OP como colateral, ordenando al Banco el Hito Cero tras verificar la entrega inicial de materiales, y reteniendo el saldo final hasta la constatación electrónica de la factura en ARCA.*
+*Figura 3: Ciclo de financiamiento productivo con despacho escalonado Just-in-Time y cierre fiscal condicionado. El FDI asume el fondeo del capital de trabajo tomando la e-OP como colateral y transfiriendo los fondos bancarios directamente al taller. La Marca comitente no desembolsa liquidez operativa durante la fabricación: reconoce un pasivo financiero frente al FDI y emite su Orden de Pago de repago a 60 días en apps.tesoreria.*
 
 ### C. Fast Track de Aprobación en Campo (El rol del PTF)
 
@@ -230,27 +242,31 @@ El trabajador periférico entra al sistema de forma invisible:
 ### E. Trazabilidad Pública y Transparencia
 Toda e-OP genera un endpoint público (`/trazabilidad/<uuid>`). Al escanear el QR del calzado en góndola, el consumidor visualiza un gráfico determinista con el desglose del costo: *% Mano de Obra, % Insumos, % Impuestos y % Marca*.
 
-### F. Circuito de Ventas (Integración WooCommerce)
-El ERP no reemplaza al e-commerce, lo integra garantizando que la demanda traccione la producción.
+### F. Circuito de Ventas Omnicanal y Desacople de Integraciones
+El ERP no reemplaza al e-commerce; opera bajo una **arquitectura hexagonal desacoplada**: la app `apps.integraciones.woocommerce` actúa como conector periférico (validando HMAC de webhooks, absorbiendo picos mediante Celery y normalizando a DTOs canónicos), interactuando con el dominio de ventas de forma agnóstica (`apps.ventas.models.OrdenVenta` vía `CanalVenta`).
 
 ```mermaid
 sequenceDiagram
-    participant W as WooCommerce
-    participant V as Nodo Indinopy (Ventas)
-    participant I as Inventario
+    participant W as WooCommerce (Tienda Web)
+    participant I_WC as apps.integraciones.woocommerce
+    participant V as apps.ventas (Core ERP)
+    participant Inv as apps.inventario (Stock)
     
-    W->>V: POST /ventas/webhooks/ (HMAC-SHA256)
-    V->>V: Valida Firma y Extrae JSON
-    V->>I: Reserva de Stock Automática
+    W->>I_WC: POST /integraciones/woocommerce/{id}/webhook/ (HMAC)
+    I_WC->>I_WC: Valida HMAC-SHA256 y encola tarea Celery
+    I_WC-->>W: HTTP 200 OK (< 150ms)
+    I_WC->>V: VentasService.ingestar_orden_canal(dto_orden)
+    V->>V: get_or_create Contacto (DNI/CUIL) y OrdenVenta
+    V->>Inv: Genera Remito Salida y reserva stock (StockQuant)
     
     alt Stock Insuficiente
-        I-->>V: Alerta Quiebre -> Sugiere OP
+        Inv-->>V: Alerta de Quiebre de Stock -> Sugiere OrdenProduccion
     else Stock Disponible
-        I->>I: Despacha Mercadería
-        I->>W: PUT /wp-json/wc/v3/orders/ ("Completado")
+        Inv->>Inv: Despacha Mercadería (REM-OV-...)
+        I_WC->>W: PUT /wp-json/wc/v3/products/batch (Actualiza Stock)
     end
 ```
-*Figura 5: Orquestación B2C-B2B. Los webhooks cifrados permiten que la demanda en góndola (WooCommerce) traccione y alerte automáticamente al ERP sobre la necesidad de generar nuevas e-OPs.*
+*Figura 5: Orquestación desacoplada Omnicanal. La capa adaptadora normaliza eventos y aísla al Core de Ventas de dependencias externas, asegurando reservas atómicas en el inventario y retorno de sincronización.*
 
 ### G. Circuito de Inventario (Traslados de Maquila)
 La materia prima viaja al taller sin transferir su dominio comercial, protegiendo a ambas partes de embargos.
@@ -270,6 +286,34 @@ sequenceDiagram
     C->>C: Ingresa Activo Final
 ```
 *Figura 6: Trazabilidad de activos y blindaje legal. El stock enviado al taller se rige bajo contrato de Locación de Obra/Maquila, protegiendo a los insumos físicos de cualquier medida cautelar o embargo sobre el tallerista.*
+
+### H. Circuito de Nómina y Liquidación de Sueldos (Segregación SoD)
+La Marca administra su personal directo (corte, diseño, matricería, supervisión y administración) bajo un circuito estricto de **aprobación dual**:
+
+```mermaid
+sequenceDiagram
+    participant HR as apps.nomina (Jefe Personal)
+    participant Tes as apps.tesoreria (Finanzas)
+    participant Cont as apps.contabilidad (Asientos)
+    participant Banco as Banco Sueldos (Acreditación)
+    participant ARCA as ARCA (Libro Sueldos Digital)
+
+    HR->>HR: Carga Novedades (Horas Extras, Premios, Licencias)
+    HR->>HR: Procesa LiquidacionNomina (Borrador -> En Revisión)
+    Note over HR,Tes: BLOQUEO DURO SoD: Preparador != Aprobador
+    Tes->>Tes: Audita planilla mensual y autoriza (aprobador_tesoreria)
+    Tes->>Cont: Genera Asiento Contable Cuadrado (Costo Laboral)
+    Tes->>Banco: Archivo batch acreditación masiva cuentas sueldo
+    HR->>ARCA: Exporta 4 registros fijos para LSD oficial
+```
+*Figura 7: Circuito de nómina con segregación SoD. Impide que quien confecciona la liquidación autorice el desembolso bancario, integrando de forma atómica el costo laboral en la contabilidad y generando los archivos oficiales del Libro de Sueldos Digital.*
+
+### I. Circuito de Tesorería Comercial y Contabilidad por Partida Doble
+Centraliza el flujo monetario ordinario de la fábrica y su convergencia fiscal:
+1. **Cobranzas y Facturación Electrónica:** Al confirmar un pedido mayorista o venta web WooCommerce, `apps.contabilidad` emite la Factura Electrónica (con CAE vía WebService ARCA), devengando el débito fiscal de IVA y la cuenta por cobrar en `DocumentoDeuda`.
+2. **Medios de Pago y Cobranzas:** `apps.tesoreria` recibe pagos (efectivo, transferencias, Mercado Pago, cheques físicos y e-cheqs), aplicando los importes al saldo del cliente y conciliando retenciones de IIBB/Ganancias (`CertificadoRetencion`).
+3. **Pagos a Proveedores y Repago FDI:** Emite Órdenes de Pago para saldar facturas de compra de cuero/avíos o cancelar el repago del crédito fiduciario al FDI (`escrow_asociado = ForeignKey(ContratoEOP)`).
+4. **Partida Doble Inmutable:** Toda operación de tesorería y compras dispara en tiempo real un `Asiento` con sus `Apuntes` cuadrados (Debe = Haber), alimentando el Libro Diario, el Mayor y las declaraciones juradas de IVA Digital y SICORE/SIFERE.
 
 ---
 
@@ -325,7 +369,7 @@ stateDiagram-v2
     CANCELADA --> [*]
 ```
 
-*Figura 7: Máquina de estados unidireccional de la e-OP. Garantiza la consistencia del ciclo de vida financiero y productivo, previniendo inconsistencias como doble gasto, estados huérfanos o retrocesos no autorizados.*
+*Figura 8: Máquina de estados unidireccional de la e-OP. Garantiza la consistencia del ciclo de vida financiero y productivo, previniendo inconsistencias como doble gasto, estados huérfanos o retrocesos no autorizados.*
 
 ### B. Payload Canónico de la e-OP (Contrato API)
 El intercambio de información entre nodos no transfiere tablas SQL, sino un **Payload Canónico JSON** determinista. 
@@ -388,15 +432,16 @@ En Nodos Talleristas On-Premise que operan con conectividad intermitente (Pollin
 
 ## 9. Modelo de Datos Relacional (Django ERD)
 
-A diferencia del *Payload Canónico JSON* que opera como contrato de red para interoperabilidad, la persistencia interna en los nodos está gobernada por el ORM de Django. Para optimizar la inmutabilidad y la trazabilidad, las firmas criptográficas no usan tablas separadas, sino campos `JSONB` versionados mediante `django-simple-history`.
+A diferencia del *Payload Canónico JSON* que opera como contrato de red para interoperabilidad, la persistencia interna en los nodos está gobernada por el ORM de Django. La arquitectura desacopla estrictamente la **manufactura física de planta** (`apps.produccion`), el **título de crédito fiduciario** (`apps.eop`) y la **ejecución financiera** (`apps.tesoreria`):
 
 ```mermaid
 erDiagram
     CONFIGURACION_EMPRESA ||--o{ ORDEN_PRODUCCION : "emite (Nodo Local)"
-    CONTACTO ||--o{ ORDEN_PRODUCCION : "ejecuta (Tallerista / PTF)"
+    CONTACTO ||--o{ ORDEN_PRODUCCION : "tallerista asignado"
     
-    ORDEN_PRODUCCION ||--|| CONTRATO_ESCROW : "garantiza"
-    CONTRATO_ESCROW ||--o{ HITO_ESCROW : "se divide en"
+    ORDEN_PRODUCCION ||--o| CONTRATO_EOP : "colateraliza (opcional)"
+    CONTRATO_EOP ||--o{ EOP_HITO_ESCROW : "divide en hitos"
+    CONTRATO_EOP ||--o{ COMPROBANTE_TESORERIA : "impacta via escrow_asociado"
     
     CONFIGURACION_EMPRESA {
         int id PK "Singleton (Single-Tenant)"
@@ -405,32 +450,52 @@ erDiagram
     }
     
     ORDEN_PRODUCCION {
-        uuid uuid_identificador PK
-        int cliente_id FK
-        int ptf_asignado_id FK
-        string estado_escrow "Choices: no_aplica, fondeado_fdi..."
-        string hash_seguridad "SHA-256 (DocumentoFirmableMixin)"
-        jsonb firmas_digitales "Firmas (Comitente, Tallerista)"
-    }
-    
-    CONTRATO_ESCROW {
         int id PK
-        uuid eop_uuid FK
-        decimal monto_total_uci
-        string estado
+        string numero UK "produccion.op"
+        int receta_id FK
+        int cliente_id FK
+        string tipo "interna / fason"
+        int cantidad_total
+        jsonb bom_headless "Headless BOM"
     }
     
-    HITO_ESCROW {
-        uuid uuid_identificador PK
+    CONTRATO_EOP {
+        int id PK
+        string numero UK "eop.contrato"
+        int orden_produccion_local_id FK "Null si es Headless"
+        string nodo_mes
+        int ptf_asignado_id FK
+        string estado_escrow "solicitado, financiado_fdi, en_disputa..."
+        decimal costo_mod "Vector C congelado"
+        decimal costo_cs
+        decimal costo_bom
+        string merkle_root_bom
+        string hash_seguridad "SHA-256"
+        jsonb firmas_digitales "Firmas Ed25519"
+    }
+    
+    EOP_HITO_ESCROW {
+        int id PK
         int contrato_id FK
-        string nombre
-        decimal porcentaje
+        string nombre "Hito Cero / Avance..."
+        decimal porcentaje_tramo
         boolean requiere_auditoria_ptf
-        jsonb firmas_digitales "Firma Criptográfica del PTF"
+        string estado "bloqueado, liberado..."
+        boolean requiere_verificacion_arca
+        string factura_asociada_arca
+        jsonb firmas_digitales "Firma PTF"
+    }
+
+    COMPROBANTE_TESORERIA {
+        int id PK
+        string numero UK "tesoreria.orden_pago/recibo"
+        string tipo "recibo / orden_pago"
+        int escrow_asociado_id FK "Enlace a ContratoEOP"
+        string referencia_bancaria_vep
     }
 ```
 
-* **DocumentoFirmableMixin:** Tanto la e-OP como el Hito heredan de este mixin. Almacenan su propio `hash_seguridad` y un JSON de `firmas_digitales`. Esto asegura que cuando se audita la base de datos, el registro histórico contiene la "foto" exacta de la OP en el milisegundo en que el PTF o el Tallerista inyectó su firma.
+* **DocumentoFirmableMixin:** Tanto `ContratoEOP` como `EOPHitoEscrow` y `ComprobanteTesoreria` heredan de este mixin. Almacenan su propio `hash_seguridad` y un JSON de `firmas_digitales`. Esto asegura que cuando se audita la base de datos, el registro histórico contiene la "foto" exacta de la operación en el milisegundo en que el PTF, el Comitente o el Tallerista inyectaron su firma criptográfica.
 
 ---
 
@@ -490,7 +555,7 @@ La red federada asume que los conflictos son inevitables. Para evitar la paráli
 
 ### A. Canal de Denuncias y Tribunal de Arbitraje
 Cuando ocurre un diferendo de calidad o faltante de materiales entre el Comitente y el Tallerista, el sistema ejecuta esta máquina de estados:
-1. **Trigger de Alerta:** El afectado pulsa "Reportar Incumplimiento" en la plataforma. El `ContratoEscrow` cambia automáticamente de `ejecutando` a `en_disputa`. Los pagos futuros se congelan de inmediato.
+1. **Trigger de Alerta:** El afectado pulsa "Reportar Incumplimiento" en la plataforma. El `ContratoEOP` cambia automáticamente de su estado actual a `en_disputa`. Los pagos futuros se congelan de inmediato en la red.
 2. **Aportación de Pruebas (24hs):** Se habilita un canal de subida donde ambas partes adjuntan evidencia (fotos de cuero marcado, PDF de ficha técnica). Los archivos son hasheados (SHA-256) para garantizar que la prueba es inmutable y no fue alterada a posteriori.
 3. **Conformación del Panel (Matchmaking):** El sistema asigna acceso de lectura al perito del INTI y sortea algorítmicamente a dos vocales de la Bolsa de Trabajo (un Taller y una Marca, ajenos al conflicto) para que auditen el caso en el Dashboard MES.
 4. **Laudo y Ejecución Criptográfica (72hs SLA):** El Tribunal emite su fallo. Al ingresar 2 de las 3 firmas Ed25519 requeridas, el contrato ejecuta automáticamente el laudo: liquida forzosamente al tallerista o reintegra los fondos al FDI, aplicando simultáneamente el *Slashing* (descuento de reputación UCP) a la parte declarada culpable.

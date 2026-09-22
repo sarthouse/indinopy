@@ -1,10 +1,10 @@
 <span class="doc-header-badge">⚙️ Especificación Técnica</span>
 # Análisis del Dossier Proyecto FIMCA e Integración Arquitectónica en Indinopy
 
-> **Referencia base:** [Dossier Proyecto FIMCA](dossier_fimca_base.html)  
+> **Referencia base:** [Dossier Proyecto FIMCA](dossier_proyecto_fimca_2026.html)  
 > **Sistema destino:** **Indinopy** — ERP & MES Industrial para Manufactura de Calzado, Cuero e Indumentaria  
 > **Fecha:** Septiembre de 2026  
-> **Estado:** Especificación Técnica y Plan de Implementación  
+> **Estado:** Especificación Técnica y Plan de Integración Arquitectónica  
 
 ---
 
@@ -15,11 +15,11 @@
 3. **Mesa de Enlace Sectorial (MES):** Órgano tripartito (Estado/INTI, Sindicatos, Cámaras, Talleristas) que gobierna la cadena.
 4. **Fideicomiso de Desarrollo Industrial (FDI):** Fondo de ahorro comunitario que reemplaza a los bancos comerciales.
 5. **La Orden de Producción como Título de Crédito (e-OP):** El banco o billetera no pide balances pasados al tallerista; financia el trabajo en curso tomando la OP registrada como garantía real de producción.
-6. **Hito Cero & Financiamiento FDI:** La orden de producción se clasifica según su modalidad (OP de Gestión Interna vs e-OP Federada). En la e-OP Federada, el FDI aprueba el financiamiento y el Banco (agente de clearing) transfiere el Hito Cero (30-40%) de forma automática al entregar los insumos. Los pagos posteriores se liberan contra la certificación de hitos físicos cumplidos por el PTF (Puente Humano).
-7. **Régimen de Maquila y Façón (Propuesta de Reforma Ley 25.113 vs. CCCN Actual):** Actualmente en Argentina la **Ley 25.113 rige con exclusividad para el sector agroindustrial** (productores agropecuarios entregando materia prima con pago en especie y no sujeción tributaria). En el sector del calzado y la indumentaria rige la figura del **façón** (servicio de confección remunerado en dinero), la cual carece de ley propia y se apoya en la *Locación de Obra* (Arts. 1251 y ss. del CCCN) y *Depósito* (Arts. 1356 y ss. CCCN), lo que genera vulnerabilidad laboral (Art. 30 LCT) y riesgo de embargo sobre los insumos ante problemas del tallerista. El Proyecto FIMCA propone **reformar la Ley 25.113 para extender la figura a la "Maquila Industrial"**. Indinopy debe blindar documentalmente la propiedad inembargable de los insumos bajo el CCCN actual y dejar la arquitectura preparada para la eventual ampliación de la Ley 25.113.
+6. **Hito Cero & Financiamiento FDI:** La orden de producción física (`OrdenProduccion` en `apps.produccion`) se desacopla del contrato de crédito fiduciario (`ContratoEOP` en `apps.eop`). En la e-OP Federada, el FDI aprueba el financiamiento y el Banco (agente de clearing) transfiere el Hito Cero (30-40%) de forma automática al entregar los insumos. Los pagos posteriores se liberan contra la certificación de hitos físicos cumplidos por el PTF (`EOPHitoEscrow` y `ComprobanteTesoreria`).
+7. **Régimen de Maquila y Façón (Propuesta de Reforma Ley 25.113 vs. CCCN Actual):** Actualmente en Argentina la **Ley 25.113 rige con exclusividad para el sector agroindustrial** (productores agropecuarios entregando materia prima con pago en especie y no sujeción tributaria). En el sector del calzado y la indumentaria rige la figura del **façón** (servicio de confección remunerado en dinero), la cual carece de ley propia y se apoya en la *Locación de Obra* (Arts. 1251 y ss. del CCCN) y *Depósito* (Arts. 1356 y ss. CCCN), lo que genera vulnerabilidad laboral (Art. 30 LCT) y riesgo de embargo sobre los insumos ante problemas del tallerista. El Proyecto FIMCA propone **reformar la Ley 25.113 para extender la figura a la "Maquila Industrial"**. Indinopy blinda documentalmente la propiedad inembargable de los insumos bajo el CCCN actual en sus remitos de traslado (`TRA-...`) y deja la arquitectura preparada para la eventual ampliación de la Ley 25.113.
 8. **Monotributo Productivo Automatizado:** Alta simplificada con la primera e-OP, retención de 1-2% por cobro efectivo, y "Suspensión Activa de Oficio" (carga fiscal cero pesos si no hay órdenes activas, sin acumular deudas cíclicas).
 9. **Sello QR de Trazabilidad Socioproductiva:** Código escaneable en el calzado para que el consumidor final vea el desglose ético real: cuánto va al tallerista, cuánto a materiales, cuánto a impuestos y cuánto a la marca.
-10. **El Rol de Indinopy:** Indinopy es el ERP/MES de calzado de este repositorio. Ya cuenta con inventario por partida doble física (`apps/inventario`), fichas técnicas dinámicas BOM (`apps/produccion`), y seguimiento de etapas a fasón (`OPEtapaTracking`). **Este documento detalla exactamente qué clases, campos y migraciones deben agregarse en Django** para implementar los puntos del Dossier.
+10. **El Rol de Indinopy:** Indinopy es el ERP/MES de calzado de este repositorio. Cuenta con inventario por partida doble física (`apps.inventario`), fichas técnicas dinámicas BOM (`apps.produccion`), seguimiento de etapas a fasón (`OPEtapaTracking`), desacople del título de crédito fiduciario en `apps.eop`, contabilidad por partida doble con motor tributario (`apps.contabilidad`) y tesorería con órdenes de pago por hitos (`apps.tesoreria`). Este documento detalla la correspondencia arquitectónica e integración del Dossier en el software.
 
 ---
 
@@ -117,15 +117,15 @@ flowchart TD
 
 | Eje del Proyecto FIMCA | Concepto Operativo | Aplicación / Módulo Indinopy | Estado Actual | Requerimiento de Desarrollo |
 | :--- | :--- | :--- | :--- | :--- |
-| **Sección II / Anexo II** | Orden de Producción como activo (e-OP) | `apps.produccion` | Implementado como OP fabril interna | Incorporar hash único, UUID, metadata legal de façón/maquila y esquema multitaller. |
-| **Sección II.B / Anexo II.C** | Hito Cero (Anticipo) y Escrow Digital | `apps.tesoreria` | Modelos pendientes de diseño | Crear modelos `HitoPago`, `LiquidacionServicioFason` y lógica de anticipos por hito. |
-| **Sección VIII.B** | Bolsa Sectorial y Perfil de Capacidades | `apps.contactos` | Contacto unificado con CUIT/IVA | Extender modelo para registrar capacidad semanal (pares/sem), especialidades y scoring. |
-| **Sección V / Plazos Aduana** | Tolerancia de Mermas (INTI) e Importación | `apps.produccion` / `apps.inventario` | Mermas calculadas solo post-cierre | Parámetros de tolerancia porcentual en `RecetaInsumo` y tracking de permanencia aduanera. |
-| **Sección VIII.M** | Sello QR de Trazabilidad Socioproductiva | `apps.ventas` / `apps.produccion` | Sin vista pública | Endpoint público `/trazabilidad/<lote>/` con desglose ético de costos y visualización QR. |
-| **Sección VIII.K** | IA Algorética y Pisos de Precios Justos | `produccion.services` | No implementado | Tabla de precios de referencia de mano de obra y alertas de subpago a talleristas. |
-| **Integración PyME** | Arquitectura Headless (SAP/Tango) | `apps.produccion` | Implementado | Endpoint API con `bom_headless` para inyectar e-OPs sin usar inventario local. |
-| **Topología Red** | Despliegue SaaS vs On-Premise y DNS | `Infraestructura` | Especificado | Enrutamiento jerárquico `{marca}.{nodo-mes}.indinopy.ar`. |
-| **Tributación** | Impuestos, Retenciones y DDJJ (ARCA) | `apps.contabilidad` | En Planificación | Modelado de Partida Doble, `FacturaImpuesto` y `CertificadoRetencion`. |
+| **Sección II / Anexo II** | Orden de Producción como activo (e-OP) | `apps.eop` (`ContratoEOP`) / `apps.produccion` | Implementado (Desacoplado) | Sellado de hash determinista, Merkle Root y ciclo de vida de Timelock 48h. |
+| **Sección II.B / Anexo II.C** | Hito Cero (Anticipo) y Escrow Digital | `apps.eop` (`EOPHitoEscrow`) / `apps.tesoreria` | Implementado en backend | Generador de lotes bancarios batch BAPRO y endpoint de retorno/clearing. |
+| **Sección VIII.B** | Bolsa Sectorial y Perfil de Capacidades | `apps.contactos` | En desarrollo (`PerfilTallerista`) | Métricas de capacidad nominal semanal (pares/sem), especialidades y scoring UCP. |
+| **Sección V / Plazos Aduana** | Tolerancia de Mermas (INTI) e Importación | `apps.produccion` / `apps.inventario` | En desarrollo | Parámetros de tolerancia porcentual en `RecetaInsumo` y tracking de permanencia aduanera. |
+| **Sección VIII.M** | Sello QR de Trazabilidad Socioproductiva | `apps.ventas` / `apps.produccion` | Pendiente (Fase Frontend) | Endpoint público `/trazabilidad/<lote>/` con desglose ético de costos y visualización QR. |
+| **Sección VIII.K** | IA Algorética y Pisos de Precios Justos | `apps.mes` / `apps.produccion` | En desarrollo | Nomenclador universal de tarifas (`TarifaConvenio`) y advertencias de subpago. |
+| **Integración PyME** | Arquitectura Headless (SAP/Tango) | `apps.produccion` / `apps.eop` | Implementado en modelo | Endpoints DRF para recibir OPs crudas y salteo de `StockService`. |
+| **Topología Red** | Despliegue SaaS vs On-Premise y DNS | `Infraestructura` / `apps.federacion` | Especificado | Enrutamiento jerárquico `{marca}.{nodo-mes}.indinopy.ar`. |
+| **Tributación** | Impuestos, Retenciones y DDJJ (ARCA) | `apps.contabilidad` | Implementado | Partida Doble, `FacturaImpuesto`, `CertificadoRetencion` y libro de IVA digital. |
 
 ---
 
@@ -133,261 +133,88 @@ flowchart TD
 
 A continuación se detalla la ingeniería de software a implementar en cada módulo.
 
-### 4.1. Módulo Producción: La "e-OP" y el Régimen de Maquila
+### 4.1. Módulo Producción y Protocolo e-OP: Desacople Arquitectónico
 
-#### 4.1.1. Atributos Legales y Criptográficos en `OrdenProduccion`
+La arquitectura de Indinopy desacopla estrictamente la gestión de **manufactura física de planta** de la dimensión de **título de crédito y contrato fiduciario**:
 
-En `apps/produccion/models.py`, enriquecer el modelo `OrdenProduccion`:
+* **Manufactura Física (`apps.produccion`):** `OrdenProduccion` administra la receta técnica (BOM), las variaciones de talles (`OPVariacion`), los insumos comprometidos (`OPInsumoRequerido`) y el seguimiento por etapas (`OPEtapaTracking`), amparando traslados y recepciones físicas.
+* **Título de Crédito y Escrow (`apps.eop`):** `ContratoEOP` actúa como activo fiduciario negociable en la Red Federada FIMCA, conteniendo el Vector C de costos indexados en UCI (`costo_mod`, `costo_cs`, `costo_bom`, `costo_fdi`, `costo_tax`, `costo_mg`), el Merkle Root del BOM inmutable y los hitos de liberación en custodia (`EOPHitoEscrow`).
 
-```python
-import uuid
-
-
-class OrdenProduccion(DocumentoBase):
-    # Campos existentes heredados...
-
-    # --- Extensión FIMCA / Maquila ---
-    uuid_identificador = models.UUIDField(
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-        verbose_name=_("Identificador Único e-OP"),
-    )
-    es_sello_buen_diseno = models.BooleanField(
-        default=False,
-        verbose_name=_("Distinción Sello Buen Diseño (SBD)"),
-        help_text=_("Habilita anticipo preferencial de Hito Cero hasta el 50%."),
-    )
-```
-
-#### 4.1.2. Protocolo de Resguardo Jurídico en Remitos de Traslado
+#### 4.1.1. Protocolo de Resguardo Jurídico en Remitos de Traslado
 
 En los remitos generados mediante `OPEtapaTracking.generar_remito_traslado_taller()`:
-* Se debe inyectar automáticamente en el pie del documento impreso y digital el texto legal según el marco del CCCN vigente y preparado para la Maquila Industrial:
+* Se inyecta automáticamente en las observaciones del movimiento de stock el blindaje documental exigido por el CCCN vigente y preparado para la Maquila Industrial:
 
-> *"Los insumos y materias primas detallados se remiten exclusivamente para su transformación bajo contrato de Locación de Obra (Arts. 1251 y ss. CCCN) y Depósito Regular en Custodia (Arts. 1356 y ss. CCCN) [o Régimen de Maquila Industrial bajo eventual reforma de la Ley 25.113]. Las materias primas e insumos son propiedad inembargable y exclusiva del comitente emisor. El receptor actúa únicamente como custodio y transformador del material, sin adquirir titularidad ni derecho de disposición sobre el stock."*
+> *"Mercadería remitida bajo contrato de Locación de Obra (Arts. 1251 y ss. CCCN) y Depósito Regular en Custodia (Arts. 1356 y ss. CCCN). Las materias primas y semielaborados son propiedad inembargable y exclusiva del comitente emisor. El receptor actúa únicamente como custodio y transformador del material, sin adquirir titularidad ni derecho de disposición sobre el stock."*
 
-#### 4.1.3. Esquema de e-OP Multitaller (Consorcio Productivo)
+#### 4.1.2. Esquema de e-OP Multitaller (Consorcio Productivo)
 
 Para lotes de gran escala que requieran fraccionar tareas:
 * Cada etapa en `OPEtapaTracking` opera de forma **desacoplada**.
-* El cumplimiento de la etapa de corte (Taller A) gatilla su propia liquidación y genera de inmediato el remito de traslado del semielaborado hacia el aparador (Taller B), sin bloquear los fondos ni la gestión del Taller A si el Taller B presenta demoras.
+* El cumplimiento de la etapa de corte (Taller A) gatilla su propia certificación y genera de inmediato el remito de traslado del semielaborado hacia el aparador (Taller B), sin bloquear los fondos ni la gestión del Taller A si el Taller B presenta demoras.
 
 ---
 
-### 4.2. Módulo Tesorería: Hitos Productivos y Escrow Digital
+### 4.2. Módulo Tesorería y Escrow Digital: Hitos Productivos y Clearing FDI
 
-Actualmente `apps/tesoreria/models.py` requiere estructuración. Se implementa la arquitectura de liquidación por hitos.
+En el protocolo e-OP, la Tesorería de la Marca **no le transfiere dinero propio al tallerista durante el ciclo productivo** (lo que resolvería la falta estructural de capital de trabajo). Los desembolsos reales de dinero en cuenta (CVU/CBU) los ejecuta el **FDI (Fideicomiso de Desarrollo Industrial)** a través de su banco agente de clearing (ej. BAPRO / Interbanking):
+
+1. **Anticipos y Liberaciones por Hitos:** El FDI transfiere el dinero directamente al tallerista contra la certificación del Hito Cero o el aval de campo del PTF.
+2. **Impacto en la Marca (ERP Local):** La Tesorería y Contabilidad de la Marca registran el callback de clearing del FDI: se extingue la deuda comercial con el tallerista y se reconoce un **pasivo financiero exigible frente al FDI** a cancelar en 30-60 días.
+3. **Repago de la Marca:** Al vencimiento del plazo fiduciario (lote terminado y facturado), la Marca emite la `Orden de Pago` desde `apps.tesoreria` para cancelar el capital anticipado al FDI.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Adm as Fábrica / Comitente
     participant OP as Indinopy (MES/OP)
-    participant Tes as Módulo Tesorería
+    participant EOP as apps.eop (Contrato)
+    participant FDI as FDI / Banco Clearing
     actor Tal as Tallerista (Aparador)
-    participant Inv as Inventario (Quants)
+    participant Tes as apps.tesoreria (Marca)
 
-    Adm->>OP: Confirma asignación de etapa a Tallerista
-    OP->>Tes: Genera Liquidación en estado "Borrador"
-    OP->>Inv: Emite Remito Traslado (Insumos a Taller)
-    Note over Tes: Disparo Anticipo (30-40%)
-    Tes->>Tal: Libera Anticipo (Hito Cero o Adelanto Operativo)
-    Tal->>OP: Declara Entrega Parcial (OPParteProduccion)
-    OP->>Inv: Registra ingreso de pares a Planta (Control Calidad)
-    Note over Tes: Disparo Hitos de Avance
-    Tes->>Tal: Libera Pago Proporcional contra Pares Certificados
-    Tal->>OP: Entrega final de Lote + Retorno de sobrantes
-    Note over Tes: Disparo Hito Cierre
-    Tes->>Tal: Liquidación de Saldo Final (Ajustado por Scrap)
+    Adm->>OP: Confirma asignación de etapa y remite insumos
+    OP->>EOP: Genera ContratoEOP con Vector C de Costos
+    OP->>FDI: Registra e-OP y solicita fondeo de Escrow
+    Note over EOP,FDI: Timelock 48h / Aprobación MES
+    FDI->>Tal: Transfiere Hito Cero (30-40% directo a CVU taller)
+    FDI-->>Tes: Notifica Clearing bancario ejecutado (Callback)
+    Tes->>Tes: Registra Pasivo con FDI (Cancela deuda fasón taller)
+    Tal->>OP: Declara avance de producción (PoPW GPS)
+    Note over EOP,FDI: PTF audita y firma certificación de hito
+    FDI->>Tal: Libera Pago Proporcional de Avance
+    Tal->>OP: Entrega final de lote y sobrantes a planta
+    Note over Adm,Tes: Día 60 (Cancelación fiduciaria)
+    Tes->>FDI: Emite Orden de Pago al FDI (Repago crédito + tasa fiduciaria)
 ```
 
-#### 4.2.1. Modelos a Implementar en `apps/tesoreria/models.py`
+#### 4.2.1. Modelos Clave del Circuito Financiero
 
-```python
-from decimal import Decimal
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-from apps.base.models import TimeStampedModel, DocumentoBase
-
-
-class CuentaTesoreria(TimeStampedModel):
-    """Cajas físicas, cuentas bancarias de clearing o billeteras virtuales."""
-
-    TIPO_CUENTA = [
-        ("banco", _("Cuenta Bancaria / Clearing Oficial")),
-        ("billetera", _("Billetera Digital / CVU")),
-        ("caja_planta", _("Caja Operativa de Planta")),
-        ("fdi_escrow", _("Subcuenta de Custodia FDI / Escrow")),
-    ]
-    nombre = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=20, choices=TIPO_CUENTA, default="banco")
-    cbu_cvu = models.CharField(max_length=22, blank=True, null=True)
-    alias = models.CharField(max_length=100, blank=True, null=True)
-    saldo = models.DecimalField(
-        max_digits=15, decimal_places=2, default=Decimal("0.00")
-    )
-    activa = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"{self.nombre} ({self.get_tipo_display()})"
-
-
-class LiquidacionFason(DocumentoBase):
-    """Documento paraguas de liquidación de mano de obra para un tallerista en una OP."""
-
-    etapa_tracking = models.OneToOneField(
-        "produccion.OPEtapaTracking",
-        on_delete=models.CASCADE,
-        related_name="liquidacion",
-        verbose_name=_("Etapa de Producción"),
-    )
-    tallerista = models.ForeignKey(
-        "contactos.Contacto",
-        on_delete=models.RESTRICT,
-        related_name="liquidaciones_fason",
-    )
-    monto_total_pactado = models.DecimalField(max_digits=15, decimal_places=2)
-    porcentaje_hito_cero = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("35.00"),
-        help_text=_("Porcentaje de anticipo inicial (ej: 35% o 50% con SBD)"),
-    )
-    saldo_pendiente = models.DecimalField(max_digits=15, decimal_places=2)
-
-    def __str__(self):
-        return f"LIQ-{self.numero} - {self.tallerista.nombre} ($ {self.monto_total_pactado})"
-
-
-class HitoLiquidacion(TimeStampedModel):
-    """Tramos individuales de pago liberados contra eventos físicos."""
-
-    TIPO_HITO = [
-        ("anticipo_arranque", _("Anticipo de Arranque (Hito Cero / Adelanto Operativo)")),
-        ("avance_parcial", _("Hito de Avance: Entrega Parcial")),
-        ("cierre_final", _("Hito Final: Conformidad de Lote")),
-    ]
-    ESTADO_HITO = [
-        ("retenido", _("En Custodia / Pendiente de Certificación")),
-        ("autorizado", _("Autorizado para Pago")),
-        ("liquidado", _("Pagado / Transferido")),
-        ("cancelado", _("Cancelado")),
-    ]
-    liquidacion = models.ForeignKey(
-        LiquidacionFason, on_delete=models.CASCADE, related_name="hitos"
-    )
-    tipo = models.CharField(max_length=20, choices=TIPO_HITO)
-    monto = models.DecimalField(max_digits=15, decimal_places=2)
-    estado = models.CharField(max_length=20, choices=ESTADO_HITO, default="retenido")
-    parte_produccion = models.ForeignKey(
-        "produccion.OPParteProduccion",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        help_text=_("Parte físico que certifica el cumplimiento del hito"),
-    )
-    fecha_liberacion = models.DateTimeField(blank=True, null=True)
-    comprobante_transferencia = models.CharField(max_length=100, blank=True, null=True)
+* **`ContratoEOP` (`apps.eop`):** Título de crédito ejecutivo vinculado opcionalmente a la OP local (`orden_produccion_local`). Si la orden es Headless (SAP/Tango), opera autónomamente con su propio hash de Merkle.
+* **`EOPHitoEscrow` (`apps.eop`):** Tramos individuales de liberación de fondos (`anticipo_arranque`, `avance_parcial`, `cierre_final`). Requiere firma criptográfica del PTF auditor (`requiere_auditoria_ptf=True`) y validación de facturación ARCA para el cierre.
+* **`ComprobanteTesoreria` (`apps.tesoreria`):** 
+  * Para la Marca: gestiona el repago al FDI (`escrow_asociado = ForeignKey(ContratoEOP)`) y concilia contra lotes bancarios y VEPs fiscales (`referencia_bancaria_vep`).
+  * Para el Tallerista (en su propio nodo): registra la cobranza acreditada en su cuenta de clearing.
 ```
 
 ---
 
 ### 4.3. Módulo Contactos: Perfil Productivo y Bolsa Sectorial
 
-Enriquecer `apps/contactos/models.py` para transformar la libreta de direcciones en un **directorio de capacidades productivas auditables**.
+Enriquecer `apps/contactos/models.py` para transformar la libreta de direcciones en un **directorio de capacidades productivas auditables** mediante el modelo satélite `PerfilTallerista`:
 
-#### 4.3.1. Extensión del Modelo `Contacto` o Modelo Satélite `PerfilTallerista`
-
-```python
-class PerfilTallerista(TimeStampedModel):
-    """Metadatos industriales y socioproductivos para prestadores de fasón."""
-
-    contacto = models.OneToOneField(
-        "contactos.Contacto", on_delete=models.CASCADE, related_name="perfil_taller"
-    )
-    # Clasificación jurídica del FIMCA
-    figura_tributaria = models.CharField(
-        max_length=30,
-        choices=[
-            ("monotributo_productivo", _("Monotributo Productivo Automatizado")),
-            ("puente_sas", _("Sociedad por Acciones Simplificada (SAS)")),
-            ("responsable_inscripto", _("Responsable Inscripto Humano")),
-            ("cooperativa", _("Cooperativa de Trabajo")),
-        ],
-        default="monotributo_productivo",
-    )
-    estado_fiscal_dinamico = models.CharField(
-        max_length=20,
-        choices=[
-            ("activo", _("Activo en Producción")),
-            ("suspension_activa", _("Suspensión Activa de Oficio (Carga Cero)")),
-            ("irregular", _("Requiere Tutoría PTF")),
-        ],
-        default="activo",
-    )
-
-    # Capacidad operativa auditada
-    capacidad_semanal_pares = models.PositiveIntegerField(
-        verbose_name=_("Capacidad Nominal (Pares/Semana)"),
-        help_text=_("Capacidad física reportada para evitar cuellos de botella"),
-    )
-    especialidades = models.ManyToManyField(
-        "inventario.ProductoTemplate",
-        limit_choices_to={"tipo_producto": "servicio"},
-        related_name="talleres_especializados",
-        verbose_name=_("Servicios que realiza (Corte, Aparado, etc.)"),
-    )
-
-    # Métricas de confiabilidad comunitaria
-    score_cumplimiento = models.DecimalField(
-        max_digits=4,
-        decimal_places=2,
-        default=Decimal("5.00"),
-        verbose_name=_("Calificación Comunitaria (1 a 5)"),
-    )
-    total_ops_cumplidas = models.PositiveIntegerField(default=0)
-    dias_promedio_desvio = models.DecimalField(
-        max_digits=5,
-        decimal_places=1,
-        default=Decimal("0.0"),
-        verbose_name=_("Desvío de Entrega (Días Promedio)"),
-    )
-
-    # Tutoría y Territorio
-    municipio = models.CharField(max_length=100, blank=True)
-    promotor_territorial_asignado = models.CharField(
-        max_length=150,
-        blank=True,
-        null=True,
-        verbose_name=_("Promotor Territorial (PTF) de Enlace"),
-    )
-
-    @property
-    def carga_activa_pares(self):
-        """Calcula la cantidad de pares actualmente en proceso en el taller."""
-        from apps.produccion.models import OPEtapaTracking
-
-        return (
-            OPEtapaTracking.objects.filter(
-                tallerista_asignado=self.contacto, estado__in=["en_curso", "pendiente"]
-            ).aggregate(total=models.Sum("op__cantidad_total"))["total"]
-            or 0
-        )
-
-    @property
-    def porcentaje_ocupacion(self):
-        if self.capacidad_semanal_pares > 0:
-            return round(
-                (
-                    Decimal(self.carga_activa_pares)
-                    / Decimal(self.capacidad_semanal_pares)
-                )
-                * Decimal("100.0"),
-                1,
-            )
-        return Decimal("0.0")
-```
+* **Encuadre Jurídico y Tributario FIMCA:**
+  * `figura_tributaria`: Clasificación del prestador (*Monotributo Productivo Automatizado*, *Puente SAS*, *Responsable Inscripto Humano*, *Cooperativa de Trabajo*).
+  * `estado_fiscal_dinamico`: Monitoreo del ciclo (*Activo en Producción*, *Suspensión Activa de Oficio con carga fiscal cero*, *Irregular bajo tutoría PTF*).
+* **Capacidad Operativa y Especialidades:**
+  * `capacidad_semanal_pares`: Capacidad nominal declarada para prevención de cuellos de botella.
+  * `especialidades`: Relación M:M con servicios del catálogo (Corte, Rebajado, Aparado, Armado).
+* **Métricas Comunitarias y Reputación:**
+  * `score_cumplimiento`: Calificación comunitaria histórica (1 a 5).
+  * `total_ops_cumplidas` y `dias_promedio_desvio`: Trazabilidad de cumplimiento en entregas.
+* **Tutoría y Control Territorial:**
+  * `municipio` y `promotor_territorial_asignado`: Enlace con el PTF del distrito.
+  * Propiedades calculadas: `carga_activa_pares` (volumen en curso según etapas abiertas) y `porcentaje_ocupacion` (carga activa vs. capacidad semanal).
 
 ---
 
@@ -395,39 +222,15 @@ class PerfilTallerista(TimeStampedModel):
 
 #### 4.4.1. Tolerancia de Mermas en Ficha Técnica (`RecetaInsumo`)
 
-En `apps/produccion/models.py`:
-* Incorporar el campo:
-  ```python
-  porcentaje_merma_tolerada = models.DecimalField(
-      max_digits=5,
-      decimal_places=2,
-      default=Decimal("10.00"),
-      verbose_name=_("Merma técnica tolerable (%)"),
-      help_text=_(
-          "Estándar INTI de descarte tolerable en corte y matricería (hasta 10% sin sanción)."
-      ),
-  )
-  ```
-* **Lógica de Validación:** Al registrar mermas reales en `OPInsumoRequerido.cantidad_consumida_real` o scrap en `OPParteProduccionLinea.cantidad_descarte`:
-  * Si la merma real supera la `cantidad_teorica * (1 + porcentaje_merma_tolerada / 100)`, el sistema emite una **Alerta de Desvío de Materia Prima**, notificando al supervisor de planta para auditar si hubo falla en la moldería, corte defectuoso o pérdida de insumo en el taller.
+En `apps.produccion.models.RecetaInsumo`:
+* **Campo `porcentaje_merma_tolerada`:** Estándar INTI de descarte técnico tolerable en corte y matricería (default 10.00% sin penalización fiduciaria).
+* **Regla de Validación:** Al registrar consumos reales en `OPInsumoRequerido.cantidad_consumida_real` o descartes en `OPParteProduccionLinea.cantidad_descarte`, si la merma real excede el límite estequiométrico `cantidad_teorica * (1 + tolerancia / 100)`, el sistema emite automáticamente una **Alerta de Desvío de Materia Prima** auditada para descartar apropiación indebida o fallas de moldería.
 
 #### 4.4.2. Control de Permanencia para Importación Temporaria
 
-En `apps/inventario/models.py`, en el modelo `Lote`:
-* Incorporar campos para materias primas importadas bajo régimen temporario:
-  ```python
-  es_importacion_temporaria = models.BooleanField(default=False)
-  despacho_aduanero = models.CharField(max_length=50, blank=True, null=True)
-  fecha_ingreso_pais = models.DateField(blank=True, null=True)
-  fecha_vencimiento_permanencia = models.DateField(
-      blank=True,
-      null=True,
-      help_text=_(
-          "Plazo duro de 360 días corridos para su transformación y re-expedición."
-      ),
-  )
-  ```
-* Se programará una tarea periódica en Celery (`verificar_vencimientos_temporarios`) que notifique a Compras y Producción con 60 y 30 días de antelación si un lote de cuero o avíos importados corre riesgo de vencimiento aduanero.
+En `apps.inventario.models.Lote`:
+* **Campos de Control:** `es_importacion_temporaria`, `despacho_aduanero`, `fecha_ingreso_pais` y `fecha_vencimiento_permanencia` (plazo duro de 360 días corridos para transformación y re-expedición).
+* **Alerta Temprana Celery:** Tarea periódica programada que notifica a Compras y Producción con 60 y 30 días de anticipación ante lotes de cuero o avíos con riesgo de vencimiento aduanero.
 
 ---
 
@@ -489,80 +292,47 @@ La aplicación `apps.contabilidad` se reestructuró para operar bajo **Partida D
 
 ---
 
-## 5. Plan de Implementación por Fases (Roadmap)
+## 5. Plan de Implementación por Fases (Roadmap Armonizado)
 
-```mermaid
-gantt
-    title Plan de Implementación FIMCA en Indinopy
-    dateFormat  YYYY-MM-DD
-    section Fase 1: Fundaciones Legales
-    Leyendas de Maquila en Remitos          :a1, 2026-09-15, 7d
-    UUID y Hash criptográfico en OP         :a2, after a1, 5d
-    Tolerancias de Merma INTI en Receta     :a3, after a2, 5d
-    section Fase 2: Tesorería e Hitos
-    Modelado de apps/tesoreria              :b1, 2026-10-01, 10d
-    Lógica de Hito Cero y Avances           :b2, after b1, 8d
-    Integración con Partes de Producción    :b3, after b2, 6d
-    section Fase 3: Perfil y Bolsa
-    PerfilTallerista y Capacidad Semanal    :c1, 2026-10-25, 8d
-    Métricas de Cumplimiento y Ocupación    :c2, after c1, 7d
-    section Fase 4: Transparencia y Algorética
-    Página Pública de Trazabilidad QR       :d1, 2026-11-10, 8d
-    Alertas de Tarifas Mínimas y Pisos      :d2, after d1, 6d
-    section Fase 5: Headless & Topología
-    API Gateway ERP (SAP/Tango)             :e1, 2026-11-25, 5d
-    Delegación DNS y Polling Celery         :e2, after e1, 6d
-    section Fase 6: Contabilidad & ARCA
-    Asientos por Partida Doble              :f1, 2026-12-07, 10d
-    Módulo de Retenciones y VEPs            :f2, after f1, 8d
-```
+El plan de trabajo del proyecto se estructura en 5 fases secuenciales de backend y cierre de experiencia de usuario:
 
-### Fase 1: Fundaciones Legales y Operativas (Inmediata)
+### Fase 1 — Red Federada (Módulo MES)
+* **Objetivo:** Establecer la gobernanza sectorial, el oráculo de precios y el clearing fiduciario.
+* **Entregables:**
+  * Modelo `TarifaConvenio` en el nodo central con nomenclatura universal (`MES-SRV-...`).
+  * Sincronización descentralizada de matriz de costos vía webhooks criptográficos.
+  * Emisión, distribución y lista de revocación (CRL) de credenciales PTF.
+  * Worker Celery para Timelock de 48h (Silencio Positivo) en red.
+  * Portal Fiduciario en `/mes/fiduciaria/` para emisión de lotes batch BAPRO/Interbanking y callbacks de clearing.
 
-- **Objetivo:** Blindar la mercadería en tránsito y auditar descartes físicos.
-- **Entregables:**
-  - Modificación de templates de remitos de traslado con cláusulas de Locación de Obra (Arts. 1251 CCCN) y Depósito en Custodia (Arts. 1356 CCCN), con soporte para Maquila Industrial.
-  - Incorporación de `porcentaje_merma_tolerada` en `RecetaInsumo`.
-  - Generación de UUID único para cada OP.
+### Fase 2 — Integración Headless (API Gateway e-OP)
+* **Objetivo:** Permitir que marcas y PyMEs que operan con ERPs consolidados (SAP, Tango, Odoo) colateralicen producción sin migrar su inventario.
+* **Entregables:**
+  * Flag `MODO_HEADLESS` en configuración.
+  * Ingesta de e-OPs crudas (`POST /api/v1/interna/e-op/`) con `bom_headless`.
+  * Desacople en `ProduccionService`: omisión de `StockService` cuando la orden no administra inventario local.
+  * Webhooks de retorno al ERP corporativo para notificar liberación de hitos del Escrow.
 
-### Fase 2: Motor de Tesorería e Hitos (Prioridad Alta)
+### Fase 3 — Consolidación de Producción Industrial, MRP y Portales de Taller (`apps.produccion`)
+* **Objetivo:** Perfeccionar la manufactura física de calzado y la auditoría de campo.
+* **Entregables:**
+  * Reportes industriales (`apps/produccion/reports/`): Hoja de Ruta de Planta (A4 con QR y curva de talles), Explosión de Insumos (BOM), Matriz de Rendimiento y Mermas INTI (>10%), Liquidación de Fasón.
+  * Motor MRP: Reabastecimiento automático a partir de pedidos confirmados o quants críticos.
+  * Backend PoPW en `DeclararParteActionView`: comprobación Point-in-Polygon entre la coordenada GPS y el catastro del taller.
 
-- **Objetivo:** Desintermediar el pago al tallerista y habilitar el financiamiento por flujo.
-- **Entregables:**
-  - Creación de migraciones y modelos en `apps/tesoreria`.
-  - Automatización del Hito Cero (orden de anticipo del 35% al emitir el remito de corte).
-  - Enlace entre `OPParteProduccion` y la autorización de hitos intermedios.
+### Fase 4 — Consolidación de Nómina, Régimen Previsional y Libro de Sueldos Digital (`apps.nomina`)
+* **Objetivo:** Cumplir con la legislación laboral argentina y la aprobación dual de Tesorería.
+* **Entregables:**
+  * Reportes oficiales: Recibo de Sueldo A4 doble vía (`ReciboSueldoPDFReport`), archivo de exportación de 4 registros fijos para el Libro de Sueldos Digital (LSD ARCA/AFIP), planilla mensual consolidada Excel y archivo plano de acreditación bancaria masiva.
+  * Motor de liquidación: Topes previsionales periódicos SIPA/OS, retención de Ganancias de 4ta Categoría y módulo dinámico de horas extras y premios.
+  * Servicio de liquidación masiva de período y pase agrupado a Tesorería.
 
-### Fase 3: Bolsa de Capacidades y Optimización de Talleres (Medio Plazo)
-
-- **Objetivo:** Monitorear la capacidad real del territorio y evitar la sobrecarga.
-- **Entregables:**
-  - Creación del modelo `PerfilTallerista` en `apps.contactos`.
-  - Dashboard de ocupación semanal (Pares asignados vs. Pares nominales).
-  - Reporte de puntualidad y calidad por taller.
-
-### Fase 4: Transparencia al Consumidor y Reglas Algoréticas (Diferenciador)
-
-- **Objetivo:** Conectar el calzado físico con la trazabilidad ética.
-- **Entregables:**
-  - Endpoint y template responsive para escaneo de QR (`/trazabilidad/<lote>/`).
-  - Tabla de referencia de precios éticos y validación en carga de liquidaciones.
-
-### Fase 5: Integración Legacy y Topología Federada (Infraestructura)
-
-- **Objetivo:** Lograr que PyMEs con SAP/Odoo adopten la red sin abandonar sus ERPs.
-- **Entregables:**
-  - API Headless para inyección de e-OP externas (`bom_headless`).
-  - Celery workers para Polling en despliegues On-Premise.
-  - DNS Ruteador (`indinopy.ar`) para nodos SaaS multi-tenant.
-
-### Fase 6: Contabilidad Tributaria y Bimonetaria
-
-- **Objetivo:** Automatizar la partida doble y el cumplimiento normativo con ARCA.
-- **Entregables:**
-  - Modelos core `Cuenta`, `Asiento` y `Apunte`.
-  - Capa de `ContabilidadService` para automatizar asientos desde Facturas.
-  - Modelos de `FacturaImpuesto`, `CertificadoRetencion` y `LiquidacionImpuesto` (SICORE/DDJJ).
+### Fase 5 — Frontend, UX y Portales (Fase Final de Cierre)
+* **Objetivo:** Construcción de interfaces tras estabilizar el 100% de la lógica de negocio y fiduciaria.
+* **Entregables:**
+  * Formularios dinámicos y dashboards de OP, Escrow y Tallerista.
+  * Vista pública de trazabilidad socioproductiva (`/trazabilidad/<lote>/`) con desglose ético por QR.
+  * Portal web del PTF con WebCrypto API para validación de firmas en navegador.
 
 ---
 

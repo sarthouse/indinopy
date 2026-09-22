@@ -1,6 +1,6 @@
 # Plan de Implementación — Indinopy ERP/MES
-**Versión:** 0.2.0 | **Fecha:** Septiembre 2026  
-**Autor:** Gabriel Sarthou  
+**Versión:** 0.1.0 | **Fecha:** Septiembre 2026  
+**Autor:** Tiago Gabriel Sarthou
 
 ---
 
@@ -12,11 +12,10 @@
 4. [Primitivas Criptográficas](#4-primitivas-criptográficas)
 5. [Red Federada y Flujo de e-OP](#5-red-federada-y-flujo-de-e-op)
 6. [Flujo del PTF (Promotor Territorial de Formalización)](#6-flujo-del-ptf-promotor-territorial-de-formalización)
-7. [Integración WooCommerce Multitienda](#7-integración-woocommerce-multitienda)
-8. [Modelo de Entrega de Insumos Just-in-Time (JiT)](#8-modelo-de-entrega-de-insumos-just-in-time-jit)
-9. [Roadmap de Implementación](#9-roadmap-de-implementación)
-10. [Deuda Técnica Identificada](#10-deuda-técnica-identificada)
-11. [Referencias](#11-referencias)
+7. [Traslado Escalonado de Insumos a Producción](#7-traslado-escalonado-de-insumos-a-producción)
+8. [Roadmap de Implementación](#8-roadmap-de-implementación)
+9. [Deuda Técnica Identificada](#9-deuda-técnica-identificada)
+10. [Referencias](#10-referencias)
 
 ---
 
@@ -40,6 +39,13 @@ Indinopy es un **ERP/MES para PyMEs de la industria del calzado y la indumentari
 | **PTF** (Promotor Territorial de Formalización) | Auditor de campo, firma la liberación del Escrow | App móvil + Nodo MES |
 | **Mesa de Enlace Sectorial (MES)** | Gobernanza, homologa PTFs, administra Timelock | Nodo central compartido |
 | **Fiduciaria (FDI)** | Administra el fondo de liquidez y anticipa fondos por hitos | Integración externa |
+
+### Premisa de Alcance: Soporte Integral a la Marca Manufacturera
+
+La arquitectura y las prioridades de desarrollo de Indinopy responden a una premisa clara: **dar soporte en primera instancia a la Marca/Fábrica comitente**, y en **segunda instancia al Tallerista satélite**:
+* **Cobertura 360° de la Marca:** El ERP resuelve la operación integral de una fábrica real: manufactura física en planta propia (BOM, recetas, órdenes internas de corte y armado), liquidación de nómina de operarios directos bajo convenio (UTICRA / SOIVA con Libro de Sueldos Digital ARCA y aprobación dual SoD), contabilidad por partida doble e IVA Digital, y tesorería comercial (cobranzas WooCommerce/Mercado Pago y repago diferido al FDI).
+* **Impermeabilidad de Nómina y Blindaje Laboral:** La nómina de la marca (`apps.nomina`) es estrictamente hermética. Los operarios y destajistas de talleres periféricos jamás figuran en los libros de sueldos de la marca, blindando la operación frente a la presunción de solidaridad laboral (Art. 30 LCT).
+* **Integración Satélite del Taller:** El tallerista se integra en segunda instancia mediante una interfaz ligera (Portal web PWA móvil con ficha técnica ciega de costos y firma Ed25519) sin necesidad de infraestructura propia, o mediante un nodo federado autónomo si se trata de un taller consolidado o cooperativa. Los fondos de la e-OP son fondeados directamente por el FDI, sin que la marca deba desembolsar caja operativa propia durante la fabricación.
 
 ---
 
@@ -141,11 +147,11 @@ Siempre usar `ProduccionService.confirmar_op(op)`.
 - **Webhooks Federados**: `MESWebhookHitoLiberadoAPIView` y `MESWebhookContratoFondeadoAPIView` listos para recibir instrucciones PUSH de fondeo y pago desde el Fideicomiso (vía MES) hacia el ERP local.
 - Enrutamiento modular (incluyendo `eop/urls.py`, `tesoreria/urls.py`) registrado en `core/urls.py`.
 
-#### Integración WooCommerce
-- `TiendaWooCommerce` — Modelo multitienda con credenciales por instancia
-- `WooCommerceWebhookView` — Endpoint con validación HMAC-SHA256
-- `WooCommerceAPIClient` — Cliente REST activo para polling fallback
-- Mapeo completo de `line_items`, `fee_lines`, `shipping_lines`, `coupon_lines`, `meta_data`
+#### Integraciones Externas y Omnicanalidad (`apps.integraciones.woocommerce`)
+- Desacople integral de `apps.ventas` mediante DTOs agnósticos (`OrdenVentaDTO`, `ClienteDTO`, `LineaOrdenDTO`, `RecargoDTO`, `EnvioDTO`, `CuponDTO`).
+- Modelo `CanalVenta` en `apps.ventas` con persistencia de `referencia_externa` y clave de canal.
+- Aplicación satélite `apps.integraciones.woocommerce` con modelo `TiendaWooCommerce`, endpoints de webhooks con validación HMAC-SHA256, cliente REST API v3 y tareas asíncronas de Celery (`tasks.py`).
+- Normalizador agnóstico `WooCommerceNormalizer` y sincronización bidireccional de productos, precios, cupones y stock disponible (`StockQuant`).
 
 #### Facturación AFIP y Títulos FCE
 - `apps.afip` — Módulo desacoplado para servicios fiscales de AFIP/ARCA.
@@ -191,10 +197,27 @@ Siempre usar `ProduccionService.confirmar_op(op)`.
   - *(Roadmap)* `LibroSueldosDigitalTxtReport` (`apps/nomina/reports/lsd_report.py`): Exportador oficial de texto de longitud fija para ARCA (Registros 1 Cabecera, 2 Datos Trabajador/Bases Imponibles, 3 Conceptos y 4 Relación Laboral).
   - *(Roadmap)* `LiquidacionNominaExcelReport` (`apps/nomina/reports/liquidacion_excel_report.py`): Planilla mensual consolidada de haberes, retenciones de empleados y costo patronal total de la empresa (F931 + ART + Fondo Cese).
   - *(Roadmap)* `AcreditacionHaberesTxtReport` (`apps/nomina/reports/acreditacion_haberes_report.py`): Archivo plano estándar de transferencias masivas a cuentas sueldo bancarias (Galicia, Santander, Red Link / Interbanking).
+- **Módulo de Producción Industrial (`apps.produccion`):**
+  - *(Roadmap)* `OrdenProduccionPDFReport` (`apps/produccion/reports/op_report.py`): Hoja de Ruta de Planta con código de barras/QR de la OP, curva de talles desagregada por variación, ficha técnica de la receta (BOM) y checklist de etapas operativas.
+  - *(Roadmap)* `BOMExplosionReport` (`apps/produccion/reports/bom_explosion_report.py`): Explosión de materiales y avíos requeridos para el lote o tanda, confrontando consumo teórico vs existencias en almacén.
+  - *(Roadmap)* `RendimientoProduccionExcelReport` (`apps/produccion/reports/rendimiento_report.py`): Matriz de desvíos y rendimiento industrial con comparación de consumo teórico vs real (`cantidad_consumida_real`) y alertas de exceso de merma (>10%).
+  - *(Roadmap)* `LiquidacionFasonExcelReport` (`apps/produccion/reports/liquidacion_fason_report.py`): Detalle para talleres externos de pares de 1ra y 2da selección producidos y servicios prestados a liquidar.
 
 #### Modelo de Producción y Validaciones JiT de Avance
 - Techo de Rendimiento Estequiométrico (`capacidad_maxima_por_insumos` en `OPEtapaTracking`): el avance físico de la etapa inicial queda condicionado matemáticamente a la materia prima en custodia despachada al taller mediante remito JiT ($E_{\text{net}} \le V_{\text{fase}}$).
 - Circuitos de entregas parciales y recepción física en planta con discriminación de 1ra, 2da selección y descarte.
+
+#### Segregación de Funciones (SoD) y Grupos de Permisos Django
+Para garantizar la integridad operativa y mitigar riesgos de fraude interno, el sistema estructura la autorización mediante grupos de Django predeterminados (Data Fixture / Seed):
+* **Alta Gerencia / Apoderado Legal:** Único rol habilitado para constituir garantías crediticias y firmar con Ed25519 el payload canónico de la e-OP.
+* **Jefe de Producción:** Administración de Recetas (BOM), lanzamiento de OPs y planificación MRP. *Bloqueo duro:* Sin acceso a firmas fiduciarias.
+* **Jefe de Compras y Almacén:** Emisión de OC a proveedores, recepción de insumos y remitos de traslado en custodia hacia talleres (`TRA-...`).
+* **Ventas y Canales:** Gestión comercial y multitienda (`CanalVenta`, `TiendaWooCommerce`). *Bloqueo duro:* Sin visualización de costos industriales (`view_costos_op`).
+* **Finanzas y Tesorería:** Administración de cajas, cuentas bancarias, valores y emisión de Órdenes de Pago para repago del crédito al FDI (`escrow_asociado`).
+* **Contabilidad:** Registro del devengado, conciliación bancaria, IVA Digital y liquidación de impuestos (SICORE/SIFERE).
+* **Recursos Humanos:** Legajos, licencias, novedades variables y liquidación de sueldos (LSD ARCA). *Bloqueo duro (SoD):* Requiere aprobación dual de Tesorería (`aprobador_tesoreria`) para autorizar el desembolso bancario.
+
+> 🔗 Para consultar la matriz de responsabilidades y segregación de funciones, ver: [`docs/roles.html`](roles.html).
 
 
 ## 4. Primitivas Criptográficas
@@ -576,238 +599,7 @@ class PerfilPTF(TimeStampedModel):
 
 ---
 
-## 7. Integración de Canales y Desacople Arquitectónico (Ventas vs WooCommerce)
-
-### 7.1. Diagnóstico del Acoplamiento Actual y Necesidad de Desacople
-
-Actualmente, `apps.ventas` sufre de un **alto acoplamiento de infraestructura y proveedor**:
-1. **Modelos Contaminados con Dependencias Externas:** `OrdenVenta` y `LineaOrdenVenta` en `apps.ventas.models` tienen campos específicos de WooCommerce (`tienda`, `wc_order_id`, `wc_order_number`, `wc_status`, `wc_line_id`), además del modelo `TiendaWooCommerce` alojado directamente dentro de la app del core comercial.
-2. **Servicio Monolítico Bifurcado:** `VentasService` en `apps.ventas.services` mezcla la gestión del ciclo de vida de ventas del ERP (confirmación, remitos de entrega, reserva de inventario) con el parseo de payloads crudos de la API REST v3 de WooCommerce (`procesar_orden_woocommerce`, `procesar_producto_woocommerce`, `procesar_cupon_woocommerce`).
-3. **Endpoints y Clientes HTTP de Terceros dentro del Core:** `webhooks.py`, `woo_client.py` y `tasks.py` residen dentro de `apps/ventas/`, forzando a la app de ventas a conocer secretos HMAC, cabeceras HTTP de WooCommerce y URLs de WordPress.
-4. **Barrera de Escalabilidad Omnicanal:** Si la empresa desea sumar MercadoLibre, Shopify, Tiendanube o venta mayorista física B2B mediante viajantes, agregar nuevos campos a `OrdenVenta` (`meli_order_id`, `shopify_order_id`) generaría una deuda técnica exponencial y violaría el Principio Abierto/Cerrado (OCP).
-
-### 7.2. Arquitectura Objetivo Desacoplada (Puertos y Adaptadores / Arquitectura Hexagonal)
-
-Se define la separación en dos dominios con responsabilidades claramente delimitadas:
-* **Core de Ventas (`apps.ventas`):** Dominio puro y agnóstico de canales. Administra la `OrdenVenta` canónica (B2B, B2C, POS de mostrador), clientes, remitos de salida vía `StockService` y facturación.
-* **Módulo de Canales e Integraciones (`apps.integraciones` / `apps.integraciones.woocommerce`):** Adaptador externo. Aloja las credenciales multitienda, clientes de polling, validadores de firmas HMAC de webhooks, traducción de payloads y despacho asíncrono.
-
-```
-[ WooCommerce Webhook / Polling API ]
-               │
-               ▼
-[ apps.integraciones.woocommerce ]  ◄── Capa Adaptadora (Driver)
-   ├── TiendaWooCommerce (Model)
-   ├── Webhooks / Views (HMAC Validation)
-   ├── WooCommerceAPIClient (HTTP / Polling)
-   ├── WooCommerceNormalizer (Parser a DTO Canónico)
-   └── Celery Tasks (Retry & Ingest)
-               │
-               ▼ (Invoca API canónica agnóstica / Signal)
-[ apps.ventas ]                     ◄── Capa de Dominio (Core ERP)
-   ├── OrdenVenta / LineaOrdenVenta (Canónica)
-   ├── CanalVenta / ReferenciaExterna (Mapeo M:1)
-   └── VentasService.crear_orden_desde_canal(dto_orden)
-               │
-               ▼
-[ apps.inventario ]                 ◄── Efectos Secundarios (Stock / Logística)
-   └── StockService.reservar_linea() -> Remito de Entrega
-```
-
-### 7.3. Especificación de Modelos Desacoplados
-
-#### A. Modelo Canónico en `apps.ventas` (Limpio de WooCommerce)
-```python
-# apps/ventas/models.py
-class CanalVenta(TimeStampedModel):
-    """Canal de origen de la venta (ej. 'WooCommerce B2C', 'MercadoLibre Oficial', 'Mostrador Fábrica')."""
-
-    TIPO_CHOICES = [
-        ("woocommerce", "WooCommerce"),
-        ("mercadolibre", "MercadoLibre"),
-        ("manual", "Venta Manual / B2B"),
-        ("pos", "Punto de Venta"),
-    ]
-    nombre = models.CharField(max_length=100)
-    codigo = models.CharField(max_length=20, unique=True)
-    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES, default="manual")
-    almacen_predeterminado = models.ForeignKey(
-        "inventario.Ubicacion", on_delete=models.RESTRICT, null=True, blank=True
-    )
-    activo = models.BooleanField(default=True)
-
-
-class OrdenVenta(DocumentoBase):
-    SECUENCIA_CODIGO = "ventas.ov"
-
-    canal = models.ForeignKey(
-        CanalVenta, on_delete=models.RESTRICT, related_name="ordenes"
-    )
-    # Referencia genérica al identificador de la orden en el canal externo
-    referencia_externa = models.CharField(
-        max_length=100, blank=True, db_index=True, help_text="ID externo en Woo/MeLi"
-    )
-    numero_externo = models.CharField(
-        max_length=100, blank=True, help_text="Número legible externo"
-    )
-    estado_canal_externo = models.CharField(max_length=50, blank=True)
-
-    cliente = models.ForeignKey(
-        "contactos.Contacto", on_delete=models.RESTRICT, related_name="ordenes_venta"
-    )
-    monto_total = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
-    # ... totales, logística y metadatos JSON estándar ...
-
-    class Meta:
-        unique_together = [("canal", "referencia_externa")]
-```
-
-#### B. Modelo de Integración en `apps.integraciones.woocommerce`
-```python
-# apps/integraciones/woocommerce/models.py
-class TiendaWooCommerce(TimeStampedModel):
-    canal_venta = models.OneToOneField(
-        "ventas.CanalVenta", on_delete=models.CASCADE, related_name="config_woocommerce"
-    )
-    empresa = models.ForeignKey("base.ConfiguracionEmpresa", on_delete=models.CASCADE)
-    url = models.URLField()
-    consumer_key = models.CharField(max_length=100)
-    consumer_secret = models.CharField(max_length=100)
-    webhook_secret = models.CharField(max_length=100, blank=True)
-    sincronizar_stock = models.BooleanField(default=True)
-```
-
-### 7.4. Matriz Integral de Sincronización y Mapeo de Recursos (WooCommerce API v3)
-
-El módulo de integraciones no se limita a recibir pedidos; implementa una sincronización bidireccional completa (Push vía Webhooks y Pull vía Polling/Cron) cubriendo todas las entidades comerciales:
-
-```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                 MÓDULO DE INTEGRACIONES (apps.integraciones)                     │
-│                                                                                  │
-│   [WooCommerce API v3]                                       [Core ERP]          │
-│   • Orders (order.*)         ── Webhook / Polling ──►   • OrdenVenta (ventas)    │
-│   • Customers (customer.*)   ◄── Bidireccional ────►   • Contacto (contactos)   │
-│   • Products (product.*)     ◄── Sync Pull/Push ───►   • Producto (inventario)  │
-│   • Coupons (coupon.*)       ── Ingesta / Sync ────►   • CuponDescuento (ventas)│
-│   • Shipping (zones/methods) ── Mapeo Logístico ───►   • MetodoEnvio / Remitos  │
-│   • Fees (fee_lines)         ── Mapeo Financiero ──►   • LineaRecargo (ventas)  │
-└──────────────────────────────────────────────────────────────────────────────────┘
-```
-
-#### 1. Sincronización de Clientes (`customers` / `customer.*`)
-* **Push (Webhooks):** Escucha `customer.created` y `customer.updated`. Cuando un cliente se registra o actualiza su perfil en la tienda web, el adaptador normaliza su DNI/CUIL (`meta_data._billing_dni`, `_billing_cuit`), condición fiscal frente al IVA y dirección postal, sincronizándolo en `apps.contactos.models.Contacto`.
-* **Pull (Consulta / On-demand):** Durante la ingesta de órdenes o en auditorías nocturnas (`GET /wp-json/wc/v3/customers`), se recupera el perfil completo del cliente para mantener actualizados los teléfonos, emails y domicilios de entrega.
-* **Push desde ERP (Opcional):** Actualización de datos fiscales o condición de crédito desde el ERP hacia los metadatos de WordPress (`PUT /wp-json/wc/v3/customers/<id>`).
-
-#### 2. Sincronización de Catálogo y Stock de Productos (`products` / `product.*`)
-* **Pull (Ingesta de Catálogo desde Woo):**
-  * Webhooks `product.created`, `product.updated`, `product.deleted`.
-  * Fallback Polling (`GET /wp-json/wc/v3/products?after=...`).
-  * Mapeo estricto por `sku`. Actualiza `nombre`, `descripcion`, `precio_venta` y estado `activo` (inactivando en el ERP si el producto se elimina o pasa a borrador en WooCommerce).
-* **Push (Actualización de Stock y Precios desde el ERP hacia Woo):**
-  * Cuando un remito o ajuste de inventario en `StockService` altera el stock disponible de un SKU (`StockQuant`), se dispara un evento asíncrono en Celery.
-  * El conector ejecuta `PUT /wp-json/wc/v3/products/<id>` o actualizaciones en lote (`POST /wp-json/wc/v3/products/batch`) actualizando `manage_stock=true` y `stock_quantity = stock_disponible` en la tienda remota, previniendo sobreventas (*overselling*).
-
-#### 3. Sincronización de Cupones y Promociones (`coupons` / `coupon.*`)
-* **Webhooks:** `coupon.created`, `coupon.updated`, `coupon.deleted`.
-* **Modelo Canónico:** En `apps.ventas`, se registra el catálogo de promociones (`CuponDescuento`) con código, tipo de descuento (`percent`, `fixed_cart`, `fixed_product`) y fecha de caducidad.
-* **Conciliación en la Orden:** En cada pedido, las `coupon_lines` se cotejan contra las reglas de auditoría para verificar la validez del descuento aplicado.
-
-#### 4. Métodos de Envío y Zonas Logísticas (`shipping_methods` / `shipping/zones`)
-* **Mapeo Logístico:** WooCommerce estructura el envío en Zonas (`/shipping/zones`) y Métodos de Zona (`/shipping/zones/<id>/methods`: `flat_rate`, `free_shipping`, `local_pickup`, Correo Argentino, Andreani).
-* **Traducción en ERP:** El adaptador traduce `shipping_lines[0].method_id` e `instance_id` a la tabla canónica de transportes y operadores logísticos del ERP, permitiendo que el remito de salida (`REM-OV-...`) seleccione automáticamente la plantilla de despacho y etiqueta correspondiente.
-
-#### 5. Recargos de Pasarela y Tasas (`fee_lines`)
-* **Ingesta Financiera:** Mapeo de `fee_lines` (Mercado Pago, comisiones de pasarela, costos de embalaje o descuentos por transferencia bancaria).
-* **Impacto:** Se normalizan como `RecargoDTO` para impactar en `LineaRecargoOrden` y conciliar la liquidación neta de fondos en `apps.tesoreria`.
-
----
-
-### 7.5. Flujo de Ingesta Asíncrona con Celery y Normalizadores
-
-```
-WEBHOOKS (Tiempo Real — Push)
-  WooCommerce → POST /integraciones/woocommerce/{tienda_id}/webhook/
-  ↓ 1. Valida HMAC-SHA256 (X-WC-Webhook-Signature)
-  ↓ 2. Encola en Celery por Tópico (order.*, customer.*, product.*, coupon.*)
-  ↓ 3. Ack HTTP 200 inmediato (< 150ms) para evitar desactivación de Woo
-  ↓
-Celery Worker
-  ↓ 4. Ruteo según Tópico:
-       ├── 'order.*'    ➔ WooCommerceOrderNormalizer ➔ VentasService.ingestar_orden_canal(dto)
-       ├── 'customer.*' ➔ WooCommerceCustomerNormalizer ➔ ContactosService.sincronizar_cliente(dto)
-       ├── 'product.*'  ➔ WooCommerceProductNormalizer ➔ InventarioService.sincronizar_producto(dto)
-       └── 'coupon.*'   ➔ WooCommerceCouponNormalizer ➔ VentasService.sincronizar_cupon(dto)
-```
-
-### 7.6. Mapeo de Campos Críticos para Argentina
-
-| Campo WooCommerce | Campo ERP | Nota |
-|---|---|---|
-| `billing.billing_dni` / `meta_data._billing_dni` / `_billing_cuit` | `Contacto.cuil` | Clave unívoca primaria de cliente (AFIP) |
-| `meta_data._billing_condicion_iva` | `Contacto.condicion_iva` | Para Factura A/B/C |
-| `meta_data._Mercado_Pago_Payment_IDs` / `transaction_id` | `OrdenVenta.transaccion_id` | Conciliación de cobranzas MP |
-| `fee_lines[]` | `LineaRecargoOrden` | Recargos MP / Descuentos por transferencia |
-| `shipping_lines[0].method_id` | `OrdenVenta.metodo_envio_id` | Para remito de logística |
-| `coupon_lines[]` | `OrdenVenta.cupones_aplicados` | JSONField de cupones aplicados |
-
-### 7.7. Secuencia Estricta de Procesamiento de Órdenes (Pipeline de Ingesta Canónica)
-
-El servicio `VentasService.ingestar_orden_canal(dto_orden)` ejecuta de manera transaccional (`@transaction.atomic`) el siguiente pipeline normalizado, independientemente de si la orden provino de WooCommerce, MercadoLibre o un POS:
-
-1. **`get_or_create` de Cliente (`Contacto`) con Clave en DNI/CUIL:**
-   * **Extracción de Identidad Fiscal:** Extrae el DNI/CUIL normalizado desde el DTO del cliente (`dto_orden.cliente_cuit`).
-   * **Búsqueda por DNI/CUIL:** Se busca primeramente `Contacto.objects.filter(cuil=cuit).first()`.
-   * **Fallback por Email:** Si no hay DNI/CUIL disponible, se busca por `Contacto.objects.filter(email=email).first()`.
-   * **Creación:** Si no existe, se crea el contacto con `tipo="CLIENTE"`, `cuil=cuit`, `nombre`, `email`, `telefono` y `direccion` provistos en el DTO.
-
-2. **Creación o Actualización de `OrdenVenta` (Cabecera):**
-   * Vincula el `canal` y la `referencia_externa` (upsert idempotente vía `update_or_create`).
-   * Asigna número interno concatenado (`{canal.codigo}-{numero_externo}`).
-   * Determina estado de la orden en el ERP:
-     * Estados de pago confirmado ➔ `estado = "confirmado"`.
-     * Estados cancelados o reembolsados ➔ `estado = "cancelado"`.
-     * Otros estados pendientes ➔ `estado = "borrador"`.
-   * Persiste importes totales (`monto_total`, `total_descuentos`, `total_envio`, `total_impuestos`), método de pago y el ID de transacción de la pasarela.
-
-3. **Obtención de Productos y Generación de `LineaOrdenVenta`:**
-   * Itera sobre los items normalizados del DTO.
-   * **Validación por SKU:** Busca en el catálogo `Producto.objects.filter(sku=item.sku).first()`. Si el SKU no existe, la línea se excluye y se registra advertencia de conciliación de catálogo.
-   * Inserta cada `LineaOrdenVenta` con `cantidad`, `precio_unitario`, calculando subtotal y total de línea.
-
-4. **Registro de Logística y Envío:**
-   * Mapea `metodo_envio_titulo` y `metodo_envio_id` para remitos de despacho.
-
-5. **Registro de Cupones de Descuento:**
-   * Registra los cupones en `OrdenVenta.cupones_aplicados` (`code` y `discount`).
-
-6. **Ingesta de Recargos y Descuentos de Pasarela (`fee_lines`):**
-   * Crea registros en `LineaRecargoOrden(orden, nombre, monto, impuesto)`.
-   * Actualiza el acumulador global `OrdenVenta.total_recargos_fees`.
-
-7. **Disparo de Remito de Salida y Reserva de Stock:**
-   * Si la orden resulta con estado `"confirmado"` y es creada por primera vez (`created=True`):
-     * Invoca `VentasService.generar_remito_salida(orden)`.
-     * Genera un `MovimientoStock` de tipo `entrega` (`REM-OV-{orden.id}`) desde el almacén predeterminado del canal hacia la ubicación del cliente.
-     * Reserva el stock correspondiente en el inventario mediante `StockService.reservar_linea(lms)`.
-
-### 7.8. Semántica y Tratamiento de `fee_lines` en el Sistema
-
-Las `fee_lines` corresponden a conceptos monetarios que **no son productos de inventario** ni corresponden a la **tarifa base de flete** (`shipping_lines`):
-
-* **Recargos Financieros o de Servicio (Monto Positivo):**
-  * *Ejemplos:* Recargos por financiación de Mercado Pago en cuotas, costo de empaque especial, seguro extendido.
-  * *Impacto ERP:* Se computan como un ingreso accesorio o recupero de costo operativo, aumentando el importe total de la orden.
-* **Descuentos Comerciales por Medio de Pago (Monto Negativo):**
-  * *Ejemplos:* Descuento del 20% por abonar con Transferencia Bancaria o Efectivo.
-  * *Impacto ERP:* Actúan como una bonificación o deducción global sobre la orden de venta.
-* **Impacto Contable y Fiscal (AFIP):**
-  * Al momento de facturar la orden (`apps.contabilidad`), las `fee_lines` positivas se imputan como cargos adicionales afectos a la alícuota correspondiente o no gravados según su naturaleza, mientras que las negativas reducen la base imponible neta de la Factura de Venta.
-
----
-
-## 8. Traslado Escalonado de Insumos a Producción
+## 7. Traslado Escalonado de Insumos a Producción
 
 Para consultar la fundamentación teórica, doctrina legal (Arts. 1251 y 1356 CCCN) y mitigación de riesgo de apropiación indebida de materiales, ver:
 > 🔗 [`docs/paper_protocolo_eop_gobernanza_industrial.html` (§4.2: Blindaje contra vectores de fraude en planta)](paper_protocolo_eop_gobernanza_industrial.html).
@@ -820,9 +612,9 @@ Para consultar la fundamentación teórica, doctrina legal (Arts. 1251 y 1356 CC
 
 ---
 
-## 9. Roadmap de Implementación (Pendientes)
+## 8. Roadmap de Implementación (Fases Pendientes)
 
-### Fase B — Red Federada (Módulo MES)
+### Fase 1 — Red Federada (Módulo MES)
 - [ ] **Oráculo de Precios Federado**: Modelo `TarifaConvenio` con nomenclatura universal (ej: `MES-SRV-APARADO`) desacoplada.
 - [ ] Sincronización descentralizada de matriz de costos hacia nodos de Marcas (Webhooks).
 - [ ] Mapeo local de `ProductoTemplate.codigo_homologado_mes` en `apps.inventario` (Puente de cálculo).
@@ -830,336 +622,39 @@ Para consultar la fundamentación teórica, doctrina legal (Arts. 1251 y 1356 CC
 - [ ] Worker Celery para Timelock de 48h (Silencio Positivo) en red.
 - [ ] Verificación GPS en `OPParteProduccion` (PoPW).
 - [ ] **Portal Fiduciario**: Desarrollo del Dashboard de Clearing (`/mes/fiduciaria/`) con generador de lotes BAPRO y endpoint de callbacks (conciliación automática y disparo de factura AFIP).
+- [ ] **Permisos Institucionales**: Decoradores y validación de rol `OficialFiduciario` en vistas de clearing y restricción de firma Ed25519 en e-OP a apoderados legales y PTFs.
 
-### Fase C — Integración Headless (API Gateway e-OP)
+### Fase 2 — Integración Headless (API Gateway e-OP)
 - [ ] Implementar flag `MODO_HEADLESS` en `ConfiguracionEmpresa` / `settings.py`
 - [ ] Desacople de `ProduccionService`: Saltear `StockService` si es headless (inventario gestionado por SAP)
 - [ ] Relajar restricción de `Receta` (BOM local) en `OrdenProduccion` usando `JSONField` (BOM dinámico externo)
 - [ ] Endpoints DRF en `apps/produccion/` para recibir OPs crudas (`POST /api/v1/interna/e-op/`)
 - [ ] Webhooks de retorno al ERP Legacy para informar liberación de hitos del Escrow
 
-### Fase E — Integración Fiscal Completa, Títulos FCE y Motor de Reportes
-- [x] **Módulo de Integración AFIP/ARCA Desacoplado (`apps.afip`):**
-  - [x] Factoría centralizada de autenticación y certificados (`AFIPClientFactory`).
-  - [x] Consulta de Padrón Tributario WSSR con caché Redis (`PadronAFIPService`).
-  - [x] Emisión de Facturación Electrónica WSFE/WSFEX (`FacturadorAFIP`).
-  - [x] Validación estricta y previa de compatibilidad fiscal (`FacturadorAFIP.validar_compatibilidad_fiscal`): impide emisión de Facturas A/B desde Monotributistas o Factura C desde Responsables Inscriptos.
-  - [x] Generador de Código QR oficial de AFIP RG 4291/2018 (`AFIPQRGenerator`) en Data URI Base64.
-- [x] **Notas de Crédito, Notas de Débito y Comprobantes Asociados:**
-  - [x] Modelo `DocumentoDeuda` con FK reflexiva `comprobante_asociado` y método `desglosar_punto_venta_y_numero()`.
-  - [x] Inyección estricta del array `CbtesAsoc` en el payload de `createVoucher` de AFIP WSFE (requisito legal inexcusable de AFIP para comprobantes rectificativos).
-  - [x] Servicio transaccional `ContabilidadService.crear_nota_credito_desde_comprobante()` con reversión de asientos de partida doble en el Libro Diario.
-- [x] **Tratamiento Fiscal de Descuentos, Cupones y Recargos (`fee_lines`):**
-  - [x] Desglose explícito de `monto_descuentos` y `monto_recargos` en `DocumentoDeuda` y su visualización en el PDF fiscal.
-  - [x] Deducción del neto gravado global antes del cálculo de IVA conforme a las directivas de WSFE (que no admite importes negativos en `FECAESolicitar`).
-- [x] **Régimen de Transparencia Fiscal al Consumidor (Ley N° 27.743 / RG 5614/2024 ARCA):**
-  - [x] Discriminación visual obligatoria en Facturas B y C emitidas a consumidores finales de "IVA Contenido" y "Otros Tributos Nacionales Indirectos".
-  - [x] Mención al Régimen Simplificado para emisores Monotributistas.
-- [x] **Gestión Integral de Tributos y Percepciones (Ventas y Compras):**
-  - [x] Modelo `TributoDocumentoDeuda` con enlace a `Impuesto` y mapeo al nodo `Tributos` / `ImpTrib` de AFIP WSFE.
-  - [x] Imputación automática en el Libro Diario de Percepciones Cobradas en Venta (Pasivo fiscal al Haber) y Percepciones Sufridas en Compras (Activo/Crédito fiscal al Debe).
-  - [x] Interfaz de administración `TributoDocumentoDeudaAdmin` e inline en `DocumentoDeudaAdmin`.
-  - [x] Generación automática de Facturas de Venta desde Órdenes omnicanal (`VentasService.generar_factura_desde_orden`) mapeando ítems, bonificaciones, recargos y percepciones de IIBB para agentes fiscales.
-- [x] **Factura de Crédito Electrónica MiPyME (FCE - Ley 27.440):**
-  - [x] Soporte en `FacturadorAFIP` con inyección obligatoria de CBU del emisor (Opcional AFIP 2101) y Sistema de Circulación (Opcional AFIP 27 SCA/ADC).
-  - [x] Campos `cbu_emisor` y `fce_sistema_circulacion` incorporados en `DocumentoDeuda` (`apps.contabilidad`).
-  - [x] Modelo satélite `TituloCreditoFCE` implementado en `apps.tesoreria` para administrar los 21 días de plazo, estados de aceptación expresa/tácita, rechazos y negociación/descuento ante el FDI o bancos.
-- [x] **Arquitectura Universal de Reportes (`apps/base/reports/`):**
-  - [x] `BaseReport`, `BasePDFReport` (HTML/CSS Paged Media) y `BaseTabularReport` (Excel con openpyxl + CSV fallback delimitado por `;`).
-  - [x] Reporte y Template de **Remito Oficial de Logística** (`remito_report.py`) con soporte para Entrega a Clientes, Traslados Internos y **Traslado a Producción** con Cláusula de Custodia e Inembargabilidad (Arts. 1251 y 1356 CCCN).
-  - [x] Reporte de **Libro IVA Ventas en Excel** (`LibroIVAVentasExcelReport`) con desglose oficial de alícuotas AFIP, notas de crédito negativas y percepciones provinciales/nacionales.
-  - [x] Reporte de **Libro IVA Compras en Excel** (`LibroIVAComprasExcelReport`) discriminando crédito fiscal IVA y percepciones sufridas (IIBB e IVA) para liquidación ante ARCA/DGR.
-  - [x] Reporte de **Convenio Multilateral / SIFERE (CM05)** (`ConvenioMultilateralCoeficientesReport`) con matriz de atribución de ingresos y gastos computables por las 24 provincias argentinas, determinando coeficientes de ingresos, gastos y coeficiente unificado (Art. 2° CM).
-  - [x] Reporte y Template Unificado de **Comprobante Fiscal** (Facturas A/B/C, NC, ND, X) con QR oficial RG 4291, insignias, Transparencia Fiscal Ley 27.743 y condiciones de venta.
-  - [x] Endpoints y rutas CBV de descarga inline/attachment en `contabilidad` e `inventario`.
-  - [ ] **Reportes Contables Nucleares:**
-    - [ ] `LibroDiarioGeneralReport`: Exportación cronológica del Libro Diario (`Asiento`/`Apunte`) en PDF y Excel.
-    - [ ] `LibroMayorExcelReport`: Mayores analíticos con saldo progresivo por cuenta contable.
-    - [ ] `BalanceSumasYSaldosReport`: Balance de 8 columnas para auditoría y cierre contable.
-  - [ ] **Reportes de Tesorería y Cobranzas/Pagos:**
-    - [ ] `OrdenPagoReciboPDFReport`: Recibos de Cobranza y Órdenes de Pago a Proveedores con desglose de valores y aplicaciones.
-    - [ ] `CertificadoRetencionPDFReport`: Certificados de retención de IVA, Ganancias e IIBB con base imponible y alícuota.
-    - [ ] `CashflowProyectadoExcelReport`: Proyección de liquidez diaria/semanal por caja, banco y vencimiento de cheques/deuda.
-    - [ ] `CarteraChequesExcelReport`: Trazabilidad de cheques físicos y E-cheqs por estado y fecha de pago.
-    - [ ] `DeudaCorrienteAgingExcelReport`: Reporte de antigüedad de saldos de cuentas por cobrar y por pagar (Aging 30/60/90+).
-- [ ] WSFEX (Facturas de Exportación avanzadas con permisos de embarque)
-- [ ] Liquidaciones de Fasón (Monotributo Productivo)
-- [ ] Webhooks de interoperabilidad ARCA / FDI para destrabe de retención `FISCAL_PENDING`
+### Fase 3 — Consolidación de Producción Industrial, MRP y Portales de Taller (`apps.produccion`)
 
-### Fase F — App Móvil PTF (Fuera del scope Django)
-- [ ] App Flutter/React Native
-- [ ] Generación de par de claves en Secure Enclave del dispositivo
-- [ ] Firma Ed25519 con desbloqueo biométrico (FaceID / Huella)
-- [ ] Geolocalización y firma en campo
-- [ ] Sincronización offline con el Nodo MES
+#### 1. Diagnóstico y Desacople
+Con la extracción de la lógica fiduciaria a `apps.eop`, el módulo `apps.produccion` asume exclusivamente el rol de MRP y manufactura física de planta. Requiere finalizar la limpieza de campos y modelos residuales (`OPEscrowHito` en `models.py`, fieldsets fiduciarios en `admin.py` y lectura de `contrato_eop` en `api_views.py`).
 
-### Fase G — Desacople Modular de e-OPs Federadas (Nuevo Módulo `apps.eop`)
+#### 2. Checklist de Implementación
+- [ ] **Desacople y Depuración Fiduciaria:**
+  - [ ] Eliminar modelo residual `OPEscrowHito` de `apps/produccion/models.py`.
+  - [ ] Limpiar fieldsets fiduciarios en `apps/produccion/admin.py` (`OrdenProduccionAdmin`).
+  - [ ] Actualizar `RecepcionHeadlessEOPView` en `apps/produccion/api_views.py` para consultar `op.contrato_eop`.
+- [ ] **Documentos y Reportes Industriales (`apps/produccion/reports/`):**
+  - [ ] `OrdenProduccionPDFReport`: Hoja de Ruta de Planta (A4) con código QR de la OP, curva de talles desagregada por variación, BOM técnico y checklist de etapas.
+  - [ ] `BOMExplosionReport`: Explosión de insumos y avíos por lote o tanda vs existencias en almacén.
+  - [ ] `RendimientoProduccionExcelReport`: Matriz de desvíos y mermas comparando consumo teórico vs real (`cantidad_consumida_real`) con alerta INTI (>10%).
+  - [ ] `LiquidacionFasonExcelReport`: Planilla de servicios prestados por talleres externos con discriminación de pares de 1ra y 2da selección.
+- [ ] **Motor MRP y Planificación:**
+  - [ ] Servicio de reabastecimiento automático: generación de OPs en borrador a partir de `OrdenVenta` confirmadas o quants por debajo del stock de seguridad.
+  - [ ] Asignación de lote industrial (`lote_id`) y fecha de elaboración al ingresar producto terminado en `ProduccionService.finalizar_op()`.
+- [ ] **Portales, Partes y Permisos Fabriles:**
+  - [ ] Backend de validación territorial PoPW en `DeclararParteActionView`: comprobación de proximidad Point-in-Polygon entre `ubicacion_gps_declarada` y el catastro del taller (`contacto.ubicacion_catastral`).
+  - [ ] Portal del Tallerista (PWA móvil) con WebAuthn/Passkeys, firma Ed25519 local y ficha técnica ciega de precios comerciales.
+  - [ ] Segregación de visibilidad: implementar permiso `view_costos_op` para ocultar Vector C y márgenes a operarios, supervisores de pañol y talleristas externos.
 
-#### 1. Diagnóstico y Fundamentación Arquitectónica (Domain-Driven Design)
-Actualmente, el modelo `OrdenProduccion` en `apps.produccion` presenta un acoplamiento entre dos dominios de negocio completamente disjuntos:
-1. **Manufactura Física de Planta (MRP):** Recetas de corte, consumo de cuero, adhesivos, tiempos de confección, cálculo de mermas técnicas del INTI, partes diarios de costura y remitos de traslado entre talleres.
-2. **Título de Crédito Fiduciario y Red (Protocolo e-OP / FIMCA):** Activo colateralizable negociable, cálculo del Vector C indexado en UCIs, sellado de hashes SHA-256, firmas Ed25519, timelocks de 48h de la MES, oráculos territoriales (PTF, geocercas PostGIS, biometría RENAPER) y desgravación impositiva ARCA.
-
-Este acoplamiento introduce 15 campos residuales en órdenes internas simples y obliga a bifurcar la capa de servicios con lógica condicional (`if op.es_eop_federada:`).
-
-La **Fase G** establece el desacople estructural extrayendo toda la maquinaria fiduciaria hacia una nueva aplicación satélite: **`apps.eop`**.
-
-#### 2. Diagrama de Arquitectura Satélite
-
-```mermaid
-erDiagram
-    ORDEN_PRODUCCION ||--o| CONTRATO_EOP : "se colateraliza en (0..1 a 1)"
-    CONTRATO_EOP ||--o{ EOP_HITO_ESCROW : "fracciona liquidacion"
-    CONTRATO_EOP }o--|| CONTACTO : "ptf_fiscalizador"
-    
-    ORDEN_PRODUCCION {
-        string numero PK "Secuencia produccion.op"
-        int receta_id FK
-        int cantidad_total
-        int cantidad_producida
-        string subestado "espera, cortado, aparado..."
-    }
-
-    CONTRATO_EOP {
-        uuid uuid_identificador PK
-        int orden_produccion_id FK "Opcional (NULL en modo Headless)"
-        string secuencia_numero "Secuencia eop.contrato"
-        string estado_escrow "financiado_fdi, aprobado_silencio..."
-        string nodo_mes_destino
-        decimal costo_mod_uci
-        decimal costo_cs_uci
-        decimal costo_fdi_uci
-        string merkle_root_bom "SHA-256 inmutable"
-        string hash_seguridad "SHA-256 sellado"
-        jsonb firmas_digitales "Ed25519 (Marca, Taller, PTF)"
-        boolean es_sello_buen_diseno
-    }
-
-    EOP_HITO_ESCROW {
-        int id PK
-        uuid contrato_eop_id FK
-        string nombre_hito "Hito Cero, Corte, Aparado..."
-        decimal porcentaje_tramo
-        decimal monto_bruto_retenido
-        string estado "retenido, liberado, en_disputa"
-        string comprobante_banco_tx
-    }
-```
-
-#### 3. Especificación del Modelo `ContratoEOP` (`apps/eop/models.py`)
-
-```python
-# apps/eop/models.py
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-from apps.base.models import DocumentoBase, DocumentoFirmableMixin
-
-
-class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
-    """
-    Título de Crédito Ejecutivo y Contrato Fiduciario de la Red Federada FIMCA.
-    Opera como activo negociable colateralizable ante el FDI y la MES.
-    """
-
-    SECUENCIA_CODIGO = "eop.contrato"
-
-    # Enlace débil/opcional a la manufactura local (NULL si la marca opera vía SAP/Tango)
-    orden_produccion_local = models.OneToOneField(
-        "produccion.OrdenProduccion",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="contrato_eop",
-        verbose_name=_("Orden de Producción Física Local"),
-        help_text=_(
-            "Asociación a la orden de planta en Indinopy. Si es NULL, la orden proviene de un ERP externo (Headless)."
-        ),
-    )
-
-    # Identidad y Ruteo en la Red Federada (Snapshot capturado de ConfiguracionEmpresa)
-    nodo_mes = models.CharField(
-        max_length=100,
-        verbose_name=_("Nodo MES de Destino"),
-        help_text=_(
-            "Snapshot inmutable capturado automáticamente de ConfiguracionEmpresa.nodo_mes_identificador al emitir"
-        ),
-    )
-    ptf_asignado = models.ForeignKey(
-        "contactos.Contacto",
-        on_delete=models.RESTRICT,
-        null=True,
-        blank=True,
-        related_name="eops_fiscalizadas",
-        verbose_name=_("PTF Asignado"),
-    )
-    estado_escrow = models.CharField(
-        max_length=30,
-        choices=[
-            ("solicitado", _("Solicitud de Fondeo Enviada")),
-            ("financiado_fdi", _("Financiado por FDI (Comitente en Deuda)")),
-            ("aprobado_silencio", _("Aprobado por Silencio Positivo (48h)")),
-            ("vetado_mes", _("Vetado por la MES")),
-            ("hito_cero_liberado", _("Hito Cero Acreditado en Cuenta Taller")),
-            ("en_disputa", _("En Disputa Arbitral (72h)")),
-            ("liquidado_total", _("Liquidación Final Completada")),
-        ],
-        default="solicitado",
-        verbose_name=_("Estado de Escrow / Custodia"),
-    )
-    fecha_fondeo_escrow = models.DateTimeField(
-        null=True, blank=True, verbose_name=_("Fecha de Fondeo / Inicio Timelock")
-    )
-
-    # Vector C: Costos Homologados (en UCI o indexado)
-    costo_mod = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("MOD")
-    )
-    costo_cs = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Cargas Sociales")
-    )
-    costo_bom = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Insumos")
-    )
-    costo_fdi = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Reserva FDI (2%)")
-    )
-    costo_tax = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=0.0,
-        verbose_name=_("Monotributo / Tax"),
-    )
-    costo_mg = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Margen")
-    )
-
-    # Sello de Calidad
-    es_sello_buen_diseno = models.BooleanField(default=False)
-
-    # Árbol de Merkle del BOM inmutable (Snapshot estático)
-    merkle_root_bom = models.CharField(max_length=64, blank=True, null=True)
-
-    class Meta(DocumentoBase.Meta):
-        verbose_name = _("Contrato e-OP Federado")
-        verbose_name_plural = _("Contratos e-OP Federados")
-```
-
-#### 4. Desacople de la Capa de Servicios y Manejo por Señales (Signals)
-
-```
-       [ apps.produccion ]                        [ apps.eop ]
-               │                                       │
-  Taller registra avance físico                        │
-  OPParteProduccion.save()                             │
-               │                                       │
-               ├─── Dispara Django Signal ────────────►│
-               │    (parte_produccion_declarado)       │
-               │                                       │ Construye PoPW:
-               │                                       │ • Valida GPS vs Catastro
-               │                                       │ • Hash Biométrico RENAPER
-               │                                       │ • Firma Ed25519
-               │                                       │ • Transmite al Nodo MES
-               │                                       │
-               │◄── Actualiza estado de hito ──────────┤
-```
-
-* **`ProduccionService`:** Se enfoca puramente en stock, movimientos de inventario por partida doble y avance de etapas físicas. No contiene referencias a PyNaCl, RENAPER ni cuentas del FDI.
-* **`EOPService` (`apps/eop/services.py`):** Encapsula el ciclo de vida fiduciario: creación del contrato, emisión del payload JSON determinista, ruteo HTTP a la MES y despacho de webhooks al BAPRO para la liquidación.
-* **Modo Headless Nativo (SAP / Tango):** Una marca con ERP corporativo emite e-OPs enviando un payload REST directo a `apps.eop`. El contrato se crea con `orden_produccion_local = None`, permitiéndole participar del régimen FIMCA sin duplicar sus maestros de producción ni almacenes en Indinopy.
-
-#### 5. Modelo de Etapas Desacopladas, Split Payment y Deslinde de Responsabilidad
-
-En la manufactura real del calzado, el flujo técnico y financiero exige un deslinde nítido de responsabilidades:
-
-1. **La Marca solo responde ante el Fondo (FDI):**
-   - La marca comitente no gestiona micropagos individuales, ni interactúa con la red de prestadores eventuales, ni asume fricciones de subcontratación.
-   - Su único compromiso financiero es cancelar el financiamiento asistido directamente ante el **Fondo (FDI)** en el plazo comercial pactado (30 a 60 días fecha de entrega).
-2. **Responsabilidad de Liberación del Dinero (Fondo o Taller Gestor):**
-   - La dispersión efectiva hacia los prestadores de cada proceso no es responsabilidad de la marca:
-     - **Vía FDI:** Cuando la etapa tiene un tallerista independiente homologado asignado de forma rígida, el FDI transfiere directamente desde su bóveda fiduciaria BAPRO al CBU/CVU de dicho taller.
-     - **Vía Taller Gestor:** Si el Taller Gestor subcontrata o terceriza etapas (ej. aparado a domicilio o rebajado artesanal), el FDI le acredita el tramo al Gestor y este asume la dispersión secundaria y la responsabilidad técnica solidaria.
-3. **Un Tallerista Rígido por Etapa con Fallback:**
-   - Cada etapa del MRP (`RecetaEtapa` / `OPEtapaTracking`) cuenta con un único ejecutor asignado (`tallerista_asignado`).
-   - Si no se especifica un tallerista externo individual, la liquidación de la etapa se transfiere por defecto al **Taller Gestor Coordinador** (consorcio en transición a SAS).
-4. **Desestimación de Campo 'Cláusula de Inembargabilidad':**
-   - Se prescinde de cualquier campo booleano de inembargabilidad en los modelos. El depósito en custodia opera por imperio de los Arts. 1251 y 1356 del CCCN; la inembargabilidad registral especial es una iniciativa de reforma legislativa que no forma parte del esquema de datos del software.
-
-#### 6. Portal del Tallerista (PWA / Mobile-First)
-
-El tallerista de oficio trabaja en el banco de descarne, la mesa de corte o la máquina de coser; no opera desde una PC de escritorio ni maneja un ERP denso. El **Portal del Tallerista** se diseña como una aplicación web progresiva (PWA) optimizada para smartphones:
-
-1. **Acceso Seguro Sin Contraseñas Complejas:**
-   - Autenticación biométrica nativa (WebAuthn / Passkeys vía huella dactilar o FaceID del teléfono) o código OTP por WhatsApp/SMS.
-   - Par de claves Ed25519 alojado de forma segura en el almacenamiento local del dispositivo.
-2. **Bandeja de e-OPs y Etapas Entrantes:**
-   - Notificación en tiempo real cuando una marca le asigna una etapa (ej. *"Tenés 500 pares para Aparar de Borcegos Cruz del Sur"*).
-   - Aceptación formal con un toque de pantalla mediante firma digital Ed25519.
-3. **Ficha Técnica Ciega (Documento de Taller):**
-   - Muestra modelo, fotos de armado, curva de talles normalizada INTI, instrucciones técnicas y mermas toleradas.
-   - **Ciego de Precios Comerciales:** No expone precios de venta al público (PVP) ni márgenes comerciales de la marca, protegiendo la confidencialidad de la cadena.
-4. **Carga Ultrarrápida de Partes de Producción (PoPW):**
-   - Formulario de 2 campos al final de la jornada: *Pares Producidos* (Primera calidad vs Segunda/Descarte).
-   - La app adjunta automáticamente la geolocalización GPS (para convalidar el radio catastral del taller) y genera el hash de avance.
-5. **Billetera de Hitos y Saldo Escrow (Cuenta DNI / BAPRO):**
-   - Visualización pedagógica del dinero de mano de obra en custodia del FDI:
-     - **Saldo Retenido:** Fondos bloqueados en la bóveda que se cobrarán al finalizar.
-     - **Reloj Timelock 48h:** Cuenta regresiva en tiempo real (*"Liberación en 18h por Silencio Positivo"* o *"Aprobado por PTF"*).
-     - **Saldo Acreditado:** Historial de transferencias inmediatas recibidas en su Cuenta DNI / CVU con comprobante fiscal descargable.
-6. **Módulo 'Camino a SAS' (Para Talleres Gestores):**
-   - Estado del trámite de personería jurídica simplificada (SAS / Consorcio de Cooperación).
-   - Registro de talleres satélite y prestadores domiciliarios vinculados.
-
-#### 7. Checklist de Implementación de la Fase G
-- [ ] Crear la aplicación `apps/eop/` con configuración en `apps.py` e incorporar en `INSTALLED_APPS`.
-- [ ] Definir modelos `ContratoEOP` y `EOPHitoEscrow` en `apps/eop/models.py`.
-- [ ] Desarrollar servicio de dominio `EOPService` en `apps/eop/services.py`.
-- [ ] Escribir migración de datos (`DataMigration`) para transferir las órdenes con `es_eop_federada=True` existentes en `apps.produccion` hacia registros independientes de `ContratoEOP`.
-- [ ] Configurar señales desacopladas en `apps/eop/signals.py` para escuchar avances físicos de `OPParteProduccion`.
-- [ ] Rutar los endpoints de federación (`/federacion/eop/...`) para interactuar con `ContratoEOP`.
-- [ ] Implementar frontend del **Portal del Tallerista** (PWA móvil con WebAuthn y WebCrypto Ed25519).
-- [ ] Deprecar campos fiduciarios de `OrdenProduccion` en `apps/produccion/models.py` convirtiéndolos en properties delegadas (`@property def contrato_eop`).
-
-### Fase H — Desacople Arquitectónico de Ventas y Canales Externos (`apps.integraciones`)
-
-#### 1. Justificación y Objetivos de la Refactorización
-- **Aislamiento del Dominio de Ventas:** `apps.ventas` debe representar únicamente la lógica comercial de la empresa (órdenes mayoristas, minoristas, listas de precios, asignación de remitos de entrega y facturación).
-- **Extracción de WooCommerce:** Mover `TiendaWooCommerce`, endpoints de webhooks (`webhooks.py`), cliente de la API v3 (`woo_client.py`) y tareas de sincronización (`tasks.py`) a una nueva aplicación: `apps.integraciones.woocommerce` (o módulo satélite `apps.integraciones`).
-- **Abstracción por DTO Canónico:** La ingesta de pedidos debe realizarse mediante un objeto intermedio agnóstico (`OrdenVentaDTO`), desacoplando los campos JSON propietarios de WordPress/WooCommerce de las columnas de base de datos de `OrdenVenta`.
-- **Soporte Nativo Omnicanal:** Dejar la arquitectura lista para incorporar conectores adicionales (MercadoLibre, Tiendanube, Shopify) sin alterar una sola línea de código en `apps.ventas`.
-
-#### 2. Plan de Migración Paso a Paso
-1. **Creación de `CanalVenta` en `apps.ventas`:**
-   - Crear el modelo `CanalVenta` para identificar el origen comercial de cada orden.
-   - Reemplazar en `OrdenVenta` las columnas fijas `tienda`, `wc_order_id`, `wc_order_number`, `wc_status` por `canal` (FK a `CanalVenta`), `referencia_externa` (CharField indexado) y `estado_canal_externo`.
-2. **Creación de `apps.integraciones.woocommerce`:**
-   - Registrar la app en `INSTALLED_APPS`.
-   - Migrar el modelo `TiendaWooCommerce` hacia `apps.integraciones.woocommerce.models`, enlazándolo 1:1 con `CanalVenta`.
-   - Mover `WooCommerceWebhookView`, `WooCommerceAPIClient` y `tasks.py` al nuevo paquete.
-3. **DataMigration de Compatibilidad:**
-   - Migración de datos que cree un `CanalVenta` de tipo `woocommerce` por cada `TiendaWooCommerce` preexistente y migre `tienda_id` / `wc_order_id` hacia `canal_id` / `referencia_externa`.
-4. **Refactor de la Capa de Servicios:**
-   - Crear `WooCommerceNormalizer` en `apps.integraciones.woocommerce.normalizers` encargado de mapear el payload JSON de Woo hacia `OrdenVentaDTO`.
-   - Modificar `VentasService`: eliminar métodos `procesar_*_woocommerce` y consolidar un único punto de entrada: `VentasService.ingestar_orden_canal(canal_id, dto)`.
-5. **Aislamiento de Rutas y Señales:**
-   - Mover la URL `webhooks/woocommerce/<tienda_id>/` de `apps.ventas.urls` a `apps.integraciones.woocommerce.urls`.
-   - Desacoplar la señal de notificación de despacho (`signals.py`): en lugar de que `ventas.signals` intente llamar a WooCommerce, emitir una señal interna de dominio `orden_venta_despachada` y que `integraciones.woocommerce` la escuche para actualizar el tracking en la tienda externa.
-
-#### 3. Checklist de Implementación de la Fase H (Integración Integral Omnicanal)
-- [x] **Dominio Core (`apps/ventas` y `apps/contactos`):**
-  - [x] Crear modelo `CanalVenta` y refactorizar `OrdenVenta` en `apps/ventas/models.py`.
-  - [x] Implementar DTOs agnósticos en `apps/ventas/dtos.py` (`OrdenVentaDTO`, `ClienteDTO`, `LineaOrdenDTO`, `RecargoDTO`, `EnvioDTO`, `CuponDTO`).
-  - [x] Refactorizar `VentasService` para exponer API de ingesta canónica desacoplada: `ingestar_orden_canal(canal_id, dto)`.
-  - [x] Implementar servicio de sincronización de clientes `ContactosService.sincronizar_cliente(dto)` para resolver altas/bajas de usuarios.
-- [x] **Módulo Satélite (`apps/integraciones/woocommerce`):**
-  - [x] Crear aplicación `apps/integraciones/woocommerce/` con sus modelos (`TiendaWooCommerce`), vistas de webhook y cliente API.
-  - [x] Implementar `WooCommerceNormalizer` cubriendo normalización de órdenes, clientes, productos, cupones, logística y tasas.
-  - [x] Tareas Celery de procesamiento asíncrono desacopladas en `apps/integraciones/woocommerce/tasks.py`.
-- [x] **Infraestructura y Rutas:**
-  - [x] Registrar `apps.integraciones.woocommerce` en `INSTALLED_APPS`.
-  - [x] Actualizar URLs del proyecto exponiendo `/integraciones/woocommerce/` con backward-compatibility en `/ventas/webhooks/woocommerce/`.
-  - [x] Escribir tests unitarios que comprueben la creación de `OrdenVenta` y `Contacto` desde DTO sin dependencia de WooCommerce (`apps/ventas/tests.py`).
-
-### Fase I — Consolidación de Nómina, Régimen Previsional y Libro de Sueldos Digital (`apps.nomina`)
+### Fase 4 — Consolidación de Nómina, Régimen Previsional y Libro de Sueldos Digital (`apps.nomina`)
 
 #### 1. Diagnóstico y Estado Actual
 El módulo `apps.nomina` cuenta con la modelización básica de legajos (`Empleado`), convenios (`Sindicato`), licencias (`Licencia`), conceptos (`ConceptoLiquidacion`) y recibos (`LiquidacionNomina`). Ya contempla la reforma laboral de la Ley Bases (Fondo de Cese Laboral en reemplazo del Art. 245 CCCN) y el circuito SoD con aprobación dual de Tesorería (`aprobador_tesoreria`) que dispara automáticamente el asiento contable y la Orden de Pago.
@@ -1178,11 +673,12 @@ El módulo `apps.nomina` cuenta con la modelización básica de legajos (`Emplea
   - [ ] Topes previsionales periódicos de ARCA/ANSES (Bases mínimas y máximas para cálculo de aportes SIPA/Ley 19032/Obra Social).
   - [ ] Algoritmo de retención de Impuesto a las Ganancias (4ta Categoría / Ingresos Personales) con deducciones SiRADIG (F. 572) y tabla progresiva acumulada.
   - [ ] Módulo de Novedades Variables mensuales: modelo o formulador dinámico para Horas Extras (50% y 100%), feriados trabajados y premios sin hardcode en servicios.
-- [ ] **Integración Financiera y Datos Bancarios:**
+- [ ] **Integración Financiera, Datos Bancarios y SoD:**
   - [ ] Campos en `Empleado` para acreditación de haberes: `cbu_sueldo`, `banco` y `tipo_cuenta`.
   - [ ] Servicio de liquidación masiva de período: procesamiento en lote de toda la nómina activa del mes en un único clic, con previsualización y pase grupal a revisión de Tesorería.
+  - [ ] Validación estricta SoD: verificación transaccional que impida que el usuario liquidador apruebe su propia nómina en tesorería (`usuario_preparador != aprobador_tesoreria`).
 
-### Fase A — Frontend, UX y Portales (Fase Final de Cierre)
+### Fase 5 — Frontend, UX y Portales (Fase Final de Cierre)
 > **Estrategia de Desarrollo:** Esta fase se posterga al cierre del proyecto para garantizar que toda la maquinaria de backend, reglas de integridad criptográfica, motores de partida doble, servicios tributarios y flujos federados estén 100% estabilizados antes de construir las capas visuales.
 
 - [ ] Template base (`base.html`) con sistema de diseño portado de los mockups HTML.
@@ -1191,10 +687,11 @@ El módulo `apps.nomina` cuenta con la modelización básica de legajos (`Emplea
 - [ ] Panel de Escrow y Hitos para el Comitente.
 - [ ] Panel del Tallerista (OPs asignadas, partes de producción).
 - [ ] Portal web del PTF (`/mes/ptf/portal/`) con WebCrypto API para firmas en navegador.
+- [ ] **Seed de Autorización**: Command `python manage.py setup_roles_permisos` para aprovisionamiento idempotente de Grupos Django, permisos y vistas por perfil.
 
 ---
 
-## 10. Deuda Técnica Identificada
+## 9. Deuda Técnica Identificada
 
 ### Alta Prioridad
 | Item | Archivo | Descripción |
@@ -1221,7 +718,7 @@ El módulo `apps.nomina` cuenta con la modelización básica de legajos (`Emplea
 
 ---
 
-## 11. Referencias
+## 10. Referencias
 
 - Protocolo e-OP y Mitigación de Fraude en Planta: `docs/paper_protocolo_eop_gobernanza_industrial.md` (§4.2)
 - Dossier FIMCA Base y Sistema de Adelantos: `docs/dossier_fimca_base.md` (Sección II)

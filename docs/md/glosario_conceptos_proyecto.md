@@ -27,7 +27,7 @@ La arquitectura del proyecto se sostiene sobre cuatro pilares vertebrales cuyos 
 | :--- | :--- |
 | **Institución y Reglas** | [1. Metadatos del Sistema](#sec-1) (Indinopy, e-OP, MES, FDI, Timelock, Silencio Positivo, Modalidad Operativa Fabril, Addenda)<br/>[2. Criptografía y Trazabilidad](#sec-2) (UUID, Merkle BOM, Ed25519, Multisig, QR, PoPW, Geo-Fencing, mTLS, CRL, IA Algorética, Zero-Retention)<br/>[3. Actores y Velo Societario](#sec-3) (Marca, UBO, Tallerista, PTF, Score Solidario, Bolsa de Trabajo, Maestros Artesanos, Talleres Espejo, Ventanilla Única) |
 | **Física Productiva** | [4. Técnica del Calzado y BOM](#sec-4) (BOM, Curva de Talles, Horma INTI, SBD, Mermas, Cuero Flor, Cordura, Puntera IRAM, Adhesivos)<br/>[5. Tracking Físico y Partes](#sec-5) (Parte de Producción, Liquidación Desacoplada, Etapas 1 a 4 de Corte a Empaque) |
-| **Finanzas y Marco Legal** | [6. Arquitectura Escrow y UCI](#sec-6) (Escrow, Hito Cero, Hitos de Avance, Hito Final, UCI, Micro-canon MES, Fondo de Riesgo, UCP, AML/KYC/ROS)<br/>[7. Desglose Factorial de Costos](#sec-7) (Costo Industrial Fabril, Mano de Obra Territorial, Margen Comercial, P.V.P.)<br/>[8. Tutela Sindical y Arbitraje](#sec-8) (Veto Ex-Post, Alerta de Escrow, Fianza Líquida, Tribunal Arbitral, Slashing, Hard Ban, Canal de Denuncias)<br/>[9. Régimen Fiscal y Previsional](#sec-9) (Locación de Obra vs Compraventa, Inembargabilidad CCCN 1251/1356, Monotributo Productivo 1.5%, Suspensión Activa, Ganancias, Aportes Patronales, No Retroactividad, IVA Diferido, Crédito Presunto 25%, Puente SAS, Tarifa Plana, Control Interno RG 1415) |
+| **Finanzas y Marco Legal** | [6. Arquitectura Escrow y UCI](#sec-6) (Escrow, Hito Cero, Hitos de Avance, Hito Final, UCI, Micro-canon MES, Fondo de Riesgo, UCP, AML/KYC/ROS)<br/>[7. Desglose Factorial de Costos](#sec-7) (Costo Industrial Fabril, Mano de Obra Territorial, Margen Comercial, P.V.P.)<br/>[8. Tutela Sindical y Arbitraje](#sec-8) (Veto Ex-Post, Alerta de Escrow, Fianza Líquida, Tribunal Arbitral, Slashing, Hard Ban, Canal de Denuncias)<br/>[9. Régimen Fiscal y Previsional](#sec-9) (Locación de Obra vs Compraventa, Inembargabilidad CCCN 1251/1356, Monotributo Productivo 1.5%, Suspensión Activa, Ganancias, Aportes Patronales, No Retroactividad, IVA Diferido, Crédito Presunto 25%, Puente SAS, Tarifa Plana, Control Interno RG 1415, SoD, Libro de Sueldos Digital, Colateralización FDI) |
 | **Infraestructura y Cumplimiento** | [10. Resiliencia de Software y Operaciones](#sec-10) (Dead-Letter Queue, Idempotencia, Topología Offline-First)<br/>[11. Tabla Rápida de Siglas y Acrónimos](#sec-11) (Guía alfabética de acrónimos técnicos, legales y tributarios) |
 
 ---
@@ -328,6 +328,21 @@ Documento administrativo no fiscal habilitado en el modelo de cuentas a pagar/co
 > [!NOTE]
 > **Aviso de Neutralidad Tecnológica y Cumplimiento Legal:**
 > Indinopy es una plataforma de software de ejecución de manufactura (MES) y planificación de recursos (ERP). La habilitación de comprobantes de control interno y órdenes de producción responde estrictamente a necesidades de coordinación técnica fabril y cómputo de costos operativos. Toda orden de producción y comprobante de gestión interna está sujeto a la legislación mercantil y tributaria vigente. La determinación de la materia gravada, la emisión de facturas electrónicas con CAE y la liquidación impositiva recaen de manera exclusiva e indelegable en los contribuyentes y usuarios emisores bajo el Régimen Penal Tributario (Ley 27.430).
+
+### **Segregación de Funciones (SoD - Segregation of Duties)**
+Principio de control interno contable y de seguridad de la información aplicado transversalmente en la suite ERP (`apps.nomina` y `apps.tesoreria`):
+* **Regla de Cuatro Ojos en Nómina:** El usuario que liquida sueldos y carga novedades (`usuario_preparador`) está técnicamente inhabilitado para aprobar y ordenar la ejecución de transferencias financieras (`aprobador_tesoreria`). La base de datos valida formalmente `usuario_preparador != aprobador_tesoreria` antes de habilitar la emisión de pagos.
+* **Separación Operativa / Financiera:** El jefe de taller o encargado de producción certifica el avance físico de obra en planta (`PoPW`), pero únicamente Tesorería y Finanzas emiten la Orden de Pago o instruyen el clearing fiduciario.
+
+### **Libro de Sueldos Digital (LSD ARCA)**
+Módulo y formato canónico de exportación de nómina de la seguridad social argentina (RG AFIP/ARCA N° 3781 y complementarias):
+* **Consolidación Previsional:** El sistema genera los registros alfanuméricos estandarizados con los conceptos remunerativos, no remunerativos y descuentos de ley correspondientes al CCT del calzado (UTICRA) y convenio afines.
+* **Liquidación y VEP:** Al conciliarse con los recibos de sueldo de la ley 20.744 emitidos por el módulo de nómina, permite exportar la base imponible para generar directamente el Volante Electrónico de Pago (VEP) de aportes y contribuciones patronales (F.931).
+
+### **Colateralización Fiduciaria y Repago Diferido (FDI)**
+Mecanismo financiero mediante el cual la e-OP se disocia del flujo de caja inmediato de la marca:
+* **Desembolso y Subrogación:** El Fideicomiso de Desarrollo Industrial (FDI) adelanta los fondos del Hito Cero y avances directamente a la cuenta bancaria del tallerista. Al ocurrir el desembolso, el tallerista extingue su crédito comercial contra la marca comitente.
+* **Pasivo Fiduciario y Orden de Pago:** La marca comitente no eroga fondos durante el proceso de confección, sino que reconoce en su pasivo contable una deuda fiduciaria garantizada ante el FDI. Cumplido el plazo comercial convenido (habitualmente 60 días), Tesorería emite la Orden de Pago de repago vinculada formalmente a la e-OP (`ComprobanteTesoreria.escrow_asociado`).
 
 ---
 
