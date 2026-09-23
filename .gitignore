@@ -6,6 +6,5 @@ __pycache__/
 media/
 staticfiles/
 utils/
-uv.lock
 .agents
 .ruff_cache
