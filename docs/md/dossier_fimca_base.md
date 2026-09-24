@@ -361,8 +361,6 @@ El lema doctrinario "un gobierno esclavo de un pueblo libre" llevado a la práct
 
 No pedimos privilegios sectoriales. Pedimos un piso de protección para quienes sostienen el empleo real en cada rincón del Conurbano.
 
-Junio de 2026
-
 ## ANEXO I: Matriz de Escalabilidad Federal y Multisectorial
 
 **"Régimen Federal Manufacturero y Red de Despliegue de la Comunidad Organizada"**
