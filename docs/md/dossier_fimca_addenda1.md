@@ -126,14 +126,15 @@ graph TD
     CAM --> MES
     INTI -->|Presidencia Técnica| MES
     
-    MES --> C1(Comisión de Homologación Tecnológica)
-    MES --> C2(Comisión de Disciplina y Arbitraje)
-    MES --> C3(Comisión de Precios y Costos)
+    MES --> C1(Comisión de Homologación Técnica<br/>INTI + Sindicato)
+    MES --> C2(Comisión de Crédito y Riesgo<br/>Talleristas + Marcas + Municipio)
+    MES --> C3(Tribunal de Disciplina y Arbitraje<br/>Resolución Vinculante de Disputas)
     
     style MES fill:#3b82f6,stroke:#1e3a8a,color:#fff
     style INTI fill:#10b981,stroke:#047857,color:#fff
 ```
-> **Figura 3.** Gobernanza Cuatripartita de la MES. El modelo de conducción compartida asegura la legitimidad de las reglas sectoriales y previene el dominio monopolístico de un solo actor.
+> **Figura 3.** Gobernanza de la MES con Separación Funcional de Comisiones. El modelo de conducción compartida asegura la legitimidad técnica, la imparcialidad crediticia y la resolución arbitral de disputas.
+
 
 ### A. Composición y Representación
 

@@ -1,9 +1,68 @@
 import json
+import logging
+import requests
 from decimal import Decimal
+from django.conf import settings
+from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
 from apps.tesoreria.models import ComprobanteTesoreria, MovimientoCaja, Caja
 from .models import ContratoEOP, EOPHitoEscrow, IndiceUCI
+
+logger = logging.getLogger(__name__)
+
+
+class ParametrosFDIService:
+    """
+    Servicio desacoplador para consultar dinámicamente las alícuotas arancelarias
+    de la Red MES y el Fondo de Riesgo FDI fijadas por la Comisión de Crédito.
+    Aplica política de caché de 24h y fallback de contingencia reglamentario.
+    """
+    CACHE_KEY = "mes:parametros_arancelarios"
+    CACHE_TTL_SECONDS = 60 * 60 * 24 * 7  # 1 semana (7 días)
+
+    @classmethod
+    def refrescar_parametros_desde_mes(cls, mes_url=None):
+        """
+        Consulta al Nodo MES para sincronizar aranceles y refrescar la caché de Redis.
+        Pensado para ser ejecutado por tareas Celery en background o manualmente.
+        """
+        base_url = (mes_url or getattr(settings, "NODO_MES_URL", "http://localhost:8000")).rstrip("/")
+        endpoint = f"{base_url}/mes/api/v1/fdi/parametros-arancelarios/"
+
+        try:
+            resp = requests.get(endpoint, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                cache.set(cls.CACHE_KEY, data, cls.CACHE_TTL_SECONDS)
+                logger.info(f"Parámetros arancelarios FDI/MES sincronizados: {data.get('alicuota_total_recargo')}")
+                return data
+            else:
+                logger.warning(f"Error consultando aranceles en MES (HTTP {resp.status_code})")
+        except Exception as e:
+            logger.warning(f"Error conectando al nodo MES para sincronizar aranceles: {e}")
+        return None
+
+    @classmethod
+    def obtener_alicuota_recargo_fdi(cls, mes_url=None):
+        """
+        Devuelve la alícuota total de recargo s/MOD (Canon MES + Fondo FDI).
+        1. Consulta en caché Redis local (expira a los 7 días).
+        2. Si no está en caché, consulta por HTTP al Nodo MES.
+        3. Si la MES no responde (offline / contingencia), aplica el fallback de 1.5% (0.015).
+        """
+        cached = cache.get(cls.CACHE_KEY)
+        if cached:
+            return Decimal(str(cached.get("alicuota_total_recargo", "0.015")))
+
+        data = cls.refrescar_parametros_desde_mes(mes_url=mes_url)
+        if data:
+            return Decimal(str(data.get("alicuota_total_recargo", "0.015")))
+
+        # Fallback reglamentario según Dossier FIMCA (1.0% MES + 0.5% FDI = 1.5%)
+        return Decimal("0.015")
+
+
 
 class UCIService:
     """
@@ -83,20 +142,11 @@ class EOPService:
             precio_unit = getattr(req.insumo, "costo", Decimal("0.00")) or Decimal("0.00")
             costo_bom_ars += req.cantidad_teorica * precio_unit
 
-        # 3. Recargo Institucional de Red MES y Fondo de Riesgo FDI (1.5% s/MOD Financiada)
-        # 1.0% Micro-canon de Red MES + 0.5% Fondo de Riesgo FDI
-        costo_fdi_ars = round(costo_mod_ars * Decimal("0.015"), 2)
+        # 3. Recargo Institucional de Red MES y Fondo de Riesgo FDI (consultado dinámicamente a la MES)
+        alicuota_recargo_fdi = ParametrosFDIService.obtener_alicuota_recargo_fdi(mes_url=nodo_mes)
+        costo_fdi_ars = round(costo_mod_ars * alicuota_recargo_fdi, 2)
 
-        # 4. En el modelo e-OP oficial (Dossier FIMCA):
-        # - Las cargas sociales de nómina interna del taller (F931) son absorbidas por el taller / fomento FDI,
-        #   NO son una deuda que deba pagar la marca comitente (ver Anexo Técnico I).
-        # - La retención tributaria (Monotributo) está incluida dentro de la MOD homologada.
-        # - Margen e impuestos corporativos de balance de la marca no colateralizan el contrato fabril.
-        costo_cs_ars = Decimal("0.00")
-        costo_tax_ars = Decimal("0.00")
-        costo_mg_ars = Decimal("0.00")
-
-        # 5. Conversión a UCI
+        # 4. Conversión a UCI
         def _to_uci(monto_ars):
             return round(Decimal(monto_ars) / cotizacion_uci, 2)
 
@@ -105,11 +155,8 @@ class EOPService:
             nodo_mes=nodo_mes,
             ptf_asignado=ptf,
             costo_mod=_to_uci(costo_mod_ars),
-            costo_cs=_to_uci(costo_cs_ars),
             costo_bom=_to_uci(costo_bom_ars),
             costo_fdi=_to_uci(costo_fdi_ars),
-            costo_tax=_to_uci(costo_tax_ars),
-            costo_mg=_to_uci(costo_mg_ars),
             estado_escrow="solicitado",
         )
 
@@ -124,39 +171,79 @@ class EOPService:
                 f"Una e-OP federada requiere un mínimo obligatorio de dos etapas productivas (posee {len(etapas_tracking)})."
             )
 
-        anticipo = porcentaje_anticipo or (Decimal("50.00") if op.contrato_eop and op.contrato_eop.es_sello_buen_diseno else Decimal("35.00"))
-        if anticipo >= Decimal("100.00") or anticipo <= Decimal("0.00"):
-            anticipo = Decimal("35.00")
+        # 6. Consultar la Pauta Oficial de Escrow dictaminada por la MES:
+        # Intenta consultar por API al nodo MES de la red; si no está disponible, consulta al modelo local o fallback
+        posee_sbd = bool(op.contrato_eop and op.contrato_eop.es_sello_buen_diseno)
+        nodo_mes_url = op.contrato_eop.nodo_mes if (op.contrato_eop and op.contrato_eop.nodo_mes) else None
+        pauta_mes = None
 
-        # Hito Cero: Anticipo Operativo de Arranque (no requiere auditoría PTF previa al desembolso)
+        try:
+            from apps.federacion.services import FederacionCreditoService
+            pauta_mes = FederacionCreditoService.consultar_pauta_escrow_mes(
+                nodo_mes_url=nodo_mes_url,
+                es_sello_buen_diseno=posee_sbd,
+            )
+        except Exception:
+            pass
+
+        if not pauta_mes:
+            try:
+                from apps.mes.services import ComisionService
+                pauta_mes = ComisionService.obtener_pauta_escrow(es_sello_buen_diseno=posee_sbd)
+            except Exception:
+                pauta_mes = {
+                    "porcentaje_cero": Decimal("50.00") if posee_sbd else Decimal("35.00"),
+                    "etiqueta_cero": f"Hito Cero - Anticipo Operativo de Arranque ({'Sello Buen Diseño 50%' if posee_sbd else 'Estándar 35%'})",
+                    "porcentaje_final": Decimal("20.00"),
+                }
+
+        anticipo = porcentaje_anticipo or pauta_mes["porcentaje_cero"]
+        nombre_cero = pauta_mes.get("etiqueta_cero") or f"Hito Cero - Anticipo Operativo de Arranque ({anticipo}%)"
+        porcentaje_final = pauta_mes.get("porcentaje_final", Decimal("20.00"))
+
+        # Validaciones de consistencia de la Tríada Canónica
+        if anticipo <= Decimal("0.00") or anticipo >= Decimal("100.00"):
+            anticipo = Decimal("50.00") if posee_sbd else Decimal("35.00")
+
+        if porcentaje_final <= Decimal("0.00") or porcentaje_final >= Decimal("100.00"):
+            porcentaje_final = Decimal("20.00")
+
+        if (anticipo + porcentaje_final) >= Decimal("100.00"):
+            porcentaje_final = max(Decimal("10.00"), Decimal("100.00") - anticipo - Decimal("10.00"))
+
+        porcentaje_avance_total = Decimal("100.00") - anticipo - porcentaje_final
+        if porcentaje_avance_total <= Decimal("0.00"):
+            raise ValueError(
+                f"Configuración inválida de Escrow: Anticipo ({anticipo}%) + Cierre ({porcentaje_final}%) no deja margen para etapas productivas."
+            )
+
+        # 1. Hito Cero: Anticipo Operativo de Arranque (dictaminado por la MES, liquidado por Silencio Positivo)
         EOPHitoEscrow.objects.create(
             contrato=contrato,
-            nombre="Hito Cero - Anticipo Operativo de Arranque",
+            nombre=nombre_cero,
             porcentaje_tramo=anticipo,
             requiere_auditoria_ptf=False,
             requiere_verificacion_arca=False,
             estado="bloqueado",
         )
 
-        # Hitos por Etapa: Distribuir el porcentaje restante entre las etapas productivas
-        porcentaje_remanente = Decimal("100.00") - anticipo
+        # 2. Hitos de Avance Productivo: Distribuidos entre las etapas fabriles (PoPW)
         total_mod = sum((e.costo_servicio_total or Decimal("0.00")) for e in etapas_tracking)
         porcentaje_acumulado = Decimal("0.00")
 
         for idx, etapa in enumerate(etapas_tracking):
-            es_ultima = (idx == len(etapas_tracking) - 1)
+            es_ultima_etapa = (idx == len(etapas_tracking) - 1)
             servicio_nombre = etapa.etapa_origen.servicio.nombre if (etapa.etapa_origen and etapa.etapa_origen.servicio) else f"Etapa {idx + 1}"
             orden = etapa.etapa_origen.orden_ejecucion if etapa.etapa_origen else (idx + 1)
 
-            if es_ultima:
-                # Ajuste de cierre para garantizar exactamente 100.00%
-                porc_etapa = porcentaje_remanente - porcentaje_acumulado
+            if es_ultima_etapa:
+                porc_etapa = porcentaje_avance_total - porcentaje_acumulado
             else:
                 if total_mod > 0:
                     costo_e = etapa.costo_servicio_total or Decimal("0.00")
-                    porc_etapa = round((costo_e / total_mod) * porcentaje_remanente, 2)
+                    porc_etapa = round((costo_e / total_mod) * porcentaje_avance_total, 2)
                 else:
-                    porc_etapa = round(porcentaje_remanente / Decimal(len(etapas_tracking)), 2)
+                    porc_etapa = round(porcentaje_avance_total / Decimal(len(etapas_tracking)), 2)
                 porcentaje_acumulado += porc_etapa
 
             EOPHitoEscrow.objects.create(
@@ -164,9 +251,19 @@ class EOPService:
                 nombre=f"Hito {orden} - Avance: {servicio_nombre}",
                 porcentaje_tramo=porc_etapa,
                 requiere_auditoria_ptf=True,
-                requiere_verificacion_arca=es_ultima,
+                requiere_verificacion_arca=False,
                 estado="bloqueado",
             )
+
+        # 3. Hito Final: Entrega Conformada y Cierre Fiscal (FISCAL_PENDING)
+        EOPHitoEscrow.objects.create(
+            contrato=contrato,
+            nombre="Hito Final - Entrega Conformada y Cierre Fiscal",
+            porcentaje_tramo=porcentaje_final,
+            requiere_auditoria_ptf=True,
+            requiere_verificacion_arca=True,
+            estado="bloqueado",
+        )
 
         return contrato
 

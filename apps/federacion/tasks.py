@@ -164,3 +164,16 @@ def despachar_cedula_webhook_async(self, cedula_id):
     return f"Cédula {cedula.id} encolada en buzón NovedadFederada para {nodo_dest.nombre} (Fallback Pull)."
 
 
+@shared_task
+def sincronizar_parametros_fdi_task():
+    """
+    Tarea Celery periódica (ejecutada cada 48 hs) que invoca al planificador
+    SchedulerFederacionService para actualizar aranceles de la MES y calentar la caché por 7 días.
+    """
+    from apps.federacion.scheduler import SchedulerFederacionService
+    resultado = SchedulerFederacionService.sincronizar_parametros_arancelarios()
+    return f"Resultado scheduler federación: {resultado.get('estado')}"
+
+
+
+

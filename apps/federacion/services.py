@@ -43,6 +43,43 @@ class FederacionCreditoService:
             raise ValueError(f"El Nodo MES no está disponible: {str(e)}")
 
     @staticmethod
+    def consultar_pauta_escrow_mes(nodo_mes_url=None, es_sello_buen_diseno=False):
+        """
+        Consulta por HTTP a la API de la MES la pauta oficial de porcentajes de Escrow
+        vigente (Hito Cero, Sello Buen Diseño, Hito Final).
+        """
+        base_url = (nodo_mes_url or getattr(settings, 'NODO_MES_URL', 'http://localhost:8000')).rstrip('/')
+        endpoint = f"{base_url}/federacion/api/v1/escrow/pauta/"
+        params = {"sello_buen_diseno": "true" if es_sello_buen_diseno else "false"}
+
+        try:
+            resp = requests.get(endpoint, params=params, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                from decimal import Decimal
+                return {
+                    "porcentaje_cero": Decimal(str(data["porcentaje_cero"])),
+                    "etiqueta_cero": data["etiqueta_cero"],
+                    "porcentaje_final": Decimal(str(data["porcentaje_final"])),
+                    "porcentaje_avance": Decimal(str(data["porcentaje_avance"])),
+                    "nombre_pauta": data.get("nombre_pauta", "Pauta Oficial Escrow MES"),
+                }
+        except Exception:
+            pass
+
+        # Fallback de contingencia local si la MES no responde
+        from decimal import Decimal
+        porc_cero = Decimal("50.00") if es_sello_buen_diseno else Decimal("35.00")
+        porc_final = Decimal("20.00")
+        return {
+            "porcentaje_cero": porc_cero,
+            "etiqueta_cero": f"Hito Cero - Anticipo Operativo de Arranque ({'Sello Buen Diseño 50%' if es_sello_buen_diseno else 'Estándar 35%'})",
+            "porcentaje_final": porc_final,
+            "porcentaje_avance": Decimal("100.00") - porc_cero - porc_final,
+            "nombre_pauta": "Pauta Oficial Escrow MES (Fallback Local)",
+        }
+
+    @staticmethod
     def transmitir_eop_a_mes(contrato_eop, firma_comitente_hex, clave_publica_hex):
         """
         Emite el HTTP POST con el payload canónico firmado hacia el endpoint de la MES
@@ -61,6 +98,14 @@ class FederacionCreditoService:
         # Aseguramos el hash de seguridad
         contrato_eop.sellar_hash_seguridad()
 
+        # Validación Inviolable: La e-OP no puede transmitirse a la red federada sin la firma del tallerista gestor
+        firmas = contrato_eop.firmas_digitales or {}
+        if "tallerista" not in firmas or not firmas["tallerista"].get("firma_hex"):
+            raise ValueError(
+                f"No se puede transmitir la e-OP {contrato_eop.numero or contrato_eop.uuid_identificador} a la Red Federada: "
+                f"El tallerista gestor aún no ha firmado digitalmente el contrato en el portal."
+            )
+
         payload_canonico_str = contrato_eop.generar_payload_canonico()
         payload_canonico_dict = json.loads(payload_canonico_str)
 
@@ -73,6 +118,7 @@ class FederacionCreditoService:
             "payload_canonico": payload_canonico_dict,
             "firma_comitente": firma_comitente_hex,
             "clave_publica_comitente": clave_publica_hex,
+            "firma_tallerista": firmas["tallerista"]["firma_hex"],
             "cronograma_escrow_hitos": payload_canonico_dict.get("cronograma_escrow_hitos", []),
         }
 

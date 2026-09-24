@@ -16,11 +16,8 @@ class ContratoEOPPayloadTestCase(TestCase):
         )
         self.contrato = ContratoEOP.objects.create(
             costo_mod=Decimal("1000.00"),
-            costo_cs=Decimal("200.00"),
             costo_bom=Decimal("500.00"),
-            costo_fdi=Decimal("34.00"),
-            costo_tax=Decimal("50.00"),
-            costo_mg=Decimal("300.00"),
+            costo_fdi=Decimal("15.00"),
             nodo_mes="https://mes.fimca.org",
         )
         self.hito_1 = EOPHitoEscrow.objects.create(
@@ -75,6 +72,7 @@ class ContratoEOPPayloadTestCase(TestCase):
             "payload_canonico": payload_dict,
             "firma_comitente": firma_hex,
             "clave_publica_comitente": clave_pub_hex,
+            "firma_tallerista": "mocked_tallerista_signature_hex",
             "cronograma_escrow_hitos": payload_dict["cronograma_escrow_hitos"],
         }
 
@@ -137,3 +135,54 @@ class ContratoEOPPayloadTestCase(TestCase):
         self.assertEqual(len(payload["etapas_productivas"]), 2)
         self.assertTrue("canon_fdi_mes" in payload["vector_costos"])
         self.assertTrue("insumos_bom" in payload["vector_costos"])
+
+    def test_parametros_fdi_service_fallback_y_cache(self):
+        from apps.eop.services import ParametrosFDIService
+        from django.core.cache import cache
+
+        cache.delete(ParametrosFDIService.CACHE_KEY)
+
+        # 1. Sin respuesta del servidor MES, debe devolver el fallback reglamentario (1.5%)
+        alicuota = ParametrosFDIService.obtener_alicuota_recargo_fdi(mes_url="http://endpoint-inexistente:9999")
+        self.assertEqual(alicuota, Decimal("0.015"))
+
+        # 2. Con datos en caché, debe devolver el valor cacheado
+        cache.set(ParametrosFDIService.CACHE_KEY, {"alicuota_total_recargo": "0.018"}, 60)
+        alicuota_cache = ParametrosFDIService.obtener_alicuota_recargo_fdi()
+        self.assertEqual(alicuota_cache, Decimal("0.018"))
+        cache.delete(ParametrosFDIService.CACHE_KEY)
+
+    def test_rechazo_eop_por_alicuota_desactualizada(self):
+        signing_key = nacl.signing.SigningKey.generate()
+        verify_key = signing_key.verify_key
+
+        payload_str = self.contrato.generar_payload_canonico()
+        payload_dict = json.loads(payload_str)
+        payload_dict["etapas_productivas"] = [
+            {"orden": 1, "servicio": "Corte", "tallerista": {"cuit": "30689123452"}, "costo_servicio": "50.00"},
+            {"orden": 2, "servicio": "Aparado", "tallerista": {"cuit": "20184930213"}, "costo_servicio": "50.00"},
+        ]
+
+        # Alteramos el canon_fdi_mes a un valor desactualizado (ej: 5.00 en vez de 15.00 que es el 1.5% de 1000.00)
+        payload_dict["vector_costos"]["canon_fdi_mes"] = "5.00"
+
+        payload_bytes = json.dumps(payload_dict, separators=(",", ":"), sort_keys=True).encode("utf-8")
+        firma_hex = signing_key.sign(payload_bytes).signature.hex()
+
+        data_entrada = {
+            "uuid_identificador": str(self.contrato.uuid_identificador),
+            "hash_seguridad": self.contrato.hash_seguridad,
+            "comitente_cuit": "30712345678",
+            "tallerista_cuit": "20123456789",
+            "monto_total_uci": str(self.contrato.monto_total_uci),
+            "payload_canonico": payload_dict,
+            "firma_comitente": firma_hex,
+            "clave_publica_comitente": verify_key.encode().hex(),
+            "firma_tallerista": "mocked_tallerista_signature_hex",
+            "cronograma_escrow_hitos": payload_dict["cronograma_escrow_hitos"],
+        }
+
+        serializer = EntradaEOPSerializer(data=data_entrada)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("ALICUOTA_DESACTUALIZADA", str(serializer.errors))
+

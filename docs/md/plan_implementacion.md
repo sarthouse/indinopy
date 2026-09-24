@@ -653,8 +653,12 @@ Con la extracción de la lógica fiduciaria a `apps.eop`, el módulo `apps.produ
   - [ ] Asignación de lote industrial (`lote_id`) y fecha de elaboración al ingresar producto terminado en `ProduccionService.finalizar_op()`.
 - [ ] **Portales, Partes y Permisos Fabriles:**
   - [ ] Backend de validación territorial PoPW en `DeclararParteActionView`: comprobación de proximidad Point-in-Polygon entre `ubicacion_gps_declarada` y el catastro del taller (`contacto.ubicacion_catastral`).
+  - [ ] **Binding Biométrico Facial (RENAPER)**: Adaptador/cliente para validación biométrica pass-through de identidad del titular/artesano en la declaración de hitos (§4.2 del Paper) para neutralizar ataques Sybil con CUIT prestado.
+  - [ ] **Protocolo de Alerta de Asistencia Recíproca (72hs)**: Acción `ActivarAlertaCuelloBotellaActionView` en el Portal del Tallerista con aviso anticipado de 72 hs ante contingencias para que la Comisión de Homologación Técnica reasigne el lote remanente sin penalización punitiva.
+  - [ ] **Sello QR de Trazabilidad Socioproductiva Pública**: Vista pública desacoplada sin login `TrazabilidadPublicaView` (`/t/<uuid:uuid>/`) que renderiza el desglose ético de la prenda: % de retribución al tallerista, % de insumos nacionales, carga fiscal y municipio de confección (§8.1 del Paper).
   - [ ] Portal del Tallerista (PWA móvil) con WebAuthn/Passkeys, firma Ed25519 local y ficha técnica ciega de precios comerciales.
   - [ ] Segregación de visibilidad: implementar permiso `view_costos_op` para ocultar Vector C y márgenes a operarios, supervisores de pañol y talleristas externos.
+
 
 ### Fase 4 — Consolidación de Nómina, Régimen Previsional y Libro de Sueldos Digital (`apps.nomina`)
 

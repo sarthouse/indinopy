@@ -16,6 +16,7 @@ from apps.eop.services import EOPService
 
 from .models import (
     ComisionCredito,
+    PautaEscrowMES,
     PerfilPTF,
     RegistroEOP,
     ResolucionOP,
@@ -29,8 +30,49 @@ from .models import (
 
 class ComisionService:
     """
-    Capa de servicios para la Gobernanza Institucional (Votaciones).
+    Capa de servicios para la Gobernanza Institucional (Votaciones y Políticas de Crédito).
     """
+
+    @staticmethod
+    def obtener_pauta_escrow(es_sello_buen_diseno=False, comision_id=None):
+        """
+        Dictamina la pauta porcentual oficial de la MES consultando el modelo PautaEscrowMES:
+        - Si existe una pauta configurada para la comisión (o global activa), usa sus parámetros.
+        - De lo contrario, aplica los valores por defecto (35% std / 50% SBD / 20% final).
+        """
+        pauta = None
+        try:
+            qs = PautaEscrowMES.objects.filter(activa=True)
+            if comision_id:
+                pauta = qs.filter(comision_id=comision_id).first()
+            if not pauta:
+                pauta = qs.first()
+        except Exception:
+            pauta = None
+
+        if pauta:
+            porcentaje_cero = pauta.porcentaje_anticipo_sbd if es_sello_buen_diseno else pauta.porcentaje_anticipo_estandar
+            porcentaje_final = pauta.porcentaje_hito_final
+            nombre_pauta = pauta.nombre
+        else:
+            porcentaje_cero = Decimal("50.00") if es_sello_buen_diseno else Decimal("35.00")
+            porcentaje_final = Decimal("20.00")
+            nombre_pauta = "Pauta Oficial Escrow MES"
+
+        if es_sello_buen_diseno:
+            etiqueta_cero = f"Hito Cero - Anticipo Operativo de Arranque (Sello Buen Diseño {porcentaje_cero}%)"
+        else:
+            etiqueta_cero = f"Hito Cero - Anticipo Operativo de Arranque (Estándar {porcentaje_cero}%)"
+
+        porcentaje_avance = Decimal("100.00") - porcentaje_cero - porcentaje_final
+
+        return {
+            "porcentaje_cero": porcentaje_cero,
+            "etiqueta_cero": etiqueta_cero,
+            "porcentaje_final": porcentaje_final,
+            "porcentaje_avance": porcentaje_avance,
+            "nombre_pauta": nombre_pauta,
+        }
 
     @staticmethod
     def iniciar_votacion(comision_id, objeto_asunto, tipo_asunto):
@@ -980,3 +1022,99 @@ class ClearingBAPROService:
                 procesados += 1
 
         return {"status": "ok", "procesados": procesados, "lote": lote_referencia}
+
+
+class HomologacionTecnicaService:
+    """
+    Servicio para la Comisión de Homologación Técnica de la MES (Addenda 1, Sección II bis, Art. B).
+    Órgano técnico bipartito compuesto exclusivamente por el INTI y el Sindicato de Rama.
+
+    Competencias exclusivas y vinculantes:
+    1. Dictamen sobre elegibilidad de tecnología importada ("Tecnología Conveniente").
+    2. Certificación técnica de hitos productivos e informes de auditoría PTF.
+    3. Auditoría de Origen y Pre-Calificación de Unidades de Crédito Productivo (UCP) / Tracción Exportadora.
+    4. Homologación de Fuerza Mayor y Redistribución Solidaria de Lotes (Art. C y E.3).
+    """
+
+    @staticmethod
+    def validar_firmas_dictamen(dictamen_payload, firma_inti_hex, clave_pub_inti_hex, firma_sindicato_hex, clave_pub_sindicato_hex):
+        """
+        Verifica criptográficamente con Ed25519 el consenso técnico bipartito obligatorio (INTI + Gremio).
+        """
+        payload_bytes = json.dumps(dictamen_payload, separators=(',', ':'), sort_keys=True).encode('utf-8')
+        
+        try:
+            vk_inti = VerifyKey(bytes.fromhex(clave_pub_inti_hex))
+            vk_inti.verify(payload_bytes, bytes.fromhex(firma_inti_hex))
+        except Exception as e:
+            raise ValueError(f"Firma técnica del INTI inválida: {str(e)}")
+
+        try:
+            vk_sind = VerifyKey(bytes.fromhex(clave_pub_sindicato_hex))
+            vk_sind.verify(payload_bytes, bytes.fromhex(firma_sindicato_hex))
+        except Exception as e:
+            raise ValueError(f"Firma gremial/tutela laboral del Sindicato inválida: {str(e)}")
+
+        return True
+
+    @staticmethod
+    def generar_dictamen_tecnologia_conveniente(expediente_id, maquinaria_nombre, origen_pais, resultado_evaluacion, fundamentacion_inti, fundamentacion_sindicato, firma_inti_hex=None, firma_sindicato_hex=None):
+        """
+        Emite el Dictamen Técnico de Tecnología Conveniente vinculante para la Comisión de Crédito (plazo máx 15 días).
+        """
+        payload = {
+            "protocolo": "FIMCA-TECH-1.0",
+            "expediente_id": expediente_id,
+            "maquinaria": maquinaria_nombre,
+            "origen": origen_pais,
+            "elegible_fdi": bool(resultado_evaluacion),
+            "fundamentacion": {
+                "inti": fundamentacion_inti,
+                "sindicato": fundamentacion_sindicato,
+            },
+            "fecha_emision": timezone.now().isoformat(),
+        }
+
+        dictamen_hash = hashlib.sha256(
+            json.dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8')
+        ).hexdigest()
+
+        return {
+            "payload": payload,
+            "dictamen_hash": dictamen_hash,
+            "estado": "emitido_vinculante" if (firma_inti_hex and firma_sindicato_hex) else "borrador_pendiente_firmas",
+            "firmas": {
+                "inti": firma_inti_hex or "",
+                "sindicato": firma_sindicato_hex or "",
+            }
+        }
+
+    @staticmethod
+    def certificar_auditoria_ucp_trimestral(cuit_marca, trimestre, anio, volumen_exportacion_traccionado_usd, ucp_precalificadas, firma_inti_hex, clave_pub_inti_hex, firma_sindicato_hex, clave_pub_sindicato_hex):
+        """
+        Emite dictamen técnico de pre-calificación trimestral de UCP previo a elevación a Secretaría de Comercio.
+        """
+        dictamen_data = {
+            "cuit_marca": cuit_marca,
+            "periodo": f"{anio}-T{trimestre}",
+            "traccion_exportadora_usd": str(volumen_exportacion_traccionado_usd),
+            "ucp_calculadas": str(ucp_precalificadas),
+            "emisor": "Comision_Homologacion_Tecnica_INTI_Sindicato",
+            "timestamp": timezone.now().isoformat(),
+        }
+
+        # Valida doble firma obligatoria
+        HomologacionTecnicaService.validar_firmas_dictamen(
+            dictamen_data,
+            firma_inti_hex,
+            clave_pub_inti_hex,
+            firma_sindicato_hex,
+            clave_pub_sindicato_hex
+        )
+
+        return {
+            "status": "homologado_vinculante",
+            "dictamen": dictamen_data,
+            "hash": hashlib.sha256(json.dumps(dictamen_data, sort_keys=True).encode("utf-8")).hexdigest()
+        }
+

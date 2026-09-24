@@ -337,6 +337,31 @@ class EstadoCreditoFDIAPIView(APIView):
             }
         )
 
+
+class ParametrosArancelariosFDIAPIView(APIView):
+    """
+    Endpoint público federado para que los nodos ERP consulten las alícuotas
+    vigentes de micro-canon de red MES y fondo de riesgo FDI (Dossier FIMCA).
+    """
+
+    def get(self, request, *args, **kwargs):
+        # Alícuotas institucionales oficiales aprobadas por la Comisión de Crédito
+        alicuota_canon_mes = Decimal("0.010")  # 1.0% Take-rate MES (Servidores + Honorarios PTF)
+        alicuota_fondo_fdi = Decimal("0.005")  # 0.5% Fondo de Riesgo y Contingencias FDI
+        alicuota_total = alicuota_canon_mes + alicuota_fondo_fdi  # 1.5%
+
+        return Response(
+            {
+                "version_arancel": "2026.1",
+                "alicuota_canon_mes": str(alicuota_canon_mes),
+                "alicuota_fondo_riesgo_fdi": str(alicuota_fondo_fdi),
+                "alicuota_total_recargo": str(alicuota_total),
+                "descripcion": "Recargo Institucional de Red MES y Fondo de Riesgo FDI (1.5% s/MOD)",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 # =====================================================================
 # GOBERNANZA — Votaciones de la Comisión y Denuncias
 # =====================================================================

@@ -7,6 +7,7 @@ from .views import (
     ParteProduccionWebhookReceiverAPIView,
     PollingNovedadesAPIView,
     TarifarioConvenioAPIView,
+    PautaEscrowPublicaAPIView,
     CRLAPIView,
     BoletinOficialPublicoAPIView,
     ClearingPendientesAPIView,
@@ -31,8 +32,9 @@ urlpatterns = [
     path("api/v1/novedades/", PollingNovedadesAPIView.as_view(), name="api_polling_novedades"),
     path("api/v1/eop/espejo/", EOPWebhookReceiverAPIView.as_view(), name="api_eop_espejo"),
     path("api/v1/eop/parte-produccion/", ParteProduccionWebhookReceiverAPIView.as_view(), name="api_parte_produccion"),
-    # ── TARIFARIO HOMOLOGADO DE CONVENIO, CRL Y BOLETÍN OFICIAL ────────
+    # ── TARIFARIO HOMOLOGADO DE CONVENIO, PAUTA ESCROW, CRL Y BOLETÍN OFICIAL ────────
     path("api/v1/tarifario/convenio/", TarifarioConvenioAPIView.as_view(), name="api_tarifario_convenio"),
+    path("api/v1/escrow/pauta/", PautaEscrowPublicaAPIView.as_view(), name="api_escrow_pauta"),
     path("api/v1/pki/crl/", CRLAPIView.as_view(), name="api_pki_crl"),
     path("api/v1/boletin/", BoletinOficialPublicoAPIView.as_view(), name="api_boletin_lista"),
     path("api/v1/boletin/<int:numero_edicion>/", BoletinOficialPublicoAPIView.as_view(), name="api_boletin_detalle"),

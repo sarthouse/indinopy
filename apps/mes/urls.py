@@ -34,4 +34,5 @@ urlpatterns = [
 
     # ── API FEDERADA ───────────────────────────────────────────────────
     path("api/v1/fdi/estado-credito/", views.EstadoCreditoFDIAPIView.as_view(), name="api_estado_credito"),
+    path("api/v1/fdi/parametros-arancelarios/", views.ParametrosArancelariosFDIAPIView.as_view(), name="api_parametros_arancelarios"),
 ]

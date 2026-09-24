@@ -95,7 +95,24 @@ class ProduccionService:
         if op.estado != "borrador":
             return
 
-    # La validación de crédito FDI fue delegada a eop.EOPService mediante signals
+        # Validación Inviolable de Multifirma: Si la OP está vinculada a un ContratoEOP
+        # o es a fasón/tercerizada, el tallerista gestor debe haber firmado el contrato en el portal.
+        if op.es_eop_federada:
+            contrato = op.contrato_eop
+            firmas = contrato.firmas_digitales or {}
+            if "tallerista" not in firmas or not firmas["tallerista"].get("firma_hex"):
+                taller_nombre = op.tallerista_gestor.nombre if op.tallerista_gestor else "Taller Gestor"
+                raise ValidationError(
+                    f"No se puede confirmar la OP {op.numero}: El taller gestor ({taller_nombre}) "
+                    f"aún no ha firmado digitalmente el contrato e-OP en el portal."
+                )
+        elif op.tipo == "fason" and op.tallerista_gestor:
+            # Si es a fasón pero aún no tiene e-OP creada, se exige vinculación y firma
+            if not hasattr(op, "contrato_eop"):
+                raise ValidationError(
+                    f"No se puede confirmar la OP {op.numero}: Toda producción a fasón requiere "
+                    f"la emisión y firma previa del contrato de manufactura con el tallerista."
+                )
 
         op.estado = "confirmado"
         op.save(update_fields=["estado"])

@@ -2,12 +2,29 @@ from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 from .models import (
     ComisionCredito,
+    PautaEscrowMES,
     MiembroComision,
     RegistroEOP,
     ResolucionOP,
     AlertaColusion,
     TribunalArbitraje,
 )
+
+
+@admin.register(PautaEscrowMES)
+class PautaEscrowMESAdmin(admin.ModelAdmin):
+    list_display = (
+        "nombre",
+        "comision",
+        "porcentaje_anticipo_estandar",
+        "porcentaje_anticipo_sbd",
+        "porcentaje_hito_final",
+        "activa",
+        "created_at",
+    )
+    list_filter = ("activa", "comision")
+    search_fields = ("nombre", "comision__nombre")
+
 
 
 class MiembroComisionInline(admin.TabularInline):

@@ -28,6 +28,61 @@ class ComisionCredito(TimeStampedModel):
         return f"{self.nombre} ({self.region})"
 
 
+class PautaEscrowMES(TimeStampedModel):
+    """
+    Parámetros de Política de Escrow dictaminados por la Mesa de Enlace Sectorial (MES).
+    Configura los porcentajes oficiales de liberación fiduciaria para e-OPs.
+    """
+    comision = models.ForeignKey(
+        ComisionCredito,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pautas_escrow",
+        verbose_name=_("Comisión / Distrito Emisor (Opcional si es Nacional/Universal)"),
+    )
+    nombre = models.CharField(
+        max_length=120,
+        default="Pauta Oficial Escrow MES",
+        verbose_name=_("Nombre de la Pauta / Resolución"),
+    )
+    porcentaje_anticipo_estandar = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("35.00"),
+        verbose_name=_("Hito Cero Estándar (%)"),
+        help_text=_("Porcentaje de anticipo inicial sin certificación especial."),
+    )
+    porcentaje_anticipo_sbd = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("50.00"),
+        verbose_name=_("Hito Cero Sello Buen Diseño (%)"),
+        help_text=_("Porcentaje de anticipo para productos homologados con Sello Buen Diseño."),
+    )
+    porcentaje_hito_final = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("20.00"),
+        verbose_name=_("Hito Final Cierre Fiscal (%)"),
+        help_text=_("Porcentaje retenido en FISCAL_PENDING hasta constatar CAE en ARCA."),
+    )
+    activa = models.BooleanField(
+        default=True,
+        verbose_name=_("Pauta Activa"),
+        help_text=_("Si está activa, se utiliza para calcular los cronogramas de nuevas e-OPs."),
+    )
+
+    class Meta:
+        verbose_name = _("Pauta de Escrow MES")
+        verbose_name_plural = _("Pautas de Escrow MES")
+        ordering = ["-activa", "-created_at"]
+
+    def __str__(self):
+        distrito = self.comision.nombre if self.comision else "Universal / Nacional"
+        return f"{self.nombre} [{distrito}] (Std: {self.porcentaje_anticipo_estandar}% | SBD: {self.porcentaje_anticipo_sbd}% | Final: {self.porcentaje_hito_final}%)"
+
+
 class MiembroComision(TimeStampedModel):
     comision = models.ForeignKey(
         ComisionCredito, on_delete=models.CASCADE, related_name="miembros"

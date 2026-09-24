@@ -77,13 +77,16 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
     )
     
     # Comprobante original con el que el comitente inyectó la plata al sistema (para repagos)
-    # Vector C: Costos Homologados (en UCI o indexado)
-    costo_mod = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("MOD"))
-    costo_cs = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Cargas Sociales"))
-    costo_bom = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Insumos"))
-    costo_fdi = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Reserva FDI (2%)"))
-    costo_tax = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Monotributo / Tax"))
-    costo_mg = models.DecimalField(max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Margen"))
+    # Vector C: 3 Vectores de Costos Homologados Oficiales (en UCI o indexado)
+    costo_mod = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Mano de Obra Directa (MOD)")
+    )
+    costo_bom = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Insumos y Materias Primas (BOM)")
+    )
+    costo_fdi = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.0, verbose_name=_("Canon de Red MES / Reserva FDI (1.5%)")
+    )
 
     # Sello de Calidad
     es_sello_buen_diseno = models.BooleanField(default=False)
@@ -97,8 +100,8 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
 
     @property
     def monto_total_uci(self):
-        """El monto total colateralizado es la suma del vector."""
-        return sum([self.costo_mod, self.costo_cs, self.costo_bom, self.costo_fdi, self.costo_tax, self.costo_mg])
+        """El monto total colateralizado es la suma de los 3 vectores válidos (MOD + BOM + FDI)."""
+        return sum([self.costo_mod, self.costo_bom, self.costo_fdi])
 
     def calcular_merkle_root_bom(self):
         """
@@ -265,6 +268,15 @@ class EOPHitoEscrow(DocumentoFirmableMixin, TimeStampedModel):
         verbose_name = "Hito de Escrow e-OP"
         verbose_name_plural = "Hitos de Escrow e-OP"
         ordering = ["id"]
+
+    def clean(self):
+        super().clean()
+        if self.porcentaje_tramo is not None:
+            if self.porcentaje_tramo <= Decimal("0.00") or self.porcentaje_tramo > Decimal("100.00"):
+                from django.core.exceptions import ValidationError
+                raise ValidationError({
+                    "porcentaje_tramo": _("El porcentaje del tramo debe ser un valor positivo mayor a 0 y menor o igual a 100.")
+                })
 
     def __str__(self):
         return f"{self.nombre} ({self.porcentaje_tramo}%) - {self.get_estado_display()}"

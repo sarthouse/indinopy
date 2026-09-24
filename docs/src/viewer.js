@@ -10,9 +10,26 @@ mermaid.initialize({
     }
 });
 
-// Configuración de Marked para interceptar bloques de código Mermaid
+function slugifyHeading(text) {
+    return text.trim().toLowerCase()
+        .replace(/[^\p{L}\p{N}\s\-_]+/gu, '') // Permite letras Unicode (acentos, ñ, etc) y números
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+}
+
+
+// Configuración de Marked para interceptar bloques de código Mermaid y generar IDs de encabezados consistentes
 marked.use({
     renderer: {
+        heading(tokenOrText, level) {
+            const rawText = typeof tokenOrText === 'object' ? tokenOrText.text : arguments[0];
+            const depth = typeof tokenOrText === 'object' ? tokenOrText.depth : arguments[1];
+            // Texto limpio sin tags HTML para el slug
+            const plainText = rawText.replace(/<[^>]+>/g, '');
+            const slug = slugifyHeading(plainText);
+            return `<h${depth} id="${slug}">${rawText}</h${depth}>`;
+        },
         code(tokenOrCode) {
             const codeText = typeof tokenOrCode === 'object' ? tokenOrCode.text : arguments[0];
             const lang = typeof tokenOrCode === 'object' ? tokenOrCode.lang : arguments[1];
@@ -38,6 +55,7 @@ marked.use({
         }
     }
 });
+
 
 // Activar extensión de notas al pie (marked-footnote)
 // La extensión convierte [^1] en <sup><a> y genera un <section class="footnotes"> al final
@@ -73,12 +91,11 @@ function generateTOC(contentDiv) {
         if (innerAnchor && innerAnchor.id) {
             heading.id = innerAnchor.id;
         } else if (!heading.id) {
-            heading.id = 'section-' + index + '-' + heading.textContent.toLowerCase()
-                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            heading.id = slugifyHeading(heading.textContent);
         }
 
         const li = document.createElement('li');
+
         li.className = 'toc-item toc-' + heading.tagName.toLowerCase();
 
         const a = document.createElement('a');
@@ -108,6 +125,24 @@ function generateTOC(contentDiv) {
     });
 }
 
+// Helper para buscar elementos por ID exacto o por su versión normalizada (con/sin acentos)
+function findTargetElement(targetId) {
+    if (!targetId) return null;
+    let el = document.getElementById(targetId) || document.querySelector(`[name="${targetId}"]`);
+    if (el) return el;
+
+    // Si no encontró por ID exacto, buscar comparando de forma normalizada
+    const normTarget = targetId.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const candidates = document.querySelectorAll('h1, h2, h3, h4, h5, h6, [id]');
+    for (const cand of candidates) {
+        if (cand.id) {
+            const candNorm = cand.id.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            if (candNorm === normTarget) return cand;
+        }
+    }
+    return null;
+}
+
 // Navegación suave global para cualquier enlace interno (#) dentro del documento
 document.addEventListener('click', (e) => {
     const anchor = e.target.closest('a[href^="#"]');
@@ -115,13 +150,14 @@ document.addEventListener('click', (e) => {
     const hash = anchor.getAttribute('href');
     if (!hash || hash === '#') return;
     const targetId = decodeURIComponent(hash.slice(1));
-    const targetEl = document.getElementById(targetId) || document.querySelector(`[name="${targetId}"]`);
+    const targetEl = findTargetElement(targetId);
     if (targetEl) {
         e.preventDefault();
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         history.pushState(null, null, hash);
     }
 });
+
 
 // Inicializador de controles interactivos (Zoom, Pan táctil y Mouse, Fullscreen) para Mermaid
 function initMermaidInteractivity() {
@@ -428,11 +464,12 @@ async function loadMarkdown() {
         // Si la URL vino con un hash (#), hacer scroll suave hasta el elemento
         if (window.location.hash) {
             const targetId = decodeURIComponent(window.location.hash.slice(1));
-            const targetEl = document.getElementById(targetId) || document.querySelector(`[name="${targetId}"]`);
+            const targetEl = findTargetElement(targetId);
             if (targetEl) {
                 setTimeout(() => targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
             }
         }
+
 
     } catch (error) {
         console.warn('Error loading Markdown via fetch:', error);

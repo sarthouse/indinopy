@@ -170,6 +170,19 @@ class OrdenProduccion(DocumentoBase):
         """Devuelve True si esta OP está vinculada a un Smart Contract FIMCA."""
         return hasattr(self, "contrato_eop")
 
+    @property
+    def tallerista_gestor(self):
+        """
+        Retorna el tallerista principal o gestor asignado a la manufactura.
+        Prioriza el contacto asignado a las etapas productivas externas.
+        """
+        etapa_con_taller = self.tracking_etapas.filter(tallerista_asignado__isnull=False).first()
+        if etapa_con_taller:
+            return etapa_con_taller.tallerista_asignado
+        if hasattr(self, "contrato_eop") and self.contrato_eop.ptf_asignado:
+            return self.contrato_eop.ptf_asignado
+        return None
+
     fecha_entrega = models.DateField(
         blank=True, null=True, verbose_name=_("Fecha est. entrega")
     )

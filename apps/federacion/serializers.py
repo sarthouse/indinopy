@@ -43,18 +43,26 @@ class EntradaEOPSerializer(serializers.Serializer, VerificacionFirmaMixin):
     payload_canonico = serializers.JSONField()
     firma_comitente = serializers.CharField(max_length=128)
     clave_publica_comitente = serializers.CharField(max_length=64)
+    firma_tallerista = serializers.CharField(max_length=128, required=False, allow_blank=True)
     cronograma_escrow_hitos = serializers.ListField(
         child=serializers.DictField(), required=False, allow_empty=True
     )
 
     def validate(self, data):
-        # 1. Validar la firma matemática del JSON canónico
+        # 1. Validar la firma matemática del JSON canónico por el comitente
         if not self.validar_firma_ed25519(
             data['payload_canonico'], 
             data['firma_comitente'], 
             data['clave_publica_comitente']
         ):
             raise serializers.ValidationError(_("Firma criptográfica inválida o payload alterado."))
+
+        # 2. Validar que la e-OP cuente con la firma digital del tallerista gestor
+        firma_tallerista = data.get('firma_tallerista') or data['payload_canonico'].get('firmas_digitales', {}).get('tallerista', {}).get('firma_hex')
+        if not firma_tallerista:
+            raise serializers.ValidationError(
+                _("La e-OP no puede ser aceptada en la Red Federada sin la firma digital del tallerista gestor.")
+            )
         
         # 2. Validar que la e-OP no exista ya en la MES (si este nodo es MES o tiene apps.mes)
         try:
@@ -71,12 +79,32 @@ class EntradaEOPSerializer(serializers.Serializer, VerificacionFirmaMixin):
             if abs(total_porcentaje - Decimal('100.00')) > Decimal('0.01'):
                 raise serializers.ValidationError(_("La suma de porcentajes del cronograma de hitos debe ser exactamente 100%."))
 
-        # 4. Validar mínimo obligatorio de 2 etapas productivas en el payload
-        etapas = data['payload_canonico'].get('etapas_productivas', [])
-        if len(etapas) < 2:
-            raise serializers.ValidationError(_("Una e-OP federada requiere un mínimo obligatorio de dos etapas productivas."))
-            
+        # 5. Validar consistencia matemática de la alícuota del canon FDI/MES
+        vector_costos = data['payload_canonico'].get('vector_costos', {})
+        mod_val = Decimal(str(vector_costos.get('mod_servicios', vector_costos.get('mod', data['monto_total_uci']))))
+        fdi_val = Decimal(str(vector_costos.get('canon_fdi_mes', vector_costos.get('fdi', '0.00'))))
+
+        # Alícuota institucional oficial vigente (Canon MES 1.0% + Fondo FDI 0.5% = 1.5%)
+        alicuota_vigente = Decimal("0.015")
+        fdi_esperado = (mod_val * alicuota_vigente).quantize(Decimal("0.01"))
+        diferencia = abs(fdi_val - fdi_esperado)
+
+        # Tolerancia máxima de 5 centavos por redondeos intermedios
+        if diferencia > Decimal("0.05"):
+            raise serializers.ValidationError({
+                "error": "ALICUOTA_DESACTUALIZADA",
+                "alicuota_vigente": str(alicuota_vigente),
+                "costo_mod": str(mod_val),
+                "costo_fdi_recibido": str(fdi_val),
+                "costo_fdi_esperado": str(fdi_esperado),
+                "detalle": _(
+                    "El canon FDI/MES declarado no coincide con los parámetros arancelarios vigentes. "
+                    "Actualice los aranceles en el nodo emisor y regenere la e-OP con las firmas correspondientes."
+                )
+            })
+
         return data
+
 
 
 class FirmaEtapaSerializer(serializers.Serializer, VerificacionFirmaMixin):

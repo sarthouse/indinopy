@@ -116,14 +116,38 @@ class RecepcionEOPView(APIView):
             except Contacto.DoesNotExist:
                 pass
 
-            # 2. Evaluación de Fast-Track
+            # 2. Evaluación de Fast-Track (Protocolo de e-OP Espejo y Duplicación Express - Addenda 1)
+            payload_canonico = data.get("payload_canonico") or {}
+            vector_costos = payload_canonico.get("vector_costos", {})
+            merkle_root_bom = payload_canonico.get("merkle_root_bom", "")
+
+            # Criterio A: Réplica técnica en los últimos 12 meses (mismos insumos Merkle Root y mismo taller/marca)
+            hace_un_ano = timezone.now() - datetime.timedelta(days=365)
+            es_replica_tecnica = False
+            if merkle_root_bom:
+                uuids_aprobados = RegistroEOP.objects.filter(
+                    comitente_cuit=data["comitente_cuit"],
+                    tallerista_cuit=tallerista_cuit,
+                    creado_en__gte=hace_un_ano,
+                    estado__in=["aprobado_expres", "aprobado_silencio"],
+                ).values_list("uuid_identificador", flat=True)
+
+                if uuids_aprobados:
+                    es_replica_tecnica = ContratoEOP.objects.filter(
+                        uuid_identificador__in=uuids_aprobados,
+                        merkle_root_bom=merkle_root_bom,
+                    ).exists()
+
+            # Criterio B: Tallerista con Scoring de Excelencia (> 90.00)
             es_score_alto = score_global > Decimal("90.00")
-            if es_score_alto:
+
+
+            if es_replica_tecnica or es_score_alto:
                 estado_inicial = "aprobado_expres"
-                timelock = timezone.now() + datetime.timedelta(hours=2)
+                timelock = timezone.now() + datetime.timedelta(hours=2)  # Fast-Track 2 horas
             else:
                 estado_inicial = "en_revision"
-                timelock = timezone.now() + datetime.timedelta(hours=48)
+                timelock = timezone.now() + datetime.timedelta(hours=48)  # Plazo ordinario 48 horas
 
             # 3. Crear el Registro en la Gobernanza (MES)
             registro = RegistroEOP.objects.create(
@@ -136,20 +160,34 @@ class RecepcionEOPView(APIView):
                 estado=estado_inicial,
             )
 
+
             # 4. Crear Contrato Escrow en el FDI (Nodo MES/EOP)
             payload_canonico = data.get("payload_canonico") or {}
             vector_costos = payload_canonico.get("vector_costos", {})
 
+            # Extraer y estructurar la multifirma obligatoria (Comitente + Tallerista)
+            firmas_escrow = {
+                "comitente": {
+                    "cuit": data["comitente_cuit"],
+                    "firma_hex": data["firma_comitente"],
+                    "clave_publica": data["clave_publica_comitente"],
+                    "timestamp": timezone.now().isoformat(),
+                },
+                "tallerista": {
+                    "cuit": tallerista_cuit,
+                    "firma_hex": data.get("firma_tallerista") or payload_canonico.get("firmas_digitales", {}).get("tallerista", {}).get("firma_hex", ""),
+                    "timestamp": timezone.now().isoformat(),
+                }
+            }
+
             escrow = ContratoEOP.objects.create(
                 uuid_identificador=data["uuid_identificador"],
                 costo_mod=Decimal(str(vector_costos.get("mod_servicios", vector_costos.get("mod", data["monto_total_uci"])))),
-                costo_cs=Decimal(str(vector_costos.get("cs", "0.00"))),
                 costo_bom=Decimal(str(vector_costos.get("insumos_bom", vector_costos.get("bom", "0.00")))),
                 costo_fdi=Decimal(str(vector_costos.get("canon_fdi_mes", vector_costos.get("fdi", "0.00")))),
-                costo_tax=Decimal(str(vector_costos.get("tax", "0.00"))),
-                costo_mg=Decimal(str(vector_costos.get("mg", "0.00"))),
                 es_sello_buen_diseno=bool(payload_canonico.get("es_sello_buen_diseno", posee_sbd)),
                 merkle_root_bom=payload_canonico.get("merkle_root_bom", ""),
+                firmas_digitales=firmas_escrow,
                 estado_escrow="solicitado",
             )
 
@@ -175,20 +213,35 @@ class RecepcionEOPView(APIView):
                         h_kwargs["uuid_identificador"] = uuid_hito
                     EOPHitoEscrow.objects.create(**h_kwargs)
             else:
-                # Fallback: Aplicar regla obligatoria (Hito Cero + un hito por cada etapa del payload)
-                porcentaje_hito_cero = Decimal("50.00") if posee_sbd else Decimal("35.00")
+                # Fallback: Tríada Canónica Dictaminada por la MES (ComisionService)
+                try:
+                    from apps.mes.services import ComisionService
+                    pauta_mes = ComisionService.obtener_pauta_escrow(es_sello_buen_diseno=posee_sbd)
+                    porcentaje_hito_cero = pauta_mes["porcentaje_cero"]
+                    nombre_cero = pauta_mes["etiqueta_cero"]
+                    porcentaje_final = pauta_mes["porcentaje_final"]
+                except Exception:
+                    porcentaje_hito_cero = Decimal("50.00") if posee_sbd else Decimal("35.00")
+                    nombre_cero = f"Hito Cero - Adelanto Operativo de Arranque ({'SBD 50%' if posee_sbd else '35%'})"
+                    porcentaje_final = Decimal("20.00")
+
+                if (porcentaje_hito_cero + porcentaje_final) >= Decimal("100.00"):
+                    porcentaje_final = max(Decimal("10.00"), Decimal("100.00") - porcentaje_hito_cero - Decimal("10.00"))
+
+                porcentaje_avance_total = Decimal("100.00") - porcentaje_hito_cero - porcentaje_final
+
+                # 1. Hito Cero (dictaminado por la MES)
                 EOPHitoEscrow.objects.create(
                     contrato=escrow,
-                    nombre="Hito Cero - Adelanto Operativo de Arranque",
+                    nombre=nombre_cero,
                     porcentaje_tramo=porcentaje_hito_cero,
                     estado="bloqueado",
                     requiere_auditoria_ptf=False,
                     requiere_verificacion_arca=False,
                 )
 
+                # 2. Hitos de Avance Productivo
                 etapas_in = payload_canonico.get("etapas_productivas", [])
-                porcentaje_remanente = Decimal("100.00") - porcentaje_hito_cero
-
                 if etapas_in:
                     total_mod = sum(Decimal(str(e.get("costo_servicio", "0.00"))) for e in etapas_in)
                     porcentaje_acumulado = Decimal("0.00")
@@ -198,13 +251,13 @@ class RecepcionEOPView(APIView):
                         orden = et.get("orden", idx + 1)
 
                         if es_ultima:
-                            porc_e = porcentaje_remanente - porcentaje_acumulado
+                            porc_e = porcentaje_avance_total - porcentaje_acumulado
                         else:
                             if total_mod > 0:
                                 costo_e = Decimal(str(et.get("costo_servicio", "0.00")))
-                                porc_e = round((costo_e / total_mod) * porcentaje_remanente, 2)
+                                porc_e = round((costo_e / total_mod) * porcentaje_avance_total, 2)
                             else:
-                                porc_e = round(porcentaje_remanente / Decimal(len(etapas_in)), 2)
+                                porc_e = round(porcentaje_avance_total / Decimal(len(etapas_in)), 2)
                             porcentaje_acumulado += porc_e
 
                         EOPHitoEscrow.objects.create(
@@ -213,17 +266,18 @@ class RecepcionEOPView(APIView):
                             porcentaje_tramo=porc_e,
                             estado="bloqueado",
                             requiere_auditoria_ptf=True,
-                            requiere_verificacion_arca=es_ultima,
+                            requiere_verificacion_arca=False,
                         )
-                else:
-                    EOPHitoEscrow.objects.create(
-                        contrato=escrow,
-                        nombre="Hito Final - Entrega Completa",
-                        porcentaje_tramo=porcentaje_remanente,
-                        estado="bloqueado",
-                        requiere_auditoria_ptf=True,
-                        requiere_verificacion_arca=True,
-                    )
+
+                # 3. Hito Final de Entrega y Cierre Fiscal
+                EOPHitoEscrow.objects.create(
+                    contrato=escrow,
+                    nombre="Hito Final - Entrega Conformada y Cierre Fiscal",
+                    porcentaje_tramo=porcentaje_final,
+                    estado="bloqueado",
+                    requiere_auditoria_ptf=True,
+                    requiere_verificacion_arca=True,
+                )
 
             # 5. Ejecutar Adelanto si aplicó Fast-Track
             if estado_inicial == "aprobado_expres":
@@ -588,6 +642,27 @@ class TarifarioConvenioAPIView(APIView):
             "codigo_universal", "servicio_nombre", "precio_referencia_uci", "vigencia_desde"
         )
         return Response(list(tarifas), status=status.HTTP_200_OK)
+
+
+class PautaEscrowPublicaAPIView(APIView):
+    """
+    Endpoint público federado para que los nodos Comitentes y Talleristas
+    consulten la pauta de porcentajes de Escrow dictaminada por la MES
+    (Hito Cero estándar, Sello Buen Diseño e Hito Final ARCA).
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        from apps.mes.services import ComisionService
+        sbd_param = request.query_params.get("sello_buen_diseno", "false").lower() in ["true", "1", "t", "yes"]
+        comision_id = request.query_params.get("comision_id")
+        
+        pauta = ComisionService.obtener_pauta_escrow(
+            es_sello_buen_diseno=sbd_param,
+            comision_id=comision_id,
+        )
+        return Response(pauta, status=status.HTTP_200_OK)
+
 
 
 class CRLAPIView(APIView):

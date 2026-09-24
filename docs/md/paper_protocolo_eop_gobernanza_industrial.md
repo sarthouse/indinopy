@@ -97,10 +97,12 @@ Donde:
 * $\mathcal{K}_C, \mathcal{K}_T \in \mathcal{G}$: Claves públicas Ed25519 del comitente (marca) y del tallerista, bajo infraestructura de clave pública (PKI) administrada por ARCA/MES.
 * $\mathcal{M}_{\text{BOM}} = \text{MerkleRoot}(\{m_1, m_2, \dots, m_k\})$: Raíz del árbol de Merkle (Merkle, 1987) que resume de forma determinista la receta técnica (Bill of Materials): consumos unitarios teóricos de cuero, suela, adhesivos y tolerancias de merma técnica homologadas por el INTI.
 * $\mathcal{Q} = \{(v_j, q_j)\}_{j=1}^n$: Vector de demanda física que desglosa cantidades requeridas por cada variante (curva de talles y colores).
-* $\vec{\mathcal{C}} = \langle c_{\text{MOD}}, c_{\text{CS}}, c_{\text{BOM}}, c_{\text{GG}}, c_{\text{FDI}}, c_{\text{TAX}}, c_{\text{MG}} \rangle \in \mathbb{R}_+^7$: Vector de Desglose Factorial de Costos (Mano de Obra Directa, Cargas Sociales, Insumos BOM, Gastos Generales/Amortización, Reserva FDI 2%, Impuestos/Monotributo, Margen), con valor nominal total $\mathcal{P} = \|\vec{\mathcal{C}}\|_1$ en Unidades de Cuenta Industrial ($\text{UCI}$).
+* $\vec{\mathcal{C}} = \langle c_{\text{MOD}}, c_{\text{BOM}}, c_{\text{FDI}} \rangle \in \mathbb{R}_+^3$: Vector de Colateralización Federada e-OP consolidado en tres vectores auditables: (1) Mano de Obra Directa / Servicios de Façón ($c_{\text{MOD}}$), representativo de la locación de obra del taller; (2) Insumos físicos en custodia de depósito ($c_{\text{BOM}}$); y (3) Recargo Institucional de Red MES y Fondo de Riesgo FDI ($c_{\text{FDI}} = 0.015 \cdot c_{\text{MOD}}$: 1.0% canon operativo MES + 0.5% reserva fiduciaria de contingencia). Los costos internos de cargas sociales ($c_{\text{CS}}$) e impuestos quedan absorbidos por el subsidio de aportes patronales del FDI (Art. 6.4 FIMCA / Addenda I) y la nómina CCT UTICRA propia del taller. El valor colateralizado nominal total es $\mathcal{P} = \|\vec{\mathcal{C}}\|_1 = c_{\text{MOD}} + c_{\text{BOM}} + c_{\text{FDI}}$ en Unidades de Cuenta Industrial ($\text{UCI}$).
 * $\mathcal{H} = \{h_0, h_1, \dots, h_m\}$: Conjunto ordenado de hitos de ejecución y desembolso financiero en Escrow.
 * $\mathcal{R}_L$: Régimen legal de afectación (Locación de Obra Arts. 1251 y 1356 CCCN / Maquila Industrial — propuesta de reforma Ley 25.113).
-* $\Sigma = \{\sigma_C, \sigma_T, \sigma_M\}$: Conjunto de firmas digitales multifirma ($2$ de $3$) emitidas por Comitente, Tallerista y Árbitro de la MES.
+* $\Sigma = \{\sigma_C, \sigma_T, \sigma_M\}$: Esquema multifirma asimétrico donde la emisión inicial exige la co-autoría bilateral obligatoria de Comitente ($\sigma_C$) y Tallerista Gestor ($\sigma_T$). La tercera firma de convalidación institucional ($\sigma_M$) emitida por la autoridad de la MES o el PTF en campo **gatilla la validación y liberación del Hito Cero en ese instante exacto** si se produce antes de las 48 horas ($\Delta t < 48\text{ h}$); de lo contrario, la falta de veto expreso opera la convalidación automática por Silencio Administrativo Positivo al cumplirse dicho plazo.
+
+
 
 ```mermaid
 classDiagram
@@ -197,7 +199,7 @@ stateDiagram-v2
     }
     
     IN_PROCESS --> FISCAL_PENDING: Retorno Terminado + Conformidad Calidad
-    FISCAL_PENDING --> SETTLED: Validación Comprobante ARCA + Liquidación Final (20%)
+    FISCAL_PENDING --> SETTLED: Validación Comprobante ARCA + Liquidación Final Remanente
     IN_PROCESS --> DISPUTED: Alerta Tutela Sindical / Cuello de Botella
     
     DISPUTED --> ARBITRATION: Tribunal de Arbitraje (72h)
@@ -206,7 +208,34 @@ stateDiagram-v2
     SETTLED --> [*]
 ```
 
-> **Figura 3.** *Máquina de estados finita determinista (FSM) que regula el ciclo de vida del colateral productivo y la liberación de hitos en Escrow.* El ciclo transita desde la creación del borrador hasta la liquidación total o resolución de disputas. Un mecanismo crítico es la transición `HITO0_UNLOCKED`, regulada por el *Timelock* de 48 horas (Silencio Administrativo Positivo): si la autoridad no veta la operación, el algoritmo libera automáticamente el anticipo del 30-40%. Durante la ejecución física, el avance de etapa a etapa exige la auditoría mediante Prueba de Trabajo Productivo (PoPW) para desarmar el colateral escalonadamente. Tras la entrega física, el estado `FISCAL_PENDING` retiene el tramo final del 20% hasta la constatación del comprobante electrónico en ARCA, protegiendo el crédito fiscal presunto de la marca.
+> **Figura 3.** *Máquina de estados finita determinista (FSM) que regula el ciclo de vida del colateral productivo y la liberación de hitos en Escrow bajo la Tríada Canónica.* El ciclo transita desde la creación del borrador hasta la liquidación total o resolución de disputas. Un mecanismo crítico es la transición `HITO0_UNLOCKED`, regulada por el *Timelock* de 48 horas (Silencio Administrativo Positivo): si la autoridad no veta la operación, el algoritmo libera automáticamente el anticipo del 35% (o 50% con Sello Buen Diseño). Durante la ejecución física, el avance de etapa a etapa exige la auditoría mediante Prueba de Trabajo Productivo (PoPW) para desarmar el colateral escalonadamente. Tras la entrega física, el estado `FISCAL_PENDING` retiene el tramo final (20%) hasta la constatación automática del comprobante electrónico en ARCA, protegiendo el crédito fiscal presunto de la marca.
+
+### 4.0. Tríada Canónica de Escrow y Oráculo de Pauta de la MES
+
+El cronograma de desembolso fiduciario de cada e-OP se estructura formalmente como una **Tríada Canónica** de conservación del valor:
+
+$$\mathbf{100\%} = \mathcal{H}_0 + \sum_{k=1}^K \mathcal{H}_k^{\text{PoPW}} + \mathcal{H}_{\text{Final}}^{\text{ARCA}}$$
+
+Donde:
+1. **$\mathcal{H}_0$ (Hito Cero - Anticipo de Arranque):** Liquidez operativa inicial para jornales de convenio y preparación de planta, liberada por vencimiento del Timelock o convalidación exprés.
+2. **$\sum \mathcal{H}_k^{\text{PoPW}}$ (Hitos de Avance Productivo):** Desembolsos escalonados prorrateados entre las $K$ etapas fabriles de la orden, liberados exclusivamente contra la certificación $\pi_{\text{PoPW}}$ sin exigencia de facturación impositiva anticipada.
+3. **$\mathcal{H}_{\text{Final}}^{\text{ARCA}}$ (Hito Final de Cierre Fiscal):** Saldo de retribución retenido en su totalidad bajo el estado transitorio `FISCAL_PENDING` hasta que el facturador electrónico del taller obtenga el CAE emitido por ARCA.
+
+**Oráculo de Pauta Federada ($P_{\text{MES}}$):**  
+Para evitar la fijación arbitraria de porcentajes en los nodos comitentes o en el software local, los parámetros de la tríada son dictaminados de forma dinámica por la Mesa de Enlace Sectorial (MES) a través del endpoint federado `GET /federacion/api/v1/escrow/pauta/`:
+
+$$\mathcal{H}_0 = \begin{cases} 
+50.00\% & \text{si Producto Homologado con Sello Buen Diseño (SBD)} \\
+35.00\% & \text{en Modalidad Manufacturera Estándar}
+\end{cases}$$
+
+$$\mathcal{H}_{\text{Final}}^{\text{ARCA}} = 20.00\% \quad \implies \quad \sum_{k=1}^K \mathcal{H}_k^{\text{PoPW}} = \begin{cases} 
+30.00\% & \text{con SBD} \\
+45.00\% & \text{Estándar}
+\end{cases}$$
+
+El sistema informático de gestión que utiliza la empresa comitente consulta la pauta vigente al momento de inicializar el contrato, garantizando que el diseño industrial calificado reciba un incentivo financiero directo en su capital de arranque sin vulnerar la solvencia del fondo fiduciario.
+
 ### 4.1. Formalización Matemática del Silencio Administrativo Positivo (Timelock)
 
 Para neutralizar la parálisis por captura burocrática, la función de transición de estado hacia el desembolso del **Hito Cero** ($\mathcal{H}_0$) se modela como un contrato de bloqueo temporal (Andrychowicz et al., 2014):
@@ -241,9 +270,9 @@ A diferencia de los protocolos de consenso computacional (PoW) que consumen ener
   Si la marca comitente remitiera el 100% de la materia prima al inicio junto al desembolso del 35% del Hito Cero, un tallerista defector podría apropiarse de ambos activos antes de la primera auditoría. Para mitigar esta asimetría, el protocolo establece el **Despacho Escalonado Just-in-Time**: al desbloquearse el Hito Cero solo se despachan los insumos de la primera fase (corte de cuero); las bases, forros y avíos correspondientes al aparado y armado se remiten únicamente contra la certificación $\pi_{\text{PoPW}}$ del corte completado. De este modo, la exposición neta combinada en todo momento está acotada al valor residual del lote en curso.
 
 * **Retención de Cierre Fiscal (`FISCAL_PENDING`):**  
-  Para proteger el incentivo impositivo de la marca (cómputo del Crédito Fiscal Presunto del 25% y deducción de Ganancias), el último tramo de Escrow (20%) y la adjudicación de puntos UCP no se liberan tras la mera entrega física, sino al transicionar por `FISCAL_PENDING`. En esta etapa, el sistema verifica por API con ARCA que el taller haya emitido la factura oficial (Monotributo Productivo o régimen general). Si la registración fiscal se demora, el saldo permanece retenido en la cuenta de custodia sin devengar mora comercial.
+  Para proteger el incentivo impositivo de la marca (cómputo del Crédito Fiscal Presunto del 25% y deducción de Ganancias), el Hito Final de Escrow (20%) y la adjudicación de puntos UCP no se liberan tras la mera entrega física, sino al transicionar por `FISCAL_PENDING`. En esta etapa, el sistema verifica por API con ARCA que el taller haya emitido la factura oficial (Monotributo Productivo o régimen general). Si la registración fiscal se demora, el saldo permanece retenido en la cuenta de custodia sin devengar mora comercial.
 
-> **Limitación conocida — Oráculo Físico y GPS Spoofing:** La coordenada GPS puede ser falsificada mediante software en terminales móviles. La mitigación de primera línea es el cruce contra el domicilio catastral registrado; la de segunda línea es la **inspección física del Promotor Territorial (PTF)** como capa de verificación obligatoria cuando la coordenada reportada difiere en más de 500m del domicilio catastral o cuando el sistema detecta patrones anómalos (ver §4.3). La inspección física y el pesaje aleatorio de retazos de cuero por el INTI constituyen la última instancia de verdad física del sistema.
+> **Limitación conocida — Oráculo Físico y GPS Spoofing:** La coordenada GPS puede ser falsificada mediante software en terminales móviles. La mitigación de primera línea es el cruce contra el domicilio catastral registrado; la de segunda línea es la **inspección física del Promotor Territorial de Formalización (PTF)** como capa de verificación obligatoria cuando la coordenada reportada difiere en más de 500m del domicilio catastral o cuando el sistema detecta patrones anómalos (ver §4.3). La inspección física y el pesaje aleatorio de retazos de cuero por el INTI constituyen la última instancia de verdad física del sistema.
 
 ### 4.3. Mecanismo de Detección Anti-Colusión (Fragmentación Artificial)
 
@@ -281,10 +310,11 @@ El **Fideicomiso de Desarrollo Industrial (FDI)** opera como una bóveda de comp
 flowchart TD
     subgraph INFLOWS["Cañerías de Capitalización Recurrente (Inflows)"]
         F1["0.5% Derechos Exportación (Litio e Hidrocarburos)"]
-        F2["2% Reserva de Capital Obligatoria de Marcas Comitentes"]
+        F2["1.5% Recargo Institucional de Red MES / Fondo de Riesgo FDI"]
         F3["Ahorro Comunitario / Cajas Profesionales Locales"]
         F4["Bonos de Infraestructura Productiva (BIP Indexados)"]
     end
+
 
     subgraph FDI_VAULT["Bóveda Central de Liquidez del FDI"]
         direction TB

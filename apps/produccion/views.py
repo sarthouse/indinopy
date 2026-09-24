@@ -113,7 +113,20 @@ class DeclararParteActionView(LoginRequiredMixin, View):
         # Validar permisos: solo el tallerista asignado puede declarar
         if not hasattr(request.user, 'perfil_contacto') or etapa.tallerista_asignado != request.user.perfil_contacto:
             raise PermissionDenied("No tienes permisos para declarar avances en esta etapa.")
-        
+
+        # Invariante de Multifirma: La OP debe estar confirmada y con firma del tallerista
+        op = etapa.op
+        if op.estado != "confirmado":
+            raise PermissionDenied(f"No se pueden declarar avances: la orden {op.numero} aún no está confirmada.")
+
+        if op.es_eop_federada:
+            firmas = op.contrato_eop.firmas_digitales or {}
+            if "tallerista" not in firmas or not firmas["tallerista"].get("firma_hex"):
+                raise PermissionDenied(
+                    f"Acción bloqueada: Debes firmar digitalmente el contrato de la orden {op.numero} "
+                    f"en el portal antes de declarar avances de producción."
+                )
+
         cantidad_terminada = int(request.POST.get('cantidad', 0))
         
         try:
