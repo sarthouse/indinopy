@@ -28,11 +28,62 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark-reasonable.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <style>
+        .doc-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .doc-header-left {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .doc-header-left .doc-header-badge {
+            margin: 0;
+        }
+
+        .btn-download-pdf {
+            background-color: #10b981;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #059669;
+            transition: all 0.2s ease;
+        }
+
+        .btn-download-pdf:hover {
+            background-color: #059669;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+            color: #ffffff;
+        }
+    </style>
 </head>
 
 <body>
     <div class="doc-container">
-        <span class="doc-header-badge">🏛️ Proyecto de Ley / H. Congreso de la Nación</span>
+        <div class="doc-header-bar">
+            <div class="doc-header-left">
+                <span class="doc-header-badge">🏛️ Proyecto de Ley / H. Congreso de la Nación</span>
+            </div>
+            <a href="pdf/proyecto_ley_eop.pdf" class="btn-download-pdf" target="_blank" rel="noopener noreferrer">
+                📥 Descargar PDF Oficial
+            </a>
+        </div>
         <div id="content">
             <div class="loading">Cargando proyecto de ley...</div>
         </div>
