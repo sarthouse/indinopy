@@ -1,5 +1,5 @@
 ---
-title: "Proyecto de Ley: Régimen de la Orden de Producción Electrónica (e-OP) como Título Valor Causal y su Titulización en el Mercado de Capitales"
+title: "Anteproyecto de Ley e-OP"
 author: "Tiago Gabriel Sarthou"
 date: "Septiembre 2026"
 ---

@@ -482,23 +482,23 @@ def convert_to_pdf_playwright(html_file: str, pdf_file: str, title: str = "", da
 
             header_html = (
                 f'<div style="font-size: 8.5pt; width: 100%; box-sizing: border-box; padding: 0 2cm; '
-                f'display: flex; justify-content: center; align-items: center; color: #718096; '
-                f'font-family: \'Segoe UI\', Roboto, sans-serif; border-bottom: 0.5pt solid #E2E8F0; '
-                f'padding-bottom: 4px; margin-bottom: 4px;">'
-                f'<span>{h_title}</span></div>'
+                f'color: #718096; font-family: \'Segoe UI\', Roboto, sans-serif;">'
+                f'<div style="display: flex; justify-content: center; align-items: center; '
+                f'padding-bottom: 8px; border-bottom: 0.75pt solid #CBD5E0; width: 100%;">'
+                f'<span>{h_title}</span></div></div>'
             )
             footer_html = (
                 f'<div style="font-size: 8.5pt; width: 100%; box-sizing: border-box; padding: 0 2cm; '
-                f'display: flex; justify-content: flex-end; align-items: center; color: #718096; '
-                f'font-family: \'Segoe UI\', Roboto, sans-serif; border-top: 0.5pt solid #E2E8F0; '
-                f'padding-top: 4px; margin-top: 4px;">'
-                f'<span>{f_date} | pág. <span class="pageNumber"></span></span></div>'
+                f'color: #718096; font-family: \'Segoe UI\', Roboto, sans-serif;">'
+                f'<div style="display: flex; justify-content: flex-end; align-items: center; '
+                f'padding-top: 8px; border-top: 0.75pt solid #CBD5E0; width: 100%;">'
+                f'<span>{f_date} | pág. <span class="pageNumber"></span></span></div></div>'
             )
 
             page.pdf(
                 path=pdf_file,
                 format="A4",
-                margin={"top": "2.4cm", "right": "2cm", "bottom": "2.4cm", "left": "2cm"},
+                margin={"top": "2.6cm", "right": "2cm", "bottom": "2.6cm", "left": "2cm"},
                 print_background=True,
                 display_header_footer=True,
                 header_template=header_html,
@@ -517,12 +517,16 @@ def main():
     parser = argparse.ArgumentParser(
         description="Convertidor directo de Markdown a PDF corporativo."
     )
-    parser.add_argument("archivo_md", help="Ruta al archivo Markdown")
+    parser.add_argument(
+        "archivos_md",
+        nargs="+",
+        help="Uno o más archivos Markdown a convertir (ej: archivo1.md archivo2.md ...)",
+    )
     parser.add_argument(
         "--output",
         "-o",
         dest="output",
-        help="Ruta de salida (puede ser la ruta completa del archivo .pdf o un directorio de destino)",
+        help="Ruta de salida (directorio de destino o ruta completa del archivo .pdf si es un solo archivo)",
         default=None,
     )
     parser.add_argument(
@@ -536,73 +540,80 @@ def main():
     )
     args = parser.parse_args()
 
-    md_file = Path(args.archivo_md).resolve()
-    if not md_file.exists():
-        print(f"Error: El archivo '{md_file}' no existe.")
-        sys.exit(1)
-
-    base_name = md_file.stem
-    output_target = args.output or args.output_dir
-
-    if output_target:
-        target_path = Path(output_target).resolve()
-        if target_path.suffix.lower() == ".pdf":
-            pdf_file = target_path
-            out_dir = target_path.parent
-        else:
-            out_dir = target_path
-            pdf_file = out_dir / f"{base_name}.pdf"
-    else:
-        out_dir = md_file.parent
-        pdf_file = out_dir / f"{base_name}.pdf"
-
-    out_dir.mkdir(parents=True, exist_ok=True)
-    html_file = out_dir / f"{base_name}.html"
-
     template_file = Path(__file__).parent / "templates" / "document_template.html"
     if not template_file.exists():
         print(f"Error: Plantilla no encontrada en '{template_file}'")
         sys.exit(1)
 
-    print(f"-> Procesando '{md_file.name}' con plantilla...")
-    meta, html_content = generate_html_document(str(md_file), str(template_file))
+    output_target = args.output or args.output_dir
+    archivos = [Path(p).resolve() for p in args.archivos_md]
 
-    with open(html_file, "w", encoding="utf-8") as f:
-        f.write(html_content)
-    print(f"-> HTML preparado: {html_file.name}")
+    for md_file in archivos:
+        if not md_file.exists():
+            print(f"[Error] El archivo '{md_file}' no existe. Omitiendo...")
+            continue
 
-    print("-> Compilando PDF...")
-    # Asegurar reescritura si el archivo PDF ya existe
-    if pdf_file.exists():
-        try:
-            pdf_file.unlink()
-        except Exception:
-            pass
+        base_name = md_file.stem
 
-    # 1. Motor principal: Playwright (Chromium)
-    pdf_ok = convert_to_pdf_playwright(
-        str(html_file),
-        str(pdf_file),
-        title=meta.get("title", ""),
-        date=meta.get("date", ""),
-    )
-    # 2. Fallback: Edge / Chrome headless nativo de Windows
-    if not pdf_ok:
-        pdf_ok = convert_to_pdf_browser(str(html_file), str(pdf_file))
-    # 3. Fallback: WeasyPrint
-    if not pdf_ok:
-        pdf_ok = convert_to_pdf_weasyprint(str(html_file), str(pdf_file))
+        if output_target:
+            target_path = Path(output_target).resolve()
+            if target_path.suffix.lower() == ".pdf":
+                if len(archivos) > 1:
+                    # Si son varios archivos, target_path debe tratarse como directorio
+                    out_dir = target_path.parent
+                    pdf_file = out_dir / f"{base_name}.pdf"
+                else:
+                    pdf_file = target_path
+                    out_dir = target_path.parent
+            else:
+                out_dir = target_path
+                pdf_file = out_dir / f"{base_name}.pdf"
+        else:
+            out_dir = md_file.parent
+            pdf_file = out_dir / f"{base_name}.pdf"
 
-    if pdf_ok:
-        print(f"¡Éxito! PDF generado: {pdf_file}")
-        if not args.keep_html:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        html_file = out_dir / f"{base_name}.html"
+
+        print(f"\n-> Procesando '{md_file.name}' con plantilla...")
+        meta, html_content = generate_html_document(str(md_file), str(template_file))
+
+        with open(html_file, "w", encoding="utf-8") as f:
+            f.write(html_content)
+        print(f"-> HTML preparado: {html_file.name}")
+
+        print("-> Compilando PDF...")
+        # Asegurar reescritura si el archivo PDF ya existe
+        if pdf_file.exists():
             try:
-                os.remove(html_file)
-            except OSError:
+                pdf_file.unlink()
+            except Exception:
                 pass
-    else:
-        print("\n[Aviso] No se pudo compilar el PDF de forma desatendida.")
-        print(f"-> El archivo HTML estilizado quedó disponible en: {html_file}")
+
+        # 1. Motor principal: Playwright (Chromium)
+        pdf_ok = convert_to_pdf_playwright(
+            str(html_file),
+            str(pdf_file),
+            title=meta.get("title", ""),
+            date=meta.get("date", ""),
+        )
+        # 2. Fallback: Edge / Chrome headless nativo de Windows
+        if not pdf_ok:
+            pdf_ok = convert_to_pdf_browser(str(html_file), str(pdf_file))
+        # 3. Fallback: WeasyPrint
+        if not pdf_ok:
+            pdf_ok = convert_to_pdf_weasyprint(str(html_file), str(pdf_file))
+
+        if pdf_ok:
+            print(f"¡Éxito! PDF generado: {pdf_file}")
+            if not args.keep_html:
+                try:
+                    os.remove(html_file)
+                except OSError:
+                    pass
+        else:
+            print("\n[Aviso] No se pudo compilar el PDF de forma desatendida.")
+            print(f"-> El archivo HTML estilizado quedó disponible en: {html_file}")
 
 
 if __name__ == "__main__":
