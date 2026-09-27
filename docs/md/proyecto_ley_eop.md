@@ -1,17 +1,13 @@
 ---
 title: "Proyecto de Ley: Régimen de la Orden de Producción Electrónica (e-OP) como Título Valor Causal y su Titulización en el Mercado de Capitales"
-subtitle: "Marco Jurídico de Financiamiento Productivo para la Manufactura Nacional"
 author: "Tiago Gabriel Sarthou"
 date: "Septiembre 2026"
-status: "Anteproyecto de Ley"
-tags: ["Congreso de la Nación", "BCRA", "CNV", "ARCA", "Ley 27.440", "Mercado de Capitales", "Manufactura", "e-OP", "Titulización", "FDI", "BIP"]
 ---
 
-# ANTEPROYECTO DE LEY
+# PROYECTO DE LEY: RÉGIMEN DE LA ORDEN DE PRODUCCIÓN ELECTRÓNICA (e-OP) COMO TÍTULO VALOR CAUSAL Y SU TITULIZACIÓN EN EL MERCADO DE CAPITALES
 
-## RÉGIMEN DE LA ORDEN DE PRODUCCIÓN ELECTRÓNICA (e-OP) COMO TÍTULO VALOR CAUSAL Y SU TITULIZACIÓN EN EL MERCADO DE CAPITALES
+*Marco Jurídico de Financiamiento Productivo para la Manufactura Nacional*
 
-*(Cámara de Origen: Honorable Cámara de Diputados de la Nación — Artículo 52 de la Constitución Nacional por contener disposiciones de naturaleza tributaria)*
 
 ---
 

@@ -5,6 +5,6 @@
 __pycache__/
 media/
 staticfiles/
-utils/
+utils/private/
 .agents
 .ruff_cache

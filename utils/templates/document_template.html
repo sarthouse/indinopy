@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 2.2cm 2cm 2.2cm 2cm;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.6;
+      color: #1A202C;
+      margin: 0;
+      padding: 0;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* Jerarquía de Títulos */
+    h1, h2, h3, h4, h5, h6 {
+      color: #1A365D;
+      font-weight: 700;
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+
+    h1 {
+      font-size: 16pt;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1.5pt solid #2B6CB0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Primer título principal centrado */
+    h1.first-title, .doc-content > h1:first-child {
+      text-align: center;
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2pt solid #1A365D;
+    }
+
+    h2 {
+      font-size: 13.5pt;
+      margin-top: 1.6rem;
+      margin-bottom: 0.8rem;
+      color: #9B2C2C;
+      border-bottom: 0.5pt solid #E2E8F0;
+      padding-bottom: 0.2rem;
+    }
+
+    h3 {
+      font-size: 11.5pt;
+      margin-top: 1.3rem;
+      margin-bottom: 0.6rem;
+      color: #2D3748;
+    }
+
+    h4 {
+      font-size: 10.5pt;
+      margin-top: 1rem;
+      margin-bottom: 0.4rem;
+      color: #4A5568;
+    }
+
+    p {
+      margin: 0 0 0.85rem 0;
+      text-align: justify;
+    }
+
+    /* Enlaces */
+    a {
+      color: #2B6CB0;
+      text-decoration: none;
+    }
+
+    /* Listas e Incisos con indentación jerárquica unificada */
+    ol, ul {
+      margin: 0.4rem 0 0.8rem 0;
+      padding-left: 2rem;
+    }
+
+    li {
+      margin-bottom: 0.45rem;
+      text-align: justify;
+    }
+
+    li > ol, li > ul {
+      margin-top: 0.35rem;
+      margin-bottom: 0.35rem;
+    }
+
+    /* Sublistas por nivel de indentación */
+    .indent-lvl-0 {
+      margin-left: 0;
+    }
+
+    .indent-lvl-1 {
+      margin-left: 2rem;
+    }
+
+    .indent-lvl-2 {
+      margin-left: 4rem;
+    }
+
+    .indent-lvl-3 {
+      margin-left: 6rem;
+    }
+
+    /* Incisos tipo a), b), (a), etc. */
+    .inciso-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+      text-align: justify;
+    }
+
+    .inciso-label {
+      font-weight: 700;
+      color: #1A365D;
+      min-width: 2.2rem;
+      flex-shrink: 0;
+    }
+
+    .inciso-content {
+      flex: 1;
+    }
+
+    /* Citas y Destacados Normativos (Caja celeste con borde y texto azul) */
+    blockquote {
+      background-color: #EBF8FF;
+      border: 1.5px solid #2B6CB0;
+      margin: 1.2rem 0;
+      padding: 0.9rem 1.3rem;
+      font-size: 10pt;
+      color: #1A365D;
+      border-radius: 4px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    blockquote p {
+      margin: 0 0 0.65rem 0;
+      color: #1A365D;
+      line-height: 1.55;
+      text-align: justify;
+    }
+
+    blockquote p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Tablas */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid #CBD5E0;
+      padding: 8px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #EBF8FF;
+      color: #2B6CB0;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 8.5pt;
+      letter-spacing: 0.5px;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #F7FAFC;
+    }
+
+    /* Diagramas e Imágenes */
+    .figure-container {
+      text-align: center;
+      margin: 1.8rem 0;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .figure-container img, .figure-container svg {
+      max-width: 95%;
+      height: auto;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .figure-caption {
+      margin-top: 0.5rem;
+      font-size: 8.5pt;
+      color: #718096;
+      font-style: italic;
+    }
+
+    /* Fórmulas matemáticas en línea y en bloque */
+    .math-block {
+      text-align: center;
+      margin: 1.2rem 0;
+      padding: 0.8rem;
+      background-color: #F7FAFC;
+      border-radius: 4px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .math-inline {
+      height: 1.05em;
+      vertical-align: -0.15em;
+      display: inline-block;
+    }
+
+    .math-sub {
+      font-size: 10.5pt;
+      font-style: normal;
+      color: inherit;
+    }
+
+    .math-sub em {
+      font-style: italic;
+      font-family: inherit;
+    }
+
+    .math-sub sub {
+      font-size: 0.72em;
+      vertical-align: -0.25em;
+      line-height: 0;
+      font-family: inherit;
+      font-style: normal;
+    }
+
+    /* Código */
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 9pt;
+      background-color: #EDF2F7;
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: #C53030;
+    }
+
+    pre {
+      background-color: #2D3748;
+      color: #F7FAFC;
+      padding: 12px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 8.5pt;
+      line-height: 1.4;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    pre code {
+      background-color: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    /* Separadores horizontales */
+    hr {
+      border: none;
+      border-top: 1pt solid #E2E8F0;
+      margin: 2rem 0;
+    }
+
+    /* Notas al pie */
+    .footnote {
+      font-size: 8.5pt;
+      color: #4A5568;
+      border-top: 0.5pt solid #E2E8F0;
+      padding-top: 0.5rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="doc-content">
+    {{ content }}
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    if (typeof mermaid !== 'undefined') {
+      mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+    }
+  </script>
+</body>
+</html>

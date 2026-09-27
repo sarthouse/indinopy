@@ -19,6 +19,8 @@ dependencies = [
     "pillow>=12.3.0",
     "django-import-export>=4.4.1",
     "uvicorn>=0.53.0",
+    "weasyprint>=70.0",
+    "playwright>=1.63.0",
 ]
 
 # 2. CONFIGURACIÓN GENERAL DE RUFF
