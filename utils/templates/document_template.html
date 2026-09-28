@@ -66,6 +66,7 @@
       margin-top: 1.3rem;
       margin-bottom: 0.6rem;
       color: #2D3748;
+      text-align: center;
     }
 
     h4 {
@@ -195,20 +196,28 @@
     /* Diagramas e Imágenes */
     .figure-container {
       text-align: center;
-      margin: 1.8rem 0;
+      margin: 1.4rem auto;
       page-break-inside: avoid;
       break-inside: avoid;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%;
     }
 
     .figure-container img, .figure-container svg {
-      max-width: 95%;
+      max-width: 100%;
+      max-height: 22.5cm;
       height: auto;
+      width: auto;
+      object-fit: contain;
       border-radius: 4px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     .figure-caption {
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
       font-size: 8.5pt;
       color: #718096;
       font-style: italic;
@@ -305,6 +314,21 @@
     if (typeof mermaid !== 'undefined') {
       mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
     }
+
+    // Ajustar diagramas para que no sobrepasen la altura útil de página A4
+    window.addEventListener('load', () => {
+      // 1mm aprox 3.78px a 96dpi. Altura útil A4 (297mm - 52mm de márgenes) = ~245mm (~925px)
+      const MAX_PAGE_HEIGHT_PX = 920;
+
+      document.querySelectorAll('.figure-container img, .figure-container svg').forEach((el) => {
+        const naturalH = el.scrollHeight || el.clientHeight;
+        if (naturalH > MAX_PAGE_HEIGHT_PX) {
+          el.style.maxHeight = '22.5cm';
+          el.style.height = 'auto';
+          el.style.width = 'auto';
+        }
+      });
+    });
   </script>
 </body>
 </html>

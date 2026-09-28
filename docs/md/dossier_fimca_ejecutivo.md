@@ -59,7 +59,7 @@ La norma consta de 31 artículos ordenados en 5 títulos y 3 anexos regulatorios
 - **Fuentes de Liquidez y Gestión de Riesgo (Art. 16°):**
   - Colocación de Bonos BIP y cupos de la Línea de Financiamiento para la Inversión Productiva (LFIP del BCRA).
   - **Reserva de Garantía Líquida del 5%:** Aportada por cada comitente para responder en forma irrevocable por su propio riesgo crediticio de impago.
-  - **Canon Fiduciario ($c_{\text{FDI}}$) de hasta el 1,5%:** A cargo exclusivo de la comitente sobre la mano de obra ($c_{\text{MOD}}$), que financia: 0,5% al fondo laboral FAEL, 0,2% al INTI/PFET y 0,8% para administración y Reserva por Mora Operativa.
+  - **Canon Fiduciario Total ($c_{\text{FDI}}$):** A cargo exclusivo de la comitente al registrar la orden, compuesto por la alícuota operativa general de hasta el **1,5%** sobre la mano de obra ($c_{\text{MOD}}$: 0,5% fondo laboral FAEL, 0,2% INTI/PFET y 0,8% administración/mora) más la alícuota de cobertura de stock ($c_{\text{STK}}$) de hasta el **0,5%** sobre insumos ($c_{\text{BOM}}$) para la Póliza Colectiva Maestra.
   - **Facilidad de Liquidez Contingente (Línea Revolvente del 5%):** Tesorería para amortiguar descalces temporales por logística o peritajes.
 
 ---
@@ -83,7 +83,7 @@ La norma consta de 31 artículos ordenados en 5 títulos y 3 anexos regulatorios
 
 **5. Régimen de Insumos y Tutela Concursal (Título IV, Arts. 20°, 20 bis y 21°)**
 - Provisión de materiales en locación de obra (Arts. 1251 y 1256 inc. a CCyC) con depósito regular (Art. 1356 CCyC). Tránsito documentado por remito con UUID de la e-OP.
-- **Concurso del tallerista:** Restitución directa y separación de materias primas a favor de la marca vía **Art. 138 de la Ley N° 24.522 (LCQ)**. Seguro obligatorio de stock en custodia ($c_{\text{BOM}}$) previo al Hito Cero.
+- **Concurso del tallerista:** Restitución directa y separación de materias primas a favor de la marca vía **Art. 138 de la Ley N° 24.522 (LCQ)**. Cobertura automática mediante la **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$)** administrada por el FDI (Art. 20 bis).
 - **Concurso de la comitente:** Presunción de acto ordinario a título oneroso frente al período de sospecha (Art. 119 *in fine* LCQ). Los talleristas y el FDI gozan de **Privilegio Especial sobre el lote físico (Art. 241 inc. 1 y Art. 242 LCQ)** y **derecho de retención preferencial (Art. 2587 CCyC)**.
 
 ---
@@ -110,7 +110,7 @@ El esquema reemplaza la precariedad del trato verbal y el pago a 60 días posent
 ```
 
 1. **Paso 1 — Registro y Perfeccionamiento de la e-OP:** La comitente y el ejecutor suscriben la orden en la plataforma oficial con autenticación fiscal Nivel 3. La orden estipula la receta técnica (BOM), el valor de mano de obra ($c_{\text{MOD}}$), el canon ($c_{\text{FDI}}$ de hasta 1,5%), la fecha de vencimiento comercial de pago y, de corresponder, el Sello Buen Diseño (SBD). La suscripción perfecciona el contrato y genera título ejecutivo autónomo.
-2. **Paso 2 — Desembolso de Hito Cero (Anticipo de Arranque):** Una vez acreditado el ingreso físico de insumos al taller (remito con UUID) y la vigencia del seguro de stock, el FDI desembolsa automáticamente a la Cuenta Especial del tallerista el **35% del valor neto de mano de obra ($c_{\text{MOD}}$)** como capital de trabajo inicial, **sin exigencia de balances ni avales patrimoniales**. Si la orden cuenta con Sello Buen Diseño (SBD), el anticipo asciende al **50%**.
+2. **Paso 2 — Desembolso de Hito Cero (Anticipo de Arranque):** Una vez acreditado el ingreso físico de insumos al taller (remito con UUID) y la vigencia automática de la cobertura de stock del FDI, el fondo desembolsa automáticamente a la Cuenta Especial del tallerista el **35% del valor neto de mano de obra ($c_{\text{MOD}}$)** como capital de trabajo inicial, **sin scoring patrimonial tradicional, sin balances ni avales**. Si la orden cuenta con Sello Buen Diseño (SBD), el anticipo asciende al **50%**.
 3. **Paso 3 — Hitos de Avance (Certificación PoPW):** Durante la confección, se liquidan los tramos intermedios (**45% ordinario o 30% con SBD**) contra la acreditación de la Prueba de Trabajo Productivo (declaración jurada en plataforma, georreferenciación satelital y constancia de avance o remito). En logística justo a tiempo, las demoras de insumos imputables a la comitente prorrogan los plazos del taller, generan compensación por parada de planta y facultan la resolución tras 15 días hábiles.
 4. **Paso 4 — Entrega del Lote y Retención de Cierre Fiscal (RCF):** El tallerista entrega el lote conforme. El comitente dispone de 5 días hábiles para plantear observaciones técnicas de calidad. El **20% restante** queda preventivamente inmovilizado en la cuenta de custodia del FDI bajo el estado de Retención de Cierre Fiscal (RCF).
 5. **Paso 5 — Emisión de Comprobante Fiscal y Liquidación:** El tallerista emite su factura ordinaria de liquidación (en monotributistas, mediante la aceptación del borrador asistido precargado por ARCA). El sistema valida el CAE en tiempo real, bloquea la emisión de FCE y libera inmediatamente el 20% final de la RCF. La comitente computa el Crédito Fiscal Presunto de IVA del 10% y abona al vencimiento comercial convenido.

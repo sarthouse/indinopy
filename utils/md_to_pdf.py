@@ -345,7 +345,11 @@ def markdown_to_html(md_text: str) -> str:
 
         # Párrafo ordinario
         close_current_list()
-        html_parts.append(f"<p>{format_inline_elements(raw)}</p>")
+        if leading_level > 0:
+            lvl_class = f"indent-lvl-{min(leading_level, 3)}"
+            html_parts.append(f'<p class="{lvl_class}">{format_inline_elements(raw)}</p>')
+        else:
+            html_parts.append(f"<p>{format_inline_elements(raw)}</p>")
         idx += 1
 
     if in_table:
