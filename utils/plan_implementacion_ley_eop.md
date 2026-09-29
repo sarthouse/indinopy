@@ -27,36 +27,43 @@
    - 4.4. Defensas de Calidad y Peritaje Técnico Prejudicial INTI (Arts. 11.2 y 13°)
    - 4.5. Alerta Temprana de Inconsistencia de Costos (Art. 27°)
    - 4.6. Módulo de Libreta Digital de Trabajo a Domicilio (Ley N° 12.713)
-5. [Fase 3: Infraestructura Fiduciaria y Mercado de Capitales (`apps/fdi`)](#5-fase-3-infraestructura-fiduciaria-y-mercado-de-capitales-appsfdi)
-   - 5.1. Titulización Bursátil y Emisión de Bonos BIP (Arts. 17° y Anexo II)
-   - 5.2. Gestión de Fondos de Cobertura y Amortiguadores de Riesgo (Art. 16°)
-   - 5.3. Póliza Colectiva de Stock en Custodia (Art. 20 bis)
-   - 5.4. Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° y Anexo I)
-6. [Fase 4: Adaptador Fiscal y Regímenes Tributarios (`apps/afip` -> `apps/arca`)](#6-fase-4-adaptador-fiscal-y-regímenes-tributarios-appsafip---appsarca)
-   - 6.1. Bloqueo Sistémico de la Factura de Crédito Electrónica (FCE) (Art. 9°)
-   - 6.2. Facturación Asistida para Monotributo Productivo (Art. 24.5 y Anexo III)
-   - 6.3. Diferimiento del Hecho Imponible del IVA (Art. 23.2)
-   - 6.4. Cómputo del Crédito Fiscal Presunto del 10% (Art. 23.1)
-7. [Fase 5: Orquestación Asíncrona (Celery Beat) y Portales Web](#7-fase-5-orquestación-asíncrona-celery-beat-y-portales-web)
-   - 7.1. Tareas Asíncronas Periódicas
-   - 7.2. Interfaz PWA del Tallerista
-   - 7.3. Portal de la Marca Comitente
-   - 7.4. Panel Fiduciario y de Supervisión MES/INTI
-8. [Estrategia de Migración de Base de Datos y Testing](#8-estrategia-de-migración-de-base-de-datos-y-testing)
-9. [Cronograma y Secuencia de Despliegue](#9-cronograma-y-secuencia-de-despliegue)
+5. [Fase 3: Orquestación, Serializadores y Tareas en `apps/federacion`](#5-fase-3-orquestación-serializadores-y-tareas-en-appsfederacion)
+   - 5.1. Corrección de `EntradaEOPSerializer` y Validación de Alícuotas Desglosadas
+   - 5.2. Desacople y Eliminación de Duplicación en `RecepcionEOPView`
+   - 5.3. Validación Copulativa en `liberar_hito_escrow_async` (Hito Cero)
+   - 5.4. Trazabilidad de Remitos Oficiales en `EOPWebhookReceiverAPIView`
+   - 5.5. Reutilización de `ComunicacionOficialFederada` para Notificaciones Legales
+6. [Fase 4: Infraestructura Fiduciaria y Mercado de Capitales (`apps/fdi`)](#6-fase-4-infraestructura-fiduciaria-y-mercado-de-capitales-appsfdi)
+   - 6.1. Titulización Bursátil y Emisión de Bonos BIP (Arts. 17° y Anexo II)
+   - 6.2. Gestión de Fondos de Cobertura y Amortiguadores de Riesgo (Art. 16°)
+   - 6.3. Póliza Colectiva de Stock en Custodia (Art. 20 bis)
+   - 6.4. Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° y Anexo I)
+7. [Fase 5: Adaptador Fiscal y Regímenes Tributarios (`apps/afip` -> `apps/arca`)](#7-fase-5-adaptador-fiscal-y-regímenes-tributarios-appsafip---appsarca)
+   - 7.1. Bloqueo Sistémico de la Factura de Crédito Electrónica (FCE) (Art. 9°)
+   - 7.2. Facturación Asistida para Monotributo Productivo (Art. 24.5 y Anexo III)
+   - 7.3. Diferimiento del Hecho Imponible del IVA (Art. 23.2)
+   - 7.4. Cómputo del Crédito Fiscal Presunto del 10% (Art. 23.1)
+8. [Fase 6: Automatización Asíncrona (Celery Beat) y Portales Web](#8-fase-6-automatización-asíncrona-celery-beat-y-portales-web)
+   - 8.1. Tareas Asíncronas Periódicas
+   - 8.2. Interfaz PWA del Tallerista
+   - 8.3. Portal de la Marca Comitente
+   - 8.4. Panel Fiduciario y de Supervisión MES/INTI
+9. [Estrategia de Migración de Base de Datos y Testing](#9-estrategia-de-migración-de-base-de-datos-y-testing)
+10. [Cronograma y Secuencia de Despliegue](#10-cronograma-y-secuencia-de-despliegue)
 
 ---
 
 ## 1. Resumen Ejecutivo y Objetivos
 
-El presente plan establece la hoja de ruta de ingeniería de software para transformar las aplicaciones `apps/eop`, `apps/mes`, `apps/afip`, `apps/tesoreria` y `apps/contabilidad` del ecosistema **Indinopy**, adecuándolas al marco normativo instituido por el **Anteproyecto de Ley de Régimen de la Orden de Producción Electrónica (e-OP) como Título Valor Causal y su Titulización en el Mercado de Capitales**.
+El presente plan establece la hoja de ruta de ingeniería de software para transformar las aplicaciones `apps/eop`, `apps/mes`, `apps/federacion`, `apps/afip`, `apps/tesoreria` y `apps/contabilidad` del ecosistema **Indinopy**, adecuándolas al marco normativo instituido por el **Anteproyecto de Ley de Régimen de la Orden de Producción Electrónica (e-OP) como Título Valor Causal y su Titulización en el Mercado de Capitales**.
 
 ### Objetivos Clave:
 1. **Validez Cambiaria y Ejecutividad:** Garantizar que cada e-OP emitida sea autosuficiente como título de crédito ejecutivo conforme a los Arts. 1815 y concordantes del CCyC y el Art. 521 inc. 7 del CPCCN.
 2. **Corrección Financiera Estricta:** Reclasificar el valor de los insumos en custodia ($c_{\text{BOM}}$) para evitar que infle artificialmente la obligación exigible contra la comitente.
 3. **Calce Financiero Bursátil:** Alinear los plazos comerciales de la e-OP con la emisión de **Bonos de Inversión Productiva (BIP)** bajo normativa CNV (RG 917/2021).
 4. **Blindaje Laboral (Safe Harbor):** Automatizar el control de Diligencia Debida (CDD/CDD-P) para conferir certeza jurídica a las marcas bajo el Art. 30 LCT y el Art. 23 LCT (modificado por Ley 27.742).
-5. **Interoperabilidad Tributaria y Bancaria:** Sincronizar el sistema con los webservices de ARCA (bloqueo FCE, facturación asistida, IVA diferido y micro-retenciones previsional del 2%) y BCRA (Cuentas Especiales exentas de Ley 25.413).
+5. **Consistencia en el Bus Federado:** Asegurar que los serializers, vistas y tareas de `apps/federacion` no arrojen errores de validación criptográfica ni financiera ante el nuevo esquema de costos y hitos.
+6. **Interoperabilidad Tributaria y Bancaria:** Sincronizar el sistema con los webservices de ARCA (bloqueo FCE, facturación asistida, IVA diferido y micro-retenciones previsional del 2%) y BCRA (Cuentas Especiales exentas de Ley 25.413).
 
 ---
 
@@ -65,8 +72,9 @@ El presente plan establece la hoja de ruta de ingeniería de software para trans
 | Dimensión | Estado Actual en Indinopy | Requisito Ley e-OP | Severidad / Impacto |
 | :--- | :--- | :--- | :---: |
 | **Colateral Financiero** | `monto_total_uci` suma $c_{\text{MOD}} + c_{\text{BOM}} + c_{\text{FDI}}$. | $c_{\text{BOM}}$ **no integra la deuda exigible**. Solo colateraliza $c_{\text{MOD}} + c_{\text{FDI}} + \text{intereses}$. | **CRÍTICO** |
+| **Validación Federada** | `EntradaEOPSerializer` exige estrictamente $fdi = mod \times 0.015$. | Desdobla canon en operativo ($\le 1,5\%$ s/MOD) y stock ($\le 0,5\%$ s/BOM). Falla con HTTP 400. | **CRÍTICO** |
+| **Instanciación en MES** | `RecepcionEOPView` clona contratos e hitos con lógica ORM duplicada. | Debe delegar en `EOPService.ingresar_contrato_desde_federacion()` para no generar hitos inconsistentes. | **ALTO** |
 | **Registro Oficial** | Centralizado en el nodo MES (`RegistroEOP`). | El registro público oficial funciona en **ARCA** con datos abiertos no sensibles. | **ALTO** |
-| **Canon Fiduciario** | Canon único del 1,5% consultado a la MES. | Desglose en dos alícuotas: 1,5% sobre $c_{\text{MOD}}$ (FAEL, INTI, Mora) y 0,5% sobre $c_{\text{BOM}}$ (Seguro stock). | **ALTO** |
 | **Logística Justo a Tiempo** | Inexistente. El plazo es estático. | Régimen Art. 5° bis: prórrogas automáticas (tope 30d), compensación standby (0,5 SMVM/día) y rescisión (15d). | **MEDIO-ALTO** |
 | **Hito Cero** | Liberación por simple firma o aprobación. | Exige copulativamente: firma bilateral N3, remito oficial A/B/C/R con UUID (o Lote Crítico >=20%) y seguro activo. | **ALTO** |
 | **Hito Final (RCF)** | Estado `fiscal_pending` sin plazos perentorios. | Plazo de 10 días hábiles para factura fiscal; 5 días de gracia; luego mora a tasa BADLAR privada. | **MEDIO** |
@@ -331,11 +339,66 @@ Servicio `AuditoriaCostosINTIService`:
 
 ---
 
-## 5. Fase 3: Infraestructura Fiduciaria y Mercado de Capitales (`apps/fdi`)
+## 5. Fase 3: Orquestación, Serializadores y Tareas en `apps/federacion`
+
+Esta fase es crítica para resolver los acoplamientos del bus inter-nodo identificados en `apps/federacion`.
+
+### 5.1. Corrección de `EntradaEOPSerializer` y Validación de Alícuotas Desglosadas
+
+En `apps/federacion/serializers.py`, refactorizar `EntradaEOPSerializer.validate()`:
+1. **Desacoplar la validación de `monto_total_uci`:** Asegurar que verifique:
+   $$\text{monto\_total\_uci} == c_{\text{MOD}} + c_{\text{FDI\_operativo}} + c_{\text{FDI\_stock}}$$
+   y que **no sume** $c_{\text{BOM}}$.
+2. **Validar las dos alícuotas del canon fiduciario:**
+   * Alícuota operativa: $c_{\text{FDI\_operativo}} \le c_{\text{MOD}} \times 0.015$ (tolerancia: $\$0.05$).
+   * Alícuota de stock: $c_{\text{FDI\_stock}} \le c_{\text{BOM}} \times 0.005$ (tolerancia: $\$0.05$).
+3. **Validar cláusula de confesión de deuda Hito Cero:** Exigir `clausula_confesion_deuda_h0: True` en el payload firmado por el tallerista.
+
+### 5.2. Desacople y Eliminación de Duplicación en `RecepcionEOPView`
+
+En `apps/federacion/views.py`:
+* Eliminar las líneas 183 a 281 que duplican la instanciación de `ContratoEOP` e hitos dentro de `RecepcionEOPView.post()`.
+* Reemplazar por una invocación al servicio centralizado:
+  ```python
+  contrato_escrow = EOPService.ingresar_contrato_desde_federacion(
+      datos_validados=data,
+      payload_canonico=payload_canonico,
+      es_sbd=posee_sbd,
+  )
+  ```
+* Esto garantiza que cualquier cambio en la estructura de hitos o campos JIT en `apps/eop` se propague automáticamente al receptor federado.
+
+### 5.3. Validación Copulativa en `liberar_hito_escrow_async` (Hito Cero)
+
+En `apps/federacion/tasks.py`:
+* Modificar `liberar_hito_escrow_async` para que no ejecute la liberación ciega del primer hito.
+* Delegar la validación copulativa en `EOPService.liberar_hito(hito.id)`:
+  * Si es Hito Cero: verificar remito electrónico oficial (A/B/C/R con UUID) y vigencia del seguro de stock.
+  * Si faltan requisitos, el hito permanece en `bloqueado` y se emite una excepción descriptiva que Celery registra en los logs de auditoría.
+
+### 5.4. Trazabilidad de Remitos Oficiales en `EOPWebhookReceiverAPIView`
+
+En `apps/federacion/views.py`:
+* Al recibir el webhook en el nodo tallerista y generar la OP Espejo (`ESP-...`):
+  * Extraer del sobre el UUID de la e-OP y el número de remito oficial ARCA.
+  * Asignar estos datos al `MovimientoStock` de recepción en custodia (`CUST-...`).
+  * Inyectar en el comprobante la leyenda obligatoria del Art. 20.2: *"Materias primas en custodia de transformación bajo régimen de e-OP Ley [——]. Dominio exclusivo de la comitente CUIT [——]. Inembargable s/Art. 138 Ley 24.522"*.
+
+### 5.5. Reutilización de `ComunicacionOficialFederada` para Notificaciones Legales
+
+Aprovechar el subsistema de `ComunicacionOficialFederada` y `CedulaDestinatario` (que ya cuenta con firma Ed25519 y cómputo de 48h tácitas en Celery Beat) como canal formal para:
+1. **Notificación de Objeción de Calidad (Art. 11.2):** Despacha cédula formal de la marca hacia la MES y el tallerista dentro del plazo perentorio de 5 días hábiles.
+2. **Notificación de Silencio Positivo / Aprobación Tácita (Art. 12.2):** Emisión de la constancia digital tras 48h hábiles sin objeción técnica.
+3. **Intimación Prejudicial de Mora (Art. 6°):** Cédula de intimación de 10 días hábiles previa a la ejecución de deuda del tallerista por el FDI.
+4. **Declaración de Rescisión Contractual JIT (Art. 5° bis inc. 6):** Cédula fehaciente del tallerista resolviendo el contrato tras 15 días hábiles de mora en insumos.
+
+---
+
+## 6. Fase 4: Infraestructura Fiduciaria y Mercado de Capitales (`apps/fdi`)
 
 Crear la aplicación especializada `apps/fdi` para la operatoria del Fideicomiso de Desarrollo Industrial.
 
-### 5.1. Titulización Bursátil y Emisión de Bonos BIP (Arts. 17° y Anexo II)
+### 6.1. Titulización Bursátil y Emisión de Bonos BIP (Arts. 17° y Anexo II)
 
 * **Modelos:** `CarteraTitulizableBIP` y `SerieBonoBIP`:
   * Series de corto plazo: 60 a 180 días corridos, con amortización calzada con las e-OPs subyacentes.
@@ -343,7 +406,7 @@ Crear la aplicación especializada `apps/fdi` para la operatoria del Fideicomiso
   * Dictamen de **Revisor Externo Independiente** registrado ante CNV para etiquetado de Bonos Sociales, Verdes y Sustentables (SVS) conforme a RG CNV N° 917/2021.
   * Módulo de integración para colocación de tramos minoristas en ALyC.
 
-### 5.2. Gestión de Fondos de Cobertura y Amortiguadores de Riesgo (Art. 16°)
+### 6.2. Gestión de Fondos de Cobertura y Amortiguadores de Riesgo (Art. 16°)
 
 Modelar las subcuentas fiduciarias de liquidez y garantía:
 1. `ReservaGarantiaComitente`: Retención y registro del 5% del valor nominal de las e-OPs activas de cada marca comitente (cubre riesgo de impago comercial de la marca).
@@ -351,13 +414,13 @@ Modelar las subcuentas fiduciarias de liquidez y garantía:
 3. `FondoLaboralFAEL`: Subcuenta financiada con el 0,5% del canon $c_{\text{FDI}}$ + póliza de caución laboral para cancelar créditos laborales líquidos homologados (Art. 22.6).
 4. `FacilidadLiquidezContingente`: Línea revolvente de tesorería de hasta el 5% del programa para absorber descalces transitorios derivados de prórrogas JIT, peritajes o demoras en la validación fiscal de la RCF.
 
-### 5.3. Póliza Colectiva de Stock en Custodia (Art. 20 bis)
+### 6.3. Póliza Colectiva de Stock en Custodia (Art. 20 bis)
 
 * Modelo `PolizaColectivaStock`: Administrada centralizadamente por el FDI con entidades aseguradoras autorizadas por la SSN.
 * Ampara el valor declarado ($c_{\text{BOM}}$) contra incendio, robo y destrucción en tránsito o taller.
 * Se activa automáticamente con el ingreso del canon $c_{\text{STK}}$ (0,5% sobre $c_{\text{BOM}}$).
 
-### 5.4. Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° y Anexo I)
+### 6.4. Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° y Anexo I)
 
 * Vinculación de CBU/CVU de cuentas abiertas en entidades financieras bajo la Circular del BCRA.
 * Exención automática del Impuesto sobre Créditos y Débitos Bancarios (Ley N° 25.413).
@@ -365,39 +428,39 @@ Modelar las subcuentas fiduciarias de liquidez y garantía:
 
 ---
 
-## 6. Fase 4: Adaptador Fiscal y Regímenes Tributarios (`apps/afip` -> `apps/arca`)
+## 7. Fase 5: Adaptador Fiscal y Regímenes Tributarios (`apps/afip` -> `apps/arca`)
 
 Evolucionar `apps/afip` hacia un módulo interoperable con los nuevos servicios de ARCA.
 
-### 6.1. Bloqueo Sistémico de la Factura de Crédito Electrónica (FCE) (Art. 9°)
+### 7.1. Bloqueo Sistémico de la Factura de Crédito Electrónica (FCE) (Art. 9°)
 
 * Implementar validador pre-emisión: si el comprobante fiscal corresponde a una liquidación de e-OP registrada:
   * Forzar la emisión como **Factura Ordinaria Cancelatoria**.
   * Bloquear la asignación del código de derivación hacia el Registro de FCE de la Ley N° 27.440 (nuevo Art. 7° bis).
 
-### 6.2. Facturación Asistida para Monotributo Productivo (Art. 24.5 y Anexo III)
+### 7.2. Facturación Asistida para Monotributo Productivo (Art. 24.5 y Anexo III)
 
 * **Servicio `FacturacionAsistidaService`:**
   * Al confirmarse la entrega del lote, ARCA pone a disposición el borrador precargado de Factura C.
   * La plataforma solicita únicamente la confirmación digital del prestador.
   * Al validarse el CAE, el FDI aplica la **micro-retención del 2%** para el SIPA y libera instantáneamente el saldo de la custodia.
 
-### 6.3. Diferimiento del Hecho Imponible del IVA (Art. 23.2)
+### 7.3. Diferimiento del Hecho Imponible del IVA (Art. 23.2)
 
 * Ajustar el motor contable en `apps/contabilidad/contabilizacion.py`:
   * Los anticipos del Hito Cero y avances físicos **no perfeccionan el hecho imponible del IVA** (excepción expresa al Art. 5° inc. b de la Ley de IVA).
   * El débito fiscal se devenga únicamente contra la entrega definitiva del lote y la liberación de la Retención de Cierre Fiscal (RCF).
 
-### 6.4. Cómputo del Crédito Fiscal Presunto del 10% (Art. 23.1)
+### 7.4. Cómputo del Crédito Fiscal Presunto del 10% (Art. 23.1)
 
 * Registrar automáticamente en el libro IVA Compras de la empresa comitente un **Crédito Fiscal Presunto del 10%** calculado sobre el $c_{\text{MOD}}$ neto de las e-OPs cumplidas con monotributistas productivos o talleres en transición (CDD-P).
 * Controlar la imputación contra el cupo presupuestario anual fijado por el Congreso.
 
 ---
 
-## 7. Fase 5: Orquestación Asíncrona (Celery Beat) y Portales Web
+## 8. Fase 6: Automatización Asíncrona (Celery Beat) y Portales Web
 
-### 7.1. Tareas Asíncronas Periódicas
+### 8.1. Tareas Asíncronas Periódicas
 
 Configurar en `core/celery.py` y los archivos `tasks.py` correspondientes:
 
@@ -421,29 +484,33 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.mes.tasks.auditar_costos_vs_matrices_inti",
         "schedule": crontab(day_of_week="monday", hour=4, minute=0),
     },
+    "procesar-cedulas-tacitas-48h": {
+        "task": "apps.federacion.tasks.procesar_notificaciones_tacitas_async",
+        "schedule": crontab(minute="*/30"), # Cada 30 minutos
+    },
 }
 ```
 
-### 7.2. Interfaz PWA del Tallerista
+### 8.2. Interfaz PWA del Tallerista
 * Aceptación rápida de órdenes con visualización transparente de $c_{\text{MOD}}$ y cronograma de pagos.
 * Firma de aceptación con cláusula explícita de confesión de deuda Hito Cero.
 * Carga ágil de PoPW mediante cámara del dispositivo (declaración de curva) y captura de coordenadas GPS.
 * Confirmación en un click del borrador de Factura C asistida.
 
-### 7.3. Portal de la Marca Comitente
+### 8.3. Portal de la Marca Comitente
 * Gestión de e-OPs activas y simulación del cronograma de provisión JIT.
 * Seguimiento en tiempo real de la vigencia del Safe Harbor (CDD) de sus talleres proveedores.
 * Módulo de cómputo y auditoría de Crédito Fiscal Presunto del 10% de IVA.
 * Gestión de la Reserva Líquida de Garantía (5%).
 
-### 7.4. Panel Fiduciario y de Supervisión MES/INTI
+### 8.4. Panel Fiduciario y de Supervisión MES/INTI
 * Emisión y empaquetado de Bonos BIP, balances de series y calce financiero.
 * Monitoreo de las 4 reservas de cobertura patrimonial.
 * Tablero del perito INTI para emitir dictámenes prejudiciales en el plazo de 5 días.
 
 ---
 
-## 8. Estrategia de Migración de Base de Datos y Testing
+## 9. Estrategia de Migración de Base de Datos y Testing
 
 ### Migraciones Seguras (Zero-Downtime)
 1. **Paso 1:** Agregar nuevos campos en `ContratoEOP` permitiendo valores nulos o por defecto (`costo_fdi_operativo`, `costo_fdi_stock`, `plazo_comercial_dias`).
@@ -452,16 +519,18 @@ CELERY_BEAT_SCHEDULE = {
 
 ### Batería de Pruebas Unitarias y de Integración (`apps/*/tests.py`)
 1. **`test_calculo_vector_costos_sin_bom`:** Verificar que el capital financiado sea estrictamente $c_{\text{MOD}} + c_{\text{FDI}}$ y que $c_{\text{BOM}}$ se registre de modo informativo sin generar acreencia contra la marca.
-2. **`test_logistica_jit_prorroga_y_standby`:** Simular atraso de entrega de insumos de 8 días hábiles por la comitente; verificar prórroga de entrega del taller, recalificación en SETP a la marca y devengamiento de 3 días de standby (1,5 SMVM).
-3. **`test_rescisión_taller_15_dias_jit`:** Constatar que al día 15 hábil de mora de insumos, el tallerista pueda resolver el contrato, liquidar el 100% de la mano de obra iniciada y emitir certificado de retención.
-4. **`test_liberacion_hito_cero_concurrencia`:** Asegurar que el Hito Cero arroje excepción si falta el remito oficial con UUID, si el comprobante tipo "X" proviene de un CUIT externo o si la póliza de stock no está activa.
-5. **`test_rcf_timelock_badlar`:** Verificar que vencidos los 10 días hábiles + 5 de gracia sin CAE, el Hito Final comience a liquidar mora BADLAR privada.
-6. **`test_cdd_safe_harbor_revocacion`:** Simular falta de presentación de F.931 y constatar suspensión automática del CDD y de la presunción del Art. 30 LCT.
-7. **`test_bloqueo_fce`:** Verificar que el generador de comprobantes rechace la emisión de Facturas de Crédito Electrónicas asociadas a contratos de e-OP.
+2. **`test_serializer_federacion_alicuota_desglosada`:** Verificar que `EntradaEOPSerializer` acepte el desglose de cánones ($c_{\text{FDI\_operativo}}$ y $c_{\text{STK}}$) y rechace firmas con alícuotas arbitrarias.
+3. **`test_recepcion_eop_delegacion_servicio`:** Verificar que `RecepcionEOPView` delegue la creación en `EOPService` sin duplicar la lógica de hitos.
+4. **`test_logistica_jit_prorroga_y_standby`:** Simular atraso de entrega de insumos de 8 días hábiles por la comitente; verificar prórroga de entrega del taller, recalificación en SETP a la marca y devengamiento de 3 días de standby (1,5 SMVM).
+5. **`test_rescisión_taller_15_dias_jit`:** Constatar que al día 15 hábil de mora de insumos, el tallerista pueda resolver el contrato, liquidar el 100% de la mano de obra iniciada y emitir certificado de retención.
+6. **`test_liberacion_hito_cero_concurrencia`:** Asegurar que el Hito Cero arroje excepción si falta el remito oficial con UUID, si el comprobante tipo "X" proviene de un CUIT externo o si la póliza de stock no está activa.
+7. **`test_rcf_timelock_badlar`:** Verificar que vencidos los 10 días hábiles + 5 de gracia sin CAE, el Hito Final comience a liquidar mora BADLAR privada.
+8. **`test_cdd_safe_harbor_revocacion`:** Simular falta de presentación de F.931 y constatar suspensión automática del CDD y de la presunción del Art. 30 LCT.
+9. **`test_bloqueo_fce`:** Verificar que el generador de comprobantes rechace la emisión de Facturas de Crédito Electrónicas asociadas a contratos de e-OP.
 
 ---
 
-## 9. Cronograma y Secuencia de Despliegue
+## 10. Cronograma y Secuencia de Despliegue
 
 ```mermaid
 gantt
@@ -475,17 +544,21 @@ gantt
     SETP Bidireccional y Cold Start     :f2_1, after f1_2, 8d
     Módulo CDD / CDD-P Safe Harbor      :f2_2, after f2_1, 8d
     Peritajes INTI y Alertas Costos     :f2_3, after f2_2, 6d
-    section Fase 3: apps/fdi
-    Modelado Bonos BIP y Calce Fiduciario :f3_1, after f1_3, 10d
-    Gestión de las 4 Reservas y Seguros  :f3_2, after f3_1, 7d
-    section Fase 4: ARCA & Fiscal
-    Bloqueo FCE e IVA Diferido          :f4_1, after f2_2, 6d
-    Facturación Asistida Monotributo    :f4_2, after f4_1, 6d
-    Crédito Presunto del 10%            :f4_3, after f4_2, 5d
-    section Fase 5: Celery & UI
-    Tareas Celery Beat                  :f5_1, after f3_2, 6d
-    Portales Web (Taller/Marca/FDI)     :f5_2, after f5_1, 10d
-    Pruebas Integrales y Homologación   :f5_3, after f5_2, 7d
+    section Fase 3: apps/federacion
+    Actualización EntradaEOPSerializer  :f3_1, after f1_1, 5d
+    Desacople RecepcionEOPView          :f3_2, after f3_1, 5d
+    Integración Cédulas Legales (48h)   :f3_3, after f3_2, 6d
+    section Fase 4: apps/fdi
+    Modelado Bonos BIP y Calce Fiduciario :f4_1, after f1_3, 10d
+    Gestión de las 4 Reservas y Seguros  :f4_2, after f4_1, 7d
+    section Fase 5: ARCA & Fiscal
+    Bloqueo FCE e IVA Diferido          :f5_1, after f2_2, 6d
+    Facturación Asistida Monotributo    :f5_2, after f5_1, 6d
+    Crédito Presunto del 10%            :f5_3, after f5_2, 5d
+    section Fase 6: Celery & UI
+    Tareas Celery Beat                  :f6_1, after f4_2, 6d
+    Portales Web (Taller/Marca/FDI)     :f6_2, after f6_1, 10d
+    Pruebas Integrales y Homologación   :f6_3, after f6_2, 7d
 ```
 
 ---
