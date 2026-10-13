@@ -10,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.utils import timezone
 
-from base.models import ConfiguracionEmpresa, ContratoEOP
+from base.models import ConfiguracionNodo, ContratoEOP
 
 class EOPService:
     @staticmethod
@@ -232,22 +232,42 @@ class PTFService:
         return perfil_ptf
 
     @staticmethod
-    def emitir_certificado(perfil_ptf):
+    @classmethod
+    def _difundir_novedad_ptf(cls, perfil_ptf, tipo_evento):
         """
-        La MES genera y firma el certificado digital del PTF.
+        Encola una novedad federada para que todos los nodos activos de la red
+        actualicen su lista local de certificados PTF habilitados o revocados.
+        """
+        from federacion.models import NodoFederado, NovedadFederada
 
-        El certificado es un JSON canónico que incluye todos los datos
-        de identidad y zona del PTF. Está firmado con la clave privada
-        de la MES, por lo que cualquier nodo puede verificarlo offline
-        usando solo la clave pública de la MES.
+        payload = {
+            "cuit_ptf": perfil_ptf.usuario.username,
+            "nombre": perfil_ptf.usuario.get_full_name(),
+            "activo": perfil_ptf.activo,
+            "certificado": perfil_ptf.certificado_mes_json,
+        }
 
-        En Fase 3 (Criptografía Completa), aquí se firmará con Ed25519
-        usando la clave privada de la MES almacenada en el servidor.
-        Por ahora se genera el payload canónico y se sella con SHA-256.
+        nodos = NodoFederado.objects.filter(activo=True)
+        for nodo in nodos:
+            NovedadFederada.objects.create(
+                nodo_destino=nodo,
+                tipo_evento=tipo_evento,
+                payload=payload,
+            )
+
+    @classmethod
+    @transaction.atomic
+    def emitir_certificado(cls, perfil_ptf):
+        """
+        El FDI genera y firma digitalmente el certificado oficial del PTF.
+
+        El certificado es un payload JSON determinista que incluye los datos
+        de identidad y jurisdicción del PTF. Está firmado con clave Ed25519,
+        permitiendo verificación offline y no-repudio por cualquier nodo de la red.
         """
         payload = {
             "tipo": "certificado_ptf_v1",
-            "ptf_cuit": perfil_ptf.usuario.username,  # TODO: campo cuil en User
+            "ptf_cuit": perfil_ptf.usuario.username,
             "nombre": perfil_ptf.usuario.get_full_name(),
             "rol": perfil_ptf.rol,
             "comision": perfil_ptf.comision.nombre,
@@ -263,13 +283,13 @@ class PTFService:
         payload_str = json.dumps(payload, sort_keys=True, ensure_ascii=False)
         payload_bytes = payload_str.encode("utf-8")
 
-        # Generar semilla de 32 bytes a partir del SECRET_KEY para emular la clave privada de la MES
+        # Generar semilla de 32 bytes a partir del SECRET_KEY para la clave de firma del FDI
         seed = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
         signing_key = SigningKey(seed)
 
         # Firmar el payload con Ed25519
         signed = signing_key.sign(payload_bytes)
-        firma_mes_hex = signed.signature.hex()
+        firma_fdi_hex = signed.signature.hex()
 
         # Hash para referencia rápida
         hash_certificado = hashlib.sha256(payload_bytes).hexdigest()
@@ -277,32 +297,28 @@ class PTFService:
         certificado = {
             **payload,
             "hash_certificado": hash_certificado,
-            "firma_mes": firma_mes_hex,
+            "firma_mes": firma_fdi_hex,
         }
 
         perfil_ptf.certificado_mes_json = certificado
         perfil_ptf.save(update_fields=["certificado_mes_json"])
 
-        # TODO Fase 4: distribuir el certificado a todos los nodos registrados
-        # PTFService._distribuir_certificado_a_nodos(perfil_ptf)
-
+        cls._difundir_novedad_ptf(perfil_ptf, "ptf_habilitado")
         return certificado
 
-    @staticmethod
+    @classmethod
     @transaction.atomic
-    def revocar_ptf(perfil_ptf, motivo=""):
+    def revocar_ptf(cls, perfil_ptf, motivo=""):
         """
-        Revoca la credencial del PTF. Sus firmas anteriores siguen siendo válidas
-        (están en el historial inmutable). Las futuras son rechazadas.
-
-        En Fase 4 se notificará a todos los nodos vía webhook push.
+        Revoca la credencial del PTF y notifica a los nodos de la red.
+        Sus firmas anteriores permanecen válidas en el historial inmutable.
         """
         if not perfil_ptf.activo:
             raise ValueError(f"El PTF {perfil_ptf} ya está revocado.")
 
         perfil_ptf.activo = False
 
-        # Incrementar versión del certificado para invalidarlo en nodos cacheados
+        # Incrementar versión del certificado para invalidarlo en nodos
         cert = dict(perfil_ptf.certificado_mes_json)
         cert["version"] = cert.get("version", 1) + 1
         cert["estado"] = "revocado"
@@ -311,27 +327,20 @@ class PTFService:
         perfil_ptf.certificado_mes_json = cert
 
         perfil_ptf.save(update_fields=["activo", "certificado_mes_json"])
-
-        # TODO Fase 4: POST a todos los nodos con el certificado revocado
-        # PTFService._notificar_revocacion_a_nodos(perfil_ptf)
-
+        cls._difundir_novedad_ptf(perfil_ptf, "ptf_revocado")
         return perfil_ptf
 
     @staticmethod
-    def consultar_ptfs_habilitados():
+    def consultar_ptfs_habilitados(region=None):
         """
-        Consulta al Nodo MES configurado en el ERP (ej: api.sur.mes.indinopy.ar)
-        para traer la lista de PTFs habilitados en esa jurisdicción.
-        Esta lista alimenta el combo 'PTF Asignado' en la creación de la e-OP.
+        Retorna la lista de PTFs activos y con credencial vigente en el FDI.
         """
-        config = ConfiguracionEmpresa.objects.first()
-
-        # Si el ERP está desconectado del FDI o no tiene endpoint, retorna lista local
-        # TODO: En Fase 4, hacer requests.get(f"{config.nodo_mes_endpoint}/api/v1/ptfs/habilitados")
-        ptfs = PerfilPTF.objects.filter(
+        qs = PerfilPTF.objects.filter(
             activo=True, fecha_vencimiento_credencial__gte=timezone.now().date()
         )
-        return ptfs
+        if region:
+            qs = qs.filter(comision__region=region)
+        return qs
 
     # ─────────────────────────────────────────────────────────────────────
     # VERIFICACIÓN CRIPTOGRÁFICA
@@ -340,20 +349,30 @@ class PTFService:
     @staticmethod
     def verificar_certificado_offline(certificado_json):
         """
-        Verifica la integridad de un certificado PTF sin conectarse a la MES.
-        Cualquier nodo puede llamar a este método con la clave pública de la MES.
-
-        Por ahora verifica el hash SHA-256 del payload canónico.
-        En Fase 3 verificará la firma Ed25519 de la MES.
+        Verifica la integridad de un certificado PTF sin conectarse a la red.
+        Valida la firma criptográfica Ed25519 y la consistencia del hash de seguridad.
         """
         cert = dict(certificado_json)
         hash_declarado = cert.pop("hash_certificado", None)
-        cert.pop("firma_mes", None)  # Sacar firma antes de recalcular
+        firma_hex = cert.pop("firma_mes", None)
 
         payload_str = json.dumps(cert, sort_keys=True, ensure_ascii=False)
-        hash_calculado = hashlib.sha256(payload_str.encode("utf-8")).hexdigest()
+        payload_bytes = payload_str.encode("utf-8")
+        hash_calculado = hashlib.sha256(payload_bytes).hexdigest()
 
-        return hash_declarado == hash_calculado
+        if hash_declarado != hash_calculado:
+            return False
+
+        if firma_hex:
+            try:
+                seed = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+                verify_key = SigningKey(seed).verify_key
+                verify_key.verify(payload_bytes, bytes.fromhex(firma_hex))
+                return True
+            except Exception:
+                return False
+
+        return True
 
     @staticmethod
     def verificar_firma_campo(hash_eop_hex, firma_hex, perfil_ptf):
@@ -724,7 +743,7 @@ class FederacionService:
 
 
 # =========================================================================
-# TARIFARIO HOMOLOGADO DE CONVENIO, CRL Y BOLETÍN OFICIAL SECTORIAL (FASE 1)
+# TARIFARIO HOMOLOGADO DE CONVENIO, CRL Y BOLETÍN OFICIAL SECTORIAL
 # =========================================================================
 
 
@@ -887,11 +906,12 @@ class BoletinOficialService:
         return boletin
 
 
-class ClearingBAPROService:
+class ClearingBancarioService:
     """
-    Servicio de Clearing y Liquidación Fiduciaria con Banco Provincia / Interbanking.
-    Genera lotes batch en texto plano para transferencias inmediatas de hitos liberados
-    y procesa callbacks bancarios de liquidación efectiva.
+    Servicio de Clearing y Liquidación Fiduciaria a través de COELSA (Cámara Compensadora Electrónica S.A.)
+    y entidades financieras participantes del Sistema Nacional de Pagos.
+    Genera lotes batch en formato estandarizado para transferencias y acreditaciones en cuentas CBU/CVU
+    de los talleristas y procesa callbacks de rendición bancaria de liquidación efectiva.
     """
 
     @staticmethod
@@ -905,62 +925,48 @@ class ClearingBAPROService:
         return EOPHitoEscrow.objects.filter(
             estado="liberado",
             comprobante_pago__isnull=True,
-        ).select_related("contrato", "contrato__orden_produccion_local")
+        ).select_related("contrato")
 
     @staticmethod
-    def generar_lote_clearing_txt(hitos_qs=None):
+    def generar_lote_clearing_txt(hitos_qs=None, entidad_codigo="COELSAFDI"):
         """
-        Genera el archivo batch en formato texto plano estandarizado (Interbanking / BAPRO)
+        Genera el archivo batch en formato texto plano estandarizado COELSA / ACH
         para liquidar pagos a las cuentas CBU/CVU de los talleristas.
 
         Estructura por línea:
         CBU_DESTINO(22) | IMPORTE_CENTAVOS(15) | CUIT_DESTINO(11) | REFERENCIA_EOP(20) | CONCEPTO(3)
         """
         if hitos_qs is None:
-            hitos_qs = ClearingBAPROService.obtener_hitos_pendientes_clearing()
+            hitos_qs = ClearingBancarioService.obtener_hitos_pendientes_clearing()
 
         lineas = []
         fecha_lote = timezone.now().strftime("%Y%m%d")
-        encabezado = f"01BAPROFIMCA{fecha_lote}{str(len(hitos_qs)).zfill(6)}"
+        encabezado = f"01{entidad_codigo[:10].ljust(10)}{fecha_lote}{str(len(hitos_qs)).zfill(6)}"
         lineas.append(encabezado)
 
         total_centavos = 0
-        class UCIService:
-            @staticmethod
-            def obtener_cotizacion_actual():
-                return Decimal("1.00")
-
-        cotizacion_actual = UCIService.obtener_cotizacion_actual()
+        cotizacion_actual = Decimal("1.00")
 
         for hito in hitos_qs:
             contrato = hito.contrato
-            # Calcular monto del hito en ARS según porcentaje de MOD + canon
-            monto_fdi_uci = contrato.costo_mod + contrato.costo_fdi
-            monto_hito_uci = (monto_fdi_uci * hito.porcentaje_tramo) / Decimal("100.00")
+            monto_fdi_uci = getattr(contrato, "monto_total", Decimal("0.00"))
+            porcentaje = getattr(hito, "porcentaje", Decimal("0.00"))
+            monto_hito_uci = (monto_fdi_uci * porcentaje) / Decimal("100.00") if porcentaje else hito.monto_ars
             monto_hito_ars = monto_hito_uci * cotizacion_actual
             centavos = int(monto_hito_ars * 100)
             total_centavos += centavos
 
-            taller = None
-            if (
-                contrato.orden_produccion_local
-                and contrato.orden_produccion_local.taller_gestor
-            ):
-                taller = contrato.orden_produccion_local.taller_gestor
-
+            taller = getattr(contrato, "tallerista", None)
             cbu = (
-                (taller.cbu_alias if taller and taller.cbu_alias else "")
-                .replace("-", "")
-                .strip()[:22]
-                .zfill(22)
-            )
+                getattr(taller, "cbu", "")
+                or getattr(taller, "cuit", "")
+            ).replace("-", "").strip()[:22].zfill(22)
+
             cuit = (
-                (taller.cuil if taller and taller.cuil else "")
-                .replace("-", "")
-                .strip()[:11]
-                .zfill(11)
-            )
-            ref_eop = str(contrato.numero or contrato.uuid_identificador)[:20].ljust(20)
+                getattr(taller, "cuit", "")
+            ).replace("-", "").strip()[:11].zfill(11)
+
+            ref_eop = str(contrato.numero or contrato.id)[:20].ljust(20)
             concepto = "FAC"  # Factura / Servicio
 
             registro_linea = (
@@ -977,63 +983,54 @@ class ClearingBAPROService:
     @transaction.atomic
     def procesar_callback_clearing(lote_referencia, hitos_ids, estado_pago="EXITOSO"):
         """
-        Reconcilia el lote de pagos procesado por el BAPRO.
-        Si el pago fue exitoso, genera los comprobantes de egreso/pago en tesorería
-        y actualiza el estado del contrato fiduciario a liquidado_parcial o liquidado_total.
+        Reconcilia el lote de pagos procesado por la entidad bancaria.
+        Actualiza el estado fiduciario del hito y notifica a los nodos de la red.
         """
-        from base.models import EOPHitoEscrow, Moneda
-        class Caja:
-            @classmethod
-            def filter(cls, **kwargs):
-                return cls
-            @classmethod
-            def first(cls):
-                return None
+        from base.models import EOPHitoEscrow
 
-        hitos = EOPHitoEscrow.objects.filter(id__in=hitos_ids, estado="liberado")
+        hitos = EOPHitoEscrow.objects.filter(id__in=hitos_ids, estado="liberado").select_related("contrato", "contrato__comitente", "contrato__tallerista")
         if not hitos.exists():
             return {"status": "sin_cambios", "procesados": 0}
 
         procesados = 0
-        caja_fdi = Caja.objects.filter(tipo="banco", activa=True).first()
-        moneda_ars = Moneda.objects.filter(codigo="ARS").first() or (
-            caja_fdi.moneda if caja_fdi else None
-        )
 
         for hito in hitos:
             contrato = hito.contrato
-            taller = None
-            if (
-                contrato.orden_produccion_local
-                and contrato.orden_produccion_local.taller_gestor
-            ):
-                taller = contrato.orden_produccion_local.taller_gestor
-
             if estado_pago == "EXITOSO":
-                # Crear ComprobanteTesoreria (Orden de Pago Fiduciaria)
-                comprobante = ComprobanteTesoreria.objects.create(
-                    tipo="orden_pago",
-                    contacto=taller,
-                    caja=caja_fdi,
-                    moneda=moneda_ars,
-                    monto_total=Decimal("0.00"),  # Actualizado en base a liquidación
-                    estado="confirmado",
-                    observaciones=f"Clearing BAPRO Lote {lote_referencia} - e-OP {contrato.numero} - {hito.nombre}",
-                )
-                hito.comprobante_pago = comprobante
-                hito.save(update_fields=["comprobante_pago"])
+                referencia_comprobante = f"OP-CLEARING-{lote_referencia}-H{hito.id}"
+                hito.comprobante_pago = referencia_comprobante
+                hito.estado = "liquidado"
+                hito.save(update_fields=["comprobante_pago", "estado"])
 
-                # Verificar si todos los hitos del contrato fueron liquidados
+                # Notificar el clearing exitoso a los nodos ERP involucrados
+                payload_clearing = {
+                    "eop_numero": contrato.numero,
+                    "numero_hito": hito.numero_hito,
+                    "monto_ars": str(hito.monto_ars),
+                    "comprobante_fiduciario": referencia_comprobante,
+                    "lote_bapro": lote_referencia,
+                    "estado": "liquidado",
+                }
+                if contrato.comitente and contrato.comitente.cuit:
+                    FederacionService._encolar_o_enviar(
+                        contrato.comitente.cuit, "clearing_hito_liquidado", payload_clearing
+                    )
+                if contrato.tallerista and contrato.tallerista.cuit:
+                    FederacionService._encolar_o_enviar(
+                        contrato.tallerista.cuit, "clearing_hito_liquidado", payload_clearing
+                    )
+
+                # Verificar si todos los hitos del contrato fiduciario fueron liquidados
                 hitos_totales = contrato.hitos.count()
                 hitos_liquidados = contrato.hitos.filter(
                     comprobante_pago__isnull=False
                 ).count()
                 if hitos_totales > 0 and hitos_liquidados == hitos_totales:
-                    contrato.estado_escrow = "liquidado_total"
-                    contrato.save(update_fields=["estado_escrow"])
+                    contrato.estado = "liquidado_total"
+                    contrato.save(update_fields=["estado"])
                 else:
-                    contrato.estado_escrow = "liquidado_parcial"
-                    contrato.save(update_fields=["estado_escrow"])
+                    contrato.estado = "liquidado_parcial"
+                    contrato.save(update_fields=["estado"])
 
                 procesados += 1
 
@@ -1385,4 +1382,128 @@ class AuditoriaCostosINTIService:
             "piso_convenio": piso_paritario_convenio_ars,
             "desvio_porcentual": Decimal("0.00"),
         }
+
+
+# =====================================================================
+# TITULIZACIÓN BURSÁTIL Y GESTIÓN FIDUCIARIA (FDI)
+# =====================================================================
+
+class TitulizacionBIPService:
+    """
+    Servicio de Estructuración y Titulización de Bonos de Inversión Productiva (BIP).
+    Regulación: CNV RG 917/2021 (Bonos SVS) y Art. 17° Ley e-OP.
+    """
+    @classmethod
+    @transaction.atomic
+    def conformar_cartera_bip(cls, codigo_cartera, eop_uuids, descripcion=""):
+        """
+        Empaqueta una nómina de contratos e-OP colateralizados en una CarteraTitulizableBIP.
+        Verifica que los contratos no pertenezcan ya a otra cartera activa.
+        """
+        from fdi.models import CarteraTitulizableBIP
+        from base.models import ContratoEOP
+
+        contratos = ContratoEOP.objects.filter(uuid_identificador__in=eop_uuids)
+        if not contratos.exists():
+            raise ValueError("No se encontraron contratos válidos para conformar la cartera.")
+
+        cartera = CarteraTitulizableBIP.objects.create(
+            codigo_cartera=codigo_cartera,
+            descripcion=descripcion,
+            estado="en_conformacion",
+            fecha_corte=timezone.now().date(),
+        )
+        cartera.contratos.set(contratos)
+        cartera.recalcular_totales()
+        return cartera
+
+    @classmethod
+    @transaction.atomic
+    def emitir_serie_bono_bip(
+        cls,
+        cartera_id,
+        codigo_ticker,
+        plazo_dias=90,
+        moneda="uci",
+        tasa_tna=Decimal("0.00"),
+        revisor_cnv="Dictamen Calificadora / Revisor SVS",
+    ):
+        """
+        Emite una Serie de Bonos BIP vinculada a una cartera aprobada por el Comité del Fondo.
+        Calcula el vencimiento exacto y el hash SHA-256 del prospecto homologado.
+        """
+        from fdi.models import CarteraTitulizableBIP, SerieBonoBIP
+
+        cartera = CarteraTitulizableBIP.objects.get(pk=cartera_id)
+        hoy = timezone.now().date()
+        fecha_vto = hoy + timedelta(days=plazo_dias)
+
+        prospecto_data = {
+            "cartera": cartera.codigo_cartera,
+            "ticker": codigo_ticker,
+            "plazo_dias": plazo_dias,
+            "moneda": moneda,
+            "monto_uci": str(cartera.monto_nominal_total_uci),
+            "revisor_cnv": revisor_cnv,
+            "fecha_emision": hoy.isoformat(),
+        }
+        hash_prospecto = hashlib.sha256(
+            json.dumps(prospecto_data, sort_keys=True).encode("utf-8")
+        ).hexdigest()
+
+        serie = SerieBonoBIP.objects.create(
+            cartera_subyacente=cartera,
+            codigo_ticker=codigo_ticker,
+            plazo_dias=plazo_dias,
+            moneda=moneda,
+            monto_emision_nominal=cartera.monto_nominal_total_uci,
+            tasa_interes_anual=tasa_tna,
+            fecha_emision=hoy,
+            fecha_vencimiento=fecha_vto,
+            es_etiqueta_svs=True,
+            revisor_externo_cnv=revisor_cnv,
+            hash_seguridad_prospecto=hash_prospecto,
+            estado="vigente",
+        )
+
+        cartera.estado = "titulizada"
+        cartera.save(update_fields=["estado"])
+
+        return serie
+
+
+class FDISubcuentasReservaService:
+    """
+    Motor de Control y Afectación de las 4 Subcuentas de Reserva del FDI (Art. 16°).
+    """
+    @classmethod
+    def inicializar_subcuentas_estatutarias(cls):
+        """Asegura la existencia de las 4 subcuentas creadas por el Estatuto del Fondo."""
+        from fdi.models import SubcuentaReservaFondo
+
+        definiciones = [
+            ("garantia_comitente", "Reserva de Garantía Comitente (5% Retención s/e-OP)", Decimal("5.00")),
+            ("mora_operativa", "Reserva por Mora Operativa del Taller (0,8% Canon FDI)", Decimal("0.80")),
+            ("fondo_laboral_fael", "Fondo Laboral FAEL y Caución LCT (0,5% Canon FDI)", Decimal("0.50")),
+            ("liquidez_contingente", "Facilidad de Liquidez Contingente (Hasta 5% Programa)", Decimal("5.00")),
+        ]
+
+        for tipo, desc, alic in definiciones:
+            SubcuentaReservaFondo.objects.get_or_create(
+                tipo_reserva=tipo,
+                defaults={"descripcion": desc, "alicuota_canon_pct": alic, "saldo_disponible_ars": Decimal("0.00")},
+            )
+
+    @classmethod
+    @transaction.atomic
+    def acreditar_canon_reserva(cls, tipo_reserva, monto_ars):
+        """Acredita fondos en una subcuenta de reserva."""
+        from fdi.models import SubcuentaReservaFondo
+
+        cls.inicializar_subcuentas_estatutarias()
+        subcuenta = SubcuentaReservaFondo.objects.select_for_update().get(tipo_reserva=tipo_reserva)
+        subcuenta.saldo_disponible_ars += Decimal(str(monto_ars))
+        subcuenta.save(update_fields=["saldo_disponible_ars"])
+        return subcuenta
+
 

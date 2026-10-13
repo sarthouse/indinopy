@@ -38,8 +38,8 @@ def liberar_hito_escrow_async(uuid_str):
     en la MES sin bloquear el request web.
     """
     try:
-        from mes.models import RegistroEOP
-        from mes.services import PTFService
+        from fdi.models import RegistroEOP
+        from fdi.services import PTFService
 
         registro = RegistroEOP.objects.get(uuid_identificador=uuid_str)
         PTFService._liberar_escrow_por_eop(registro)

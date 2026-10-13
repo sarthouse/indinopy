@@ -399,9 +399,9 @@ Para garantizar la interoperabilidad de notificaciones legales entre cualquier t
 
 ---
 
-## 6. Fase 4: Infraestructura Fiduciaria y Mercado de Capitales (`apps/fdi`)
+## 6. Fase 4: Infraestructura Fiduciaria y Mercado de Capitales (`fimca-core/fdi`)
 
-Crear la aplicación especializada `apps/fdi` para la operatoria del Fideicomiso de Desarrollo Industrial.
+Implementada en `fimca-core/fdi` como el software central del **Fondo Fiduciario de Desarrollo Industrial (FDI)** y sus Comités Estatutarios (Comité de Crédito y Riesgo, Comisiones Arbitrales e INTI), estructurando el patrimonio de afectación conforme a la Ley e-OP.
 
 ### 6.1. Titulización Bursátil y Emisión de Bonos BIP (Arts. 17° y Anexo II)
 

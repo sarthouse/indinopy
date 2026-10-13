@@ -12,6 +12,11 @@ from .models import (
     CertificadoDiligenciaDebida,
     PeritajeCalidadINTI,
     LibretaTrabajoDomicilio,
+    CarteraTitulizableBIP,
+    SerieBonoBIP,
+    SubcuentaReservaFondo,
+    PolizaColectivaStock,
+    CuentaEspecialCompensacion,
 )
 
 
@@ -201,3 +206,47 @@ class LibretaTrabajoDomicilioAdmin(SimpleHistoryAdmin):
         "responsabilidad_solidaria_directa",
     )
     search_fields = ("costurero__nombre", "marca_comitente__nombre")
+
+
+# ── MERCADO DE CAPITALES Y FIDUCIARIA (FDI) ─────────────────────────
+
+class SerieBonoBIPInline(admin.TabularInline):
+    from .models import SerieBonoBIP
+    model = SerieBonoBIP
+    extra = 0
+    fields = ("codigo_ticker", "numero_serie", "plazo_dias", "moneda", "monto_emision_nominal", "fecha_vencimiento", "estado")
+
+
+@admin.register(CarteraTitulizableBIP)
+class CarteraTitulizableBIPAdmin(admin.ModelAdmin):
+    list_display = ("codigo_cartera", "monto_nominal_total_ars", "monto_nominal_total_uci", "calificacion_promedio_setp", "estado", "fecha_corte")
+    list_filter = ("estado",)
+    search_fields = ("codigo_cartera", "descripcion")
+    inlines = [SerieBonoBIPInline]
+
+
+@admin.register(SerieBonoBIP)
+class SerieBonoBIPAdmin(admin.ModelAdmin):
+    list_display = ("codigo_ticker", "cartera_subyacente", "numero_serie", "plazo_dias", "moneda", "monto_emision_nominal", "fecha_vencimiento", "es_etiqueta_svs", "estado")
+    list_filter = ("moneda", "plazo_dias", "es_etiqueta_svs", "estado")
+    search_fields = ("codigo_ticker", "revisor_externo_cnv")
+
+
+@admin.register(SubcuentaReservaFondo)
+class SubcuentaReservaFondoAdmin(admin.ModelAdmin):
+    list_display = ("tipo_reserva", "saldo_disponible_ars", "saldo_bloqueado_ars", "alicuota_canon_pct", "modificado_en")
+    list_filter = ("tipo_reserva",)
+
+
+@admin.register(PolizaColectivaStock)
+class PolizaColectivaStockAdmin(admin.ModelAdmin):
+    list_display = ("numero_poliza", "compania_aseguradora", "fecha_vigencia_desde", "fecha_vigencia_hasta", "monto_maximo_cobertura_ars", "tasa_prima_anual_pct", "activa")
+    list_filter = ("activa", "compania_aseguradora")
+    search_fields = ("numero_poliza", "compania_aseguradora")
+
+
+@admin.register(CuentaEspecialCompensacion)
+class CuentaEspecialCompensacionAdmin(admin.ModelAdmin):
+    list_display = ("contacto", "entidad_bancaria", "cbu_cvu", "exencion_impuesto_cheque", "inembargabilidad_activa", "activa")
+    list_filter = ("exencion_impuesto_cheque", "inembargabilidad_activa", "activa", "entidad_bancaria")
+    search_fields = ("contacto__nombre", "cbu_cvu", "alias")

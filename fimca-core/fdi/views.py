@@ -276,8 +276,7 @@ class VetarEOPActionView(LoginRequiredMixin, View):
 
 class RevocarPTFActionView(LoginRequiredMixin, View):
     """
-    La ComisionCredito revoca la credencial de un PTF.
-    En Fase 4 notificará a todos los nodos de la red.
+    La ComisionCredito revoca la credencial de un PTF y notifica a los nodos federados.
     """
 
     def post(self, request, pk):
@@ -316,22 +315,14 @@ class EstadoCreditoFDIAPIView(APIView):
 
         from .models import EvaluacionTrayectoriaSETP
         from .services import SETPService
+        from .serializers import EstadoCreditoFDISerializer
 
         evaluacion = EvaluacionTrayectoriaSETP.objects.filter(cuit_evaluado=cuit_marca).first()
         if not evaluacion:
             evaluacion = SETPService.obtener_o_crear_perfil(cuit=cuit_marca, tipo_actor="comitente")
 
-        return Response(
-            {
-                "cuit_marca": cuit_marca,
-                "score_setp": str(evaluacion.score_setp),
-                "categoria_setp": evaluacion.categoria_setp,
-                "es_arranque_en_frio": evaluacion.es_arranque_en_frio,
-                "cupo_operativo_uci": str(evaluacion.cupo_operativo_uci),
-                "dias_mora_acumulados": evaluacion.dias_mora_historicos_acumulados,
-                "bloqueo_por_mora": evaluacion.dias_mora_historicos_acumulados > 15,
-            }
-        )
+        serializer = EstadoCreditoFDISerializer(evaluacion)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ParametrosArancelariosFDIAPIView(APIView):
@@ -343,6 +334,7 @@ class ParametrosArancelariosFDIAPIView(APIView):
     def get(self, request, *args, **kwargs):
         # Alícuotas institucionales oficiales aprobadas por la Comisión de Crédito
         from .models import PautaEscrowMES
+        from .serializers import ParametrosArancelariosSerializer
 
         pauta = PautaEscrowMES.objects.filter(activa=True).first()
         resolucion = pauta.resolucion_arancel if pauta else "RES-MES-2026-01"
@@ -351,17 +343,16 @@ class ParametrosArancelariosFDIAPIView(APIView):
         alicuota_stock = pauta.alicuota_stock if pauta else Decimal("0.0050")
         alicuota_total = alicuota_canon_mes + alicuota_fondo_fdi
 
-        return Response(
-            {
-                "version_arancel": resolucion,
-                "alicuota_canon_mes": str(alicuota_canon_mes),
-                "alicuota_fondo_riesgo_fdi": str(alicuota_fondo_fdi),
-                "alicuota_total_recargo": str(alicuota_total),
-                "alicuota_stock": str(alicuota_stock),
-                "descripcion": f"Resolución {resolucion}: Recargo MES/FDI ({alicuota_total * 100}% s/MOD) y Stock ({alicuota_stock * 100}% s/BOM)",
-            },
-            status=status.HTTP_200_OK,
-        )
+        data = {
+            "version_arancel": resolucion,
+            "alicuota_canon_mes": str(alicuota_canon_mes),
+            "alicuota_fondo_riesgo_fdi": str(alicuota_fondo_fdi),
+            "alicuota_total_recargo": str(alicuota_total),
+            "alicuota_stock": str(alicuota_stock),
+            "descripcion": f"Resolución {resolucion}: Recargo MES/FDI ({alicuota_total * 100}% s/MOD) y Stock ({alicuota_stock * 100}% s/BOM)",
+        }
+        serializer = ParametrosArancelariosSerializer(data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # =====================================================================
@@ -438,14 +429,14 @@ class RadicarDenunciaActionView(LoginRequiredMixin, View):
 class DashboardFiduciarioView(LoginRequiredMixin, ListView):
     """
     Dashboard del Fideicomiso (FDI) para monitorear hitos de escrow liberados,
-    generar lotes batch de clearing para Banco Provincia y conciliar pagos.
+    generar lotes batch de clearing bancario y conciliar pagos.
     """
     template_name = "mes/fiduciaria/clearing_dashboard.html"
     context_object_name = "hitos_pendientes"
 
     def get_queryset(self):
-        from .services import ClearingBAPROService
-        return ClearingBAPROService.obtener_hitos_pendientes_clearing()
+        from .services import ClearingBancarioService
+        return ClearingBancarioService.obtener_hitos_pendientes_clearing()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -455,25 +446,25 @@ class DashboardFiduciarioView(LoginRequiredMixin, ListView):
         # Totales proyectados
         total_centavos = 0
         for hito in context["hitos_pendientes"]:
-            monto_uci = ((hito.contrato.costo_mod + hito.contrato.costo_fdi) * hito.porcentaje_tramo) / Decimal("100.00")
-            total_centavos += int((monto_uci * cotizacion) * 100)
+            monto_ars = getattr(hito, "monto_ars", Decimal("0.00"))
+            total_centavos += int(monto_ars * 100)
         context["monto_total_ars"] = Decimal(total_centavos) / Decimal("100.00")
         return context
 
 
 class EjecutarClearingBatchActionView(LoginRequiredMixin, View):
     """
-    Gatilla la liquidación manual o descarga del lote batch BAPRO desde la UI.
+    Gatilla la liquidación manual o descarga del lote batch de clearing desde la UI.
     """
     def post(self, request):
-        from .services import ClearingBAPROService
+        from .services import ClearingBancarioService
         hitos_ids = request.POST.getlist("hitos_seleccionados")
         if not hitos_ids:
             messages.warning(request, "No seleccionaste ningún hito para liquidar.")
             return redirect("mes:fiduciaria_dashboard")
 
         lote_ref = f"LOTE-MANUAL-{timezone.now().strftime('%Y%m%d%H%M')}"
-        resultado = ClearingBAPROService.procesar_callback_clearing(
+        resultado = ClearingBancarioService.procesar_callback_clearing(
             lote_referencia=lote_ref,
             hitos_ids=[int(hid) for hid in hitos_ids],
             estado_pago="EXITOSO",
@@ -486,7 +477,7 @@ class EjecutarClearingBatchActionView(LoginRequiredMixin, View):
 
 
 # =====================================================================
-# GOBERNANZA LEY e-OP (FASE 2) — SETP y Diligencia Debida
+# GOBERNANZA — SETP y Diligencia Debida
 # =====================================================================
 
 
@@ -502,27 +493,14 @@ class SETPMiCalificacionAPIView(APIView):
 
         from .models import EvaluacionTrayectoriaSETP
         from .services import SETPService
+        from .serializers import SETPMiCalificacionSerializer
 
         evaluacion = EvaluacionTrayectoriaSETP.objects.filter(cuit_evaluado=cuit).first()
         if not evaluacion:
             evaluacion = SETPService.obtener_o_crear_perfil(cuit=cuit)
 
-        return Response({
-            "cuit": evaluacion.cuit_evaluado,
-            "tipo_actor": evaluacion.tipo_actor,
-            "score_setp": str(evaluacion.score_setp),
-            "categoria": evaluacion.categoria_setp,
-            "es_arranque_en_frio": evaluacion.es_arranque_en_frio,
-            "cupo_operativo_uci": str(evaluacion.cupo_operativo_uci),
-            "metricas": {
-                "indice_cumplimiento_plazos": str(evaluacion.indice_cumplimiento_plazos),
-                "indice_calidad_tecnica": str(evaluacion.indice_calidad_tecnica),
-                "ops_cumplidas_exitosas": evaluacion.ops_cumplidas_exitosas,
-                "indice_puntualidad_jit": str(evaluacion.indice_puntualidad_jit),
-                "indice_pago_vencimientos": str(evaluacion.indice_pago_vencimientos),
-                "dias_mora_historicos_acumulados": evaluacion.dias_mora_historicos_acumulados,
-            }
-        })
+        serializer = SETPMiCalificacionSerializer(evaluacion)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ConsultaCDDAPIView(APIView):
@@ -537,7 +515,9 @@ class ConsultaCDDAPIView(APIView):
             return Response({"error": "Debe indicar 'eop_uuid'."}, status=status.HTTP_400_BAD_REQUEST)
 
         from .models import CertificadoDiligenciaDebida
-        qs = CertificadoDiligenciaDebida.objects.filter(eop_asociada__uuid_identificador=eop_uuid)
+        from .serializers import CertificadoDiligenciaDebidaSerializer
+
+        qs = CertificadoDiligenciaDebida.objects.filter(eop_asociada__uuid_identificador=eop_uuid).select_related("eop_asociada", "tallerista", "comitente")
         if periodo:
             qs = qs.filter(periodo_mes_anio=periodo)
 
@@ -545,20 +525,137 @@ class ConsultaCDDAPIView(APIView):
         if not cdd:
             return Response({"error": "No se halló certificado de diligencia debida para los parámetros indicados."}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response({
-            "eop_uuid": str(cdd.eop_asociada.uuid_identificador),
-            "taller_cuit": cdd.tallerista.cuil if cdd.tallerista else "",
-            "comitente_cuit": cdd.comitente.cuil if cdd.comitente else "",
-            "periodo": cdd.periodo_mes_anio,
-            "tipo": cdd.tipo,
-            "estado_puerto_seguro": cdd.estado_puerto_seguro,
-            "hash_verificacion": cdd.hash_verificacion_cdd,
-            "recaudos": {
-                "f931_presentado": cdd.f931_presentado,
-                "dotacion_declarada": cdd.dotacion_declarada,
-                "poliza_art_vigente": cdd.poliza_art_vigente,
-                "bancarizacion_salarios_verificada": cdd.bancarizacion_salarios_verificada,
-                "situacion_fiscal_arca_regular": cdd.situacion_fiscal_arca_regular,
-            }
-        })
+        serializer = CertificadoDiligenciaDebidaSerializer(cdd)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# =====================================================================
+# MERCADO DE CAPITALES, TITULIZACIÓN BIP Y RESERVAS (FDI)
+# =====================================================================
+
+class CarterasBIPAPIView(APIView):
+    """
+    API para consulta y conformación de Carteras Titulizables de e-OPs (Art. 17° Ley e-OP).
+    Permite a los administradores del Fondo empaquetar e-OPs activas para colocación en ALyCs.
+    """
+    def get(self, request):
+        from .models import CarteraTitulizableBIP
+        from .serializers import CarteraTitulizableBIPSerializer
+
+        estado = request.GET.get("estado")
+        qs = CarteraTitulizableBIP.objects.all().prefetch_related("contratos").order_by("-creado_en")
+        if estado:
+            qs = qs.filter(estado=estado)
+
+        serializer = CarteraTitulizableBIPSerializer(qs, many=True)
+        return Response({"total": len(serializer.data), "carteras": serializer.data}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        from .services import TitulizacionBIPService
+        from .serializers import ConformarCarteraBIPInputSerializer
+
+        input_serializer = ConformarCarteraBIPInputSerializer(data=request.data)
+        if not input_serializer.is_valid():
+            return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        datos = input_serializer.validated_data
+        try:
+            cartera = TitulizacionBIPService.conformar_cartera_bip(
+                codigo_cartera=datos["codigo_cartera"],
+                eop_uuids=datos["eop_uuids"],
+                descripcion=datos.get("descripcion", ""),
+            )
+            return Response({
+                "status": "cartera_conformada",
+                "id": cartera.id,
+                "codigo_cartera": cartera.codigo_cartera,
+                "monto_nominal_uci": str(cartera.monto_nominal_total_uci),
+                "contratos_empaquetados": cartera.contratos.count(),
+            }, status=status.HTTP_201_CREATED)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SeriesBonoBIPAPIView(APIView):
+    """
+    API pública y de colocación para Series de Bonos BIP (CNV RG 917/2021).
+    Permite consultar títulos vigentes en el mercado secundario o emitir una nueva serie.
+    """
+    def get(self, request):
+        from .models import SerieBonoBIP
+        from .serializers import SerieBonoBIPSerializer
+
+        moneda = request.GET.get("moneda")
+        qs = SerieBonoBIP.objects.filter(estado="vigente").select_related("cartera_subyacente").order_by("-fecha_emision")
+        if moneda:
+            qs = qs.filter(moneda=moneda)
+
+        serializer = SerieBonoBIPSerializer(qs, many=True)
+        return Response({"total": len(serializer.data), "series_vigentes": serializer.data}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        from .services import TitulizacionBIPService
+        from .serializers import EmitirBonoBIPInputSerializer
+
+        input_serializer = EmitirBonoBIPInputSerializer(data=request.data)
+        if not input_serializer.is_valid():
+            return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        datos = input_serializer.validated_data
+        try:
+            serie = TitulizacionBIPService.emitir_serie_bono_bip(
+                cartera_id=datos["cartera_id"],
+                codigo_ticker=datos["codigo_ticker"],
+                plazo_dias=datos["plazo_dias"],
+                moneda=datos["moneda"],
+                tasa_tna=datos["tasa_interes_anual"],
+                revisor_cnv=datos.get("revisor_externo_cnv", "Calificadora de Riesgo SVS / CNV"),
+            )
+            return Response({
+                "status": "serie_bip_emitida",
+                "ticker": serie.codigo_ticker,
+                "monto_nominal": str(serie.monto_emision_nominal),
+                "moneda": serie.moneda,
+                "vencimiento": serie.fecha_vencimiento.isoformat(),
+                "etiqueta_svs": serie.es_etiqueta_svs,
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubcuentasReservaFDIAPIView(APIView):
+    """
+    Endpoint de supervisión de las 4 Subcuentas de Reserva Fiduciarias del Fondo (Art. 16° Ley e-OP).
+    Permite auditar el estado patrimonial y cobertura de siniestros/moras.
+    """
+    def get(self, request):
+        from .models import SubcuentaReservaFondo
+        from .services import FDISubcuentasReservaService
+        from .serializers import SubcuentaReservaFondoSerializer
+
+        FDISubcuentasReservaService.inicializar_subcuentas_estatutarias()
+        subcuentas = SubcuentaReservaFondo.objects.all().order_by("id")
+        serializer = SubcuentaReservaFondoSerializer(subcuentas, many=True)
+        return Response({"subcuentas_reserva": serializer.data}, status=status.HTTP_200_OK)
+
+
+class PolizaStockActivaAPIView(APIView):
+    """
+    Endpoint de constatación de la Póliza Colectiva de Stock en Custodia (Art. 20° bis Ley e-OP).
+    Invocado para verificar cobertura aseguradora previa a la liberación del Hito Cero.
+    """
+    def get(self, request):
+        from .models import PolizaColectivaStock
+        from .serializers import PolizaColectivaStockSerializer
+
+        poliza = PolizaColectivaStock.objects.filter(activa=True).order_by("-fecha_vigencia_hasta").first()
+        if not poliza:
+            return Response({
+                "cobertura_activa": False,
+                "mensaje": "No hay póliza colectiva de stock vigente en el Fondo."
+            }, status=status.HTTP_200_OK)
+
+        serializer = PolizaColectivaStockSerializer(poliza)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 

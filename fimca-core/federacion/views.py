@@ -12,9 +12,9 @@ from decimal import Decimal
 
 _ROLE = getattr(settings, "NODE_ROLE", "MES")
 
-# Módulos del Nodo MES (Gobernanza y FDI)
-from mes.models import RegistroEOP, ScoringTallerista
-from mes.services import PTFService
+# Módulos del Fondo Fiduciario (FDI / Estatuto Legal)
+from fdi.models import RegistroEOP, ScoringTallerista
+from fdi.services import PTFService
 from base.models import ContratoEOP, EOPHitoEscrow
 
 from .models import NodoFederado, NovedadFederada, WebhookLog
@@ -87,7 +87,7 @@ class RecepcionEOPView(APIView):
             score_global = Decimal("70.00")
 
             try:
-                from mes.services import SETPService
+                from fdi.services import SETPService
                 evaluacion = SETPService.obtener_o_crear_perfil(tallerista_cuit, tipo_actor="taller")
                 score_global = evaluacion.score_setp
             except Exception:
@@ -214,7 +214,7 @@ class RecepcionEOPView(APIView):
             else:
                 # Fallback: Tríada Canónica Dictaminada por la MES (ComisionService)
                 try:
-                    from mes.services import ComisionService
+                    from fdi.services import ComisionService
                     pauta_mes = ComisionService.obtener_pauta_escrow(es_sello_buen_diseno=posee_sbd)
                     porcentaje_hito_cero = pauta_mes["porcentaje_cero"]
                     nombre_cero = pauta_mes["etiqueta_cero"]
@@ -446,7 +446,7 @@ class TarifarioConvenioAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        from mes.models import TarifaConvenio
+        from fdi.models import TarifaConvenio
         tarifas = TarifaConvenio.objects.filter(activo=True).values(
             "codigo_universal", "servicio_nombre", "precio_referencia_uci", "vigencia_desde"
         )
@@ -462,7 +462,7 @@ class PautaEscrowPublicaAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        from mes.services import ComisionService
+        from fdi.services import ComisionService
         sbd_param = request.query_params.get("sello_buen_diseno", "false").lower() in ["true", "1", "t", "yes"]
         comision_id = request.query_params.get("comision_id")
         
@@ -482,7 +482,7 @@ class CRLAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        from mes.services import CRLService
+        from fdi.services import CRLService
         return Response(CRLService.obtener_crl_completa(), status=status.HTTP_200_OK)
 
 
@@ -493,8 +493,8 @@ class BoletinOficialPublicoAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, numero_edicion=None):
-        from mes.models import EdicionBoletinSectorial
-        from mes.reports.boletin_report import BoletinSectorialPDFReport
+        from fdi.models import EdicionBoletinSectorial
+        from fdi.reports.boletin_report import BoletinSectorialPDFReport
 
         if numero_edicion:
             boletin = EdicionBoletinSectorial.objects.filter(
@@ -532,34 +532,30 @@ class ClearingPendientesAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        from mes.services import ClearingBAPROService
+        from fdi.services import ClearingBancarioService
         from django.http import HttpResponse
 
-        hitos_pendientes = ClearingBAPROService.obtener_hitos_pendientes_clearing()
+        hitos_pendientes = ClearingBancarioService.obtener_hitos_pendientes_clearing()
 
         if request.GET.get("format") == "txt":
-            contenido_txt = ClearingBAPROService.generar_lote_clearing_txt(hitos_pendientes)
+            contenido_txt = ClearingBancarioService.generar_lote_clearing_txt(hitos_pendientes)
             fecha_lote = timezone.now().strftime("%Y%m%d_%H%M")
             response = HttpResponse(contenido_txt, content_type="text/plain")
-            response["Content-Disposition"] = f'attachment; filename="clearing_bapro_{fecha_lote}.txt"'
+            response["Content-Disposition"] = f'attachment; filename="clearing_fiduciario_{fecha_lote}.txt"'
             return response
 
         data = []
         for hito in hitos_pendientes:
-            taller = None
             contrato = hito.contrato
-            if contrato.orden_produccion_local and contrato.orden_produccion_local.taller_gestor:
-                taller = contrato.orden_produccion_local.taller_gestor
+            taller = getattr(contrato, "tallerista", None)
 
             data.append({
                 "hito_id": hito.id,
-                "hito_nombre": hito.nombre,
-                "porcentaje_tramo": str(hito.porcentaje_tramo),
+                "numero_hito": hito.numero_hito,
+                "monto_ars": str(hito.monto_ars),
                 "eop_numero": contrato.numero,
-                "eop_uuid": str(contrato.uuid_identificador),
                 "taller_nombre": taller.nombre if taller else "",
-                "taller_cuit": taller.cuil if taller else "",
-                "taller_cbu": taller.cbu_alias if taller else "",
+                "taller_cuit": taller.cuit if taller else "",
             })
 
         return Response(data, status=status.HTTP_200_OK)
@@ -573,7 +569,7 @@ class ClearingCallbackAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        from mes.services import ClearingBAPROService
+        from fdi.services import ClearingBancarioService
 
         lote_referencia = request.data.get("lote_referencia", f"LOTE-{timezone.now().strftime('%Y%m%d%H%M')}")
         hitos_ids = request.data.get("hitos_ids", [])
@@ -582,7 +578,7 @@ class ClearingCallbackAPIView(APIView):
         if not hitos_ids:
             return Response({"error": "Debe especificar la lista de hitos_ids"}, status=status.HTTP_400_BAD_REQUEST)
 
-        resultado = ClearingBAPROService.procesar_callback_clearing(
+        resultado = ClearingBancarioService.procesar_callback_clearing(
             lote_referencia=lote_referencia,
             hitos_ids=hitos_ids,
             estado_pago=estado_pago,

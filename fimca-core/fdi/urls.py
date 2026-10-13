@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
-app_name = "mes"
+app_name = "fdi"
 
 urlpatterns = [
     # ── Gobernanza: Registro de e-OPs ──────────────────────────────────
@@ -36,7 +36,13 @@ urlpatterns = [
     path("api/v1/fdi/estado-credito/", views.EstadoCreditoFDIAPIView.as_view(), name="api_estado_credito"),
     path("api/v1/fdi/parametros-arancelarios/", views.ParametrosArancelariosFDIAPIView.as_view(), name="api_parametros_arancelarios"),
 
-    # ── GOBERNANZA LEY e-OP (FASE 2: SETP y DILIGENCIA DEBIDA) ─────────
+    # ── GOBERNANZA — SETP Y DILIGENCIA DEBIDA ──────────────────────────
     path("api/v1/setp/mi-calificacion/", views.SETPMiCalificacionAPIView.as_view(), name="api_setp_calificacion"),
     path("api/v1/diligencia-debida/consulta/", views.ConsultaCDDAPIView.as_view(), name="api_consulta_cdd"),
+
+    # ── MERCADO DE CAPITALES, TITULIZACIÓN BIP Y RESERVAS FDI ──────────
+    path("api/v1/fdi/bip/carteras/", views.CarterasBIPAPIView.as_view(), name="api_carteras_bip"),
+    path("api/v1/fdi/bip/series/", views.SeriesBonoBIPAPIView.as_view(), name="api_series_bonos_bip"),
+    path("api/v1/fdi/reservas/", views.SubcuentasReservaFDIAPIView.as_view(), name="api_subcuentas_reserva"),
+    path("api/v1/fdi/seguros/poliza-stock/", views.PolizaStockActivaAPIView.as_view(), name="api_poliza_stock_activa"),
 ]

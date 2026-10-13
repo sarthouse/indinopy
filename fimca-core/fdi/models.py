@@ -613,7 +613,7 @@ class ScoringTallerista(TimeStampedModel):
 
 
 # =========================================================================
-# ORÁCULO DE PRECIOS, CRL Y BOLETÍN OFICIAL SECTORIAL (FASE 1)
+# ORÁCULO DE PRECIOS, CRL Y BOLETÍN OFICIAL SECTORIAL
 # =========================================================================
 
 class TarifaConvenio(TimeStampedModel):
@@ -940,4 +940,231 @@ class LibretaTrabajoDomicilio(TimeStampedModel):
 
     def __str__(self):
         return f"Libreta 12.713: {self.costurero} - e-OP {self.eop_asociada.numero or self.eop_asociada.id}"
+
+
+# =====================================================================
+# INFRAESTRUCTURA FIDUCIARIA Y MERCADO DE CAPITALES (FDI)
+# Marco Legal: Anteproyecto de Ley e-OP Arts. 14°, 16°, 17°, 20° bis y Anexos
+# =====================================================================
+
+class CarteraTitulizableBIP(TimeStampedModel):
+    """
+    Cartera homogénea de contratos e-OP colateralizables y auditados por el FDI,
+    aptos para titulización y emisión de Bonos de Inversión Productiva (BIP) conforme al Art. 17°.
+    """
+    codigo_cartera = models.CharField(
+        max_length=60, unique=True, verbose_name=_("Código de Cartera Titulizable")
+    )
+    descripcion = models.CharField(max_length=200, blank=True, verbose_name=_("Descripción de la Cartera"))
+    contratos = models.ManyToManyField(
+        "base.ContratoEOP", related_name="carteras_bip", verbose_name=_("Contratos e-OP Asignados")
+    )
+    monto_nominal_total_ars = models.DecimalField(
+        max_digits=18, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Monto Nominal Total (ARS)")
+    )
+    monto_nominal_total_uci = models.DecimalField(
+        max_digits=18, decimal_places=4, default=Decimal("0.00"), verbose_name=_("Monto Nominal Total (UCI)")
+    )
+    calificacion_promedio_setp = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("70.00"), verbose_name=_("Score SETP Promedio Ponderado")
+    )
+    estado = models.CharField(
+        max_length=25,
+        choices=[
+            ("en_conformacion", _("En Conformación")),
+            ("auditada_comite", _("Auditada y Aprobada por Comité")),
+            ("titulizada", _("Titulizada (Títulos Emitidos)")),
+            ("liquidada", _("Liquidada y Cancelada")),
+        ],
+        default="en_conformacion",
+        verbose_name=_("Estado de la Cartera")
+    )
+    fecha_corte = models.DateField(null=True, blank=True, verbose_name=_("Fecha de Corte de la Cartera"))
+
+    class Meta:
+        verbose_name = _("Cartera Titulizable BIP")
+        verbose_name_plural = _("Carteras Titulizables BIP")
+        ordering = ["-creado_en"]
+
+    def __str__(self):
+        return f"{self.codigo_cartera} [{self.get_estado_display()}] — $ {self.monto_nominal_total_ars}"
+
+    def recalcular_totales(self):
+        """Recalcula el valor nominal agregado y el scoring promedio ponderado de las e-OPs asignadas."""
+        contratos_qs = self.contratos.all()
+        total_uci = sum((c.monto_total_uci for c in contratos_qs), Decimal("0.00"))
+        self.monto_nominal_total_uci = total_uci
+        self.save(update_fields=["monto_nominal_total_uci"])
+
+
+class SerieBonoBIP(TimeStampedModel):
+    """
+    Título de Deuda / Bono de Inversión Productiva (BIP) de Corto Plazo (60 a 180 días).
+    Emisión fiduciaria en el Mercado de Capitales bajo normativa CNV (RG 917/2021)
+    con etiqueta de Bono Social, Verde o Sustentable (SVS).
+    """
+    MONEDA_CHOICES = [
+        ("uci", _("Unidad de Cuenta Industrial (UCI)")),
+        ("uva", _("Unidad de Valor Adquisitivo (UVA)")),
+        ("ars", _("Pesos Argentinos (ARS)")),
+        ("usd", _("Dólares Estadounidenses (USD)")),
+    ]
+
+    TRAMO_CHOICES = [
+        ("institucional", _("Tramo Institucional (FCI / Bancos / Aseguradoras)")),
+        ("minorista_alyc", _("Tramo Minorista / Inversores Pyme (ALyC)")),
+    ]
+
+    cartera_subyacente = models.ForeignKey(
+        CarteraTitulizableBIP, on_delete=models.PROTECT, related_name="series_bonos",
+        verbose_name=_("Cartera Subyacente Titulizada")
+    )
+    codigo_ticker = models.CharField(
+        max_length=20, unique=True, verbose_name=_("Ticker Bursátil (BYMA/MAE)"),
+        help_text=_("Ej: BIP-2026-I, BIP-UCI-001")
+    )
+    numero_serie = models.PositiveIntegerField(default=1, verbose_name=_("Número de Serie"))
+    plazo_dias = models.PositiveIntegerField(
+        default=90, choices=[(60, "60 días"), (90, "90 días"), (120, "120 días"), (180, "180 días")],
+        verbose_name=_("Plazo del Bono (Días Corridos)")
+    )
+    moneda = models.CharField(max_length=10, choices=MONEDA_CHOICES, default="uci", verbose_name=_("Moneda de Emisión"))
+    monto_emision_nominal = models.DecimalField(
+        max_digits=18, decimal_places=2, verbose_name=_("Monto Nominal Emitido")
+    )
+    tasa_interes_anual = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Tasa de Interés Nominal Anual (TNA %)")
+    )
+    fecha_emision = models.DateField(default=timezone.now, verbose_name=_("Fecha de Emisión"))
+    fecha_vencimiento = models.DateField(verbose_name=_("Fecha de Vencimiento y Amortización"))
+
+    # Cumplimiento Regulatorio CNV RG 917/2021 (Bonos SVS)
+    es_etiqueta_svs = models.BooleanField(
+        default=True, verbose_name=_("Etiqueta SVS (Bono Social y Sustentable)"),
+        help_text=_("Acredita impacto laboral formal y desarrollo productivo federal.")
+    )
+    revisor_externo_cnv = models.CharField(
+        max_length=150, blank=True, verbose_name=_("Revisor Externo Independiente (Registro CNV)")
+    )
+    hash_seguridad_prospecto = models.CharField(
+        max_length=64, blank=True, verbose_name=_("Hash SHA-256 del Prospecto Homologado")
+    )
+
+    estado = models.CharField(
+        max_length=25,
+        choices=[
+            ("solicitud_cnv", _("En Homologación CNV")),
+            ("en_colocacion", _("En Período de Colocación Bursátil")),
+            ("vigente", _("Vigente / En Circulación")),
+            ("amortizado", _("Totalmente Amortizado")),
+            ("incumplido", _("En Ejecución de Garantías")),
+        ],
+        default="solicitud_cnv",
+        verbose_name=_("Estado de la Serie")
+    )
+
+    class Meta:
+        verbose_name = _("Serie de Bonos BIP")
+        verbose_name_plural = _("Series de Bonos BIP (Mercado de Capitales)")
+        ordering = ["-fecha_emision", "numero_serie"]
+
+    def __str__(self):
+        return f"{self.codigo_ticker} ({self.get_moneda_display()}) - Vto: {self.fecha_vencimiento} [{self.get_estado_display()}]"
+
+
+class SubcuentaReservaFondo(TimeStampedModel):
+    """
+    Subcuentas fiduciarias de liquidez y amortiguadores de riesgo del FDI
+    instituidas por el Art. 16° de la Ley e-OP para aislar insolvencias y contingencias.
+    """
+    TIPO_RESERVA_CHOICES = [
+        ("garantia_comitente", _("Reserva de Garantía Comitente (5% Retención s/e-OP)")),
+        ("mora_operativa", _("Reserva por Mora Operativa del Taller (0,8% Canon FDI)")),
+        ("fondo_laboral_fael", _("Fondo Laboral FAEL y Caución LCT (0,5% Canon FDI)")),
+        ("liquidez_contingente", _("Facilidad de Liquidez Contingente (Hasta 5% Programa)")),
+    ]
+
+    tipo_reserva = models.CharField(
+        max_length=30, choices=TIPO_RESERVA_CHOICES, unique=True, verbose_name=_("Tipo de Subcuenta Fiduciaria")
+    )
+    descripcion = models.TextField(blank=True, verbose_name=_("Finalidad y Destino Específico"))
+    saldo_disponible_ars = models.DecimalField(
+        max_digits=18, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Saldo Disponible (ARS)")
+    )
+    saldo_bloqueado_ars = models.DecimalField(
+        max_digits=18, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Saldo Comprometido/Bloqueado (ARS)")
+    )
+    alicuota_canon_pct = models.DecimalField(
+        max_digits=4, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Alícuota s/Canon Fiduciario (%)")
+    )
+
+    class Meta:
+        verbose_name = _("Subcuenta de Reserva Fiduciaria")
+        verbose_name_plural = _("Subcuentas de Reserva Fiduciaria (Art. 16°)")
+
+    def __str__(self):
+        return f"[{self.get_tipo_reserva_display()}] Saldo: $ {self.saldo_disponible_ars}"
+
+
+class PolizaColectivaStock(TimeStampedModel):
+    """
+    Póliza Colectiva de Seguro de Stock en Custodia (Art. 20° bis Ley e-OP).
+    Contratada centralizadamente por el FDI ante entidades aseguradoras autorizadas por la SSN.
+    Cubre el valor $c_{\text{BOM}}$ entregado a los talleres contra siniestros, incendio y robo.
+    """
+    numero_poliza = models.CharField(max_length=60, unique=True, verbose_name=_("Número de Póliza Oficial SSN"))
+    compania_aseguradora = models.CharField(max_length=150, verbose_name=_("Compañía Aseguradora (SSN)"))
+    fecha_vigencia_desde = models.DateField(verbose_name=_("Inicio de Vigencia"))
+    fecha_vigencia_hasta = models.DateField(verbose_name=_("Fin de Vigencia"))
+    monto_maximo_cobertura_ars = models.DecimalField(
+        max_digits=18, decimal_places=2, verbose_name=_("Límite Global de Cobertura (ARS)")
+    )
+    tasa_prima_anual_pct = models.DecimalField(
+        max_digits=4, decimal_places=2, default=Decimal("0.50"),
+        verbose_name=_("Tasa de Prima s/Valor BOM (%)"),
+        help_text=_("Tope legal: 0,5% s/BOM financiado vía canon fiduciario de stock.")
+    )
+    activa = models.BooleanField(default=True, verbose_name=_("Póliza Activa"))
+
+    class Meta:
+        verbose_name = _("Póliza Colectiva de Stock en Custodia")
+        verbose_name_plural = _("Pólizas Colectivas de Stock (Art. 20° bis)")
+
+    def __str__(self):
+        return f"Póliza {self.numero_poliza} ({self.compania_aseguradora}) - Cobertura: $ {self.monto_maximo_cobertura_ars}"
+
+
+class CuentaEspecialCompensacion(TimeStampedModel):
+    """
+    Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° y Anexo I).
+    Cuentas abiertas en entidades financieras bancarias o de pago bajo régimen especial BCRA.
+    Gozan de exención automática del Impuesto al Cheque (Ley 25.413) e inembargabilidad operativa.
+    """
+    contacto = models.ForeignKey(
+        "base.Contacto", on_delete=models.CASCADE, related_name="cuentas_especiales_compensacion",
+        verbose_name=_("Titular (Marca o Taller)")
+    )
+    cbu_cvu = models.CharField(max_length=22, unique=True, verbose_name=_("CBU / CVU Especial BCRA"))
+    alias = models.CharField(max_length=50, blank=True, verbose_name=_("Alias Bancario"))
+    entidad_bancaria = models.CharField(max_length=100, verbose_name=_("Banco / Proveedor de Servicios de Pago"))
+    numero_cuenta = models.CharField(max_length=50, blank=True, verbose_name=_("Número de Cuenta"))
+    
+    exencion_impuesto_cheque = models.BooleanField(
+        default=True, verbose_name=_("Exención Impuesto Débitos y Créditos (Ley 25.413)"),
+        help_text=_("Exención aplicable exclusivamente a liquidaciones de e-OPs acreditadas por el FDI.")
+    )
+    inembargabilidad_activa = models.BooleanField(
+        default=True, verbose_name=_("Inembargabilidad Operativa Preexistente"),
+        help_text=_("Los fondos no son pasibles de embargo por deudas bancarias anteriores del titular.")
+    )
+    activa = models.BooleanField(default=True, verbose_name=_("Cuenta Habilitada"))
+
+    class Meta:
+        verbose_name = _("Cuenta Especial de Compensación BCRA")
+        verbose_name_plural = _("Cuentas Especiales de Compensación (Art. 14°)")
+        ordering = ["contacto", "-creado_en"]
+
+    def __str__(self):
+        return f"{self.contacto.nombre} - {self.entidad_bancaria} ({self.cbu_cvu})"
+
 

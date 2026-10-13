@@ -7,7 +7,7 @@ from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 
 from federacion.models import NodoFederado, WebhookLog
-from base.models import ConfiguracionEmpresa, DocumentoAdjunto
+from base.models import ConfiguracionNodo, DocumentoAdjunto
 from comunicaciones.models import ComunicacionOficial, CedulaDestinatario
 from comunicaciones.services import ComunicacionOficialService
 from comunicaciones.reports import ComunicacionOficialPDFReport

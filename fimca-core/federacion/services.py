@@ -1,7 +1,7 @@
 import requests
 from django.db import transaction
 from django.conf import settings
-from base.models import ConfiguracionEmpresa
+from base.models import ConfiguracionNodo
 
 class FederacionCreditoService:
     """
@@ -14,9 +14,9 @@ class FederacionCreditoService:
         Consulta en tiempo real (Pull) el estado del crédito y la mora
         al servidor de la MES.
         """
-        empresa = ConfiguracionEmpresa.objects.first()
+        empresa = ConfiguracionNodo.objects.first()
         if not empresa:
-            raise ValueError("No hay una ConfiguracionEmpresa definida en este nodo.")
+            raise ValueError("No hay una ConfiguracionNodo definida en este nodo.")
         
         mi_cuit = empresa.cuit
         
@@ -88,9 +88,9 @@ class FederacionCreditoService:
         import json
         from decimal import Decimal
 
-        empresa = ConfiguracionEmpresa.objects.first()
+        empresa = ConfiguracionNodo.objects.first()
         if not empresa:
-            raise ValueError("No hay una ConfiguracionEmpresa definida en este nodo.")
+            raise ValueError("No hay una ConfiguracionNodo definida en este nodo.")
 
         mes_url = getattr(settings, 'NODO_MES_URL', 'http://localhost:8000').rstrip('/')
         endpoint = f"{mes_url}/federacion/eop/entrante/"

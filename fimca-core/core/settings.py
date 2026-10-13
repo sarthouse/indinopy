@@ -28,7 +28,7 @@ INSTALLED_APPS = [
 
     # Módulos FIMCA Core (Red, Gobernanza y Protocolo)
     'base',
-    'mes',
+    'fdi',
     'federacion',
     'comunicaciones',
 ]

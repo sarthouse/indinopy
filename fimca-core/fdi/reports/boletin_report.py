@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Any, Dict
 from base.reports.base import BasePDFReport
-from mes.models import EdicionBoletinSectorial
+from fdi.models import EdicionBoletinSectorial
 
 
 class BoletinSectorialPDFReport(BasePDFReport):

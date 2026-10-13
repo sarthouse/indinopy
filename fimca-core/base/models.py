@@ -37,9 +37,6 @@ class ConfiguracionNodo(TimeStampedModel):
         return f"{self.nombre_nodo} ({self.cuit})"
 
 
-# Alias de compatibilidad semántica para módulos de federación
-ConfiguracionEmpresa = ConfiguracionNodo
-
 
 class Moneda(TimeStampedModel):
     """
