@@ -27,12 +27,12 @@
    - 4.4. Defensas de Calidad y Peritaje Técnico Prejudicial INTI (Arts. 11.2 y 13°)
    - 4.5. Alerta Temprana de Inconsistencia de Costos (Art. 27°)
    - 4.6. Módulo de Libreta Digital de Trabajo a Domicilio (Ley N° 12.713)
-5. [Fase 3: Orquestación, Serializadores y Tareas en `apps/federacion`](#5-fase-3-orquestación-serializadores-y-tareas-en-appsfederacion)
+5. [Fase 3: Orquestación, Serializadores y Tareas en `fimca-core/federacion` y `comunicaciones`](#5-fase-3-orquestación-serializadores-y-tareas-en-fimca-corefederacion-y-comunicaciones)
    - 5.1. Corrección de `EntradaEOPSerializer` y Validación de Alícuotas Desglosadas
    - 5.2. Desacople y Eliminación de Duplicación en `RecepcionEOPView`
    - 5.3. Validación Copulativa en `liberar_hito_escrow_async` (Hito Cero)
-   - 5.4. Trazabilidad de Remitos Oficiales en `EOPWebhookReceiverAPIView`
-   - 5.5. Reutilización de `ComunicacionOficialFederada` para Notificaciones Legales
+   - 5.4. Desacople de Vistas ERP: Recepción de OP Espejo y Partes en `indinopy`
+   - 5.5. Aislamiento del Subsistema de `Comunicaciones Oficiales y Cédulas` (Store-and-Forward Inter-Nodo)
 6. [Fase 4: Infraestructura Fiduciaria y Mercado de Capitales (`apps/fdi`)](#6-fase-4-infraestructura-fiduciaria-y-mercado-de-capitales-appsfdi)
    - 6.1. Titulización Bursátil y Emisión de Bonos BIP (Arts. 17° y Anexo II)
    - 6.2. Gestión de Fondos de Cobertura y Amortiguadores de Riesgo (Art. 16°)
@@ -70,10 +70,12 @@ El presente plan establece la hoja de ruta de ingeniería de software para trans
 ## 2. Matriz de Diagnóstico y Brechas Arquitectónicas (Gap Analysis)
 
 | Dimensión | Estado Actual en Indinopy | Requisito Ley e-OP | Severidad / Impacto |
-| :--- | :--- | :--- | :---: |
+| :--- | :--- | :--- | :--- | :---: |
+| **Arquitectura de Nodos** | Código de taller, marcas y gobernanza MES unificado. | **Separación en 2 proyectos:** `fimca-core` (red/MES) e `indinopy` (ERP local marcas/talleres). | **CRÍTICO (RESUELTO)** |
 | **Colateral Financiero** | `monto_total_uci` suma $c_{\text{MOD}} + c_{\text{BOM}} + c_{\text{FDI}}$. | $c_{\text{BOM}}$ **no integra la deuda exigible**. Solo colateraliza $c_{\text{MOD}} + c_{\text{FDI}} + \text{intereses}$. | **CRÍTICO** |
-| **Validación Federada** | `EntradaEOPSerializer` exige estrictamente $fdi = mod \times 0.015$. | Desdobla canon en operativo ($\le 1,5\%$ s/MOD) y stock ($\le 0,5\%$ s/BOM). Falla con HTTP 400. | **CRÍTICO** |
-| **Instanciación en MES** | `RecepcionEOPView` clona contratos e hitos con lógica ORM duplicada. | Debe delegar en `EOPService.ingresar_contrato_desde_federacion()` para no generar hitos inconsistentes. | **ALTO** |
+| **Validación Federada** | `EntradaEOPSerializer` exige estrictamente $fdi = mod \times 0.015$. | Desdobla canon en operativo ($\le 1,5\%$ s/MOD) y stock ($\le 0,5\%$ s/BOM). | **CRÍTICO (RESUELTO)** |
+| **Comunicaciones Legales** | Mezcladas en `federacion` con dependencias cruzadas. | App propia aislada `comunicaciones` en ambos nodos (cédulas Store-and-Forward de 48h). | **ALTO (RESUELTO)** |
+| **Instanciación en MES** | `RecepcionEOPView` clona contratos e hitos con lógica ORM duplicada. | Dictamen dinámico vía `mes.services.ComisionService` con Fast-Track para Scoring $\ge 90$. | **ALTO (RESUELTO)** |
 | **Registro Oficial** | Centralizado en el nodo MES (`RegistroEOP`). | El registro público oficial funciona en **ARCA** con datos abiertos no sensibles. | **ALTO** |
 | **Logística Justo a Tiempo** | Inexistente. El plazo es estático. | Régimen Art. 5° bis: prórrogas automáticas (tope 30d), compensación standby (0,5 SMVM/día) y rescisión (15d). | **MEDIO-ALTO** |
 | **Hito Cero** | Liberación por simple firma o aprobación. | Exige copulativamente: firma bilateral N3, remito oficial A/B/C/R con UUID (o Lote Crítico >=20%) y seguro activo. | **ALTO** |
@@ -339,13 +341,13 @@ Servicio `AuditoriaCostosINTIService`:
 
 ---
 
-## 5. Fase 3: Orquestación, Serializadores y Tareas en `apps/federacion`
+## 5. Fase 3: Orquestación, Serializadores y Tareas en `fimca-core/federacion` y `comunicaciones`
 
-Esta fase es crítica para resolver los acoplamientos del bus inter-nodo identificados en `apps/federacion`.
+Esta fase resuelve los acoplamientos entre el nodo central de red/gobernanza (`fimca-core`) y los nodos locales de manufactura (`indinopy`), consolidando una arquitectura limpia orientada a eventos.
 
 ### 5.1. Corrección de `EntradaEOPSerializer` y Validación de Alícuotas Desglosadas
 
-En `apps/federacion/serializers.py`, refactorizar `EntradaEOPSerializer.validate()`:
+En `fimca-core/federacion/serializers.py`, se refactoriza `EntradaEOPSerializer.validate()`:
 1. **Desacoplar la validación de `monto_total_uci`:** Asegurar que verifique:
    $$\text{monto\_total\_uci} == c_{\text{MOD}} + c_{\text{FDI\_operativo}} + c_{\text{FDI\_stock}}$$
    y que **no sume** $c_{\text{BOM}}$.
@@ -356,41 +358,44 @@ En `apps/federacion/serializers.py`, refactorizar `EntradaEOPSerializer.validate
 
 ### 5.2. Desacople y Eliminación de Duplicación en `RecepcionEOPView`
 
-En `apps/federacion/views.py`:
-* Eliminar las líneas 183 a 281 que duplican la instanciación de `ContratoEOP` e hitos dentro de `RecepcionEOPView.post()`.
-* Reemplazar por una invocación al servicio centralizado:
-  ```python
-  contrato_escrow = EOPService.ingresar_contrato_desde_federacion(
-      datos_validados=data,
-      payload_canonico=payload_canonico,
-      es_sbd=posee_sbd,
-  )
-  ```
-* Esto garantiza que cualquier cambio en la estructura de hitos o campos JIT en `apps/eop` se propague automáticamente al receptor federado.
+En `fimca-core/federacion/views.py`:
+* Se centraliza la instanciación canónica del contrato fiduciario en la MES, asegurando que el Timelock (2h en Fast-Track para scoring $\ge 90$ o réplicas técnicas anuales; 48h ordinarias) se active únicamente tras verificar la multifirma obligatoria (Comitente + Tallerista).
+* Se dictamina la tríada de hitos vía `mes.services.ComisionService`:
+  - **Hito Cero:** Anticipo operativo de arranque (35% estándar o 50% con Sello de Buen Diseño).
+  - **Hitos de Avance:** Calzados con el cronograma o etapas de servicios MOD homologados.
+  - **Hito Final:** Retención de Cierre Fiscal (RCF) con verificación ARCA obligatoria.
 
-### 5.3. Validación Copulativa en `liberar_hito_escrow_async` (Hito Cero)
+### 5.3. Validación Copulativa y Despacho en `liberar_hito_escrow_async`
 
-En `apps/federacion/tasks.py`:
-* Modificar `liberar_hito_escrow_async` para que no ejecute la liberación ciega del primer hito.
-* Delegar la validación copulativa en `EOPService.liberar_hito(hito.id)`:
-  * Si es Hito Cero: verificar remito electrónico oficial (A/B/C/R con UUID) y vigencia del seguro de stock.
-  * Si faltan requisitos, el hito permanece en `bloqueado` y se emite una excepción descriptiva que Celery registra en los logs de auditoría.
+En `fimca-core/federacion/tasks.py`:
+* La tarea Celery asincrónica delega la liberación del tramo de Escrow directamente en `mes.services.PTFService._liberar_escrow_por_eop()`.
+* Si es Hito Cero: valida copulativamente la vigencia del remito oficial ARCA y la cobertura de póliza de stock antes de ordenar la transferencia bancaria en la subcuenta de compensación fiduciaria.
 
-### 5.4. Trazabilidad de Remitos Oficiales en `EOPWebhookReceiverAPIView`
+### 5.4. Desacople de Vistas ERP: Recepción de OP Espejo y Partes en `indinopy`
 
-En `apps/federacion/views.py`:
-* Al recibir el webhook en el nodo tallerista y generar la OP Espejo (`ESP-...`):
-  * Extraer del sobre el UUID de la e-OP y el número de remito oficial ARCA.
-  * Asignar estos datos al `MovimientoStock` de recepción en custodia (`CUST-...`).
-  * Inyectar en el comprobante la leyenda obligatoria del Art. 20.2: *"Materias primas en custodia de transformación bajo régimen de e-OP Ley [——]. Dominio exclusivo de la comitente CUIT [——]. Inembargable s/Art. 138 Ley 24.522"*.
+Se eliminó de `fimca-core/federacion/views.py` todo código residual de manufactura física local:
+* **`EOPWebhookReceiverAPIView`** y **`ParteProduccionWebhookReceiverAPIView`** fueron removidas de `fimca-core` (el nodo MES no corta prendas, no gestiona recetas ni almacena rollos en custodia).
+* **En el ERP `indinopy`:**
+  - La recepción de la e-OP y la generación de la OP Espejo (`ESP-...`) se resuelve en `indinopy/apps/eop/views.py` (Push directo) o vía la tarea Celery de sincronización periódica (Pull mediante `GET /federacion/api/v1/novedades/` en la MES con cabecera `X-CUIT`).
+  - Al recibir los insumos en el taller, `apps/inventario` genera el `MovimientoStock` de custodia (`CUST-...`) con la leyenda legal inembargable del Art. 20.2.
+  - Los avances físicos con validación geodésica PoPW residen en `indinopy/apps/produccion/`.
 
-### 5.5. Reutilización de `ComunicacionOficialFederada` para Notificaciones Legales
+### 5.5. Aislamiento del Subsistema de `Comunicaciones Oficiales y Cédulas` (Store-and-Forward Inter-Nodo)
 
-Aprovechar el subsistema de `ComunicacionOficialFederada` y `CedulaDestinatario` (que ya cuenta con firma Ed25519 y cómputo de 48h tácitas en Celery Beat) como canal formal para:
-1. **Notificación de Objeción de Calidad (Art. 11.2):** Despacha cédula formal de la marca hacia la MES y el tallerista dentro del plazo perentorio de 5 días hábiles.
-2. **Notificación de Silencio Positivo / Aprobación Tácita (Art. 12.2):** Emisión de la constancia digital tras 48h hábiles sin objeción técnica.
-3. **Intimación Prejudicial de Mora (Art. 6°):** Cédula de intimación de 10 días hábiles previa a la ejecución de deuda del tallerista por el FDI.
-4. **Declaración de Rescisión Contractual JIT (Art. 5° bis inc. 6):** Cédula fehaciente del tallerista resolviendo el contrato tras 15 días hábiles de mora en insumos.
+Para garantizar la interoperabilidad de notificaciones legales entre cualquier tipo de nodo (MES, Marcas comitentes, Talleres satélites y Fiduciarias), se aisló la app **`comunicaciones`**:
+1. **En el Nodo Central (`fimca-core/comunicaciones`):**
+   - Resuelve el Domicilio Electrónico Sectorial enrutando cédulas hacia los `NodoFederado` registrados.
+   - Encola en `NovedadFederada` si el nodo destinatario opera On-Premise sin IP pública fija (Store-and-Forward).
+   - Tareas Celery en `comunicaciones/tasks.py`: `despachar_cedula_webhook_async` y `procesar_notificaciones_tacitas_async`.
+2. **En el Nodo ERP Local (`indinopy/apps/comunicaciones` - Opción A):**
+   - Identificación universal por `cuit_emisor` y `cuit_destino` con enlace opcional (`ForeignKey(null=True)`) a [`apps.contactos.models.Contacto`](file:///home/tiago/programacion/indinopy/indinopy/apps/contactos/models.py).
+   - Gestión de documentos adjuntos inmutables mediante `apps.documentos.models.DocumentoAdjunto`.
+   - Bandeja oficial con resguardo de destinatarios en copia oculta (CCO), emisión con firma Ed25519, acuses de recibo fehacientes y notificación tácita tras 48h de silencio.
+   - Utilizado como canal formal para:
+     - Objeción técnica de calidad (Art. 11.2 - 5 días hábiles).
+     - Constancia de silencio positivo (Art. 12.2 - 48h).
+     - Intimación prejudicial de deuda Hito Cero (Art. 6° - 10 días).
+     - Rescisión contractual por mora JIT en insumos (Art. 5° bis inc. 6 - 15 días).
 
 ---
 
