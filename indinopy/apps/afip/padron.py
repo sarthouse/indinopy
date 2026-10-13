@@ -1,16 +1,106 @@
 import logging
-from typing import Optional
+import xml.etree.ElementTree as ET
+from typing import Dict, Any, Optional
+import requests
 from django.core.cache import cache
-from .client import AFIPClientFactory
 from .dtos import ContribuyentePadronDTO
 
 logger = logging.getLogger(__name__)
 
 
+class PadronA13Client:
+    """
+    Cliente SOAP nativo para el Web Service de Consulta a Padrón - Alcance 13 (personaServiceA13)
+    de ARCA (ex-AFIP).
+    Permite consultar el estado de la clave, datos generales, condición frente al IVA y Monotributo.
+    """
+
+    URL_HOMO = "https://awshomo.afip.gov.ar/sr-padron/webservices/personaServiceA13"
+    URL_PROD = "https://aws.afip.gov.ar/sr-padron/webservices/personaServiceA13"
+    SOAP_NS = "http://a13.soap.ws.server.puc.sr/"
+
+    def __init__(self, token: str, sign: str, cuit_representada: int, production: bool = False):
+        self.token = token
+        self.sign = sign
+        self.cuit_representada = cuit_representada
+        self.production = production
+        self.endpoint = self.URL_PROD if production else self.URL_HOMO
+
+    def _ejecutar_soap(self, action: str, body_xml: str) -> ET.Element:
+        envelope = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" '
+            f'xmlns:a13="{self.SOAP_NS}">\n'
+            "  <soapenv:Header/>\n"
+            "  <soapenv:Body>\n"
+            f"    {body_xml}\n"
+            "  </soapenv:Body>\n"
+            "</soapenv:Envelope>"
+        )
+
+        headers = {
+            "Content-Type": "text/xml; charset=utf-8",
+            "SOAPAction": "",
+        }
+
+        resp = requests.post(self.endpoint, data=envelope.encode("utf-8"), headers=headers, timeout=15)
+        if resp.status_code != 200:
+            raise ValueError(f"Error HTTP en llamada a Padrón A13 {action} ({resp.status_code}): {resp.text}")
+
+        return ET.fromstring(resp.text)
+
+    def get_taxpayer_details(self, id_persona: int) -> Dict[str, Any]:
+        """
+        Consulta los datos fiscales de una persona física o jurídica (getPersona).
+        Retorna diccionario con estructura compatible con PadronAFIPService.
+        """
+        body_xml = (
+            "<a13:getPersona>\n"
+            f"  <token>{self.token}</token>\n"
+            f"  <sign>{self.sign}</sign>\n"
+            f"  <cuitRepresentada>{self.cuit_representada}</cuitRepresentada>\n"
+            f"  <idPersona>{id_persona}</idPersona>\n"
+            "</a13:getPersona>"
+        )
+
+        root = self._ejecutar_soap("getPersona", body_xml)
+
+        persona_elem = None
+        for elem in root.iter():
+            if elem.tag.endswith("personaReturn"):
+                persona_elem = elem
+                break
+
+        if persona_elem is None:
+            raise ValueError("Respuesta vacía de Padrón A13.")
+
+        return self._xml_a_dict(persona_elem)
+
+    def _xml_a_dict(self, element: ET.Element) -> Dict[str, Any]:
+        tag = element.tag.split("}")[-1] if "}" in element.tag else element.tag
+        result = {}
+
+        if list(element):
+            for child in element:
+                child_tag = child.tag.split("}")[-1] if "}" in child.tag else child.tag
+                child_val = self._xml_a_dict(child)
+
+                if child_tag in result:
+                    if not isinstance(result[child_tag], list):
+                        result[child_tag] = [result[child_tag]]
+                    result[child_tag].append(child_val)
+                else:
+                    result[child_tag] = child_val
+        else:
+            return element.text or ""
+
+        return result
+
+
 class PadronAFIPService:
     """
-    Servicio para consultar el estado tributario, domicilio y condición frente al IVA
-    de un CUIT/CUIL a través del webservice de Padrón de AFIP (WSSR Alcance 13 / Alcance 10 / A5).
+    Servicio de alto nivel para consultar el estado tributario, domicilio y condición frente al IVA
+    de un CUIT/CUIL a través del webservice de Padrón de AFIP/ARCA con política de caché.
     """
 
     CACHE_TTL_SECONDS = 60 * 60 * 24  # 24 horas
@@ -28,37 +118,20 @@ class PadronAFIPService:
                 logger.info(f"Retornando datos de padrón AFIP desde caché para CUIT {cuit_str}")
                 return cached_data
 
+        from .client import AFIPClientFactory
         afip = AFIPClientFactory.get_client()
 
-        # Intentar consultar con Alcance 13 o Alcance 10
         raw_res = None
         errores = []
 
-        # 1. Probar RegisterScopeThirteen (A13)
         try:
             if hasattr(afip, "RegisterScopeThirteen"):
                 raw_res = afip.RegisterScopeThirteen.getTaxpayerDetails(int(cuit_str))
         except Exception as e:
-            errores.append(f"Alcance 13: {e}")
-
-        # 2. Si falla o no está disponible, intentar con RegisterScopeTen (A10)
-        if not raw_res:
-            try:
-                if hasattr(afip, "RegisterScopeTen"):
-                    raw_res = afip.RegisterScopeTen.getTaxpayerDetails(int(cuit_str))
-            except Exception as e:
-                errores.append(f"Alcance 10: {e}")
-
-        # 3. Si falla, intentar RegisterScopeFour (A4 / A5)
-        if not raw_res:
-            try:
-                if hasattr(afip, "RegisterScopeFour"):
-                    raw_res = afip.RegisterScopeFour.getTaxpayerDetails(int(cuit_str))
-            except Exception as e:
-                errores.append(f"Alcance 4: {e}")
+            errores.append(f"Padrón A13: {e}")
 
         if not raw_res:
-            logger.error(f"No se pudo consultar el CUIT {cuit_str} en los padrones de AFIP: {'; '.join(errores)}")
+            logger.error(f"No se pudo consultar el CUIT {cuit_str} en el padrón de AFIP: {'; '.join(errores)}")
             return None
 
         dto = cls._normalizar_respuesta(cuit_str, raw_res)
@@ -70,7 +143,6 @@ class PadronAFIPService:
 
     @classmethod
     def _normalizar_respuesta(cls, cuit_str: str, data: dict) -> ContribuyentePadronDTO:
-        # Extraer nombre o razón social
         datos_generales = data.get("datosGenerales", {}) or data
 
         razon_social = datos_generales.get("razonSocial")

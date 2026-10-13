@@ -135,8 +135,24 @@ CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", REDIS_URL)
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "verificar-timelocks-rcf-cada-hora": {
+        "task": "apps.eop.tasks.procesar_timelocks_rcf",
+        "schedule": crontab(minute=0),  # Cada hora
+    },
+    "monitorear-logistica-jit-diario": {
+        "task": "apps.eop.tasks.procesar_incidencias_jit_y_standby",
+        "schedule": crontab(hour=6, minute=0),  # Diario al inicio de jornada (06:00)
+    },
+    "procesar-cedulas-tacitas-48h": {
+        "task": "apps.comunicaciones.tasks.procesar_notificaciones_tacitas_async",
+        "schedule": crontab(minute="*/30"),  # Cada 30 minutos
+    },
+}
 
 
 # Password validation

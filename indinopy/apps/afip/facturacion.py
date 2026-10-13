@@ -63,6 +63,29 @@ class FacturadorAFIP:
                         f"Inconsistencia fiscal: No se puede emitir comprobante clase 'B' a un Responsable Inscripto (corresponde clase 'A' o 'M')."
                     )
 
+    @staticmethod
+    def validar_bloqueo_fce(tipo_comprobante, contrato_eop=None):
+        """
+        Bloqueo Sistémico de la Factura de Crédito Electrónica (FCE - Art. 9° Ley e-OP).
+        Si el comprobante corresponde a la liquidación de una e-OP registrada:
+        - Bloquea cualquier comprobante catalogado como FCE (Ley N° 27.440).
+        - Fuerza la emisión como Factura Ordinaria Cancelatoria (clase A, B o C).
+        """
+        if contrato_eop is not None:
+            if getattr(tipo_comprobante, "es_mipyme_fce", False):
+                raise ValueError(
+                    f"Incompatibilidad legal Art. 9° Ley e-OP: La liquidación del contrato e-OP "
+                    f"'{contrato_eop.numero or contrato_eop.uuid_identificador}' no puede emitirse bajo el régimen FCE "
+                    f"(Ley N° 27.440). La e-OP ya constituye el título ejecutivo de crédito causal. "
+                    f"Debe emitirse como Factura Ordinaria Cancelatoria."
+                )
+            codigo = str(getattr(tipo_comprobante, "codigo", "")).zfill(3)
+            if codigo in ["201", "202", "203", "206", "207", "208", "211", "212", "213"]:
+                raise ValueError(
+                    f"Incompatibilidad legal Art. 9° Ley e-OP: El código de comprobante AFIP {codigo} corresponde a FCE "
+                    f"y se encuentra bloqueado para liquidaciones de contratos e-OP."
+                )
+
     def emitir_comprobante(self, documento_deuda):
         """
         Recibe una instancia de DocumentoDeuda, valida compatibilidad fiscal emisor/receptor,
@@ -93,6 +116,13 @@ class FacturadorAFIP:
             emisor=empresa,
             receptor=documento_deuda.contacto,
             tipo_comprobante=documento_deuda.tipo_comprobante_afip,
+        )
+
+        # Validar Bloqueo FCE Art. 9° Ley e-OP
+        contrato_eop = getattr(documento_deuda, "contrato_eop", None)
+        self.validar_bloqueo_fce(
+            tipo_comprobante=documento_deuda.tipo_comprobante_afip,
+            contrato_eop=contrato_eop,
         )
 
         # Determinar Punto de Venta

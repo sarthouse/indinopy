@@ -95,6 +95,24 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "motor-anti-colusion-cada-hora": {
+        "task": "fdi.tasks.motor_anti_colusion",
+        "schedule": crontab(minute=15),  # Cada hora al minuto 15
+    },
+    "procesar-silencio-positivo-timelock-cada-hora": {
+        "task": "fdi.tasks.procesar_silencio_positivo_timelock_async",
+        "schedule": crontab(minute=30),  # Cada hora al minuto 30
+    },
+    "procesar-cedulas-tacitas-48h": {
+        "task": "comunicaciones.tasks.procesar_notificaciones_tacitas_async",
+        "schedule": crontab(minute="*/30"),  # Cada 30 minutos
+    },
+}
+
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
