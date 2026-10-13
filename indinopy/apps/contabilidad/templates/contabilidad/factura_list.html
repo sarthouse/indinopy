@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Facturación y Comprobantes Fiscales — Indinopy ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Comprobantes Fiscales & Libro IVA
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">
+                Facturación electrónica AFIP/ARCA, comprobantes de compra/venta y Libro IVA Digital (RG 4597)
+            </p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <a href="{% url 'contabilidad:libro_iva_ventas_export' %}" class="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50">
+                Exportar Libro IVA
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        {% if documentos %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3">Número</th>
+                        <th class="px-6 py-3">Fecha</th>
+                        <th class="px-6 py-3">Contacto / Razón Social</th>
+                        <th class="px-6 py-3">CAE / Estado AFIP</th>
+                        <th class="px-6 py-3 text-right">Total ($)</th>
+                        <th class="px-6 py-3 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                    {% for doc in documentos %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-750 transition">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-900 dark:text-white">{{ doc.tipo_comprobante }} {{ doc.numero }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">{{ doc.diario.nombre }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-slate-600 dark:text-slate-300">
+                            {{ doc.fecha_emision|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-slate-800 dark:text-slate-200">{{ doc.contacto.nombre }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">CUIT: {{ doc.contacto.cuil|default:"Consumidor Final" }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if doc.afip_cae %}
+                                <span class="inline-flex items-center text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                    CAE {{ doc.afip_cae }}
+                                </span>
+                            {% else %}
+                                <span class="text-xs text-amber-600 dark:text-amber-400 font-semibold">Sin CAE / Interno</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right font-mono font-bold text-slate-900 dark:text-white">
+                            $ {{ doc.monto_total|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <a href="{% url 'contabilidad:factura_detail' pk=doc.pk %}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-semibold text-xs hover:bg-sky-100 transition">
+                                Detalle
+                            </a>
+                            <a href="{% url 'contabilidad:comprobante_pdf' pk=doc.pk %}" target="_blank" class="inline-flex items-center px-2 py-1.5 text-slate-400 hover:text-slate-600">
+                                PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-12 text-center text-slate-500">
+            <h3 class="text-base font-semibold text-slate-700 dark:text-slate-300">No hay comprobantes fiscales registrados</h3>
+            <p class="text-xs text-slate-400 mt-1">Los comprobantes se emiten desde ventas, compras o liquidaciones de e-OP.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ documento.tipo_comprobante }} {{ documento.numero }} — Indinopy ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header del Comprobante -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                    {{ documento.diario.nombre }}
+                </span>
+                <span class="text-xs font-mono text-slate-400">Emisión: {{ documento.fecha_emision|date:"d/m/Y" }}</span>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+                {{ documento.tipo_comprobante }} #{{ documento.numero }}
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">
+                Cliente / Proveedor: <span class="font-semibold text-slate-800 dark:text-slate-200">{{ documento.contacto.nombre }}</span> 
+                (CUIT: {{ documento.contacto.cuil|default:"Consumidor Final" }})
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'contabilidad:comprobante_pdf' pk=documento.pk %}" target="_blank" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm transition">
+                Descargar Factura PDF
+            </a>
+
+            {% if not documento.afip_cae and documento.diario.es_facturacion_electronica %}
+            <form method="post" action="{% url 'contabilidad:factura_emitir_afip' pk=documento.pk %}">
+                {% csrf_token %}
+                <button type="submit" 
+                        onclick="return confirm('¿Solicitar CAE de autorización ante ARCA/AFIP para este comprobante?');"
+                        class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition">
+                    Emitir en AFIP (CAE)
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Estado Fiscal ARCA -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <div class="text-[10px] uppercase font-bold text-slate-400">CAE de Autorización</div>
+            <div class="text-base font-mono font-bold text-slate-900 dark:text-white mt-0.5">
+                {{ documento.afip_cae|default:"Pendiente / No requerido" }}
+            </div>
+        </div>
+        <div>
+            <div class="text-[10px] uppercase font-bold text-slate-400">Vencimiento CAE</div>
+            <div class="text-base font-mono font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+                {{ documento.afip_vto_cae|date:"d/m/Y"|default:"-" }}
+            </div>
+        </div>
+        <div>
+            <div class="text-[10px] uppercase font-bold text-slate-400">Monto Total</div>
+            <div class="text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                $ {{ documento.monto_total|floatformat:2 }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Líneas del Comprobante -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+            <h2 class="text-base font-bold text-slate-900 dark:text-white">Detalle de Conceptos / Artículos</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-500 uppercase">
+                    <tr>
+                        <th class="px-6 py-3">Descripción</th>
+                        <th class="px-6 py-3 text-right">Cantidad</th>
+                        <th class="px-6 py-3 text-right">Precio Unitario</th>
+                        <th class="px-6 py-3 text-right">Alícuota IVA</th>
+                        <th class="px-6 py-3 text-right">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% for l in lineas %}
+                    <tr>
+                        <td class="px-6 py-3.5 font-medium text-slate-800 dark:text-slate-200">{{ l.descripcion|default:l.producto.nombre }}</td>
+                        <td class="px-6 py-3.5 text-right font-mono">{{ l.cantidad }}</td>
+                        <td class="px-6 py-3.5 text-right font-mono">$ {{ l.precio_unitario|floatformat:2 }}</td>
+                        <td class="px-6 py-3.5 text-right font-mono">{{ l.alicuota_iva }}%</td>
+                        <td class="px-6 py-3.5 text-right font-mono font-bold">$ {{ l.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="px-6 py-4 text-center text-xs text-slate-400">Sin líneas cargadas.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

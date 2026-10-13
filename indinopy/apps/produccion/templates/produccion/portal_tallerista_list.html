@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Portal del Tallerista — Indinopy e-OP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header del Portal Tallerista -->
+    <div class="bg-gradient-to-r from-sky-700 to-indigo-800 rounded-2xl p-6 text-white shadow-lg">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-200 text-sky-900 mb-2">
+                    Régimen Monotributo Productivo (Art. 24.5 Ley e-OP)
+                </span>
+                <h1 class="text-2xl font-bold tracking-tight">
+                    {{ contacto.nombre }}
+                </h1>
+                <p class="text-xs text-sky-100 mt-1">
+                    CUIT/CUIL: <span class="font-mono font-semibold">{{ contacto.cuil }}</span> | Código: {{ contacto.codigo }}
+                </p>
+            </div>
+            <div class="mt-4 md:mt-0 flex items-center space-x-4 bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/20">
+                <div>
+                    <div class="text-[10px] uppercase tracking-wider text-sky-200">Cotización UCI</div>
+                    <div class="text-lg font-bold font-mono">$ {{ cotizacion_uci|floatformat:2 }}</div>
+                </div>
+                <div class="border-l border-white/20 pl-4">
+                    <div class="text-[10px] uppercase tracking-wider text-sky-200">Micro-Retención SIPA</div>
+                    <div class="text-lg font-bold text-emerald-300">2% Directo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN CRÍTICA: Hitos en Retención de Cierre Fiscal (RCF) / Facturación Asistida -->
+    {% if hitos_rcf %}
+    <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center space-x-3 mb-4">
+            <div class="p-2 bg-amber-500 text-white rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-amber-900 dark:text-amber-200">
+                    Fondos Listos para Cobro — Requiere Factura C (Art. 12° y 24.5)
+                </h2>
+                <p class="text-xs text-amber-700 dark:text-amber-300">
+                    Los lotes han sido recibidos de conformidad por la marca. Autoriza tu comprobante para liberar los fondos del Fideicomiso.
+                </p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            {% for item in hitos_rcf %}
+            {% with hito=item.hito b=item.borrador %}
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-amber-200 dark:border-amber-800/60 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                            Retención Cierre Fiscal
+                        </span>
+                        <span class="text-xs text-slate-500">e-OP #{{ hito.contrato.numero }}</span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white mt-1">
+                        {{ hito.nombre }} ({{ hito.porcentaje_tramo }}% del contrato)
+                    </h3>
+                    {% if b %}
+                    <div class="mt-2 text-xs grid grid-cols-2 sm:grid-cols-3 gap-3 text-slate-600 dark:text-slate-300">
+                        <div>Monto Bruto: <span class="font-bold font-mono text-slate-900 dark:text-white">$ {{ b.monto_total_ars|floatformat:2 }}</span></div>
+                        <div>Retención SIPA (2%): <span class="font-bold font-mono text-rose-600 dark:text-rose-400">-$ {{ b.monto_retencion_sipa_ars|floatformat:2 }}</span></div>
+                        <div>Neto a Cobrar: <span class="font-bold font-mono text-emerald-600 dark:text-emerald-400">$ {{ b.monto_neto_a_cobrar_ars|floatformat:2 }}</span></div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <!-- Opción 1: Emisión en 1-Click con ARCA WSFEv1 -->
+                    <form method="post" action="{% url 'eop:hito_emitir_factura_asistida' pk=hito.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="punto_venta" value="1">
+                        <button type="submit" 
+                                onclick="return confirm('¿Confirmas la emisión directa de la Factura C asistida ante ARCA con retención del 2% SIPA?');"
+                                class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Emitir Factura C en 1-Click
+                        </button>
+                    </form>
+
+                    <!-- Opción 2: Cargar CAE ya emitido externamente -->
+                    <button type="button" 
+                            onclick="document.getElementById('modal-cae-{{ hito.pk }}').classList.remove('hidden')"
+                            class="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition">
+                        Ya tengo CAE externo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Cargar CAE Externo -->
+            <div id="modal-cae-{{ hito.pk }}" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white">Cargar Comprobante ARCA</h4>
+                        <button type="button" onclick="document.getElementById('modal-cae-{{ hito.pk }}').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">&times;</button>
+                    </div>
+                    <form method="post" action="{% url 'eop:hito_cargar_factura' pk=hito.pk %}" class="space-y-3">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Código de CAE <span class="text-rose-500">*</span></label>
+                            <input type="text" name="cae_factura" required placeholder="ej. 74123456789012" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pto. Venta</label>
+                                <input type="number" name="pto_vta" value="1" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nro. Comprobante</label>
+                                <input type="number" name="cbte_nro" placeholder="123" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fecha Emisión</label>
+                                <input type="date" name="cbte_fch" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Importe Total ($)</label>
+                                <input type="number" step="0.01" name="imp_total" value="{% if b %}{{ b.monto_total_ars }}{% endif %}" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+                            </div>
+                        </div>
+                        <div class="pt-2 flex justify-end space-x-2">
+                            <button type="button" onclick="document.getElementById('modal-cae-{{ hito.pk }}').classList.add('hidden')" class="px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-sm">Constatar y Destrabar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TABLERO PRINCIPAL: Etapas Asignadas y Declaración PoPW (Celular) -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+                    Órdenes y Etapas de Producción Asignadas
+                </h2>
+                <p class="text-xs text-slate-500">
+                    Declara las cantidades procesadas para sellar tu prueba de trabajo físico (PoPW)
+                </p>
+            </div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 w-fit">
+                {{ etapas_asignadas|length }} etapas activas
+            </span>
+        </div>
+
+        {% if etapas_asignadas %}
+        <div class="divide-y divide-slate-200 dark:divide-slate-700">
+            {% for etapa in etapas_asignadas %}
+            <div class="p-6 space-y-4 hover:bg-slate-50/50 dark:hover:bg-slate-750 transition">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
+                                OP #{{ etapa.op.numero }}
+                            </span>
+                            <span class="text-xs px-2 py-0.5 rounded-full font-semibold
+                                {% if etapa.estado == 'pendiente' %}bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300
+                                {% else %}bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300{% endif %}">
+                                {{ etapa.get_estado_display }}
+                            </span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white mt-1">
+                            {{ etapa.etapa_origen.servicio.nombre|default:"Servicio de Confección" }}
+                        </h3>
+                    </div>
+
+                    <!-- Métricas de producción -->
+                    <div class="flex items-center space-x-4 text-xs">
+                        <div class="text-center">
+                            <div class="text-slate-400 uppercase text-[10px]">Habilitadas</div>
+                            <div class="font-bold font-mono text-slate-800 dark:text-slate-200">{{ etapa.unidades_habilitadas_para_declarar }}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-slate-400 uppercase text-[10px]">Declaradas</div>
+                            <div class="font-bold font-mono text-indigo-600 dark:text-indigo-400">{{ etapa.unidades_ya_declaradas }}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-slate-400 uppercase text-[10px]">Saldo</div>
+                            <div class="font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                                {{ etapa.unidades_habilitadas_para_declarar|add:"-etapa.unidades_ya_declaradas" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Declaración PoPW (Mobile-friendly) -->
+                <form method="post" action="{% url 'produccion:declarar_parte' tracking_id=etapa.id %}"
+                      id="form-popw-{{ etapa.id }}"
+                      class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="lat" id="lat-{{ etapa.id }}">
+                    <input type="hidden" name="lng" id="lng-{{ etapa.id }}">
+
+                    <div class="w-full sm:w-auto flex-1 flex items-center space-x-2">
+                        <label for="cant-{{ etapa.id }}" class="text-xs font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            Unidades Terminadas:
+                        </label>
+                        <input type="number" 
+                               id="cant-{{ etapa.id }}" 
+                               name="cantidad" 
+                               min="1" 
+                               max="{{ etapa.unidades_habilitadas_para_declarar|add:'-etapa.unidades_ya_declaradas' }}" 
+                               required 
+                               placeholder="ej. 50"
+                               class="w-full sm:w-32 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold">
+                    </div>
+
+                    <button type="button" 
+                            onclick="declararConGPS({{ etapa.id }})"
+                            id="btn-popw-{{ etapa.id }}"
+                            class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Declarar Avance (GPS)
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-12 text-center text-slate-500">
+            <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            <h3 class="text-base font-semibold text-slate-700 dark:text-slate-300">No tienes etapas pendientes</h3>
+            <p class="text-xs text-slate-400 mt-1">Cuando una marca te asigne una orden de producción, la verás aquí.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function declararConGPS(etapaId) {
+    const btn = document.getElementById('btn-popw-' + etapaId);
+    const form = document.getElementById('form-popw-' + etapaId);
+    const cantInput = document.getElementById('cant-' + etapaId);
+
+    if (!cantInput.value || parseInt(cantInput.value) <= 0) {
+        alert("Por favor ingresa una cantidad válida a declarar.");
+        cantInput.focus();
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Tomando GPS...`;
+
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                document.getElementById('lat-' + etapaId).value = position.coords.latitude;
+                document.getElementById('lng-' + etapaId).value = position.coords.longitude;
+                form.submit();
+            },
+            function(error) {
+                console.warn("No se pudo obtener GPS, enviando sin coordenadas:", error.message);
+                form.submit();
+            },
+            { timeout: 8000, enableHighAccuracy: true }
+        );
+    } else {
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

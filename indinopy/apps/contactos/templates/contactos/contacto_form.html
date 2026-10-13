@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{% if form.instance.pk %}Editar Contacto{% else %}Nuevo Contacto{% endif %} — Indinopy ERP{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {% if form.instance.pk %}Editar Contacto: {{ form.instance.nombre }}{% else %}Nuevo Contacto Comercial{% endif %}
+        </h1>
+        <p class="text-xs text-slate-500 mt-1">
+            Completa los datos del cliente, proveedor o taller para la operatoria
+        </p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 sm:p-8">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    {{ field.label }} {% if field.field.required %}<span class="text-rose-500">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                    <p class="mt-1 text-xs text-rose-500">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="pt-4 flex items-center justify-end space-x-3">
+                <a href="{% url 'contactos:contacto_list' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-5 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-sm transition">
+                    Guardar Contacto
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -9,6 +9,7 @@ urlpatterns = [
     path('contratos/<int:pk>/aceptar/', views.AceptarContratoEOPActionView.as_view(), name='contrato_aceptar'),
     path('hitos/<int:pk>/liberar/', views.LiberarHitoActionView.as_view(), name='hito_liberar'),
     path('hitos/<int:pk>/cargar_factura/', views.CargarFacturaHitoActionView.as_view(), name='hito_cargar_factura'),
+    path('hitos/<int:pk>/emitir_factura_asistida/', views.EmitirFacturaAsistidaActionView.as_view(), name='hito_emitir_factura_asistida'),
     
     # Endpoints API Federada
     path('api/webhooks/fdi/hito-liberado/', views.FDIWebhookHitoLiberadoAPIView.as_view(), name='webhook_fdi_hito_liberado'),

@@ -18,7 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 
+from apps.contactos.views import LoginPortalView, LogoutPortalView, RegistroTalleristaView
+from core.views import HomeIndexView
+
 urlpatterns = [
+    # Inicio / Dashboard de Despacho
+    path('', HomeIndexView.as_view(), name='home'),
+
+    # Autenticación y Registro Portal
+    path('login/', LoginPortalView.as_view(), name='login'),
+    path('logout/', LogoutPortalView.as_view(), name='logout'),
+    path('registro/', RegistroTalleristaView.as_view(), name='registro'),
+
     path('admin/', admin.site.urls),
     path('contactos/', include('apps.contactos.urls', namespace='contactos')),
     path('documentos/', include('apps.documentos.urls', namespace='documentos')),

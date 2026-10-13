@@ -100,7 +100,46 @@ class PortalTalleristaListView(LoginRequiredMixin, ListView):
         return OPEtapaTracking.objects.filter(
             tallerista_asignado=contacto_usuario, 
             estado__in=['pendiente', 'en_curso']
-        )
+        ).select_related('op', 'etapa_origen', 'etapa_origen__servicio')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if not hasattr(self.request.user, 'perfil_contacto'):
+            return context
+
+        contacto = self.request.user.perfil_contacto
+        from apps.eop.models import ContratoEOP, EOPHitoEscrow
+        from apps.eop.services import UCIService
+        from apps.afip.services import FacturacionAsistidaService
+
+        # Contratos donde el tallerista está asignado
+        contratos = ContratoEOP.objects.filter(
+            orden_produccion_local__tracking_etapas__tallerista_asignado=contacto
+        ).distinct().order_by('-creado_en')
+        
+        # Hitos pendientes de factura (RCF) o habilitados para cobro
+        hitos_rcf = EOPHitoEscrow.objects.filter(
+            contrato__in=contratos,
+            estado='retencion_cierre_fiscal'
+        ).select_related('contrato')
+
+        # Preparar borradores de factura asistida con 2% SIPA para los hitos en RCF
+        hitos_con_borrador = []
+        for hito in hitos_rcf:
+            try:
+                borrador = FacturacionAsistidaService.preparar_borrador_factura_c(hito.id)
+            except Exception:
+                borrador = None
+            hitos_con_borrador.append({
+                "hito": hito,
+                "borrador": borrador,
+            })
+
+        context['contacto'] = contacto
+        context['contratos'] = contratos
+        context['hitos_rcf'] = hitos_con_borrador
+        context['cotizacion_uci'] = UCIService.obtener_cotizacion_actual()
+        return context
 
 class DeclararParteActionView(LoginRequiredMixin, View):
     """
@@ -154,12 +193,24 @@ class DeclararParteActionView(LoginRequiredMixin, View):
                         f"No puedes declarar {cantidad_terminada} unidades. Solo tienes {saldo_posible} unidades habilitadas por la etapa anterior ({ant.etapa_origen.servicio.nombre})."
                     )
 
-            # Crear el parte físico
+            # Crear el parte físico con metadatos PoPW (si el navegador envió GPS)
+            lat = request.POST.get('lat')
+            lng = request.POST.get('lng')
+
+            ubicacion_point = None
+            if lat and lng:
+                try:
+                    from django.contrib.gis.geos import Point
+                    ubicacion_point = Point(float(lng), float(lat), srid=4326)
+                except Exception:
+                    ubicacion_point = None
+
             parte = OPParteProduccion.objects.create(
                 op=etapa.op,
                 etapa_tracking=etapa,
                 numero_parte=f"WEB-{etapa.id}",
-                responsable=request.user
+                responsable=request.user,
+                ubicacion_gps_declarada=ubicacion_point,
             )
             
             # Impactamos la primera variación de la OP (o la seleccionada)
@@ -173,7 +224,12 @@ class DeclararParteActionView(LoginRequiredMixin, View):
                 variacion.cantidad_producida += cantidad_terminada
                 variacion.save()
 
-            messages.success(request, f"¡Excelente! Declaraste {cantidad_terminada} unidades procesadas.")
+            gps_info = f" (PoPW sellado en Lat: {lat[:7]}, Lng: {lng[:7]})" if lat and lng else ""
+            messages.success(
+                request, 
+                f"¡Excelente! Declaraste {cantidad_terminada} unidades en la etapa '{etapa.etapa_origen.servicio.nombre}'. "
+                f"Avance físico registrado en la orden #{etapa.op.numero}{gps_info}."
+            )
         except Exception as e:
             messages.error(request, f"Ocurrió un error al guardar el avance: {str(e)}")
             
