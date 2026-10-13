@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Portal Fiduciario — Clearing y Liquidación BAPRO{% endblock %}
+{% block title %}Portal Fiduciario — Clearing y Liquidación (FDI){% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-6">
@@ -9,12 +9,12 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Portal Fiduciario — Clearing y Liquidación (FDI)</h1>
             <p class="text-sm text-gray-600">
-                Monitoreo de hitos de escrow liberados, generación de lotes batch para Banco Provincia y conciliación fiduciaria.
+                Monitoreo de hitos de escrow liberados, generación de lotes batch para Cámara Compensadora (COELSA) y conciliación fiduciaria.
             </p>
         </div>
         <div class="flex space-x-3">
             <a href="{% url 'federacion:api_clearing_pendientes' %}?format=txt" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-                Descargar Lote BAPRO (.txt)
+                Descargar Lote COELSA (.txt)
             </a>
         </div>
     </div>
@@ -24,7 +24,7 @@
         <div class="bg-white p-5 rounded-lg shadow border-l-4 border-blue-500">
             <div class="text-xs font-semibold text-gray-500 uppercase">Hitos Pendientes de Pago</div>
             <div class="mt-2 text-2xl font-bold text-gray-800">{{ hitos_pendientes|length }}</div>
-            <div class="text-xs text-gray-500 mt-1">Con auditoría PTF conforme</div>
+            <div class="text-xs text-gray-500 mt-1">Con auditoría conforme y timelock vencido</div>
         </div>
         <div class="bg-white p-5 rounded-lg shadow border-l-4 border-green-500">
             <div class="text-xs font-semibold text-gray-500 uppercase">Volumen a Liquidar (ARS)</div>
@@ -32,14 +32,14 @@
             <div class="text-xs text-gray-500 mt-1">Cotización UCI: $ {{ cotizacion_uci }}</div>
         </div>
         <div class="bg-white p-5 rounded-lg shadow border-l-4 border-purple-500">
-            <div class="text-xs font-semibold text-gray-500 uppercase">Agente de Clearing</div>
-            <div class="mt-2 text-xl font-bold text-gray-800">Banco Provincia / Interbanking</div>
-            <div class="text-xs text-gray-500 mt-1">Protocolo Lotes Batch FIMCA 2.0</div>
+            <div class="text-xs font-semibold text-gray-500 uppercase">Cámara Compensadora</div>
+            <div class="mt-2 text-xl font-bold text-gray-800">COELSA / ACH Nacional</div>
+            <div class="text-xs text-gray-500 mt-1">Protocolo Lotes Batch FIMCA FDI</div>
         </div>
     </div>
 
     <!-- Formulario de Liquidación de Hitos -->
-    <form method="post" action="{% url 'mes:fiduciaria_ejecutar_clearing' %}">
+    <form method="post" action="{% url 'fdi:fiduciaria_ejecutar_clearing' %}">
         {% csrf_token %}
         <div class="bg-white shadow rounded-lg overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -56,8 +56,8 @@
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">e-OP / Contrato</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hito</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taller Destino</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CBU / Clearing</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taller Façonnier Destino</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Monto ARS</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Porcentaje</th>
                     </tr>
                 </thead>
@@ -68,20 +68,20 @@
                             <input type="checkbox" name="hitos_seleccionados" value="{{ hito.id }}" class="select-hito">
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                            {{ hito.contrato.numero|default:hito.contrato.uuid_identificador }}
+                            {{ hito.contrato.numero|default:hito.contrato.id }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ hito.nombre }}
+                            Hito #{{ hito.numero_hito }} {% if hito.descripcion %}— {{ hito.descripcion }}{% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            {{ hito.contrato.orden_produccion_local.taller_gestor.nombre|default:"Taller Satélite" }}
-                            <div class="text-xs text-gray-500">CUIT: {{ hito.contrato.orden_produccion_local.taller_gestor.cuil|default:"S/D" }}</div>
+                            {{ hito.contrato.tallerista.nombre|default:"Taller Registrado" }}
+                            <div class="text-xs text-gray-500">CUIT: {{ hito.contrato.tallerista.cuit|default:"S/D" }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
-                            {{ hito.contrato.orden_produccion_local.taller_gestor.cbu_alias|default:"No informado" }}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-800">
+                            $ {{ hito.monto_ars|floatformat:2 }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
-                            {{ hito.porcentaje_tramo }}%
+                            {{ hito.porcentaje }}%
                         </td>
                     </tr>
                     {% empty %}

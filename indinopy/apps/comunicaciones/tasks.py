@@ -58,9 +58,14 @@ def despachar_cedula_webhook_async(self, cedula_id):
         "fecha_limite_tacita": cedula.fecha_limite_tacita.isoformat() if cedula.fecha_limite_tacita else None,
     }
 
-    # Determinamos destino: Si el contacto tiene endpoint, o si se despacha al Nodo MES central
-    mes_url = getattr(settings, "NODO_MES_URL", "http://localhost:8000").rstrip("/")
-    url_webhook = f"{mes_url}/comunicaciones/api/v1/recibir/"
+    # Determinamos destino: Si el contacto tiene endpoint, o si se despacha al Nodo FDI central
+    fdi_url = (
+        getattr(settings, "NODO_FDI_URL", None)
+        or ""
+    ).rstrip("/")
+    if not fdi_url:
+        return f"Error: NODO_FDI_URL no configurado para despachar cédula {cedula.id}."
+    url_webhook = f"{fdi_url}/comunicaciones/api/v1/recibir/"
 
     try:
         resp = requests.post(

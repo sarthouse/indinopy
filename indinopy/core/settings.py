@@ -27,7 +27,7 @@ load_dotenv(BASE_DIR / ".env")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-NODO_MES_URL = os.getenv("NODO_MES_URL", "http://localhost:8000")
+NODO_FDI_URL = os.getenv("NODO_FDI_URL", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG")

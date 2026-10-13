@@ -5,51 +5,51 @@ from base.models import ConfiguracionNodo
 
 class FederacionCreditoService:
     """
-    Servicio cliente para consumir las APIs del Nodo Central (MES).
+    Servicio utilitario cliente para consumir APIs del Nodo FDI / Red Federada.
+    Nota: Las instancias ERP operan con FederacionFDIService en sus respectivos servicios.
     """
-    
     @staticmethod
-    def consultar_cupo_mes():
+    def consultar_cupo_fdi():
         """
-        Consulta en tiempo real (Pull) el estado del crédito y la mora
-        al servidor de la MES.
+        Consulta en tiempo real el estado del crédito y la mora al servidor del FDI.
         """
         empresa = ConfiguracionNodo.objects.first()
         if not empresa:
             raise ValueError("No hay una ConfiguracionNodo definida en este nodo.")
         
         mi_cuit = empresa.cuit
-        
-        # En producción, esta URL vendría de settings. NODO_MES_URL
-        mes_url = getattr(settings, 'NODO_MES_URL', 'http://localhost:8000')
-        endpoint = f"{mes_url}/mes/api/v1/fdi/estado-credito/"
+        fdi_url = getattr(settings, 'NODO_FDI_URL', None)
+        if not fdi_url:
+            raise ValueError("NODO_FDI_URL no está configurado.")
+        endpoint = f"{fdi_url.rstrip('/')}/fdi/api/v1/fdi/estado-credito/"
         
         try:
-            # Petición HTTP al nodo MES. Se inyecta el CUIT propio en los headers
             respuesta = requests.get(
                 endpoint,
                 headers={"X-CUIT": mi_cuit},
                 timeout=5
             )
-            
             if respuesta.status_code == 200:
                 return respuesta.json()
             elif respuesta.status_code == 404:
-                raise ValueError("La MES informa que tu empresa no tiene una línea de crédito asignada.")
+                raise ValueError("El FDI informa que la empresa no tiene una línea de crédito asignada.")
             else:
-                raise ValueError(f"Error de red comunicándose con la MES: {respuesta.status_code}")
-                
+                raise ValueError(f"Error de red comunicándose con el FDI: {respuesta.status_code}")
         except requests.RequestException as e:
-            raise ValueError(f"El Nodo MES no está disponible: {str(e)}")
+            raise ValueError(f"El Nodo FDI no está disponible: {str(e)}")
+
+    consultar_cupo_mes = consultar_cupo_fdi
 
     @staticmethod
-    def consultar_pauta_escrow_mes(nodo_mes_url=None, es_sello_buen_diseno=False):
+    def consultar_pauta_escrow_fdi(nodo_fdi_url=None, es_sello_buen_diseno=False):
         """
-        Consulta por HTTP a la API de la MES la pauta oficial de porcentajes de Escrow
+        Consulta por HTTP la pauta oficial de porcentajes de Escrow
         vigente (Hito Cero, Sello Buen Diseño, Hito Final).
         """
-        base_url = (nodo_mes_url or getattr(settings, 'NODO_MES_URL', 'http://localhost:8000')).rstrip('/')
-        endpoint = f"{base_url}/federacion/api/v1/escrow/pauta/"
+        base_url = (nodo_fdi_url or getattr(settings, 'NODO_FDI_URL', None))
+        if not base_url:
+            raise ValueError("NODO_FDI_URL no está configurado.")
+        endpoint = f"{base_url.rstrip('/')}/federacion/api/v1/escrow/pauta/"
         params = {"sello_buen_diseno": "true" if es_sello_buen_diseno else "false"}
 
         try:
@@ -62,12 +62,12 @@ class FederacionCreditoService:
                     "etiqueta_cero": data["etiqueta_cero"],
                     "porcentaje_final": Decimal(str(data["porcentaje_final"])),
                     "porcentaje_avance": Decimal(str(data["porcentaje_avance"])),
-                    "nombre_pauta": data.get("nombre_pauta", "Pauta Oficial Escrow MES"),
+                    "nombre_pauta": data.get("nombre_pauta", "Pauta Oficial Escrow FDI"),
                 }
         except Exception:
             pass
 
-        # Fallback de contingencia local si la MES no responde
+        # Fallback de contingencia local si el FDI no responde
         from decimal import Decimal
         porc_cero = Decimal("50.00") if es_sello_buen_diseno else Decimal("35.00")
         porc_final = Decimal("20.00")
@@ -76,13 +76,15 @@ class FederacionCreditoService:
             "etiqueta_cero": f"Hito Cero - Anticipo Operativo de Arranque ({'Sello Buen Diseño 50%' if es_sello_buen_diseno else 'Estándar 35%'})",
             "porcentaje_final": porc_final,
             "porcentaje_avance": Decimal("100.00") - porc_cero - porc_final,
-            "nombre_pauta": "Pauta Oficial Escrow MES (Fallback Local)",
+            "nombre_pauta": "Pauta Oficial Escrow FDI (Fallback Local)",
         }
 
+    consultar_pauta_escrow_mes = consultar_pauta_escrow_fdi
+
     @staticmethod
-    def transmitir_eop_a_mes(contrato_eop, firma_comitente_hex, clave_publica_hex):
+    def transmitir_eop_al_fdi(contrato_eop, firma_comitente_hex, clave_publica_hex, nodo_fdi_url=None):
         """
-        Emite el HTTP POST con el payload canónico firmado hacia el endpoint de la MES
+        Emite el HTTP POST con el payload canónico firmado hacia el endpoint receptor
         (/federacion/eop/entrante/).
         """
         import json
@@ -92,8 +94,10 @@ class FederacionCreditoService:
         if not empresa:
             raise ValueError("No hay una ConfiguracionNodo definida en este nodo.")
 
-        mes_url = getattr(settings, 'NODO_MES_URL', 'http://localhost:8000').rstrip('/')
-        endpoint = f"{mes_url}/federacion/eop/entrante/"
+        base_url = (nodo_fdi_url or getattr(settings, 'NODO_FDI_URL', None))
+        if not base_url:
+            raise ValueError("NODO_FDI_URL no está configurado.")
+        endpoint = f"{base_url.rstrip('/')}/federacion/eop/entrante/"
 
         # Aseguramos el hash de seguridad
         contrato_eop.sellar_hash_seguridad()
@@ -133,10 +137,12 @@ class FederacionCreditoService:
                 return respuesta.json()
             else:
                 raise ValueError(
-                    f"Error rechazado por la MES ({respuesta.status_code}): {respuesta.text}"
+                    f"Error rechazado por el FDI ({respuesta.status_code}): {respuesta.text}"
                 )
         except requests.RequestException as e:
-            raise ValueError(f"Fallo de conexión al despachar e-OP al Nodo MES: {str(e)}")
+            raise ValueError(f"Fallo de conexión al despachar e-OP al Nodo FDI: {str(e)}")
+
+    transmitir_eop_a_mes = transmitir_eop_al_fdi
 
 
 

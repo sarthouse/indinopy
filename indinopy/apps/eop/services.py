@@ -16,73 +16,236 @@ logger = logging.getLogger(__name__)
 class ParametrosFDIService:
     """
     Servicio desacoplador para consultar dinámicamente las alícuotas arancelarias
-    de la Red MES y el Fondo de Riesgo FDI fijadas por la Comisión de Crédito.
-    Aplica política de caché de 24h y fallback de contingencia reglamentario.
+    y el Fondo de Riesgo FDI fijadas por la Comisión de Crédito.
+    Aplica política de caché y fallback de contingencia reglamentario.
     """
-    CACHE_KEY = "mes:parametros_arancelarios"
+    CACHE_KEY = "fdi:parametros_arancelarios"
     CACHE_TTL_SECONDS = 60 * 60 * 24 * 7  # 1 semana (7 días)
 
     @classmethod
-    def refrescar_parametros_desde_mes(cls, mes_url=None):
+    def refrescar_parametros_desde_fdi(cls, fdi_url=None):
         """
-        Consulta al Nodo MES para sincronizar aranceles y refrescar la caché de Redis.
-        Pensado para ser ejecutado por tareas Celery en background o manualmente.
+        Consulta al Nodo FDI para sincronizar aranceles y refrescar la caché de Redis.
         """
-        base_url = (mes_url or getattr(settings, "NODO_MES_URL", "http://localhost:8000")).rstrip("/")
-        endpoint = f"{base_url}/mes/api/v1/fdi/parametros-arancelarios/"
+        base_url = (
+            fdi_url
+            or getattr(settings, "NODO_FDI_URL", None)
+        )
+        if not base_url:
+            logger.warning("NODO_FDI_URL no está configurado.")
+            return None
+        base_url = base_url.rstrip("/")
+        endpoint = f"{base_url}/fdi/api/v1/fdi/parametros-arancelarios/"
 
         try:
             resp = requests.get(endpoint, timeout=5)
             if resp.status_code == 200:
                 data = resp.json()
                 cache.set(cls.CACHE_KEY, data, cls.CACHE_TTL_SECONDS)
-                logger.info(f"Parámetros arancelarios FDI/MES sincronizados: {data.get('alicuota_total_recargo')}")
+                logger.info(f"Parámetros arancelarios FDI sincronizados: {data.get('alicuota_total_recargo')}")
                 return data
             else:
-                logger.warning(f"Error consultando aranceles en MES (HTTP {resp.status_code})")
+                logger.warning(f"Error consultando aranceles en FDI (HTTP {resp.status_code})")
         except Exception as e:
-            logger.warning(f"Error conectando al nodo MES para sincronizar aranceles: {e}")
+            logger.warning(f"Error conectando al nodo FDI para sincronizar aranceles: {e}")
         return None
 
+    # Alias de retrocompatibilidad
+    refrescar_parametros_desde_mes = refrescar_parametros_desde_fdi
+
     @classmethod
-    def obtener_alicuota_recargo_fdi(cls, mes_url=None):
+    def obtener_alicuota_recargo_fdi(cls, fdi_url=None, mes_url=None):
         """
-        Devuelve la alícuota total de recargo s/MOD (Canon MES + Fondo FDI).
+        Devuelve la alícuota total de recargo s/MOD (Fondo FDI).
         Tope legal Ley e-OP Art. 4° inc. 4.c: 1.5% (0.015).
         1. Consulta en caché Redis local (expira a los 7 días).
-        2. Si no está en caché, consulta por HTTP al Nodo MES.
-        3. Si la MES no responde (offline / contingencia), aplica el fallback de 1.5% (0.015).
+        2. Si no está en caché, consulta por HTTP al Nodo FDI.
+        3. Si el FDI no responde (offline / contingencia), aplica el fallback de 1.5% (0.015).
         """
+        target_url = fdi_url or mes_url
         cached = cache.get(cls.CACHE_KEY)
         if cached:
             alicuota = Decimal(str(cached.get("alicuota_total_recargo", "0.015")))
             return min(alicuota, Decimal("0.015"))
 
-        data = cls.refrescar_parametros_desde_mes(mes_url=mes_url)
+        data = cls.refrescar_parametros_desde_fdi(fdi_url=target_url)
         if data:
             alicuota = Decimal(str(data.get("alicuota_total_recargo", "0.015")))
             return min(alicuota, Decimal("0.015"))
 
-        # Fallback reglamentario según Ley e-OP y Dossier FIMCA (1.0% MES + 0.5% FDI = 1.5%)
+        # Fallback reglamentario según Ley e-OP y Dossier FIMCA (1.0% + 0.5% = 1.5%)
         return Decimal("0.015")
 
     @classmethod
-    def obtener_alicuota_stock_fdi(cls, mes_url=None):
+    def obtener_alicuota_stock_fdi(cls, fdi_url=None, mes_url=None):
         """
         Devuelve la alícuota fiduciaria de cobertura de stock s/BOM (Art. 4° inc. 4.c).
         Tope legal Ley e-OP: 0.5% (0.005) sobre valor BOM para prima colectiva de seguros.
         """
+        target_url = fdi_url or mes_url
         cached = cache.get(cls.CACHE_KEY)
         if cached and "alicuota_stock" in cached:
             alicuota = Decimal(str(cached.get("alicuota_stock", "0.005")))
             return min(alicuota, Decimal("0.005"))
 
-        data = cls.refrescar_parametros_desde_mes(mes_url=mes_url)
+        data = cls.refrescar_parametros_desde_fdi(fdi_url=target_url)
         if data and "alicuota_stock" in data:
             alicuota = Decimal(str(data.get("alicuota_stock", "0.005")))
             return min(alicuota, Decimal("0.005"))
 
         return Decimal("0.005")
+
+
+class FederacionFDIService:
+    """
+    Servicio cliente de federación saliente para consumir las APIs del Nodo Central FDI
+    (Fondo Fiduciario de Desarrollo Industrial).
+    """
+
+    @classmethod
+    def obtener_fdi_url(cls, fdi_url=None):
+        url = (
+            fdi_url
+            or getattr(settings, "NODO_FDI_URL", None)
+        )
+        if not url:
+            raise ValueError("NODO_FDI_URL no está configurado en las variables de entorno ni en settings.")
+        return url.rstrip("/")
+
+    @classmethod
+    def consultar_cupo_fdi(cls, fdi_url=None):
+        """
+        Consulta en tiempo real el estado del crédito, mora y cupo operativo
+        al servidor del FDI enviando el CUIT de la empresa local en el header X-CUIT.
+        """
+        from apps.base.models import ConfiguracionEmpresa
+
+        empresa = ConfiguracionEmpresa.objects.first()
+        if not empresa or not empresa.cuit:
+            raise ValueError("No hay una Configuración de Empresa con CUIT definida en este nodo.")
+
+        base_url = cls.obtener_fdi_url(fdi_url)
+        endpoint = f"{base_url}/fdi/api/v1/fdi/estado-credito/"
+
+        try:
+            respuesta = requests.get(
+                endpoint,
+                headers={"X-CUIT": empresa.cuit},
+                timeout=5,
+            )
+            if respuesta.status_code == 200:
+                return respuesta.json()
+            elif respuesta.status_code == 404:
+                raise ValueError("El FDI informa que la empresa no posee una línea de crédito asignada.")
+            else:
+                raise ValueError(f"Error de red comunicándose con el FDI: {respuesta.status_code}")
+        except requests.RequestException as e:
+            raise ValueError(f"El Nodo FDI no está disponible: {str(e)}")
+
+    # Alias de retrocompatibilidad
+    consultar_cupo_mes = consultar_cupo_fdi
+
+    @classmethod
+    def consultar_pauta_escrow_fdi(cls, fdi_url=None, es_sello_buen_diseno=False):
+        """
+        Consulta por HTTP a la API federada del FDI la pauta oficial de porcentajes de Escrow
+        vigente (Hito Cero, Sello Buen Diseño, Hito Final).
+        """
+        base_url = cls.obtener_fdi_url(fdi_url)
+        endpoint = f"{base_url}/federacion/api/v1/escrow/pauta/"
+        params = {"sello_buen_diseno": "true" if es_sello_buen_diseno else "false"}
+
+        try:
+            resp = requests.get(endpoint, params=params, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                return {
+                    "porcentaje_cero": Decimal(str(data["porcentaje_cero"])),
+                    "etiqueta_cero": data["etiqueta_cero"],
+                    "porcentaje_final": Decimal(str(data["porcentaje_final"])),
+                    "porcentaje_avance": Decimal(str(data["porcentaje_avance"])),
+                    "nombre_pauta": data.get("nombre_pauta", "Pauta Oficial Escrow FDI"),
+                }
+        except Exception:
+            pass
+
+        # Fallback de contingencia local si el FDI no responde
+        porc_cero = Decimal("50.00") if es_sello_buen_diseno else Decimal("35.00")
+        porc_final = Decimal("20.00")
+        return {
+            "porcentaje_cero": porc_cero,
+            "etiqueta_cero": f"Hito Cero - Anticipo Operativo de Arranque ({'Sello Buen Diseño 50%' if es_sello_buen_diseno else 'Estándar 35%'})",
+            "porcentaje_final": porc_final,
+            "porcentaje_avance": Decimal("100.00") - porc_cero - porc_final,
+            "nombre_pauta": "Pauta Oficial Escrow FDI (Fallback Local)",
+        }
+
+    # Alias de retrocompatibilidad
+    consultar_pauta_escrow_mes = consultar_pauta_escrow_fdi
+
+    @classmethod
+    def transmitir_eop_al_fdi(cls, contrato_eop, firma_comitente_hex, clave_publica_hex, fdi_url=None):
+        """
+        Emite el HTTP POST con el payload canónico firmado hacia el endpoint receptor
+        del nodo fiduciario (/federacion/eop/entrante/).
+        """
+        from apps.base.models import ConfiguracionEmpresa
+
+        empresa = ConfiguracionEmpresa.objects.first()
+        if not empresa or not empresa.cuit:
+            raise ValueError("No hay una Configuración de Empresa con CUIT definida en este nodo.")
+
+        base_url = cls.obtener_fdi_url(fdi_url or contrato_eop.nodo_mes)
+        endpoint = f"{base_url}/federacion/eop/entrante/"
+
+        # Asegurar hash de integridad criptográfica
+        contrato_eop.sellar_hash_seguridad()
+
+        # Validación Inviolable: La e-OP no puede transmitirse sin la firma del tallerista gestor
+        firmas = contrato_eop.firmas_digitales or {}
+        if "tallerista" not in firmas or not firmas["tallerista"].get("firma_hex"):
+            raise ValueError(
+                f"No se puede transmitir la e-OP {contrato_eop.numero or contrato_eop.uuid_identificador} a la Red Federada: "
+                f"El tallerista gestor aún no ha firmado digitalmente el contrato en el portal."
+            )
+
+        payload_canonico_str = contrato_eop.generar_payload_canonico()
+        payload_canonico_dict = json.loads(payload_canonico_str)
+
+        sobre_transporte = {
+            "uuid_identificador": str(contrato_eop.uuid_identificador),
+            "hash_seguridad": contrato_eop.hash_seguridad,
+            "comitente_cuit": empresa.cuit,
+            "tallerista_cuit": payload_canonico_dict.get("tallerista_cuit", ""),
+            "monto_total_uci": str(contrato_eop.monto_total_uci),
+            "payload_canonico": payload_canonico_dict,
+            "firma_comitente": firma_comitente_hex,
+            "clave_publica_comitente": clave_publica_hex,
+            "firma_tallerista": firmas["tallerista"]["firma_hex"],
+            "cronograma_escrow_hitos": payload_canonico_dict.get("cronograma_escrow_hitos", []),
+        }
+
+        try:
+            respuesta = requests.post(
+                endpoint,
+                json=sobre_transporte,
+                headers={"X-CUIT": empresa.cuit, "Content-Type": "application/json"},
+                timeout=10,
+            )
+            if respuesta.status_code in [200, 201]:
+                return respuesta.json()
+            else:
+                raise ValueError(
+                    f"Error rechazado por el FDI ({respuesta.status_code}): {respuesta.text}"
+                )
+        except requests.RequestException as e:
+            raise ValueError(f"Fallo de conexión al despachar e-OP al Nodo FDI: {str(e)}")
+
+    # Alias de retrocompatibilidad
+    transmitir_eop_a_mes = transmitir_eop_al_fdi
+
+
+FederacionCreditoService = FederacionFDIService
 
 
 
@@ -147,7 +310,7 @@ class EOPService:
             nodo_mes = (
                 (empresa.nodo_mes_endpoint or empresa.nodo_mes)
                 if empresa else None
-            ) or getattr(settings, "NODO_MES_URL", "http://localhost:8000")
+            ) or getattr(settings, "NODO_FDI_URL", "")
 
         cotizacion_uci = UCIService.obtener_cotizacion_actual()
         if not cotizacion_uci or cotizacion_uci <= 0:
@@ -205,38 +368,16 @@ class EOPService:
                 f"Una e-OP federada requiere un mínimo obligatorio de dos etapas productivas (posee {len(etapas_tracking)})."
             )
 
-        # 6. Consultar la Pauta Oficial de Escrow dictaminada por la MES vía HTTP:
+        # 6. Consultar la Pauta Oficial de Escrow dictaminada por el FDI vía HTTP:
         posee_sbd = bool(op.contrato_eop and op.contrato_eop.es_sello_buen_diseno)
-        nodo_mes_url = op.contrato_eop.nodo_mes if (op.contrato_eop and op.contrato_eop.nodo_mes) else getattr(settings, "NODO_MES_URL", "http://localhost:8000")
-        pauta_mes = None
+        nodo_fdi_url = op.contrato_eop.nodo_mes if (op.contrato_eop and op.contrato_eop.nodo_mes) else None
+        pauta_fdi = FederacionFDIService.consultar_pauta_escrow_fdi(
+            fdi_url=nodo_fdi_url, es_sello_buen_diseno=posee_sbd
+        )
 
-        try:
-            resp = requests.get(
-                f"{nodo_mes_url.rstrip('/')}/mes/api/v1/fdi/parametros-arancelarios/",
-                timeout=3,
-            )
-            if resp.status_code == 200:
-                pauta_data = resp.json()
-                porc_cero = Decimal(str(pauta_data.get("porcentaje_anticipo_sbd" if posee_sbd else "porcentaje_anticipo_estandar", "50.00" if posee_sbd else "35.00")))
-                pauta_mes = {
-                    "porcentaje_cero": porc_cero,
-                    "etiqueta_cero": f"Hito Cero - Anticipo ({porc_cero}%)",
-                    "porcentaje_final": Decimal(str(pauta_data.get("porcentaje_hito_final", "20.00"))),
-                }
-        except Exception:
-            pass
-
-        if not pauta_mes:
-            # Fallback canónico reglamentario según Ley e-OP
-            pauta_mes = {
-                "porcentaje_cero": Decimal("50.00") if posee_sbd else Decimal("35.00"),
-                "etiqueta_cero": f"Hito Cero - Anticipo Operativo de Arranque ({'Sello Buen Diseño 50%' if posee_sbd else 'Estándar 35%'})",
-                "porcentaje_final": Decimal("20.00"),
-            }
-
-        anticipo = porcentaje_anticipo or pauta_mes["porcentaje_cero"]
-        nombre_cero = pauta_mes.get("etiqueta_cero") or f"Hito Cero - Anticipo Operativo de Arranque ({anticipo}%)"
-        porcentaje_final = pauta_mes.get("porcentaje_final", Decimal("20.00"))
+        anticipo = porcentaje_anticipo or pauta_fdi["porcentaje_cero"]
+        nombre_cero = pauta_fdi.get("etiqueta_cero") or f"Hito Cero - Anticipo Operativo de Arranque ({anticipo}%)"
+        porcentaje_final = pauta_fdi.get("porcentaje_final", Decimal("20.00"))
 
         # Validaciones de consistencia de la Tríada Canónica
         if anticipo <= Decimal("0.00") or anticipo >= Decimal("100.00"):

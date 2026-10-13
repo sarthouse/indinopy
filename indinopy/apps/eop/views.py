@@ -64,7 +64,7 @@ class AceptarContratoEOPActionView(LoginRequiredMixin, View):
             # 1. El servicio en apps.eop sella el contrato con la firma del tallerista
             EOPService.firmar_contrato_tallerista(contrato, request.user, firma_tallerista_hex)
             
-            messages.success(request, "Contrato firmado exitosamente. La MES ya fue notificada para activar el Timelock.")
+            messages.success(request, "Contrato firmado exitosamente. El FDI ya fue notificado para activar el Timelock.")
         except Exception as e:
             messages.error(request, f"Error al firmar el contrato: {str(e)}")
             
@@ -98,22 +98,21 @@ class CargarFacturaHitoActionView(LoginRequiredMixin, View):
         return redirect('eop:contrato_detail', pk=hito.contrato.pk)
 
 # =====================================================================
-# ENDPOINTS API FEDERADA (Recepción de Webhooks de la MES)
+# ENDPOINTS API FEDERADA (Recepción de Webhooks del FDI)
 # =====================================================================
 
 @method_decorator(csrf_exempt, name='dispatch')
-class MESWebhookHitoLiberadoAPIView(View):
+class FDIWebhookHitoLiberadoAPIView(View):
     """
-    Endpoint que recibe el PUSH de la MES avisando que el Fideicomiso (FDI)
+    Endpoint que recibe el PUSH del FDI avisando que el Fideicomiso
     ya pagó el hito, para que el ERP local pueda avanzar la producción.
     """
     def post(self, request, *args, **kwargs):
-        # 1. Validar firma HMAC o Token de la MES para seguridad (omitido por brevedad)
         try:
             payload = json.loads(request.body)
             contrato_uuid = payload.get("contrato_uuid")
             hito_id = payload.get("hito_id")
-            cae_arca = payload.get("cae_arca", None) # Por si la MES constató la factura
+            cae_arca = payload.get("cae_arca", None)
             
             contrato = ContratoEOP.objects.get(uuid_identificador=contrato_uuid)
             hito = contrato.hitos.get(id=hito_id)
@@ -125,7 +124,6 @@ class MESWebhookHitoLiberadoAPIView(View):
                 hito.factura_asociada_arca = cae_arca
                 hito.save(update_fields=["factura_asociada_arca"])
                 
-            # Forzamos la liberación saltando la validación del PTF (porque la MES ya lo validó)
             hito.estado = "liberado"
             hito.save(update_fields=["estado"])
             
@@ -133,12 +131,15 @@ class MESWebhookHitoLiberadoAPIView(View):
             
         except Exception as e:
             return JsonResponse({"status": "error", "error": str(e)}, status=400)
-            
+
+
+MESWebhookHitoLiberadoAPIView = FDIWebhookHitoLiberadoAPIView
+
 
 @method_decorator(csrf_exempt, name='dispatch')
-class MESWebhookContratoFondeadoAPIView(View):
+class FDIWebhookContratoFondeadoAPIView(View):
     """
-    Endpoint que recibe el PUSH de la MES avisando que el Fideicomiso (FDI)
+    Endpoint que recibe el PUSH del FDI avisando que el Fideicomiso
     adelantó el capital inicial (Hito Cero) por factoring.
     """
     def post(self, request, *args, **kwargs):
@@ -155,3 +156,6 @@ class MESWebhookContratoFondeadoAPIView(View):
             
         except Exception as e:
             return JsonResponse({"status": "error", "error": str(e)}, status=400)
+
+
+MESWebhookContratoFondeadoAPIView = FDIWebhookContratoFondeadoAPIView

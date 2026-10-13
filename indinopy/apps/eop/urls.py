@@ -11,6 +11,8 @@ urlpatterns = [
     path('hitos/<int:pk>/cargar_factura/', views.CargarFacturaHitoActionView.as_view(), name='hito_cargar_factura'),
     
     # Endpoints API Federada
+    path('api/webhooks/fdi/hito-liberado/', views.FDIWebhookHitoLiberadoAPIView.as_view(), name='webhook_fdi_hito_liberado'),
+    path('api/webhooks/fdi/contrato-fondeado/', views.FDIWebhookContratoFondeadoAPIView.as_view(), name='webhook_fdi_contrato_fondeado'),
     path('api/webhooks/mes/hito-liberado/', views.MESWebhookHitoLiberadoAPIView.as_view(), name='webhook_mes_hito_liberado'),
     path('api/webhooks/mes/contrato-fondeado/', views.MESWebhookContratoFondeadoAPIView.as_view(), name='webhook_mes_contrato_fondeado'),
 ]

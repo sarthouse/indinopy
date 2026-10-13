@@ -11,7 +11,7 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -28,7 +28,7 @@ services:
     container_name: indinopy_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6380}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -50,12 +50,15 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "${WEB_PORT:-8001}:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - DEBUG=${DEBUG:-True}
       - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-indinopy-key-change-in-prod}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-*}
       - NODE_ROLE=${NODE_ROLE:-DEV}
+      - NODO_FDI_URL=${NODO_FDI_URL:-http://host.docker.internal:8000}
       - DB_NAME=${DB_NAME:-indinopy}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}

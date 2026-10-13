@@ -33,7 +33,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock* /app/
 
 # Instalar dependencias del proyecto usando uv
-RUN uv pip install --system -r pyproject.toml
+RUN uv pip install --system .
 
 # Copiar el código fuente completo del proyecto
 COPY . /app/

@@ -5,14 +5,8 @@ from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.http import HttpResponseForbidden
 from base.models import Contacto
-from django.conf import settings
 from decimal import Decimal
-
-_ROLE = getattr(settings, "NODE_ROLE", "MES")
-
-# Módulos del Fondo Fiduciario (FDI / Estatuto Legal)
 from fdi.models import RegistroEOP, ScoringTallerista
 from fdi.services import PTFService
 from base.models import ContratoEOP, EOPHitoEscrow
@@ -60,13 +54,6 @@ class RecepcionEOPView(APIView):
     permission_classes = [
         permissions.AllowAny
     ]  # En producción usaríamos un Custom Permission basado en IP/Firma
-
-    def dispatch(self, request, *args, **kwargs):
-        if _ROLE not in ["MES", "DEV"]:
-            return HttpResponseForbidden(
-                "Esta vista de gobernanza solo está habilitada para el Nodo MES."
-            )
-        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request):
         # Guardamos log de la petición (No Repudio)
@@ -314,11 +301,6 @@ class RecepcionFirmaEtapaView(APIView):
 
     permission_classes = [permissions.AllowAny]
 
-    def dispatch(self, request, *args, **kwargs):
-        if _ROLE not in ["MES", "DEV"]:
-            return HttpResponseForbidden("Esta vista de gobernanza solo está habilitada para el Nodo MES.")
-        return super().dispatch(request, *args, **kwargs)
-
     def post(self, request, uuid):
         log = WebhookLog.objects.create(
             endpoint=f"/federacion/eop/{uuid}/firma/",
@@ -371,11 +353,6 @@ class PollingNovedadesAPIView(APIView):
     """
 
     permission_classes = [permissions.AllowAny]
-
-    def dispatch(self, request, *args, **kwargs):
-        if _ROLE not in ["MES", "DEV"]:
-            return HttpResponseForbidden("Esta vista de polling de la red solo está habilitada para el Nodo MES.")
-        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
         cuit = request.headers.get("X-CUIT")

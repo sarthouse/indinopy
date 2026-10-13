@@ -431,7 +431,7 @@ class DashboardFiduciarioView(LoginRequiredMixin, ListView):
     Dashboard del Fideicomiso (FDI) para monitorear hitos de escrow liberados,
     generar lotes batch de clearing bancario y conciliar pagos.
     """
-    template_name = "mes/fiduciaria/clearing_dashboard.html"
+    template_name = "fdi/fiduciaria/clearing_dashboard.html"
     context_object_name = "hitos_pendientes"
 
     def get_queryset(self):
@@ -461,7 +461,7 @@ class EjecutarClearingBatchActionView(LoginRequiredMixin, View):
         hitos_ids = request.POST.getlist("hitos_seleccionados")
         if not hitos_ids:
             messages.warning(request, "No seleccionaste ningún hito para liquidar.")
-            return redirect("mes:fiduciaria_dashboard")
+            return redirect("fdi:fiduciaria_dashboard")
 
         lote_ref = f"LOTE-MANUAL-{timezone.now().strftime('%Y%m%d%H%M')}"
         resultado = ClearingBancarioService.procesar_callback_clearing(
@@ -473,7 +473,7 @@ class EjecutarClearingBatchActionView(LoginRequiredMixin, View):
             request,
             f"Lote {lote_ref} liquidado exitosamente: {resultado.get('procesados', 0)} órdenes de pago fiduciario generadas."
         )
-        return redirect("mes:fiduciaria_dashboard")
+        return redirect("fdi:fiduciaria_dashboard")
 
 
 # =====================================================================
