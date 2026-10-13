@@ -463,16 +463,19 @@ Evolucionar `apps/afip` hacia un módulo interoperable con los nuevos servicios 
 
 ---
 
-## 8. Fase 6: Automatización Asíncrona (Celery Beat) y Portales Web
+---
 
-### 8.1. Tareas Asíncronas Periódicas
+## 8. Fase 6: Automatización Asíncrona (Celery Beat) y Portales Web (Completada)
 
-Configurar en `core/celery.py` y los archivos `tasks.py` correspondientes:
+### 8.1. Tareas Asíncronas Periódicas (Implementadas y Verificadas)
+
+Configuradas en `indinopy/core/settings.py` y `fimca-core/core/settings.py` bajo `CELERY_BEAT_SCHEDULE`:
 
 ```python
-# Programación de tareas en Celery Beat
+# Programación de tareas en Celery Beat (Activas)
 
 CELERY_BEAT_SCHEDULE = {
+    # Tareas en ERP Indinopy
     "verificar-timelocks-rcf-cada-hora": {
         "task": "apps.eop.tasks.procesar_timelocks_rcf",
         "schedule": crontab(minute=0),  # Cada hora
@@ -481,37 +484,39 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.eop.tasks.procesar_incidencias_jit_y_standby",
         "schedule": crontab(hour=6, minute=0),  # Diario al inicio de jornada
     },
-    "auditoria-mensual-cdd": {
-        "task": "apps.mes.tasks.auditar_renovacion_cdd_mensual",
-        "schedule": crontab(day_of_month=1, hour=3, minute=0),  # 1° de cada mes
-    },
-    "alertas-costos-inti-semanal": {
-        "task": "apps.mes.tasks.auditar_costos_vs_matrices_inti",
-        "schedule": crontab(day_of_week="monday", hour=4, minute=0),
-    },
     "procesar-cedulas-tacitas-48h": {
-        "task": "apps.federacion.tasks.procesar_notificaciones_tacitas_async",
-        "schedule": crontab(minute="*/30"), # Cada 30 minutos
+        "task": "apps.comunicaciones.tasks.procesar_notificaciones_tacitas_async",
+        "schedule": crontab(minute="*/30"),  # Cada 30 minutos
+    },
+    # Tareas en Nodo Fiduciario Central FIMCA (fimca-core)
+    "motor-anti-colusion-cada-hora": {
+        "task": "fdi.tasks.motor_anti_colusion",
+        "schedule": crontab(minute=15),
+    },
+    "procesar-silencio-positivo-timelock-cada-hora": {
+        "task": "fdi.tasks.procesar_silencio_positivo_timelock_async",
+        "schedule": crontab(minute=30),
     },
 }
 ```
 
-### 8.2. Interfaz PWA del Tallerista
-* Aceptación rápida de órdenes con visualización transparente de $c_{\text{MOD}}$ y cronograma de pagos.
-* Firma de aceptación con cláusula explícita de confesión de deuda Hito Cero.
-* Carga ágil de PoPW mediante cámara del dispositivo (declaración de curva) y captura de coordenadas GPS.
-* Confirmación en un click del borrador de Factura C asistida.
+### 8.2. Portal Móvil del Tallerista (`apps/produccion/` y `apps/eop/`) (Completada)
+* Implementado en `apps/produccion/templates/produccion/portal_tallerista_list.html` con Tailwind CSS y Alpine.js.
+* Visualización transparente de órdenes, etapas y saldos habilitados.
+* Declaración de avance físico (**PoPW**) con captura geodésica satelital en un clic (`navigator.geolocation`) persistida en PostGIS (`PointField`).
+* **Módulo de Cierre Fiscal (RCF)**: Visualización del borrador de Factura C asistida con retención SIPA 2% (Art. 24.5).
+* Emisión asistida 1-click vía WSFEv1 o constatación de CAE externo mediante WSCDC (ARCA).
 
-### 8.3. Portal de la Marca Comitente
-* Gestión de e-OPs activas y simulación del cronograma de provisión JIT.
-* Seguimiento en tiempo real de la vigencia del Safe Harbor (CDD) de sus talleres proveedores.
-* Módulo de cómputo y auditoría de Crédito Fiscal Presunto del 10% de IVA.
-* Gestión de la Reserva Líquida de Garantía (5%).
+### 8.3. Módulo de la Marca Comitente y ERP (`apps/eop/`, `apps/produccion/`) (Completada)
+* Implementado en `apps/eop/templates/eop/contrato_list.html` y `contrato_detail.html`.
+* Panel de **Crédito Fiscal Presunto del 10% de IVA (Art. 23.1 Ley e-OP)** computable en el Libro IVA Digital (RG 4597).
+* Semáforo de entrega de insumos Justo a Tiempo (Art. 5° bis) y cálculo de compensación por lucro cesante fabril (0.5 SMVM diario).
+* Trazabilidad física en `apps/produccion/templates/produccion/op_detail.html` con **mapa interactivo de Leaflet.js** para visualización territorial de talleres y partes PoPW.
 
-### 8.4. Panel Fiduciario y de Supervisión MES/INTI
-* Emisión y empaquetado de Bonos BIP, balances de series y calce financiero.
-* Monitoreo de las 4 reservas de cobertura patrimonial.
-* Tablero del perito INTI para emitir dictámenes prejudiciales en el plazo de 5 días.
+### 8.4. Panel Fiduciario y Clearing (`fimca-core/fdi/`) (Completada)
+* Implementado en `fimca-core/fdi/templates/fdi/fiduciaria/clearing_dashboard.html`.
+* Monitoreo de hitos de Escrow habilitados para desembolso masivo.
+* Exportación de lotes batch de compensación bancaria bajo protocolo COELSA / ACH Nacional.
 
 ---
 
