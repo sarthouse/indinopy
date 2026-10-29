@@ -1,7 +1,7 @@
 ---
 title: "Addenda III: Infraestructura de Base y Convocatoria del Informal Invisible"
 author: Tiago Gabriel Sarthou
-date: Septiembre 2026
+date: Octubre 2026
 ---
 
 # Addenda III: Infraestructura de Base y Convocatoria del Informal Invisible
@@ -30,28 +30,28 @@ Esta Addenda diagnostica tres brechas de base y propone un protocolo integrado d
 
 ### A. Diagnóstico de las Tres Brechas de Base
 
-#### Brecha 1: Infraestructura Energética Precaria o Irregular
+#### Brecha 1: Infraestructura Energética Precaria y Custodia de Insumos en Casas-Taller
 
 El taller de barrio en zonas de vulnerabilidad social frecuentemente opera bajo alguna de las siguientes condiciones:
 
 * **Conexión eléctrica clandestina ("enganche"):** el suministro se toma de la red sin medidor propio, con alto riesgo de corte, multa y exposición a accidentes eléctricos. La demanda de una máquina de aparado industrial o una desbastadora puede generar una sobrecarga que deja sin luz al taller y a los vecinos.
 * **Tensión inestable:** aun con medidor propio, la infraestructura de distribución en zonas de alta densidad residencial presenta caídas de tensión frecuentes que dañan motores, generan tiempos muertos y elevan el costo de mantenimiento.
 * **Sin gas de red:** el calefaccionamiento, la plancha de vapor industrial y ciertos procesos de pegado y secado de adhesivos requieren calor. Sin gas de red, el tallerista usa garrafa de 10 kg cuyo costo por BTU es hasta cuatro veces superior al del gas de red, destruyendo su margen operativo.
+* **Almacenamiento precario de materiales sin seguro individual:** en la casa-taller, los rollos de tela, cueros y avíos provistos por la marca comitente ($c_{\text{BOM}}$) conviven con el ámbito doméstico. Ninguna compañía de seguros tradicional emite pólizas individuales accesibles para casas-taller barriales sin exigir habilitaciones industriales previas o inspecciones edilicias que excluirían al 90% del sector.
 
-Un tallerista con suministro eléctrico irregular no puede registrarse en el régimen sin exponerse a una regularización que puede derivar en una deuda de retroalimentación con la distribuidora. Sin esa regularización, la plataforma digital no puede verificar el domicilio productivo real.
+Un tallerista con suministro eléctrico irregular jamás se registraría si ello implicara que la distribuidora le reclame o descuente deudas retroactivas de su trabajo; del mismo modo, no podría destrabar el anticipo del Hito Cero (35% / 50% SBD) si se le exigiera contratar por su cuenta un seguro individual de mercadería. Conforme se detalla en esta Addenda y en el **Artículo 20 bis de la Ley de e-OP**, el régimen resuelve ambos cuellos de botella de plano: (1) **principio de "Pizarrón Limpio" eléctrico** con amnistía total del pasivo retroactivo; y (2) **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$)** administrada centralizadamente por el FDI y financiada mediante la alícuota fiduciaria de stock ($c_{\text{STK}}$ de hasta el 0,5% del $c_{\text{BOM}}$) a cargo exclusivo de la comitente, otorgando **vigencia asegurativa automática e inmediata al lote con el solo registro de la e-OP**, sin burocracia ni inspecciones previas al taller.
 
-#### Brecha 2: Conectividad Digital Inexistente o Insuficiente
+#### Brecha 2: Conectividad Digital Inexistente y Barrera de Facturación
 
-El sistema Indinopy ERP/MES y la plataforma de la MES requieren conectividad para:
+El Registro Público de e-OPs en ARCA y la red federada Indinopy ERP/MES requieren interacción digital para:
 
-* Registrar la e-OP y firmarla digitalmente.
-* Declarar el parte de producción (PoPW) con geolocalización y validación biométrica RENAPER.
-* Recibir notificaciones de desembolso de hitos.
-* Acceder a la billetera virtual o cuenta de clearing.
+* Suscribir bilateralmente la e-OP y habilitar la Cuenta Especial de Compensación y Liquidación Manufacturera.
+* Declarar el avance de curva mediante la Prueba de Trabajo Productivo (PoPW: declaración jurada + georreferenciación satelital cifrada + remito parcial).
+* Emitir el comprobante fiscal electrónico oficial con CAE para liberar el **20% final de la Retención de Cierre Fiscal (RCF)**.
 
-Un porcentaje significativo de los talleres de base opera en barrios con cobertura 4G intermitente o inexistente, y sin acceso a WiFi domiciliario. El teléfono prepago de bajo costo puede no tener compatibilidad con las APIs de RENAPER ni con la biometría facial.
+Un porcentaje significativo de los talleres de base opera en barrios con cobertura 4G intermitente, sin WiFi domiciliario y sin conocimientos de parametrización contable o puntos de venta en ARCA.
 
-El buzón físico como canal alternativo (ya contemplado en la Addenda II, Sección VIII.F.2) resuelve la denuncia de irregularidades, pero no resuelve el registro de e-OPs ni la certificación de hitos productivos.
+Para que el analfabetismo tributario o la falta de conectividad nunca impidan cobrar el 20% final de la orden, el **Artículo 24° inciso 5 de la Ley de e-OP** instituye el **Régimen de Facturación Simplificada por Borrador Asistido**: **ARCA genera y precarga de oficio el borrador electrónico de la Factura C** con todos los datos fiscales, montos netos y retenciones de la e-OP cumplida. El tallerista (por sí mismo desde su celular o asistido por el PTF en el nodo WiFi comunitario) emite el comprobante y genera el CAE **con un solo clic**, sin parametrización contable ni carga manual, y quedando eximido del cargo de mora a tasa BADLAR (Art. 12° inc. 3).
 
 #### Brecha 3: El Informal Invisible — Ausencia de Mapa Productivo Territorial
 
@@ -90,7 +90,7 @@ Ya definido en la Addenda II (Sección VIII.E), el PTF es la figura central. En 
 El municipio es el actor con mayor presencia territorial real y con capacidad de convocatoria legítima sin la carga histórica del Estado recaudador. Su rol en el despliegue es:
 
 * **Despliegue del Equipo de Asesoría Integral y Productiva Móvil:** en lugar de exigir que el tallerista vaya a una oficina pública, la Secretaría de Producción despliega esta unidad móvil multidisciplinaria en los puntos de mayor concentración de talleres identificados por el mapa del PTF.
-* **Articulación con EDESUR/EDENOR y distribuidoras provinciales:** el municipio gestiona el convenio de regularización masiva de conexiones eléctricas informales con las distribuidoras. Bajo este convenio, el tallerista que ingresa al régimen FIMCA accede a la regularización de su conexión eléctrica con plan de pago de la deuda retroactiva en cuotas mensuales de monto fijo no superior al 2% de su ingreso neto promedio por e-OP, descontadas automáticamente del clearing del FDI. La distribuidora acepta porque la garantía de cobro es el propio FDI.
+* **Articulación con EDESUR/EDENOR y distribuidoras provinciales bajo el principio de "Pizarrón Limpio":** el municipio gestiona el convenio marco de regularización masiva de conexiones eléctricas informales con las distribuidoras, respaldado institucionalmente por el fondo fiduciario. Bajo este convenio de **"Pizarrón Limpio"**, el tallerista que ingresa al régimen FIMCA accede a la instalación inmediata de su medidor legal con tarifa productiva subsidiada y a la **amnistía y condonación total del pasivo retroactivo por consumos no registrados en la etapa informal previa**, prohibiéndose taxativamente efectuar descuentos sobre las liquidaciones de sus e-OPs por deudas eléctricas pasadas. La distribuidora adhiere al convenio marco porque transforma una pérdida técnica permanente en un nuevo usuario productivo formalizado cuyo pago corriente hacia adelante está respaldado por el flujo del FDI.
 * **Gestión de acceso a la red de gas y subsidios de transición:** el objetivo estructural de la intervención es lograr la regularización y conexión de los talleres a la red formal de gas natural. Mientras se gestionan y ejecutan estas obras de infraestructura, el municipio articula con la Secretaría de Energía la ampliación del cupo del Programa Hogar (Decreto 470/2015) para los talleres domiciliarios adheridos a FIMCA, garantizando el insumo energético de transición.
 
 #### 3. Las Organizaciones Libres del Pueblo (OLP) — *El Puente de Confianza*
@@ -159,13 +159,13 @@ Los tres mecanismos siguientes producen el mismo resultado —conectar a la marc
 
 #### Mecanismo 1 — Referidos entre Pares (el más efectivo)
 
-El tallerista ya incorporado al régimen puede generar desde la plataforma un código de invitación personal para un colega de confianza. La relación es horizontal: entre iguales del mismo oficio, con la confianza que ya existe en el barrio. El que invita tiene interés propio: por cada colega que complete su primera e-OP a través de su referido, suma puntos UCP en su score solidario (Addenda II, Sección VIII.D), lo que mejora su posición en la Bolsa de Trabajo y su acceso a crédito productivo.
+El tallerista ya incorporado al régimen puede generar desde la plataforma un código de invitación personal para un colega de confianza. La relación es horizontal: entre iguales del mismo oficio, con la confianza que ya existe en el barrio. El que invita tiene interés propio: por cada colega que complete su primera e-OP a través de su referido, suma puntos UCP y ponderación positiva en su trayectoria del **SETP (Sistema de Evaluación de Trayectoria Productiva, Art. 2° inc. 12 Ley de e-OP)**, lo que mejora su posición en la Bolsa de Trabajo y la ampliación de sus cupos operativos.
 
 El nodo comunitario de la MES activa este mecanismo enviando los primeros códigos de referido a los talleristas más antiguos del cuadrante, quienes funcionan como anclas de confianza para los que aún están afuera.
 
 #### Mecanismo 2 — Declaración de Capacidad por la Marca sin Identificación de Personas
 
-La marca comitente que quiere acceder al Crédito Fiscal Presunto del 25% declara en la plataforma un *compromiso de capacidad a formalizar*: indica la especialidad buscada (aparado, corte, costura), el volumen mensual estimado en pares, y el municipio o zona de operación. No nomina ningún individuo ni entrega ningún dato personal de sus proveedores informales actuales.
+La marca comitente que quiere acceder al **Crédito Fiscal Presunto de IVA del 10%** sobre la mano de obra ($c_{\text{MOD}}$, Art. 23° inc. 1 Ley de e-OP) y al **Puerto Seguro laboral (CDD / CDD-P, Art. 22°)** declara en la plataforma un *compromiso de capacidad a formalizar*: indica la especialidad buscada (aparado, corte, costura), el volumen mensual estimado en pares, y el municipio o zona de operación. No nomina ningún individuo ni entrega ningún dato personal de sus proveedores informales actuales.
 
 A partir de esa declaración, el nodo comunitario de la MES local recibe la demanda y coordina con el PTF del cuadrante la búsqueda de esa capacidad entre los talleristas relevados en el Mapa Productivo Local. El tallerista que decide adherirse elige si conectar su primera e-OP a esa marca o a otra disponible en la Bolsa. La marca no sabe quién se formalizó ni cuándo: solo recibe la e-OP firmada cuando el tallerista ya tomó la decisión por sí mismo.
 
@@ -282,11 +282,11 @@ La comunicación sobre formalización históricamente fracasó cuando empezó po
 
 #### "Hoy cobrás si la marca quiere. Con FIMCA, el sistema garantiza que cobrás."
 
-El tallerista que entrega un lote y espera 45 días para cobrar no tiene ningún recurso legal si la marca le dice que espere más, que no tiene plata, o que devuelva el lote con defectos que nadie cuestionó al momento de la entrega. Ninguno. Con el régimen, el FDI desembolsó el 70% antes de que el lote esté terminado. Si la marca no paga su deuda al FDI, el FDI ya liquidó. **El riesgo de incobrabilidad deja de recaer sobre el trabajador.**
+El tallerista que entrega un lote y espera 45 días para cobrar no tiene ningún recurso legal si la marca le dice que espere más, que no tiene plata, o que devuelva el lote con defectos que nadie cuestionó al momento de la entrega. Ninguno. Con el régimen de la e-OP, el FDI desembolsa el **80% antes de la entrega final** (**35% en el Hito Cero + 45% en los Hitos de Avance**, o **50% + 30% con Sello Buen Diseño**), y libera el **20% final (RCF)** apenas confirmás con un clic el **borrador precargado de tu Factura C** en la aplicación. La e-OP es un título ejecutivo autosuficiente (Art. 6°): si la marca no paga su deuda al FDI al vencimiento, el FDI ejecuta la Reserva Líquida de la marca (5%) y la demanda ejecutivamente, pero vos ya cobraste. **El riesgo de incobrabilidad de la marca deja de recaer sobre el trabajador.**
 
 #### "Hoy ponés el capital vos. Con FIMCA, el capital lo pone el sistema antes de que empieces."
 
-El Hito Cero es un adelanto del 30%-40% del valor del lote que se libera una vez firmada la e-OP bilateral, antes de que el trabajador corte la primera pieza. Esa plata es para comprar los materiales que la marca no provee, para pagar adelantos a los ayudantes, para pagar la luz del mes. Es capital de trabajo que hoy no existe para el informal y que ningún banco le va a dar.
+El **Hito Cero es un anticipo automático del 35% del valor neto de mano de obra ($c_{\text{MOD}}$) —o del 50% si el producto tiene Sello Buen Diseño (SBD)—** que se libera una vez suscripta la e-OP bilateral, recibido el remito de insumos con UUID y activada de oficio la **Póliza Colectiva Maestra de Stock en Custodia (Art. 20 bis)**, antes de que cortes la primera pieza. Esa plata se acredita en tu **Cuenta Especial de Compensación y Liquidación Manufacturera (100% exenta del Impuesto al Cheque, Ley 25.413)** para comprar avíos menores, pagar adelantos a los ayudantes y cubrir la luz del mes. Es capital de trabajo inmediato sin scoring bancario tradicional ni exigencia de balances.
 
 #### "Hoy conseguís trabajo por el boca a boca. Con FIMCA, cualquier marca del país puede encontrarte."
 
@@ -318,27 +318,28 @@ A medida que el historial crece, el crédito crece con él: a los cuatro meses, 
 
 > **Nota sobre la categoría A:** el techo del Monotributo Productivo categoría A aplica a la *declaración fiscal*, no al límite del crédito del FDI. Si el clearing mensual supera consistentemente el umbral de categoría A, el sistema activa la recategorización automática con período de gracia de seis meses (Addenda I, Sección IV bis), sin cortar el crédito en curso.
 
-#### "Hoy si la marca se funde, el juzgado puede aparecer en tu taller. Con FIMCA, tus materiales son intocables."
+#### "Hoy si la marca se funde o hay un siniestro, perdés todo. Con FIMCA, el trabajo y los materiales están asegurados y con privilegio legal."
 
-La Cláusula de Inembargabilidad Territorial (Glosario, Sección 9) establece que los materiales, insumos y productos en proceso que se encuentran en el taller bajo una e-OP activa son intocables ante cualquier proceso de ejecución o quiebra de la marca comitente. El informal que trabajó toda su vida con el miedo a quedar pegado a las deudas de terceros tiene aquí una protección concreta y ejecutable.
+Conforme a los Artículos 20°, 20 bis y 21° de la Ley de e-OP: (1) al registrarse la e-OP, el lote en tu casa-taller queda cubierto de forma inmediata y gratuita para vos por la **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$)** del FDI (pagada por la marca con el 0,5% de stock), de modo que ante un incendio, robo calificado o siniestro, el seguro repone los materiales a la marca y el FDI te paga la mano de obra devengada; (2) si la marca entra en concurso o quiebra, tus cobros tienen **Privilegio Especial sobre el lote físico elaborado (Art. 241 inc. 1 y Art. 242 de la Ley 24.522)** y **derecho de retención preferencial (Art. 2587 CCyC)**; y (3) a la inversa, la marca sabe que sus insumos en tu taller están protegidos como depósito regular en locación de obra con acción de restitución directa (Art. 138 Ley 24.522).
 
-#### "Hoy no existís para el sistema. Con FIMCA, empezás a tener historial."
+#### "Hoy no existís para el sistema. Con FIMCA, empezás a tener trayectoria en el SETP."
 
-No tener historial crediticio es una trampa de la que es casi imposible salir: sin historial no hay crédito, sin crédito no hay crecimiento, sin crecimiento siempre informal. El score solidario del régimen es un historial que el trabajador construye y que le pertenece, independientemente de qué marca contrate con él. Es portable, acumulable y abre puertas progresivamente: a más crédito, a mejores clientes, a maquinaria, a los CIFO para capacitarse.
+No tener historial crediticio es una trampa de la que es casi imposible salir: sin historial no hay crédito, sin crédito no hay crecimiento, sin crecimiento siempre informal. El **Sistema de Evaluación de Trayectoria Productiva (SETP, Art. 2° inc. 12 Ley de e-OP)** —protegido bajo la Ley 25.326 de Datos Personales— es un historial objetivo que el trabajador construye con cada e-OP cumplida y que le pertenece, independientemente de qué marca contrate con él (y que se transfiere íntegro si el día de mañana un taller empleador opta voluntariamente por constituir una SAS o SRL bajo el Art. 24 bis). Es portable, acumulable y abre puertas progresivamente: a mayores cupos de Hito Cero, a mejores clientes en la Bolsa de Trabajo, al Banco de Maquinaria y a los CIFO.
 
-#### "Hoy si te lastimás trabajando, no existís para ningún seguro. Con FIMCA, tenés cobertura."
+#### "Hoy si trabajás por tu cuenta no sumás jubilación. Con FIMCA, cada lote te suma aportes reales sin cuota fija mensual."
 
-El alta en el Monotributo Productivo activa aportes previsionales mínimos que generan obra social y cómputo de años para jubilación. Para alguien de 45 años que lleva veinte cosiendo en negro, eso puede ser la diferencia entre llegar a los 65 con algo o llegar sin nada.
+El alta en el **Monotributo Productivo (Art. 24° Ley de e-OP)** sustituye la cuota fija mensual por una **micro-retención única del 2% sobre las cobranzas netas** que se imputa al cómputo de meses con aportes en el **SIPA** para tu jubilación (y si un mes no tenés órdenes activas, tu deuda es cero). A su vez, para los trabajadores de talleres empleadores, el régimen condona deudas pasadas, reconoce hasta 60 meses de aportes SIPA (Art. 22° inc. 22.2 bis) y crea el **Fondo FAEL (Art. 22° inc. 22.6)** para garantizar el cobro inmediato de salarios sin esperar juicios interminables.
 
-#### Las exenciones (para cerrar la conversación, no para abrirla)
+#### Las exenciones e incentivos fiscales (para cerrar la conversación, no para abrirla)
 
-Una vez establecidos los beneficios concretos, las exenciones son la confirmación de que el régimen tiene consistencia fiscal:
+Una vez establecidos los beneficios concretos, las disposiciones impositivas confirman la consistencia fiscal del régimen:
 
-* Exención de Ingresos Brutos sobre todas las transacciones respaldadas por e-OP activa (en provincias adheridas).
-* Cómputo limpio del IVA para la marca comitente.
-* Crédito Fiscal Presunto del 25% para la marca, que incentiva que ésta busque talleristas formalizados.
-* Período de gracia de seis meses para recategorización de Monotributo sin pérdida de beneficios.
-* La cláusula de no retroactividad: el régimen no persigue el pasado. Quien se incorpora tiene pizarrón limpio.
+* **Exención del 100% del Impuesto al Cheque (Ley 25.413)** en las Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° inc. 5).
+* **Exención de Ingresos Brutos y Sellos** sobre las transferencias de e-OPs y anticipos del FDI en provincias adheridas (Art. 25°), con bloqueo de retenciones SIRCREB.
+* **Diferimiento del hecho imponible del IVA** hasta la entrega definitiva del lote y liberación de la RCF (Art. 23° inc. 2, mod. Art. 5° inc. b Ley de IVA).
+* **Crédito Fiscal Presunto de IVA del 10%** sobre la mano de obra ($c_{\text{MOD}}$, Art. 23° inc. 1) y **Puerto Seguro laboral (CDD / CDD-P, Art. 22°)** para la marca comitente, lo que incentiva directamente a las marcas a contratar talleristas formalizados en el régimen.
+* **Facturación en un clic mediante Borrador Asistido de Factura C** precargado por ARCA (Art. 24° inc. 5) y **bloqueo automático de FCE** (Art. 7° bis Ley 27.440) para evitar doble titulación.
+* **Cláusula de no retroactividad y Pizarrón Limpio:** el régimen no persigue el pasado fiscal ni eléctrico. Quien se incorpora empieza de cero con respaldo productivo real.
 
 ---
 

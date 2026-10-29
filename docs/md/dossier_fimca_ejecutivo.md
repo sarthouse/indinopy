@@ -1,7 +1,7 @@
 ---
 title: "Proyecto FIMCA — Documento Ejecutivo para el Legislador"
 author: Tiago Gabriel Sarthou
-date: Septiembre 2026
+date: Octubre 2026
 ---
 
 # Proyecto FIMCA
@@ -34,9 +34,12 @@ El régimen vigente de la Ley N° 27.440 de Financiamiento Productivo creó la F
 
 ---
 
-## II. La Propuesta Legislativa: Anteproyecto de Ley de e-OP
+## II. Arquitectura Legislativa: Tres Instrumentos Autónomos y Complementarios
 
-A diferencia de intentos previos fragmentados, la solución se plasma formalmente en un proyecto de ley de fondo con inicio en la Honorable Cámara de Diputados de la Nación (Art. 52 CN por contener materia tributaria): el **"Régimen de la Orden de Producción Electrónica (e-OP) como Título Valor Causal y su Titulización en el Mercado de Capitales"**.
+A diferencia de intentos previos fragmentados, el ecosistema normativo articula tres proyectos con identidad, ámbito y objeto diferenciados:
+1. **El Proyecto de Ley de Salvataje Nacional de las MiPyMEs (preexistente, mayo 2026):** Provee el paquete de alivio de emergencia coyuntural para todo el universo MiPyME (reducción del 50% en tarifas, amnistía fiscal y suspensión preventiva de ejecuciones sobre maquinaria).
+2. **El Anteproyecto de Ley de e-OP (`proyecto_ley_eop.md`):** Ley cambiaria, comercial y financiera de alcance federal con inicio en la Honorable Cámara de Diputados de la Nación (Art. 52 CN por contener materia tributaria): el **"Régimen de la Orden de Producción Electrónica (e-OP) como Título Valor Causal y su Titulización en el Mercado de Capitales"**, que crea e instrumenta el título ejecutivo, su descuento bancario, la custodia fiduciaria en el FDI y los Bonos BIP.
+3. **El Proyecto y Régimen FIMCA:** Régimen autónomo y específico de formalización, inclusión socioproductiva e incentivo industrial territorial (enfocado en calzado, cuero y confección), dotado de su propia gobernanza (Mesa de Enlace Sectorial - MES), estabilidad fiscal por 10 años, filtro de Tecnología Conveniente, Promotores Territoriales (PTF), Bolsa de Trabajo, Red CIFO y Banco de Maquinaria.
 
 ### 🔴 Núcleo de Fondo — Estructura del Proyecto de Ley
 
@@ -137,7 +140,7 @@ FIMCA no apela a la persuasión moral ni al aumento de multas punitivas: **recon
 
 El sistema descentraliza el control en el territorio y asegura equilibrio técnico entre los sectores público y privado:
 
-- **Mesa de Enlace Sectorial (MES):** Estructura paritaria integrada por representantes de cámaras empresariales de la manufactura, sindicatos de rama, el INTI y autoridades estatales. Valida matrices de tiempos y pautas técnicas.
+- **Mesa de Enlace Sectorial (MES — Comités Técnicos y Territoriales del FDI):** Constituida dentro del Régimen FIMCA y del Reglamento de Gestión del Fideicomiso (FDI) como su estructura de comisiones especializadas (Comisión de Homologación Técnica y Comisión de Crédito, Riesgo y Fomento Territorial), además de oficiar como el órgano consultivo paritario permanente previsto en los Arts. 1° y 27° de la Ley de e-OP. Integra a cámaras empresariales, sindicatos de rama, el INTI y municipios para administrar los cupos de arranque en frío del SETP, el filtro de Tecnología Conveniente, la Bolsa de Trabajo, la Red CIFO y el Banco de Maquinaria.
 - **Instituto Nacional de Tecnología Industrial (INTI):** Fija semestralmente las matrices de costos y tiempos estándar de confección (Art. 27°). Si una e-OP pacta tarifas por debajo de paritarias, dispara una Alerta de Inconsistencia que despoja a la marca del crédito fiscal y del puerto seguro, sin penalizar al taller. Brinda además el peritaje técnico en 5 días hábiles ante divergencias de calidad.
 - **Programa de Formalización Empresaria Tutelada (PFET):** Brinda acompañamiento contable y legal optativo (Art. 24 bis) a talleres empleadores consolidados (>5 dependientes) para su migración voluntaria a Responsable Inscripto o constitución de SAS/SRL, manteniendo intacto su historial en el SETP y su CDD.
 - **Promotor Territorial de Formalización (PTF):** Operador de base que vincula la plataforma con las unidades productivas en los barrios mediante operativos territoriales integrales.

@@ -143,7 +143,7 @@ Las siguientes 4 divergencias afectan la arquitectura conceptual y doctrinaria d
 | **Reserva Líquida de Garantía Comitente** | Reserva no definida | **5%** del monto nominal acumulado de e-OPs activas |
 | **Facilidad de Liquidez Contingente FDI** | No contemplada | **5%** del programa global de emisión de Bonos BIP |
 | **Plazo de Bonos BIP** | No especificado | **60 a 180 días corridos** calzados con las e-OPs |
-| **Compensación por Parada de Planta** | No contemplada | **0,5 Salario Mínimo Vital y Móvil** por día hábil de mora |
+| **Compensación por Parada de Planta** | No contemplada | **1 jornal diario de SMVM (8 hs)** por día hábil de mora por puesto afectado |
 | **Tope Logística Justo a Tiempo** | Sin tope | **Máximo 30 días corridos** de prórroga comercial |
 | **Resolución por Mora de Insumos** | No contemplada | **15 días hábiles** de mora confiere derecho a rescindir |
 | **Plazo Peritaje Técnico INTI** | No regulado | **5 días hábiles** para dictamen prejudicial vinculante |

@@ -50,7 +50,7 @@ Para coordinar nuestro trabajo con justicia, transparencia y sin intermediarios 
 La orden de producción digital (**e-OP**) es un contrato transparente entre partes y un activo de cobro preferente. Quien cuenta con una orden activa y verificada tiene el respaldo de la red productiva para justificar su trabajo y acceder a los fondos de fomento.
 
 ### 2. El Hito Cero no se negocia: nadie arranca sin anticipo
-Se terminó la costumbre de entregar materiales y esperar dos o tres meses para cobrar el trabajo. Al comenzar una orden y entregarse los insumos, el fondo fiduciario libera de forma automática un anticipo inicial (entre el 30% y el 40% del valor de confección) a la cuenta del tallerista. El trabajo empieza con capital en mano para afrontar los gastos de planta.
+Se terminó la costumbre de entregar materiales y esperar dos o tres meses para cobrar el trabajo. Al comenzar una orden y entregarse los insumos de la primera etapa, el fondo fiduciario libera de forma automática un anticipo inicial (**35% del valor de confección**, o **50% cuando el producto cuenta con Sello Buen Diseño**) a la cuenta especial del tallerista, seguido por el **45% (o 30% SBD) por avances verificados** y el **20% final contra factura electrónica**. El trabajo empieza con capital en mano para afrontar los gastos de planta.
 
 ### 3. El cuero es del comitente; el trabajo es del taller
 La materia prima que ingresa al taller para ser transformada está resguardada por el régimen de custodia y locación de obra. Es **estrictamente inembargable**. Si la marca comitente entra en dificultades comerciales o el taller enfrenta litigios, los insumos y las piezas en proceso no se tocan: pertenecen al circuito productivo y protegen el sustento de los operarios.

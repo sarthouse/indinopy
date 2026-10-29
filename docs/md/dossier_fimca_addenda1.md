@@ -1,7 +1,7 @@
 ---
 title: Addenda I: Complemento Estratégico al Proyecto FIMCA y a la Ley de Salvataje Nacional
 author: Tiago Gabriel Sarthou
-date: Septiembre 2026
+date: Octubre 2026
 ---
 
 # Addenda I: Complemento Estratégico al Proyecto FIMCA y a la Ley de Salvataje Nacional
@@ -10,106 +10,117 @@ date: Septiembre 2026
 
 > **Nota de uso:** Este documento consolida la Addenda I original y todas las reformas complementarias incorporadas a las comisiones especializadas de la MES, el FDI, la Bolsa de Trabajo, la Red CIFO y el Banco de Maquinaria. El orden de secciones sigue el reordenamiento normativo acordado. El estilo y la doctrina son continuación directa del texto base.
 
-## ANEXO II: Arquitectura Jurídica de la Orden de Producción como Instrumento Crediticio
+## ANEXO II: Arquitectura Jurídica de la Orden de Producción Electrónica (e-OP) como Título Valor Causal
 
 ### Justificación
 
-La reglamentación de la Orden de Producción (e-OP) por el Banco Central de la República Argentina no es un trámite administrativo: es la pieza jurídica que sostiene todo el sistema de adelantos productivos. Sin ella, el FDI no tiene activo que financiar ni instrumento que descontar.
+La consagración legal de la Orden de Producción Electrónica (e-OP) mediante el **Anteproyecto de Ley de e-OP** y su reglamentación por el Banco Central de la República Argentina (BCRA), la Comisión Nacional de Valores (CNV) y la Agencia de Recaudación y Control Aduanero (ARCA) es la piedra angular que sostiene todo el sistema de financiamiento manufacturero. Mientras que la **Ley de Salvataje Nacional** provee el alivio de emergencia preexistente y el **Régimen FIMCA** constituye el régimen autónomo de formalización, inclusión socioproductiva y gobernanza territorial sectorial, la **Ley de e-OP** crea el título valor causal y su arquitectura fiduciaria en el mercado de capitales.
 
-### A. Clasificación Jurídica de la e-OP
+### A. Clasificación Jurídica de la e-OP y Fuerza Ejecutiva (Arts. 1°, 3°, 6°, 8° y 9° de la Ley de e-OP)
 
-Se propone que el BCRA encuadre la Orden de Producción digital registrada como instrumento de deuda comercial con garantía real de producción, análogo funcional de la Factura de Crédito Electrónica (Ley 27.440) pero con las siguientes especificidades:
+En armonía con el Título I del Anteproyecto de Ley de e-OP, la Orden de Producción Electrónica registrada en el **Registro Público de e-OPs en el ámbito de ARCA (Art. 10°)** se estructura bajo las siguientes bases dogmáticas y procesales:
 
-* **El hecho generador es el registro de la e-OP, no la entrega del bien.** Esto permite el adelanto antes de que la producción esté consumada, financiando el proceso y no solo el resultado.
+* **Título Valor Causal, Nominativo y Divisible (Arts. 1° y 3°):** La e-OP es un título de crédito causal regido por los Artículos 1815, 1820, 1834, 1839 y concordantes del Código Civil y Comercial de la Nación (CCyC), aplicando supletoriamente las normas del pagaré comercial (Decreto-Ley 5965/63). **La sola suscripción bilateral de la e-OP en la plataforma oficial instrumenta, prueba y perfecciona de pleno derecho el contrato de locación de obra industrial (Art. 1251 CCyC)**, desplazando el hecho generador del crédito desde la entrega tardía del bien hacia el momento mismo de inicio de la producción.
 
-* **La garantía no es patrimonial sino productiva:** el respaldo del adelanto es la certificación digital de hitos emitida por la MES, no el balance ni el scoring del tallerista.
+* **Título Ejecutivo Autosuficiente y Acción contra el Moroso (Art. 6°):** La constancia registral fehaciente de la e-OP emitida por el Registro Público constituye **título ejecutivo autosuficiente en los términos del Artículo 521 inciso 7 del Código Procesal Civil y Comercial de la Nación (CPCCN)** y códigos procesales provinciales, sin necesidad de protesto, reconocimiento de firma ni preparación de la vía ejecutiva. Ante el incumplimiento de pago de la marca comitente al vencimiento comercial de los hitos certificados, el FDI ejecuta su **Reserva Líquida de Garantía del 5%** y promueve la acción ejecutiva directa contra la marca, con inoponibilidad de defensas personales sobre tramos convalidados (Art. 8°). Asimismo, **la suscripción bilateral de la e-OP por parte del tallerista ejecutor constituye un reconocimiento expreso, voluntario e incondicional de deuda líquida y exigible** por los fondos percibidos en el Hito Cero (sujeto a condición resolutoria de cumplimiento de los hitos productivos); ante abandono culpable o incumplimiento injustificado del taller, la contingencia de liquidez es absorbida transitoriamente por la **Reserva por Mora Operativa (0,8% del $c_{\text{MOD}}$)** y el FDI queda habilitado para promover la **vía ejecutiva directa contra el taller moroso** previa intimación por diez (10) días hábiles, además de su inhabilitación en el SETP.
 
-* **La ejecutabilidad ante incumplimiento recae en el FDI,** no en el sistema judicial ordinario. El FDI absorbe la incobrabilidad y en ningún caso afecta la calificación del tallerista en la Central de Deudores del BCRA.
+* **Incompatibilidad Expresa con la Factura de Crédito Electrónica — Bloqueo de FCE (Art. 9°):** Para impedir la doble titulación ejecutiva sobre un mismo lote manufacturado, el Artículo 9° de la Ley de e-OP modifica la Ley N° 27.440 incorporando el **Artículo 7° bis**, por el cual los sistemas de ARCA **bloquean de pleno derecho la derivación de comprobantes respaldados por una e-OP hacia el Registro de Facturas de Crédito Electrónicas (FCE)**, registrándose al cierre fiscal (RCF) exclusivamente como factura electrónica de liquidación ordinaria y cancelatoria.
 
-### B. Infraestructura Abierta e Interoperabilidad Federal
+### B. Infraestructura Abierta e Interoperabilidad Federal (Arts. 10°, 14° y 23° de la Ley de e-OP)
 
-La emisión, convalidación y seguimiento de la e-OP no requiere depender de desarrollos burocráticos centralizados ni de sistemas cerrados. El esquema operativo podría sustentarse en la red federada de **Indinopy ERP/MES**, una plataforma de software libre y código abierto diseñada para desplegarse en los nodos territoriales de la cadena (talleres, marcas y sedes de la MES).
+La emisión, convalidación y seguimiento de la e-OP se asienta sobre el **Registro Público Oficial de e-OPs administrado por ARCA (Art. 10°)** bajo estándares de datos abiertos, pudiendo articularse en los nodos territoriales (talleres, marcas y sedes de la MES) con la red federada de **Indinopy ERP/MES** (plataforma de software libre y código abierto).
 
-A través de estándares abiertos, Indinopy podría garantizar la inmutabilidad de los compromisos industriales (recetas BOM con verificación de árbol de Merkle y firmas digitales Ed25519) e **interoperar mediante APIs seguras con la infraestructura estatal y bancaria existente**:
+A través de estándares abiertos, el sistema garantiza la inmutabilidad criptográfica de los compromisos industriales (recetas BOM con hash determinista de árbol de Merkle y firmas con presunción legal de autoría del Art. 7°) e **interopera mediante APIs seguras con la infraestructura estatal, bursátil y bancaria**:
 
-1. **Con ARCA:** para validar en tiempo real la identidad fiscal de las partes y habilitar el Monotributo Productivo automatizado. La e-OP se registraría como un contrato sectorial de locación de obra (y no como una factura comercial devengada), garantizando que no se compute hecho imponible ni anticipos de IVA hasta la liquidación efectiva del servicio y la verificación de la factura oficial en el cierre (`FISCAL_PENDING`).
-2. **Con el Sistema Financiero (BAPRO / FDI):** la e-OP homologada por la MES se transmitiría al fideicomiso como colateral crediticio líquido. Las entidades bancarias y billeteras digitales actuarían exclusivamente como agentes de clearing técnico automatizado: ejecutarían los desembolsos de hitos ordenados por el protocolo sin intermediación de scoring bancario discrecional.
-3. **Con RENAPER:** para articular la verificación biométrica de la Prueba de Trabajo Productivo (PoPW) en territorio.
+1. **Con ARCA (Arts. 9°, 10°, 23° y 24°):** Opera el Registro Público de e-OPs resguardando el secreto comercial de los montos ($c_{\text{MOD}}$ y $c_{\text{BOM}}$) conforme a la Ley 25.326. Gracias a la modificación del **Art. 5° inc. b de la Ley de IVA (Art. 23° inc. 2)**, se difiere el perfeccionamiento del hecho imponible del IVA respecto del Hito Cero y los Hitos de Avance hasta la entrega definitiva del lote conforme y liberación de la **Retención de Cierre Fiscal (RCF del 20%)**. Asimismo, mediante la dispensa legal del secreto fiscal (Art. 101 Ley 11.683, Art. 23° inc. 4), ARCA intercambia datos automatizados para emitir el **Certificado de Diligencia Debida Laboral (CDD / CDD-P)**, precarga de oficio el **Borrador Asistido de Factura C** (Art. 24° inc. 5) y bloquea automáticamente la FCE.
+2. **Con el FDI, BCRA y CNV (Arts. 14° a 19°):** Las e-OPs registradas se transmiten al **Fideicomiso de Desarrollo Industrial (FDI)** para la custodia fiduciaria escalonada (35%/45%/20% o 50%/30%/20% con SBD) y su titulización mediante **Bonos de Inversión Productiva (BIP)** (60 a 180 días) con calificación SVS en la CNV y elegibilidad en la línea LFIP del BCRA. Los desembolsos se acreditan en las **Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14°)**, **100% exentas del Impuesto al Cheque (Ley 25.413)** y sin scoring patrimonial bancario tradicional, rigiéndose por el **Sistema de Evaluación de Trayectoria Productiva (SETP)**.
+3. **Con INTI y RENAPER (Arts. 7°, 12°, 13° y 27°):** Con RENAPER para validar la identidad biométrica en el alta del Monotributo Productivo y firmas digitales; y con el **INTI** para el cruce automatizado con las matrices semestrales de tiempos estándar y costos paritarios (Art. 27°) y la solicitud de peritajes técnicos prejudiciales en 5 días hábiles (Art. 13°).
 
-### C. Hito Cero: Anticipo de Arranque para Talleres sin Historial
+### C. Custodia Fiduciaria Escalonada (35 / 45 / 20) e Hito Cero (Art. 12° de la Ley de e-OP)
 
-Para aquellas unidades productivas informales que carecen de antecedentes en el sistema de certificación de hitos o se encuentran fuera del circuito bancario, el FDI habilitará el Hito Cero:
+Conforme al Artículo 12° de la Ley de e-OP, los fondos de cada orden se administran bajo la modalidad de **Custodia Fiduciaria Escalonada** en el FDI y se liquidan en tres tramos matemáticos estrictos que totalizan siempre el 100% del valor neto de mano de obra ($c_{\text{MOD}}$):
+- **Hito Cero (Anticipo de Arranque Operativo): 35%** del $c_{\text{MOD}}$ —o **50%** cuando el producto cuente con **Sello Buen Diseño (SBD)** oficialmente certificado—.
+- **Hitos de Avance (Prueba de Trabajo Productivo - PoPW): 45%** del $c_{\text{MOD}}$ —o **30%** en órdenes con **SBD**—, liberables contra declaración jurada de avance, georreferenciación satelital cifrada y remito parcial (convalidación a las 48 horas hábiles sin objeción).
+- **Hito Final — Retención de Cierre Fiscal (RCF): 20%** del $c_{\text{MOD}}$, liberado instantáneamente contra la emisión de la Factura electrónica ordinaria con CAE validado por ARCA (y bloqueo de FCE).
 
-1. **Validación por Demanda:** Al momento de la firma digital de la primera e-OP entre una marca verificada y un tallerista ingresante, el FDI habilita automáticamente el Hito Cero.
+Para habilitar el desembolso directo e inmediato del **Hito Cero (35% o 50% con SBD)** sin scoring bancario tradicional (evaluado por el SETP, con cupos iniciales garantizados de "arranque en frío" según el Art. 2° inc. 12), el Artículo 12° inciso 1 exige verificar **copulativamente tres condiciones**:
 
-2. **Desembolso sin Historial:** El Hito Cero libera entre el 30% y el 40% de los fondos totales presupuestados en la OP a la cuenta del tallerista, garantizado por el fondo de riesgo del FDI y la corresponsabilidad de la marca comitente.
+1. **Suscripción y Registro Bilateral:** Firma digital de comitente y ejecutor registrada en la plataforma oficial de ARCA.
+2. **Acreditación Fidedigna de Entrega de Insumos:** Ingreso físico de las materias primas a la planta del ejecutor (o del **Lote Inicial Crítico** ≥ 20% del $c_{\text{BOM}}$ en esquemas de Logística Justo a Tiempo) documentado mediante **remito electrónico oficial (tipos A, B o C) o remito físico oficial (tipo R)** con consignación expresa del **UUID de la e-OP** (Art. 20° inc. 20.2).
+3. **Vigencia del Seguro Obligatorio de Stock en Custodia (Art. 20 bis):** Cobertura asegurativa automática e inmediata otorgada por la **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$)** administrada por el FDI y financiada con la alícuota de stock ($c_{\text{STK}}$ de hasta el 0,5% del $c_{\text{BOM}}$) abonada por la comitente al registrar la orden.
 
-3. **Apertura de Cuenta de Clearing de Oficio:** En el mismo acto, el Banco Provincia (o entidad pública asociada) abrirá de oficio una Cuenta de Clearing Técnico vinculada al nuevo CUIT, exenta de costos de mantenimiento y con blindaje legal absoluto contra embargos por pasivos de la etapa informal previa.
+En el mismo acto, la entidad bancaria oficial habilita sin costo la **Cuenta Especial de Compensación y Liquidación Manufacturera (Art. 14°)** vinculada al CUIT/CUIL del ejecutor, inembargable frente a débitos bancarios preexistentes, con encuadramiento especial en CENDEU y **exenta del Impuesto al Cheque (Ley 25.413)**.
 
-### D. Requisitos para la Comunicación BCRA
+### D. Requisitos de la Comunicación BCRA (Anexo Regulatorio I de la Ley de e-OP)
 
-La plena operatividad del sistema requiere que el BCRA emita una Comunicación que establezca:
+En plena alineación con la **Minuta de Comunicación "A" [XXXX] del Anexo Regulatorio I** del Anteproyecto de Ley de e-OP, el Banco Central de la República Argentina (BCRA) dispone:
 
-1. La definición de la e-OP como instrumento de descuento y factoring válido en el régimen de maquila industrial.
+1. **Admisión como Activo de Descuento, Colateral y Cómputo en la LFIP:** Las entidades financieras podrán descontar, aceptar en caución y computar como garantía crediticia válida a las e-OPs inscriptas en el Registro Público de ARCA (instrumentadas sobre locación de obra industrial, Art. 1251 CCyC). Dichas operaciones de descuento y anticipo, así como la suscripción de Bonos BIP, serán elegibles para su cómputo dentro de la **Línea de Financiamiento para la Inversión Productiva (LFIP)** de MiPyMEs.
 
-2. La tasa máxima de adelanto, fijada por debajo de la tasa activa de referencia para MiPyMEs.
+2. **Ponderación de Riesgo Crediticio Preferencial del 20%:** Las e-OPs que cuenten con respaldo y garantía fiduciaria del FDI recibirán un tratamiento prudencial preferencial en las normas sobre Capitales Mínimos y Previsiones del BCRA, aplicándoseles una **ponderación de riesgo crediticio del veinte por ciento (20%)**.
 
-3. La obligación de las entidades financieras y billeteras habilitadas de ofrecer esta línea a emprendimientos con Monotributo Productivo vigente o certificado MiPyME.
+3. **Reglamentación de las Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14°):** Las entidades bancarias habilitarán estas cuentas sin costo de apertura ni mantenimiento, con operatoria por CBU/CVU, QR y Echeqs sin descubierto, indisponibilidad frente a débitos o compensaciones bancarias por pasivos preexistentes (Art. 1685 CCyC y Art. 147 LCT), y **exención total del Impuesto sobre los Créditos y Débitos Bancarios (Ley N° 25.413)** para todos los movimientos originados en desembolsos de e-OPs activas y pagos laborales/previsionales asociados.
 
-4. El procedimiento de notificación de incumplimiento de hito productivo al FDI, con plazo máximo de 48 horas para la activación del fondo de garantía.
+4. **Encuadramiento Normativo Especial en CENDEU (Art. 14° inc. 4):** El BCRA establecerá un tratamiento especial en la Central de Deudores del Sistema Financiero (CENDEU) para las Cuentas Especiales Manufactureras, de modo que las discrepancias técnicas periciales (Art. 13°) o las demoras operativas transitorias amparadas por la cobertura fiduciaria del FDI no generen reclasificaciones negativas automáticas que obstaculicen la continuidad productiva del tallerista.
 
-5. La prohibición expresa de registrar al tallerista en la Central de Deudores ante incumplimientos absorbidos por el FDI.
-
-## ANEXO III: Estimación de Impacto Fiscal — Financiamiento de Aportes Patronales
+## ANEXO III: Estimación de Impacto Fiscal y Equilibrio Recaudatorio (Título IV de la Ley de e-OP)
 
 ### Justificación
 
-Toda propuesta de gasto público que no cuantifica su costo es atacable como irresponsable fiscalmente. Esta sección construye el ejercicio de estimación mínimo para sostener la propuesta ante cualquier instancia de evaluación técnica o debate parlamentario.
+Toda propuesta legislativa con disposiciones tributarias (Art. 52 CN) debe cuantificar con rigor su impacto fiscal. A diferencia de esquemas basados en subsidios estatales directos a los aportes patronales, el diseño del **Título IV del Anteproyecto de Ley de e-OP (Arts. 22°, 23° y 24°)** estructura un modelo donde **el gasto tributario directo está estrictamente acotado por ley de presupuesto**, mientras que **la regularización laboral y previsional genera recaudación neta genuina en la fuente** desde el primer hito liquidado, arrojando un **resultado fiscal superavitario por ampliación permanente de la base formal**.
 
-### A. Universo de Beneficiarios
+### A. Universo de Beneficiarios y Parámetros del Programa Piloto (Art. 29°)
 
-| Parámetro | Estimación base | Fuente |
+| Parámetro | Escenario Base (Año 1 / Piloto 18 meses) | Fuente / Referencia Normativa |
 | :---- | :---- | :---- |
-| Talleres activos en la cadena (Conurbano) | 15.000 unidades | CIAI / SRT / estimación sectorial |
-| Tasa de adhesión al régimen (primer año) | 30% | Proyección conservadora sobre regímenes similares |
-| Unidades adheridas (año 1) | 4.500 talleres | — |
-| Trabajadores regularizados por taller (promedio) | 1,5 | Estimación sectorial |
-| Total de relaciones laborales alcanzadas | 6.750 | — |
+| Cupo máximo Programa Piloto (18 meses) | Hasta 5.000 e-OPs activas simultáneas o USD 100M en custodia ($c_{\text{MOD}}$) | Art. 29° Ley de e-OP |
+| Talleres activos estimados en la cadena (Conurbano) | 15.000 unidades | CIAI / SRT / estimación sectorial |
+| Unidades adheridas (Año 1 — 30% adhesión) | 4.500 talleres y microtalleres | Proyección conservadora |
+| Volumen anual estimado de mano de obra formalizada ($c_{\text{MOD}}$) | $ 180.000 millones anuales | ~4.500 unidades × $ 3,33M mensuales promedio |
+| Composición del universo adherido | 60% talleres empleadores (CDD / CDD-P) y 40% Monotributo Productivo | Estimación sectorial |
 
-### B. Costo Unitario
+### B. Costo Fiscal Directo y Acotado para el Estado Nacional (Art. 23° y Art. 14° inc. 5)
 
-| Concepto | Valor estimado |
-| :---- | :---- |
-| Salario bruto promedio convenio textil/calzado | $ 650.000 mensuales (a junio 2026) |
-| Alícuota de aportes patronales | 27% del salario bruto |
-| Costo patronal mensual por trabajador | $ 175.500 |
-| Costo patronal anual por trabajador | $ 2.106.000 |
-| Duración del beneficio | 24 meses |
-| Costo total por trabajador durante el período | $ 4.212.000 |
+Conforme al Título IV de la Ley de e-OP, el Estado Nacional **no eroga subsidios presupuestarios para pagar cargas patronales**. El costo fiscal (gasto tributario) se circunscribe exclusivamente a tres componentes controlados:
 
-### C. Costo Total del Programa (Año 1 — Adhesión Parcial)
+| Componente de Gasto Tributario | Regla Normativa (`proyecto_ley_eop.md`) | Estimación Anual (Escenario Base) | Control Presupuestario |
+| :---- | :---- | :---- | :---- |
+| **1. Crédito Fiscal Presunto de IVA (10%)** | **Art. 23° inc. 1:** 10% sobre el $c_{\text{MOD}}$ contratado con Monotributistas Productivos o talleres en transición bajo CDD-P (que no trasladan IVA). | **$ 14.400 millones** (aplicado sobre el ~80% del $c_{\text{MOD}}$ que opera bajo Monotributo Prod. o CDD-P en el Año 1). | **Acotado por cupo fiscal anual** fijado por el Congreso en la Ley de Presupuesto. |
+| **2. Exención del Impuesto al Cheque (Ley 25.413)** | **Art. 14° inc. 5 y Art. 23° inc. 3:** Exención del 1,2% sobre débitos y créditos en Cuentas Especiales Manufactureras y Bonos BIP. | **$ 2.160 millones** (1,2% sobre $ 180.000M de flujo formalizado que antes circulaba 100% en efectivo informal). | Costo teórico nulo en términos reales (reemplaza uso de efectivo no bancarizado). |
+| **3. Diferimiento Técnico del IVA** | **Art. 23° inc. 2 (Mod. Art. 5° inc. b Ley IVA):** El IVA no se devenga en el Hito Cero (35%) ni en Avances (45%), sino al entregarse el lote y liberarse la RCF (20%). | **Efecto financiero neutro** dentro del ejercicio (diferimiento temporal de 60 a 90 días, sin quita de alícuota). | Neutralidad intertemporal asegurada por la RCF del 20%. |
+| **Costo Fiscal Bruto Total Acotado** | — | **$ 16.560 millones anuales** | **< 0,02% del PBI** |
 
-| Escenario | Trabajadores alcanzados | Costo total 24 meses |
+### C. Ingresos Fiscales y Previsionales Genuinos por Ampliación de la Base Formal (Arts. 22° y 24°)
+
+En el plano previsional y tributario, el sistema no pierde recursos sino que **recauda en la fuente sobre una masa productiva que antes era 100% subterránea**:
+
+1. **Condonación de Pasivos Históricos Incobrables (Art. 22° inc. 22.2 bis.a):** El Régimen Estatutario Permanente de Regularización Laboral condona las multas y deudas previsionales pretéritas de los talleres informales (créditos que el fisco jamás hubiera percibido por insolvencia o clandestinidad) y reconoce hasta 60 meses de servicios al SIPA sobre base SMVM para los trabajadores, destrabando su ingreso inmediato a la formalidad.
+2. **Recaudación Previsional Genuina en Talleres con Personal (Retención de hasta el 15% — Art. 22° inc. 22.2 bis.b):** Sobre el flujo corriente de las e-OPs de talleres con trabajadores dependientes (estimado en el 60% del volumen total = $ 108.000 millones anuales de $c_{\text{MOD}}$), el FDI **retiene automáticamente en la fuente de cada hito hasta el 15% bruto** para ingresar de oficio los aportes y contribuciones al SIPA, INSSJP, obra social y ART. Esto genera un ingreso previsional genuino e inmediato estimado en **$ 16.200 millones anuales**.
+3. **Recaudación en Monotributo Productivo (Micro-retención del 2% — Art. 24° inc. 2):** Sobre el flujo corriente de prestadores individuales autónomos (40% del volumen = $ 72.000 millones anuales), el FDI practica la **micro-retención automática del 2% sobre cobranzas netas** con destino al SIPA, sumando **$ 1.440 millones anuales** de nueva recaudación previsional.
+4. **Ampliación de Base Imponible en IVA y Ganancias por Cierre Fiscal Obligatorio (RCF del 20%):** Al exigir la emisión de la Factura oficial con CAE para liberar el 20% final (RCF), la totalidad del lote terminado ingresa al circuito blanco de comercialización de la marca comitente. La trazabilidad del lote formaliza ventas minoristas y mayoristas que generan débito fiscal de IVA (21%) e Impuesto a las Ganancias corporativo adicional por un piso conservador estimado en **$ 18.000 millones anuales**.
+
+### D. Balance Fiscal Consolidado y Financiamiento Extrapresupuestario de la Gobernanza (Art. 16° inc. 4)
+
+| Concepto del Balance Fiscal (Año 1) | Monto Anual Estimado | Impacto Presupuestario |
 | :---- | :---- | :---- |
-| Conservador (30% adhesión) | 6.750 | $ 28.431 millones |
-| Moderado (50% adhesión) | 11.250 | $ 47.385 millones |
-| Optimista (70% adhesión) | 15.750 | $ 66.339 millones |
+| **(-) Costo Fiscal Bruto (Crédito Presunto IVA 10% + Exención Ley 25.413)** | -$ 16.560 millones | Topeado por Ley de Presupuesto |
+| **(+) Recaudación Previsional en la Fuente (Retención hasta 15% CDD-P + 2% Monotributo Prod.)** | +$ 17.640 millones | Ingreso directo a SIPA / Seguridad Social |
+| **(+) Mayor Recaudación IVA y Ganancias por Trazabilidad de Lotes (RCF)** | +$ 18.000 millones | Ingreso directo a ARCA / Coparticipación |
+| **(=) Resultado Fiscal y Previsional Neto Consolidado** | **+$ 19.080 millones (Superavitario)** | **Superávit fiscal neto desde el Año 1** |
 
-### D. Fuente de Financiamiento y Sustentabilidad
+Adicionalmente, **toda la infraestructura operativa, técnica, laboral y asegurativa del sistema se autofinancia de forma 100% extrapresupuestaria** a través del **Canon Fiduciario ($c_{\text{FDI}}$)** abonado exclusivamente por las marcas comitentes al registrar cada e-OP (Art. 4° inc. 4.c y Art. 16° inc. 4):
+* **0,5% del $c_{\text{MOD}}$:** Financia el **Fondo de Afectación Específica Laboral (FAEL)** y su seguro de caución (Art. 22° inc. 22.6).
+* **0,2% del $c_{\text{MOD}}$:** Financia al **INTI** (matrices paritarias semestrales y peritajes en 5 días) y al **Programa de Formalización Empresaria Tutelada (PFET)** (Art. 27° y Art. 24 bis).
+* **0,8% del $c_{\text{MOD}}$:** Financia los costos operativos del fiduciario y la **Reserva por Mora Operativa del FDI**.
+* **Hasta 0,5% del $c_{\text{BOM}}$ ($c_{\text{STK}}$):** Financia íntegramente la **Póliza Colectiva Maestra de Stock en Custodia** (Art. 20 bis).
 
-El escenario conservador ($ 28.431 millones en 24 meses, equivalente a $ 1.185 millones mensuales) representa aproximadamente el 0,03% del PBI y puede financiarse mediante:
+## SECCIÓN II (bis): Arquitectura Institucional de la Mesa de Enlace Sectorial (MES) como Comité Técnico y Territorial del FDI
 
-* Afectación del 0,5% de los Derechos de Exportación sobre hidrocarburos y litio (flujo mensual estimado: superior a $ 3.000 millones a valores corrientes).
+### Justificación y Naturaleza Fiduciaria
 
-* Reasignación de partidas de fondos fiduciarios de fomento productivo nacional con baja ejecución.
+La Mesa de Enlace Sectorial (MES) es el órgano de conducción y tutela socioproductiva de la cadena de valor en el marco del **Régimen FIMCA**. Desde el punto de vista de la técnica legislativa y del derecho fiduciario argentino (Arts. 1666 a 1700 del CCyC y Ley N° 26.831), mientras el **Fiduciario Financiero** (entidad pública o mixta autorizada por la CNV conforme al Art. 15° de la Ley de e-OP) ejerce la administración fiduciaria patrimonial y **ARCA** opera el Registro Público de e-OPs (Art. 10°), **la MES y sus comisiones especializadas se constituyen jurídicamente como los Comités Técnicos, de Fomento y de Seguimiento Territorial dentro del Contrato y Reglamento de Gestión del Fideicomiso de Desarrollo Industrial (FDI)**, oficiando asimismo como el órgano consultivo sectorial permanente al que aluden los Artículos 1° y 27° de la Ley de e-OP.
 
-La combinación de ambas fuentes supera con holgura el costo del programa en el escenario conservador, garantizando su sustentabilidad sin afectar el equilibrio fiscal ni las regalías directas de las provincias productoras.
-
-## SECCIÓN II (bis): Arquitectura Institucional de la Mesa de Enlace Sectorial (MES)
-
-### Justificación
-
-La Mesa de Enlace Sectorial es el órgano de conducción y tutela de toda la cadena de valor. Su eficacia depende de que su arquitectura institucional sea tan sólida como su mandato político. Una comunidad organizada que no define con precisión cómo toma decisiones, cómo resuelve sus conflictos internos y cómo protege al eslabón más débil de su propia concentración de poder, reproduce en su interior las asimetrías que denuncia hacia afuera. Esta sección establece el estatuto mínimo de la MES.
+Esta arquitectura dual garantiza dos objetivos simultáneos: (1) frente al mercado de capitales (CNV, BCRA e inversores de los Bonos BIP), el flujo cambiario y la liquidación de las e-OPs operan con certeza algorítmica y objetividad registral; y (2) frente al territorio productivo, las decisiones de fomento industrial, validación de matrices paritarias junto al INTI, asignación de cupos iniciales en el SETP y resolución de disputas cuentan con conducción comunitaria paritaria. Esta sección establece el estatuto orgánico de la MES y sus comisiones dentro del FDI.
 
 
 ```mermaid
@@ -166,13 +177,13 @@ El quórum para sesionar es de cinco (5) miembros. Las decisiones ordinarias se 
 
 > **Cláusula de protección del nodo productivo:** Cualquier votación sobre estas materias reservadas requerirá de forma obligatoria el voto concurrente de al menos un (1) representante del nodo de Talleristas y Aparadores, garantizando que el capital concentrado o la burocracia circunstancial no resuelvan por encima del interés directo de los trabajadores de base.
 
-### B. Separación de Funciones: Comisiones Especializadas
+### B. Separación de Funciones: Comisiones Especializadas del Fideicomiso (FDI)
 
-A fin de evitar que quienes se benefician de una decisión sean quienes la adoptan, la MES funciona a través de dos (2) comisiones con competencias separadas e indelegables:
+A fin de evitar que quienes se benefician de una decisión sean quienes la adoptan, la MES opera dentro de la estructura del FDI a través de comisiones especializadas con competencias separadas e indelegables:
 
-* **Comisión de Homologación Técnica:** integrada por el representante del INTI y el representante sindical. Sus competencias exclusivas son: (1) Dictaminar sobre elegibilidad de tecnología importada bajo el criterio de "Tecnología Conveniente". (2) Certificar los hitos productivos que habilitan la liberación de fondos del FDI. Sus dictámenes son vinculantes para la Comisión de Crédito. (3) Auditoría de Origen y Pre-Calificación del Score Solidario: recibir, procesar y validar de forma trimestral las declaraciones de las marcas comitentes respecto a la tracción exportadora de otros sectores nacionales, emitiendo el dictamen técnico de pre-calificación de las Unidades de Crédito Productivo (UCP) previo a su elevación a la Secretaría de Comercio de la Nación para su homologación final.
+* **Comisión de Homologación Técnica (Comité Técnico del FDI):** integrada por el representante del INTI y el representante sindical. Sus competencias exclusivas son: (1) Dictaminar sobre elegibilidad de tecnología importada bajo el criterio de "Tecnología Conveniente". (2) Intervenir junto al INTI en la elaboración y actualización semestral de las matrices técnicas de tiempos estándar y costos directos paritarios (Art. 27° Ley de e-OP) y en el seguimiento de la Prueba de Trabajo Productivo (PoPW). Sus dictámenes técnicos son vinculantes para la Comisión de Crédito. (3) Auditoría de Origen y Pre-Calificación en el **SETP (Sistema de Evaluación de Trayectoria Productiva)** y de las Unidades de Crédito Productivo (UCP): recibir, procesar y validar de forma trimestral las declaraciones de las marcas comitentes respecto a la tracción exportadora de otros sectores nacionales, emitiendo el dictamen técnico de pre-calificación de las UCP previo a su elevación a la Secretaría de Comercio de la Nación para su homologación final.
 
-* **Comisión de Crédito y Riesgo:** integrada por los representantes de talleristas y de marcas, con el representante de la Secretaría de Producción Municipal como árbitro con voto de desempate definitivo. Competencia exclusiva para validar la viabilidad de las Órdenes de Producción (OP) y autorizar los adelantos del FDI. Ningún miembro puede participar en la votación de una OP en la que tenga interés directo o indirecto. El representante municipal presidirá esta comisión y actuará como garante de la paz social y el arraigo local en cada decisión de financiamiento.
+* **Comisión de Crédito, Riesgo y Fomento Territorial (Comité de Fomento y Elegibilidad del FDI):** integrada por los representantes de talleristas y de marcas, con el representante de la Secretaría de Producción Municipal como árbitro con voto de desempate definitivo. Mientras la validación formal y el desembolso ordinario de las e-OPs dentro de cupo se ejecutan de forma automatizada en un plazo máximo de 48 horas hábiles (Art. 11° inc. 1 Ley de e-OP), esta comisión tiene competencia exclusiva para: (1) asignar y ampliar los cupos iniciales de "arranque en frío" en el SETP para talleres y comitentes ingresantes (Art. 2° inc. 12); (2) aprobar las líneas de fomento territorial del Régimen FIMCA (equipamiento del Banco de Maquinaria, becas CIFO y microcréditos de Hábitat Productivo); y (3) autorizar la redistribución solidaria de lotes ante fuerza mayor. Ningún miembro puede participar en la votación de un expediente en el que tenga interés directo o indirecto. El representante municipal presidirá esta comisión y actuará como garante de la paz social y el arraigo local.
 
 ### C. Plazos Máximos Vinculantes
 
@@ -202,9 +213,9 @@ Ante incumplimientos recurrentes al Código de Conducta Comunitario, retrasos in
 
 1. **Apercibimiento Digital con Alerta en la Bolsa:** Publicación de la falta en el legajo digital de la marca dentro de la Bolsa de Trabajo Sectorial por el término de treinta (30) días, funcionando como advertencia para el resto de los talleres de la red.
 
-2. **Quita de Puntos del Score Solidario:** Penalización con la baja de hasta el cincuenta por ciento (50%) de las Unidades de Crédito Productivo (UCP) acumuladas en el período, provocando la pérdida automática de la prioridad en los cupos aduaneros de Importación Temporaria.
+2. **Quita de Puntos en el SETP y Unidades de Crédito Productivo (UCP):** Penalización en el **Sistema de Evaluación de Trayectoria Productiva (SETP, Art. 2° inc. 12 Ley de e-OP)** y baja de hasta el cincuenta por ciento (50%) de las Unidades de Crédito Productivo (UCP) acumuladas en el período, provocando la pérdida automática de la prioridad en los cupos aduaneros de Importación Temporaria.
 
-3. **Congelamiento Temporal del Giro de Stock:** Suspensión por el término de quince (15) días hábiles de la autorización aduanera para retirar lotes terminados de los talleres de maquila adheridos, forzando la conciliación obligatoria en la MES bajo apercibimiento de ejecución de las garantías líquidas depositadas en el FDI.
+3. **Congelamiento Temporal del Giro de Stock:** Suspensión por el término de quince (15) días hábiles de la autorización aduanera para retirar lotes terminados de los talleres de locación de obra adheridos, forzando la conciliación obligatoria en la MES bajo apercibimiento de ejecución de la Reserva Líquida de Garantía (5%) depositada en el FDI.
 
 ### E. Del Régimen de Previsibilidad de Entrega y Responsabilidad Productiva del Taller
 
@@ -212,13 +223,13 @@ Ante incumplimientos recurrentes al Código de Conducta Comunitario, retrasos in
 
 Los talleristas, SAS y unidades productivas registradas en la Bolsa de Trabajo Sectorial asumen el compromiso vinculante de cumplimiento de los cronogramas de entrega estipulados en la Orden de Producción digital (e-OP), considerándose el factor tiempo como un elemento crítico de la competitividad del régimen.
 
-#### 2. Causales de Exclusión por Fuerza Mayor
+#### 2. Causales de Exclusión por Fuerza Mayor y Régimen de Logística Justo a Tiempo (Art. 5° bis de la Ley de e-OP)
 
-No se aplicará penalización ni quita de incentivos cuando la demora responda a causales de fuerza mayor debidamente acreditadas y homologadas por el Promotor Territorial de Formalización (PTF) ante la MES local, tales como:
+No se aplicará penalización, quita de incentivos ni demérito en el **SETP (Sistema de Evaluación de Trayectoria Productiva)** cuando la demora responda a causales de fuerza mayor o de abastecimiento debidamente acreditadas:
 
-1. **Desabastecimiento logístico ajeno al taller:** Retrasos por parte de la marca comitente en la entrega de materia prima, cueros, matrices o avíos declarados en la receta de materiales (BOM).
+1. **Mora de la Comitente en Logística Justo a Tiempo (Art. 5° bis Ley de e-OP):** En órdenes con cronograma de abastecimiento secuencial (Logística Justo a Tiempo), la falta de entrega en término de materias primas, cueros, matrices, avíos o semielaborados por parte de la marca comitente: (a) **suspende de pleno derecho y prorroga automáticamente los plazos de confección** del tallerista día por día sin penalidad en el SETP (y registra un demérito automático en el SETP para la marca); (b) posterga el vencimiento comercial de pago de la comitente hasta un **tope máximo improrrogable de treinta (30) días corridos** (sin superar nunca el vencimiento de los Bonos BIP ni los 180 días desde la emisión), con interés compensatorio a exclusivo cargo de la marca; (c) transcurridos **más de cinco (5) días hábiles de mora**, obliga a la marca a abonar al tallerista una **compensación diaria por capacidad instalada ociosa (parada de planta / standby) equivalente a un (1) jornal diario del Salario Mínimo Vital y Móvil (8 horas del valor horario vigente) por día hábil de demora** por puesto afectado; y (d) vencidos **quince (15) días hábiles de mora continua**, confiere al tallerista el **derecho a declarar la resolución del contrato de pleno derecho**, percibiendo el 100% del valor de mano de obra presupuestado para los hitos iniciados o ejecutados y ejerciendo el derecho de retención del Art. 2587 del CCyC.
 
-2. **Siniestros o contingencias de infraestructura:** Cortes del suministro energético, roturas fortuitas de maquinaria pesada sin repuestos inmediatos, o razones de fuerza mayor de carácter socio-ambiental o de salud pública en el núcleo productivo del taller.
+2. **Siniestros o contingencias de infraestructura:** Cortes del suministro energético, roturas fortuitas de maquinaria pesada sin repuestos inmediatos, o razones de fuerza mayor de carácter socio-ambiental o de salud pública en el núcleo productivo del taller, contando las materias primas en custodia con la cobertura automática de la **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$, Art. 20 bis)**.
 
 #### 3. Protocolo de Alerta de Asistencia Recíproca ante Cuellos de Botella
 
@@ -228,15 +239,15 @@ Si el tallerista detecta de forma anticipada una imposibilidad técnica o de cap
 
 * **Liquidación Proporcional:** El pago final de la e-OP se liquidará de forma estrictamente proporcional a la cantidad de pares o prendas terminadas y certificadas por cada taller participante, preservando la paz social del territorio.
 
-#### 4. Penalidades por Negligencia de Entrega o Desvío de Stock
+#### 4. Penalidades por Negligencia de Entrega, Abandono o Desvío de Stock (Arts. 6°, 12° inc. 1, 20° y 20 bis de la Ley de e-OP)
 
-Ante incumplimientos por negligencia manifiesta, impericia grave o desvío de materias primas fiscalizadas, la MES aplicará de forma inmediata:
+Ante incumplimientos por negligencia manifiesta, abandono culpable o desvío de materias primas en custodia de transformación, se aplican de forma inmediata los mecanismos de la Ley de e-OP y de la MES:
 
-1. **Compensación Líquida a la Marca:** El fondo de riesgo del FDI local indemnizará a la marca comitente damnificada por el valor de costo de reposición de los materiales perdidos o el tramo neto del Hito Cero ejecutado y no entregado.
+1. **Restitución de Insumos y Póliza Colectiva de Stock (Arts. 20° inc. 20.4 y 20 bis):** La marca comitente conserva expedita la acción de restitución inmediata y separación de las materias primas no transformadas (Art. 138 Ley 24.522) o la percepción de la indemnización por reposición a través de la **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$)** contratada por el FDI, mientras que la contingencia de liquidez del anticipo es absorbida transitoriamente por la **Reserva por Mora Operativa (0,8% del $c_{\text{MOD}}$)**.
 
-2. **Ejecución y Repago del Tallerista:** El FDI repetirá el cobro contra las futuras Órdenes de Producción que reciba el tallerista infractor, aplicando una retención automática de hasta el treinta por ciento (30%) de sus ingresos líquidos de clearing hasta saldar la deuda.
+2. **Vía Ejecutiva Directa contra el Taller Moroso (Art. 6° in fine):** Dado que la suscripción de la e-OP por el tallerista constituye un **reconocimiento expreso, voluntario e incondicional de deuda líquida y exigible** por el Hito Cero percibido, el FDI se subroga y queda habilitado para promover la **acción ejecutiva directa contra el tallerista moroso** (previa intimación fehaciente por 10 días hábiles) por el capital anticipado no transformado más accesorios, o compensarlo mediante retenciones de hasta el treinta por ciento (30%) sobre liquidaciones futuras.
 
-3. **Pérdida de Visibilidad Prioritaria:** El tallerista sancionado sufrirá la baja automática de su insignia de destaque en la Bolsa por noventa (90) días en la primera infracción, y la exclusión definitiva del régimen ante la segunda reincidencia comprobada.
+3. **Inhabilitación en el SETP y Pérdida de Visibilidad:** El tallerista incumplidor sufre la inhabilitación preventiva inmediata en el **Sistema de Evaluación de Trayectoria Productiva (SETP)** y la baja de su insignia en la Bolsa de Trabajo, sin perjuicio de las sanciones penales por estafa (Art. 172 CP) o falsedad documental (Arts. 293 y 296 CP) previstas en el Artículo 28° de la Ley de e-OP.
 
 #### 5. Cláusula de Salvaguarda Financiera y Acción Civil por Dolo
 
@@ -318,40 +329,38 @@ Ante una avería crítica que paralice el taller y cuya resolución demande más
 
 2. **Compensación por Lucro Cesante:** El fondo de riesgo del FDI liquidará a favor de los trabajadores del taller afectado una compensación económica diaria equivalente al valor promedio de las e-OP caídas durante el lapso de parálisis forzosa.
 
-## SECCIÓN II (ter): Parámetros Financieros del Fideicomiso de Desarrollo Industrial (FDI)
+## SECCIÓN II (ter): Parámetros Financieros del Fideicomiso de Desarrollo Industrial (FDI) y Bonos BIP (Arts. 15° a 19° de la Ley de e-OP)
 
 ### Justificación
 
-Una herramienta financiera sin parámetros es una intención sin sustento. El FDI no es un concepto: es un fondo con capital real, reglas de apalancamiento, límites de exposición y mecanismos de capitalización recurrente. Esta sección establece los parámetros base que permiten su evaluación técnica y su defensa ante organismos de contralor.
+Una herramienta financiera sin parámetros reglados es una intención sin sustento. Conforme al Título III del Anteproyecto de Ley de e-OP (Arts. 15° a 19°), el FDI constituye un **Fideicomiso Financiero** regulado por los Artículos 1666 a 1700 del CCyC y la Ley N° 26.831 de Mercado de Capitales, con patrimonio fiduciario separado e inembargable de pleno derecho (Art. 1685 CCyC). Esta sección detalla los parámetros cuantitativos, reservas y reglas de titulización bursátil que aseguran su solvencia ante el BCRA y la CNV.
 
-### A. Parámetros Operativos Base
+### A. Parámetros Operativos y Cuantitativos Oficiales (Ley de e-OP)
 
-| Parámetro | Valor propuesto | Fundamento |
+| Parámetro / Métrica | Valor en Ley de e-OP | Referencia y Fundamento Legal |
 | :---- | :---- | :---- |
-| Capital inicial del FDI | $ 15.000 millones (pesos) | Reasignación de fondos fiduciarios nacionales existentes |
-| Adelanto máximo por unidad | Equivalente a 3 meses de facturación promedio declarada | Alineado al ciclo productivo del calzado (temporada) |
-| Ratio de apalancamiento | 1:3 (1 peso garantiza hasta 3 pesos de adelanto) | Estándar de fondos de garantía de segundo piso en Argentina |
-| Tasa de incobrabilidad sostenible | Hasta 8% anual sin capitalización extraordinaria | Margen conservador con garantía de hitos productivos |
-| Plazo de rotación del fondo | 30 días | Alineado al ciclo de producción y cobro del sector calzado |
-| Tasa del adelanto al tallerista | Por debajo de la tasa activa MiPyME del BCRA | Diferencia bonificada por el Estado mediante afectación presupuestaria |
+| **Tramos de Desembolso ($c_{\text{MOD}}$)** | **35%** Hito Cero / **45%** Avance (PoPW) / **20%** RCF (o **50% / 30% / 20%** con Sello Buen Diseño - SBD) | Art. 12° Ley de e-OP (Suma exacta del 100% en ambos esquemas) |
+| **Reserva Líquida de Garantía Comitente** | **5%** del monto nominal acumulado de e-OPs activas y en ejecución simultánea | Art. 16° inc. 3 (Responde exclusivamente por el riesgo comercial de impago de la propia comitente) |
+| **Canon Fiduciario Total ($c_{\text{FDI}}$)** | **Alícuota operativa:** hasta **1,5%** de $c_{\text{MOD}}$ (0,5% FAEL, 0,2% INTI/PFET, 0,8% adm. y Reserva por Mora Operativa) + **Alícuota de stock ($c_{\text{STK}}$):** hasta **0,5%** de $c_{\text{BOM}}$ (Póliza Colectiva Maestra) | Art. 4° inc. 4.c y Art. 16° inc. 4 (A cargo exclusivo de la empresa comitente; prohibición de traslado al taller) |
+| **Facilidad de Liquidez Contingente** | Hasta el **5%** del programa global de emisión de Bonos BIP autorizado por la CNV | Art. 16° inc. 6 (Línea revolvente para absorber descalces por logística justo a tiempo, peritajes INTI o RCF) |
+| **Plazo de Vencimiento Comercial y Bonos BIP** | e-OPs a **60, 90 o 120 días corridos** (prórroga máx. 30 días por logística JIT); Bonos BIP de **60 a 180 días corridos** | Art. 4° inc. 6, Art. 5° bis inc. 2 y Art. 17° (Calce financiero estricto entre cartera subyacente y series de BIP) |
+| **Tasa de Interés Compensatorio** | **Tasa BADLAR privada + spread fiduciario de hasta 300 puntos básicos** (a cargo de la comitente al vencimiento) | Art. 16° inc. 5 |
+| **Programa Piloto (18 meses)** | Cupo máximo simultáneo de **5.000 e-OPs** o **USD 100.000.000** en custodia ($c_{\text{MOD}}$) | Art. 29° (Con informe de evaluación de impacto bienal ante el Congreso) |
 
-### B. Fuentes de Capitalización Recurrente
+### B. Fuentes de Liquidez, Reservas y Emisión de Bonos de Inversión Productiva (BIP)
 
-El FDI no depende de una asignación presupuestaria única. Su sustentabilidad descansa en tres fuentes de flujo continuo:
+Conforme a los Artículos 16° a 19° de la Ley de e-OP, la sustentabilidad y el fondeo del FDI descansan en fuentes de mercado de capitales y garantías líquidas autoliquidables:
 
-1. **Afectación de Derechos de Exportación:** El 0,5% de las retenciones percibidas sobre la exportación de hidrocarburos y litio se afecta de forma específica e intangible al Fondo de Sustentabilidad Central del FDI. Esta afectación garantiza que la renta de los recursos no renovables financie la producción manufacturera de trabajo intensivo.
+1. **Colocación de Bonos de Inversión Productiva (BIP) con Calificación SVS (Arts. 17° y 19°):**
+   * **Régimen de Oferta Pública Abreviada:** El FDI emite valores de deuda fiduciaria negociables bajo el régimen de la Ley 26.831 denominados **Bonos de Inversión Productiva (BIP)**, respaldados por carteras homogéneas de e-OPs vigentes, con plazos de **60 a 180 días corridos** calzados con el vencimiento comercial de las órdenes. La CNV habilita un régimen abreviado de oferta pública y tramos minoristas en ALyCs con láminas mínimas reducidas (Anexo Regulatorio II).
+   * **Etiquetado Social, Verde y Sustentable (SVS):** Los Bonos BIP califican como Instrumentos SVS bajo la **Resolución General CNV N° 917/2021**, acreditando la formalización laboral en planta y trazabilidad productiva, contando obligatoriamente con el **dictamen vinculante de un Revisor Externo Independiente** inscripto ante la CNV.
+   * **Exención Impositiva (Art. 23° inc. 3):** Los rendimientos, actualizaciones y ganancias de capital de los Bonos BIP están **100% exentos del Impuesto a las Ganancias** (personas humanas y beneficiarios del exterior) y del **Impuesto sobre los Créditos y Débitos Bancarios (Ley 25.413)**.
 
-2. **Reservas de Capital de Marcas Comitentes:** Como condición de acceso al sistema, las marcas comitentes integran una reserva equivalente al 2% de su facturación anual declarada al FDI del nodo regional. Esta contribución es deducible del Impuesto a las Ganancias como gasto de organización sectorial.
+2. **Línea de Financiamiento para la Inversión Productiva (LFIP del BCRA — Art. 16° inc. 2):** Canalización de fondeo de entidades financieras mediante el descuento de e-OPs y suscripción de BIP computables en los cupos MiPyME regulados por el BCRA, con ponderación de riesgo crediticio preferencial del 20%.
 
-3. **Ahorro Patriótico:** Cooperativas, cajas de profesionales y pequeños ahorristas pueden suscribir participaciones en los Sub-Fideicomisos Provinciales con un monto mínimo equivalente a un (1) Salario Mínimo, Vital y Móvil. La rentabilidad está vinculada al volumen de producción certificada por la MES regional.
+3. **Reserva Líquida de Garantía Comitente del 5% (Art. 16° inc. 3):** Cada empresa comitente integra una reserva líquida equivalente al **5% del monto nominal acumulado de sus e-OPs activas**, afectada de manera exclusiva e irrevocable a cubrir su propio riesgo comercial de impago, la cual se devuelve o computa a su favor al cancelar cada orden.
 
-4. **Emisión de Títulos de Deuda Fiduciaria ("Bonos de Infraestructura Productiva - BIP"):**
-
-   * **Objeto de Captación de Gran Escala:** Autorízase al fiduciario del FDI, bajo propuesta del Consejo Superior de la MES Federal, a emitir valores representativos de deuda fiduciaria y certificados de participación denominados *Bonos de Infraestructura Productiva (BIP)*, destinados a la captura de capitales provenientes de inversores institucionales, fondos de inversión privados, compañías de seguros y entidades financieras reguladas.  
-   * **Asignación de Fondos Específica:** Los recursos obtenidos por la colocación de los BIP se dividirán en compartimentos estancos, destinándose un cincuenta por ciento (50%) al robustecimiento del Fondo de Garantía de Segunda Línea para el apalancamiento del clearing de las e-OP, y el cincuenta por ciento (50%) restante de forma directa a planes de capitalización, adquisición de bienes de capital para el Banco de Maquinarias y el sostenimiento de la Red CIFO.  
-   * **Garantía, Estructura y Preferencia de Cobro:** Los BIP se emitirán en series denominadas en módulos indexados vinculados de forma automatizada al Índice de Precios Internos al Por Mayor (IPIM) o al valor de la Unidad de Cuenta Industrial, gozando de una estructura de cobro preferencial "Senior" sobre el flujo de clearing del fondo. Contarán con el reaseguro contracíclico de afectación específica de los Derechos de Exportación establecidos en este régimen.  
-   * **Exención Impositiva:** Las utilidades, intereses y ganancias de capital derivadas de la suscripción, tenencia y negociación de los BIP estarán totalmente exentas del Impuesto a las Ganancias, del Impuesto al Valor Agregado y del Impuesto sobre los Débitos y Créditos Bancarios por el término de diez (10) años.  
-   * **Principio de Paridad de Indexación y Sostenibilidad Fiduciaria:** A los fines de evitar descalces financieros de tasas que comprometan la liquidez de largo plazo del FDI, se establece que todas las Órdenes de Producción ('e-OP') que reciban adelantos líquidos o financiamiento de tramos por el fondo, devengarán sus saldos en Unidades de Cuenta Industrial indexadas al Índice de Precios Internos al Por Mayor (IPIM) del INDEC. Ningún instrumento de fomento podrá pactarse a tasa nominal fija en pesos cuando la estructura de fondeo mayorista de los Bonos de Infraestructura Productiva (BIP) exija rendimientos indexados concurrentes, garantizándose el perfecto equilibrio patrimonial del fideicomiso 
+4. **Denominación y Habilitación Legal de Cláusulas de Ajuste (Art. 18°):** Las e-OPs y las series de Bonos BIP pueden denominarse en **Unidades de Cuenta Industrial (UCI)** (indexadas al IPIM del INDEC o al indicador salarial del convenio colectivo de la rama), en **Unidades de Valor Adquisitivo (UVA)**, en moneda de curso legal o en moneda extranjera (Art. 765 CCyC mod. DNU 70/2023), contando con habilitación legal expresa de ajuste para órdenes cuyo plazo supere los noventa (90) días corridos.
 
 ### C. Auditoría, Transparencia e Inembargabilidad
 
@@ -389,52 +398,52 @@ A los fines de neutralizar el desabastecimiento financiero y garantizar la agili
 2. **Certificación de Hitos Productivos de Avance:** Veinticuatro (24) horas hábiles desde la notificación digital de finalización de tramo realizada por el tallerista mediante la aplicación móvil.  
 3. **Instancia de Mediación de Conflictos Comerciales y de Cumplimiento:** Diez (10) días hábiles desde la presentación formal del reclamo por cualquiera de las partes de la e-OP (marcas comitentes o talleristas) ante la MES local. Este plazo prolongado aplicará con exclusividad para la resolución de disputas de fondo respecto a calidad de entregas, diferencias de matriz de costos, o readecuaciones salariales retroactivas derivadas del régimen de control del Veto Ex-Post
 
-## SECCIÓN IV (bis): El Monotributo Productivo — Pieza Central de la Formalización
+## SECCIÓN IV (bis): El Monotributo Productivo — Pieza Central de la Formalización Individual (Art. 24° de la Ley de e-OP)
 
 ### Justificación
 
-El aparador de barrio, el cortador a destajo y la costurera que cobra en efectivo son el eslabón más vulnerable y más numeroso de la cadena. La SAS resuelve el problema del industrial que presta su CUIT; el Monotributo Productivo resuelve el problema del trabajador que no tiene CUIT propio ni razón práctica para obtenerlo bajo el sistema actual.
+El aparador de barrio, el cortador a destajo y la costurera que cobra en efectivo son el eslabón más vulnerable y más numeroso de la cadena. Mientras que el acompañamiento del PFET y las figuras societarias optativas (Art. 24 bis) están pensados para talleres empleadores consolidados (>5 trabajadores), el **Monotributo Productivo (Art. 24° de la Ley de e-OP)** es un **régimen de permanencia individual** que resuelve el problema del prestador autónomo con herramientas propias que no tiene razón práctica para sostener una cuota fija mensual bajo el sistema tributario tradicional.
 
-### A. Alta Automatizada y Retención en la Fuente: El Circuito
+### A. Alta Automatizada, Micro-Retención del 2% y Borrador Asistido: El Circuito (Art. 24°)
 
-El Monotributo Productivo está concebido con un alcance estrictamente delimitado: **no aplica a las marcas comitentes ni a las unidades productivas** (las cuales tributan bajo sus regímenes societarios e impositivos correspondientes), sino **exclusivamente a las personas humanas que prestan servicios manuales, artesanales o a destajo de forma individual y eventual** (aparadores de barrio, cortadores, costureras).
+El Monotributo Productivo está concebido con un alcance estrictamente delimitado (Art. 22° inc. 22.5.b y Art. 24°): aplica **exclusivamente a las personas humanas que prestan servicios manuales o artesanales de transformación manufacturera de forma individual con medios propios** (aparadores de barrio, cortadores, modelistas), distinguiéndose tanto de los talleres con empleados (regidos por el CDD/CDD-P) como del trabajo a domicilio sin medios propios (regido por la Libreta Digital de Trabajo a Domicilio de la Ley N° 12.713, Art. 22° inc. 22.5.a).
 
 El régimen se activa por el flujo real del trabajo y opera sin fricción burocrática:
 
-1. **Asociación en la e-OP:** Una marca comitente registra una e-OP digital en la plataforma incorporando el CUIL del prestador del servicio eventual en la etapa correspondiente.
-2. **Alta de Oficio Instantánea:** La emisión de esa primera orden gatilla de forma automática la inscripción de oficio del prestador en el Monotributo Productivo, validando su identidad mediante DNI digital y biometría con RENAPER integrada a ARCA. El trabajador no debe trasladarse a ninguna dependencia pública, no requiere tramitar clave fiscal ni gestionar turnos.
-3. **Descuento en la Fuente sobre el Monto a Liberar:** El sistema elimina la cuota fija mensual tradicional (que generaba deudas artificiales en períodos de inactividad). El tributo se recauda mediante una **micro-retención automática del 1% o 2% (promedio 1.5%) que el FDI debita directamente del monto bruto que tiene que liquidar y liberar a favor del prestador eventual**.
-4. **Exclusión Expresa de la Marca y del Taller Gestor:** Esta micro-retención **no se le cobra ni se le descuenta a la marca comitente ni al taller gestor subcontratante**, cuyo compromiso de pago respecto al valor acordado de la orden es invariable. Es una retención tributaria y de seguridad social practicada en la fuente sobre la remuneración bruta del propio prestador.
-5. **Acreditación Neta Inmediata:** El FDI deriva automáticamente la micro-retención del 1%-2% hacia la cuenta recaudadora unificada de ARCA, y acredita de forma instantánea el remanente neto (98% a 99%) en la cuenta de clearing o billetera virtual del prestador eventual, con libre disponibilidad absoluta y sin declaraciones juradas.
+1. **Asociación en la e-OP y Alta de Oficio con RENAPER (Art. 24° inc. 1):** La registración de la primera e-OP que asigne tareas al CUIL del prestador posibilita su alta de oficio en la plataforma de ARCA mediante validación de identidad con DNI digital ante el RENAPER y consentimiento expreso del titular, sin trámites presenciales ni costo fijo de mantenimiento.
+2. **Micro-retención del 2% sobre Cobranzas Netas Computable al SIPA (Art. 24° inc. 2):** El sistema sustituye la cuota fija mensual por una **micro-retención automática del dos por ciento (2%) sobre las cobranzas netas efectivas** que el FDI liquide en su Cuenta Especial de Compensación y Liquidación Manufacturera, destinada a la seguridad social. Dicha retención opera como pago a cuenta: cada mes en que las retenciones acumuladas alcancen o superen el componente previsional de la Categoría A del Monotributo General, se computa **un (1) mes de servicios con aportes en el Sistema Integrado Previsional Argentino (SIPA)** para el régimen jubilatorio ordinario (pudiendo el prestador integrar voluntariamente la diferencia o acumular el saldo para su consolidación semestral o anual dentro del mismo ejercicio fiscal). La cobertura médica básica se garantiza mediante el subsistema público o adhesión optativa a obra social.
+3. **Exclusión de Sobrecostos para la Marca y el Taller:** Esta micro-retención del 2% se practica en la fuente sobre la liquidación del propio prestador; en simultáneo, la marca comitente que lo contrata goza del **Crédito Fiscal Presunto de IVA del 10%** sobre el valor neto de la mano de obra ($c_{\text{MOD}}$) conforme al Artículo 23° inciso 1.
+4. **Acreditación Neta en Cuenta Especial Exenta y Facturación por Borrador Asistido (Art. 24° inc. 5):** El FDI deriva el 2% al SIPA a través de ARCA y acredita el **98% neto** en la Cuenta Especial del prestador (100% exenta del Impuesto al Cheque, Ley 25.413). Al entregarse el lote conforme, para liberar el **20% final de la Retención de Cierre Fiscal (RCF)**, **ARCA genera y precarga de oficio el Borrador Asistido de Factura C** en la plataforma oficial: el prestador solo confirma con un clic para obtener el CAE instantáneo y cobrar su saldo final, sin necesidad de parametrizar puntos de venta ni cargar datos contables, y quedando bloqueada de pleno derecho la emisión de FCE (Art. 7° bis Ley 27.440).
 
 ```mermaid
 flowchart TD
-    A([Monto Bruto de la Etapa a Liquidar]) --> B{Clearing Técnico FDI}
-    B -->|Micro-retención 1% a 2%| D[ARCA - Monotributo Productivo]
-    B -->|Remanente Neto 98% a 99% Líquido| F((Billetera / Cuenta del Prestador Eventual))
+    A([Monto Bruto de Mano de Obra c_MOD]) --> B{Custodia Fiduciaria FDI<br/>35% Hito Cero / 45% Avance / 20% RCF}
+    B -->|Micro-retención 2% sobre cobranza neta| D[ARCA / SIPA - Cómputo Jubilatorio<br/>Monotributo Productivo Art. 24°]
+    B -->|Remanente Neto 98% Líquido| F((Cuenta Especial Manufacturera<br/>Exenta Ley 25.413))
+    E[Confirmación 1-Clic Borrador Factura C] -->|Valida CAE y bloquea FCE| B
     
     style B fill:#8b5cf6,stroke:#5b21b6,color:#fff
     style D fill:#3b82f6,stroke:#1d4ed8,color:#fff
     style F fill:#10b981,stroke:#047857,color:#fff
 ```
-> **Figura 4.** Arquitectura de Formalización "Sin Estrés" para Prestadores Eventuales. La micro-retención del 1% o 2% se descuenta de forma automatizada exclusivamente del monto bruto que el FDI libera al trabajador eventual por su servicio (sustituyendo la cuota fija mensual). No representa retención ni sobrecosto para la marca comitente ni para el taller principal. El trabajador percibe su neto de forma instantánea sin trámites ni liquidaciones manuales.
+> **Figura 4.** Arquitectura de Formalización del Monotributo Productivo (Art. 24° Ley de e-OP). La micro-retención del **2% sobre cobranzas netas** se descuenta de forma automatizada y se imputa al cómputo de meses con aportes en el SIPA, mientras que el cierre fiscal (RCF del 20%) se resuelve con un solo clic mediante el **Borrador Asistido de Factura C** precargado por ARCA.
 
-### B. Período de Gracia y No Acumulación de Deuda Retroactiva
+### B. Cero Deuda en Inactividad y No Retroactividad (Art. 24° inc. 3)
 
-Los primeros seis (6) meses desde el alta automática, la micro-retención es la única obligación del prestador. Sin categorización, sin declaraciones juradas, sin ningún trámite adicional.
+En los períodos en que no existan e-OPs activas ni liquidaciones de cobro, **no se devenga deuda líquida ni cargo tributario alguno** (Art. 24° inc. 3). Sin categorización punitiva, sin declaraciones juradas manuales y sin acumulación de pasivos en meses sin producción.
 
 > **Cláusula de no retroactividad:** el alta en el Monotributo Productivo no genera deudas por períodos anteriores no registrados. El Estado renuncia expresamente a toda acción de determinación de oficio, recategorización retroactiva o ejecución fiscal fundada en actividad informal previa a la adhesión al régimen.
 
 Esta cláusula debe comunicarse con la misma jerarquía que el beneficio principal y figurar en los primeros 100 caracteres de cualquier pieza dirigida al sector.
 
-### C. Límites, Blindaje Anti-Fraude y Autonomía Crediticia
+### C. Permanencia Individual, Retención de Cierre Fiscal (RCF del 20%) y Exención de Mora (Art. 12° inc. 3 y Art. 24° inc. 4)
 
-Las facturas emitidas bajo el Monotributo Productivo están estrictamente vinculadas a una e-OP sectorial registrada y topadas anualmente hasta el límite de la Categoría A del Monotributo general. Un prestador sin OP registrada vinculada no puede emitir factura bajo este régimen.
+El Monotributo Productivo es un **régimen de permanencia para el prestador individual y no presupone ni impone la constitución de persona jurídica** (SAS, SRL ni cooperativa). Conforme al Artículo 24° inciso 4 de la Ley de e-OP, cuando el prestador supere el límite máximo de facturación anual de la categoría del Monotributo General en que se encuentre, ARCA lo notificará con al menos treinta (30) días corridos de anticipación y asistirá su recategorización a la escala siguiente del régimen simplificado, sin exigir jamás su migración societaria.
 
-* **Liquidación del Tramo Final y Cierre Fiscal (`FISCAL_PENDING`):** La acreditación definitiva del saldo final de cobro en el clearing del FDI está supeditada a la efectiva emisión del comprobante fiscal oficial constatada por interoperabilidad con ARCA. Esta regla rige tanto para el tallerista ejecutor integral de la orden como para los prestadores eventuales externos e independientes (aparadores artesanales, cortadores a destajo bajo Monotributo Productivo) que lleven adelante fases intermedias.
-* **Tope de Retención de Etapa para Prestadores Eventuales:** Con el objeto de resguardar el sustento diario del trabajador de base y la liquidez inmediata de la economía popular, a los prestadores eventuales independientes se les podrá retener únicamente una porción de resguardo de la etapa específica que llevaron adelante, la cual **en ningún caso podrá ser superior al treinta por ciento (30%)** del valor presupuestado para dicha fase. El porcentaje restante (al menos el 70%) se liquida de manera automática e inmediata contra la certificación física de la etapa (PoPW), quedando el tramo retenido a la espera de la emisión del comprobante electrónico en ARCA, sin devengar mora comercial.
+* **Liquidación de la Retención de Cierre Fiscal (RCF del 20%) mediante Borrador Asistido (Art. 12° inc. 3):** Conforme a la estructura universal de desembolsos (35% Hito Cero / 45% Avances / **20% RCF**, o 50% / 30% / 20% con SBD), el tramo final retenido en custodia fiduciaria estanca para el cierre fiscal es estrictamente del **veinte por ciento (20%)** del $c_{\text{MOD}}$. El 80% restante ya fue percibido por el prestador durante el arranque y avance físico (PoPW).
+* **Exención del Cargo de Mora BADLAR para Monotributistas Productivos (Art. 12° inc. 3 párrafo segundo):** Mientras que para los talleres del régimen general la demora superior a 15 días hábiles en emitir la factura de cierre devenga un cargo a tasa BADLAR, la ley establece expresamente que **a los prestadores individuales del Monotributo Productivo no les resulta aplicable dicho cargo por mora**, manteniéndose su 20% de RCF resguardado en custodia fiduciaria estanca con recordatorios periódicos hasta que confirmen con un clic el **borrador precargado de Factura C** en la aplicación.
 
-La legislación garantizará el derecho del taller y del prestador a presentarse ante el FDI de manera autónoma para reclamar el desembolso de los anticipos y liquidaciones devengadas por su labor en la e-OP homologada, sin requerir intermediación ni autorizaciones adicionales de la empresa comitente. Esta autonomía crediticia y procesal emancipa al eslabón productivo de base y constituye la condición indispensable para que el historial generado bajo el Monotributo Productivo adquiera valor financiero real.
+La legislación garantiza el derecho autónomo del prestador a percibir del FDI los desembolsos y acumular puntaje propio en el **Sistema de Evaluación de Trayectoria Productiva (SETP, Art. 2° inc. 12)**, emancipando al eslabón productivo de base y dotando a su trabajo de valor financiero real.
 
 ### D. Mecanismo de "Suspensión Activa de Oficio" contra la Acumulación de Pasivos Cíclicos
 

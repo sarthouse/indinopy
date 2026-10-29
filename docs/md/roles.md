@@ -26,7 +26,7 @@ Una marca estructurada requiere segregación de funciones para evitar fraudes in
 ### B. Módulo de Producción y Suministros
 *   **Jefe de Producción:** Modela las Recetas (BOM - Bill of Materials). Calcula los costos teóricos. Arma los lotes y deja las e-OPs en estado "Borrador". **No puede obligar financieramente a la empresa** (no tiene firma criptográfica).
 *   **Jefe de Compras:** Accede al submódulo `apps.compras`. Recibe las alertas de quiebre de stock de insumos que dispara el Jefe de Producción. Emite Órdenes de Compra (OC) a proveedores de cuero/telas.
-*   **Supervisor de Inventario / Pañol:** Solo accede a `apps.inventario`. Su rol es hacer los "Ingresos" (recepción de compras) y "Egresos" (armar los remitos de Maquila físicos para enviar al taller).
+*   **Supervisor de Inventario / Pañol:** Solo accede a `apps.inventario`. Su rol es hacer los "Ingresos" (recepción de compras) y "Egresos" (armar los remitos de traslado en Locación de Obra y Depósito Regular —Arts. 1251 y 1356 CCyC y Art. 138 Ley 24.522— para enviar al taller).
 
 ### C. Módulo Comercial y Canales
 *   **Jefe de Ventas:** Administra los canales de comercialización (`apps.ventas.models.CanalVenta`) y la configuración multitienda en `apps.integraciones.woocommerce` (`TiendaWooCommerce`). Define políticas de precios, cupones y sincronización de catálogos y stock.
@@ -42,17 +42,17 @@ Una marca estructurada requiere segregación de funciones para evitar fraudes in
 
 ---
 
-## 3. Roles Organizacionales (Módulo Taller / SAS)
+## 3. Roles Organizacionales (Módulo Taller / Empleador CDD / SAS Voluntaria)
 *   **Titular del Taller:** Posee la llave privada para aceptar la e-OP. Es el responsable fiscal ante la MES y ARCA.
 *   **Supervisor de Planta:** Opera la tablet de la fábrica. Hace click en los hitos diarios del "Flujo Privado" (*"Aparado Lote A terminado"*). No requiere conocimientos fiscales ni firmas.
 *   **Operario / Destajista:** En talleres grandes, los operarios pueden tener un login básico donde solo escanean un código de barras para marcar su presentismo o la cantidad de pares cosidos, alimentando la métrica del Supervisor.
 
 ---
 
-## 4. Roles Institucionales (Gobernanza / MES)
-*   **Promotor Territorial (PTF):** Puente Humano y Tutor Técnico. App móvil con enclave. Disuelve la brecha digital, labra el Dictamen de Transición Asistida, y valida coordenadas GPS/Biometría para emitir la firma "Conformidad en Campo".
-*   **Oficial Fiduciario (FDI / Agente de Clearing):** Accede al Dashboard de Clearing (`/mes/fiduciaria/`). Supervisa las e-OPs aprobadas, valida el saldo de custodia del Fideicomiso y emite los lotes de pago bancario masivo (archivos batch `.txt` Interbanking / BAPRO Empresas o Webhooks B2B) para transferir los anticipos de Hito Cero e hitos de avance a las cuentas de los talleristas.
-*   **Comisión de Homologación Técnica (INTI / Sindicato):** Perfil técnico. Auditan mermas, homologan maquinaria (arancel cero) y realizan la tutela laboral en territorio (Sindicato).
+## 4. Roles Institucionales (Gobernanza / MES — Comités del FDI)
+*   **Promotor Territorial (PTF):** Puente Humano y Tutor Técnico. App móvil con enclave. Disuelve la brecha digital, acompaña el alta en Monotributo Productivo (2% SIPA), la regularización laboral con CDD/CDD-P (15% en fuente) o la migración voluntaria a SAS/SRL vía PFET (>5 empleados), y valida coordenadas GPS/Biometría para emitir la firma "Conformidad en Campo".
+*   **Oficial Fiduciario (FDI / Agente de Clearing):** Accede al Dashboard de Clearing (`/mes/fiduciaria/`). Supervisa las e-OPs aprobadas, valida el saldo de custodia del Fideicomiso y emite los lotes de pago bancario masivo (archivos batch `.txt` Interbanking / BAPRO Empresas o Webhooks B2B) sobre **Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° Ley de e-OP, exentas de Ley 25.413)** para transferir los anticipos de Hito Cero (35%/50% SBD), hitos de avance (45%/30% SBD) y cierre fiscal (RCF 20%).
+*   **Comisión de Homologación Técnica (INTI / Sindicato — Comité Técnico del FDI):** Perfil técnico. Auditan mermas, emiten peritajes técnicos prejudiciales vinculantes en 5 días hábiles (Art. 13° Ley de e-OP), homologan maquinaria (arancel cero) y realizan la tutela laboral en territorio (Sindicato).
 *   **Comisión de Crédito y Riesgo (Talleres / Marcas):** Oficiales del Nodo MES que analizan viabilidad y recomiendan la aprobación financiera al FDI.
 *   **Árbitro Jurisdiccional (Municipio):** Preside la Mesa Local (Silla 7) con voto de desempate. Dirige el Tribunal de Arbitraje para conciliaciones obligatorias en 72h.
 

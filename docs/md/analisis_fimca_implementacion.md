@@ -11,13 +11,13 @@
 ## ¿De qué estamos hablando? (Resumen Ejecutivo de Contexto)
 
 1. **El Problema Real:** En Argentina, la manufactura de calzado e indumentaria opera con un alto grado de tercerización en talleres periféricos familiares (aparadores, costureros, armadores a destajo). Históricamente, estos talleres viven en la informalidad o en el "purgatorio fiscal" (cobran en efectivo o usan CUITs prestados de familiares para no ahogarse en impuestos y ejecuciones bancarias). Al no haber facturas, la empresa formal (Indino) no puede deducir sus costos reales de mano de obra en Ganancias ni computar el crédito fiscal de IVA, tributando sobre utilidades ficticias.
-2. **El Documento Fuente (`Dossier Proyecto FIMCA`):** Es el Proyecto de Formalización e Incentivo a la Manufactura del Calzado Argentino (FIMCA), el cual extiende el proyecto existente de Ley de Salvataje Nacional, adaptándolo para micro y pequeñas fábricas (hasta 30 operarios). Plantea que en lugar de ahogar al taller con inspecciones o dejarlo a merced de la usura bancaria tradicional, se cree un **ecosistema de soberanía productiva**:
-3. **Mesa de Enlace Sectorial (MES):** Órgano tripartito (Estado/INTI, Sindicatos, Cámaras, Talleristas) que gobierna la cadena.
-4. **Fideicomiso de Desarrollo Industrial (FDI):** Fondo de ahorro comunitario que reemplaza a los bancos comerciales.
-5. **La Orden de Producción como Título de Crédito (e-OP):** El banco o billetera no pide balances pasados al tallerista; financia el trabajo en curso tomando la OP registrada como garantía real de producción.
-6. **Hito Cero & Financiamiento FDI:** La orden de producción física (`OrdenProduccion` en `apps.produccion`) se desacopla del contrato de crédito fiduciario (`ContratoEOP` en `apps.eop`). En la e-OP Federada, el FDI aprueba el financiamiento y el Banco (agente de clearing) transfiere el Hito Cero (30-40%) de forma automática al entregar los insumos. Los pagos posteriores se liberan contra la certificación de hitos físicos cumplidos por el PTF (`EOPHitoEscrow` y `ComprobanteTesoreria`).
-7. **Régimen de Maquila y Façón (Propuesta de Reforma Ley 25.113 vs. CCCN Actual):** Actualmente en Argentina la **Ley 25.113 rige con exclusividad para el sector agroindustrial** (productores agropecuarios entregando materia prima con pago en especie y no sujeción tributaria). En el sector del calzado y la indumentaria rige la figura del **façón** (servicio de confección remunerado en dinero), la cual carece de ley propia y se apoya en la *Locación de Obra* (Arts. 1251 y ss. del CCCN) y *Depósito* (Arts. 1356 y ss. CCCN), lo que genera vulnerabilidad laboral (Art. 30 LCT) y riesgo de embargo sobre los insumos ante problemas del tallerista. El Proyecto FIMCA propone **reformar la Ley 25.113 para extender la figura a la "Maquila Industrial"**. Indinopy blinda documentalmente la propiedad inembargable de los insumos bajo el CCCN actual en sus remitos de traslado (`TRA-...`) y deja la arquitectura preparada para la eventual ampliación de la Ley 25.113.
-8. **Monotributo Productivo Automatizado:** Alta simplificada con la primera e-OP, retención de 1-2% por cobro efectivo, y "Suspensión Activa de Oficio" (carga fiscal cero pesos si no hay órdenes activas, sin acumular deudas cíclicas).
+2. **El Documento Fuente (`Dossier Proyecto FIMCA` y `Ley de e-OP`):** Articula tres instrumentos legislativos autónomos y complementarios: (1) la **Ley Nacional de Orden de Producción Electrónica (e-OP)** como infraestructura financiera, patrimonial y tributaria federal; (2) la **Ley Sectorial FIMCA** para calzado, marroquinería y confecciones; y (3) el **Pacto Fiscal Productivo Provincial y Municipal**. Plantea que en lugar de ahogar al taller con inspecciones o dejarlo a merced de la usura bancaria tradicional, se cree un **ecosistema de soberanía productiva**:
+3. **Mesa de Enlace Sectorial (MES):** Órgano paritario de 7 sillas (Estado/INTI, Sindicatos, Cámaras, Talleristas) que gobierna la cadena, estructurado legalmente como los **Comités Técnicos, de Fomento y de Auditoría Territorial dentro del Reglamento de Gestión del Fideicomiso (FDI)** y el órgano consultivo permanente de actualización paritaria semestral coordinado por el INTI.
+4. **Fideicomiso de Desarrollo Industrial (FDI):** Fideicomiso financiero y de garantía (Ley 26.831 / Art. 1666 CCyC) que emite **Bonos de Inversión Productiva (BIP)** con etiqueta SVS (RG CNV 917/2021) y cupo LFIP del BCRA, operando sobre **Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° Ley de e-OP)** 100% exentas del Impuesto al Cheque (Ley 25.413).
+5. **La Orden de Producción como Título Ejecutivo de Crédito (e-OP):** Conforme al Art. 6° de la Ley de e-OP (y Art. 523 inc. 7 CPCCN), la orden registrada con firmas Ed25519 constituye título ejecutivo autoliquidable; el fideicomiso financia el trabajo en curso tomando la e-OP como colateral productivo.
+6. **Hito Cero & Financiamiento FDI (35% / 45% / 20%):** La orden de producción física (`OrdenProduccion` en `apps.produccion`) se desacopla del contrato de crédito fiduciario (`ContratoEOP` en `apps.eop`). En la e-OP Federada, el FDI aprueba el financiamiento y el Banco transfiere el **Hito Cero del 35%** (o **50% con Sello Buen Diseño — SBD**) al entregar los insumos de la primera etapa, libera el **45%** (o **30% con SBD**) contra hitos físicos certificados por el PTF (`EOPHitoEscrow`), y retiene el **20% en la Retención de Cierre Fiscal (RCF)** hasta la constatación automática en ARCA de la factura electrónica con CAE (la cual queda bloqueada de oficio para generar FCE bajo el Art. 9° Ley de e-OP).
+7. **Régimen Patrimonial de Locación de Obra, Separación Concursal y Póliza Colectiva de Stock:** El régimen regula el façón industrial directamente bajo las figuras de **locación de obra con provisión de materiales** (Arts. 1251 y 1256 inc. a CCyC) y **depósito regular para transformación** (Art. 1356 CCyC), consolidando en los Arts. 20°, 20 bis y 21° de la Ley de e-OP tres garantías expresas: (a) **separación concursal inmediata** (Art. 138 Ley 24.522) a favor del comitente mediante la sola exhibición del certificado digital del Registro Público de e-OP (ARCA); (b) **Privilegio Especial** del tallerista sobre el lote en su poder (Art. 241 inc. 1 y Art. 242 inc. 1 LCQ) y derecho de retención (Art. 2587 CCyC) por su mano de obra ($c_{\text{MOD}}$); y (c) la **Póliza Colectiva Maestra de Stock en Custodia** (Art. 20 bis) contratada por el FDI (financiada con el 0,5% sobre $c_{\text{BOM}}$) frente a robo, incendio o destrucción total. Indinopy inyecta automáticamente este blindaje en todos sus remitos de traslado (`TRA-...`).
+8. **Monotributo Productivo (2%) y Regularización Laboral con CDD/FAEL (15%):** Para el tallerista individual (Art. 24° Ley de e-OP), alta simplificada en la primera e-OP, **micro-retención del 2%** computable a aportes jubilatorios SIPA, devengamiento cero en períodos de inactividad y **Borrador Asistido de Factura C en un clic**. Para talleres empleadores (Art. 22°), condonación del 100% de deuda histórica SUSS, retención en la fuente del **15%** sobre cada hito, **Certificado de Desempeño Digno (CDD/CDD-P)** como *Safe Harbor* probatorio del Art. 30 LCT, **Fondo de Afectación Específica Laboral (FAEL — 0,5%)** sin beneficio de excusión y **Libreta Digital de Trabajo a Domicilio (Ley 12.713)**.
 9. **Sello QR de Trazabilidad Socioproductiva:** Código escaneable en el calzado para que el consumidor final vea el desglose ético real: cuánto va al tallerista, cuánto a materiales, cuánto a impuestos y cuánto a la marca.
 10. **El Rol de Indinopy:** Indinopy es el ERP/MES de calzado de este repositorio. Cuenta con inventario por partida doble física (`apps.inventario`), fichas técnicas dinámicas BOM (`apps.produccion`), seguimiento de etapas a fasón (`OPEtapaTracking`), desacople del título de crédito fiduciario en `apps.eop`, contabilidad por partida doble con motor tributario (`apps.contabilidad`) y tesorería con órdenes de pago por hitos (`apps.tesoreria`). Este documento detalla la correspondencia arquitectónica e integración del Dossier en el software.
 
@@ -46,7 +46,7 @@ flowchart TD
         end
         subgraph P2["2. Financiamiento Soberano (FDI)"]
             B1["La e-OP como Colateral Crediticio"]
-            B2["Hito Cero: Anticipo 30-40% sin Historial"]
+            B2["Hito Cero: Anticipo 35% (50% SBD)"]
             B3["Instrucción de Clearing (Banco)"]
         end
     end
@@ -63,7 +63,7 @@ flowchart TD
             D2["Monotributo Productivo Automatizado"]
             D3["Suspensión Activa de Oficio"]
         end
-        subgraph P5["5. Régimen de Maquila y Soberanía"]
+        subgraph P5["5. Locación de Obra y Separación Concursal"]
             E1["Titularidad Separada de Insumos"]
             E2["Inmunidad de Stock ante Quiebras"]
             E3["Tolerancia Técnica de Mermas (INTI)"]
@@ -77,29 +77,29 @@ flowchart TD
 ### 2.1. El Nudo de la Informalidad y el "Purgatorio Fiscal"
 
 - **Diagnóstico:** El aparador o costurero cobra en efectivo porque el salto al régimen general o las cuotas fijas de monotributo devengan deudas impositivas incluso en períodos de parálisis fabril. Al no facturar, la pyme o diseñador formal pierde la deducción de mano de obra en el Impuesto a las Ganancias (30% a 50% del costo) y no puede computar crédito fiscal de IVA, tributando sobre utilidades ficticias.
-- **Respuesta en el Sistema:** Indinopy debe admitir la convivencia entre proveedores formales y en proceso de regularización, calcular la **Brecha Fiscal de Costos** y preparar las estructuras para el Crédito Fiscal Presunto (25% sobre la e-OP) previsto en el proyecto de ley (Addenda II).
+- **Respuesta en el Sistema:** Indinopy admite la convivencia entre proveedores en el régimen general y talleres en Monotributo Productivo o CDD-P, calcula la **Brecha Fiscal de Costos**, difiere el devengamiento de IVA al cierre del lote (Art. 5° inc. b Ley de IVA) y liquida el **Crédito Fiscal Presunto de IVA del 10%** sobre $c_{\text{MOD}}$ (Art. 23° inc. 1 Ley de e-OP) junto con la deducción plena del 100% en Ganancias respaldada por la factura electrónica del Hito Final (RCF, 20%).
 
 ### 2.2. La Orden de Producción como Activo Financiero y Colateral
 
 - **Diagnóstico:** Los bancos comerciales rechazan a los talleristas por falta de balances o garantías propietarias. La solución del FDI es tomar la **Orden de Producción (e-OP)** como colateral ejecutable por flujo.
 - **Respuesta en el Sistema:** La OP de Indinopy debe transicionar de una entidad interna a un **instrumento legal y financiero interoperable**, con hash criptográfico, hitos de avance verificables y liquidación desacoplada en custodia (*Escrow*).
 
-### 2.3. Contrato de Maquila e Inembargabilidad de Activos (Situación Legal y Estrategia)
+### 2.3. Blindaje Patrimonial en Locación de Obra, Separación Concursal y Seguro Colectivo de Stock
 
-- **El Marco Legal Vigente (Ley 25.113 - Ámbito Agropecuario):**
-  - La **Ley 25.113 de Maquila rige actualmente de forma exclusiva para insumos y productos agroindustriales** (caña de azúcar, vitivinicultura, leche, granos, carne, etc.). Su estructura está diseñada para que un productor agropecuario entregue materia prima y cobre en especie (con una parte del producto elaborado), estableciendo por ley que el productor mantiene la propiedad en todo momento, que el traspaso no constituye hecho imponible y que el stock no puede ser embargado ante quiebra del industrial.
+- **El Encuadre Contractual Manufacturero (Locación de Obra y Depósito Regular):**
+  - La tercerización de etapas fabriles en calzado, marroquinería e indumentaria (corte, rebajado, aparado, armado) se encuadra directamente bajo las figuras de **Locación de Obra con provisión de materiales por el comitente (Arts. 1251 y 1256 inc. a del Código Civil y Comercial de la Nación)** y **Depósito Regular para transformación productiva (Arts. 1356 y ss. CCyC)**, consolidada por los Arts. 20°, 20 bis y 21° de la Ley de e-OP con separación concursal inmediata (Art. 138 Ley 24.522), Privilegio Especial (Art. 241 inc. 1 LCQ) y Póliza Colectiva Maestra de Stock (Art. 20 bis).
 - **El Vacío Legal en la Manufactura (Calzado e Indumentaria - El "Façón"):**
   - La tercerización de etapas fabriles en calzado (corte, rebajado, aparado, armado) se conoce operativamente como **façón**, pero **carece de una ley específica propia**.
   - En la práctica jurídica argentina actual, se encuadra genéricamente en el Código Civil y Comercial de la Nación (CCCN) como **Locación de Obra con provisión de materiales por el comitente (Arts. 1251 y 1262 inc. b CCCN)** y **Depósito Regular en Custodia (Arts. 1356 y ss. CCCN)**.
-  - A diferencia de la maquila agropecuaria, el façón se remunera en dinero (tarifa por par/servicio) y está plenamente gravado por IVA e Ingresos Brutos. Esto expone a las empresas a dos contingencias críticas:
+  - En la práctica tradicional sin registro público oponible a terceros, el façón se remunera en dinero (tarifa por par/servicio) y exponía a las empresas a dos contingencias críticas:
     1. *Solidaridad Laboral (Art. 30 LCT):* Riesgo de que la justicia laboral presuma relación de dependencia o fraude laboral si el tallerista es informal.
     2. *Embargos Judiciales sobre Materia Prima:* Si el tallerista es embargado por deudas particulares o fiscales, los oficiales de justicia suelen secuestrar el cuero, suelas y cortes hallados en el taller bajo la presunción de que pertenecen a quien tiene la tenencia física.
 - **La Propuesta del Proyecto FIMCA:**
-  - Plantea la **reforma de la Ley 25.113** para extender su alcance a la manufactura no agropecuaria ("Maquila Industrial"), otorgándole rango de ley a la inembargabilidad de los insumos y desarticulando la presunción de dependencia laboral cuando medie una e-OP registrada ante la MES.
+  - **Articulado de la Ley de e-OP (Arts. 20°, 20 bis, 21° y 22°):** Consolida la **separación concursal inmediata** (Art. 138 Ley 24.522) a favor del comitente mediante el certificado digital del Registro Público de e-OP (ARCA), el **Privilegio Especial** del tallerista sobre el lote en su poder (Art. 241 inc. 1 LCQ) y derecho de retención (Art. 2587 CCyC), la **Póliza Colectiva Maestra de Stock en Custodia** (Art. 20 bis, financiada con el 0,5% sobre $c_{\text{BOM}}$) frente a siniestros en planta, y el *Safe Harbor* laboral mediante el **Certificado de Desempeño Digno (CDD/CDD-P)** y el **Fondo de Afectación Específica Laboral (FAEL — 0,5% de $c_{\text{MOD}}$)**.
 - **Respuesta en el Sistema (Cómo opera Indinopy hoy):**
   - Mientras dicha reforma legislativa sea un proyecto, Indinopy debe blindar a la empresa bajo las herramientas más sólidas del CCCN actual:
     - Toda orden y remito de traslado emitido por Indinopy (`TRA-...`) debe instrumentar documentalmente la **Locación de Obra (Art. 1251 CCCN)** junto con el **Depósito en Custodia (Art. 1356 CCCN)**, dejando constancia de que la propiedad de los insumos permanece inalterable en el comitente.
-    - El modelo de datos de `OrdenProduccion` queda parametrizado para admitir el régimen de façón bajo CCCN actual y la eventual adopción de la figura de Maquila Industrial ampliada.
+    - El modelo de datos de `OrdenProduccion` y `ContratoEOP` instrumenta el régimen de façón bajo los Arts. 1251, 1256 inc. a y 1356 del CCyC, la separación concursal del Art. 138 Ley 24.522 y la Póliza Colectiva Maestra de Stock (Art. 20 bis Ley de e-OP).
 
 ### 2.4. Contexto Político 2024-2026: Pragmatismo, Lobby Corporativo y Universidades
 
@@ -143,7 +143,7 @@ La arquitectura de Indinopy desacopla estrictamente la gestión de **manufactura
 #### 4.1.1. Protocolo de Resguardo Jurídico en Remitos de Traslado
 
 En los remitos generados mediante `OPEtapaTracking.generar_remito_traslado_taller()`:
-* Se inyecta automáticamente en las observaciones del movimiento de stock el blindaje documental exigido por el CCCN vigente y preparado para la Maquila Industrial:
+* Se inyecta automáticamente en las observaciones del movimiento de stock el blindaje documental exigido por los Arts. 1251, 1256 inc. a y 1356 del CCyC y los Arts. 20°, 20 bis y 21° de la Ley de e-OP:
 
 > *"Mercadería remitida bajo contrato de Locación de Obra (Arts. 1251 y ss. CCCN) y Depósito Regular en Custodia (Arts. 1356 y ss. CCCN). Las materias primas y semielaborados son propiedad inembargable y exclusiva del comitente emisor. El receptor actúa únicamente como custodio y transformador del material, sin adquirir titularidad ni derecho de disposición sobre el stock."*
 
@@ -177,7 +177,7 @@ sequenceDiagram
     OP->>EOP: Genera ContratoEOP con Vector C de Costos
     OP->>FDI: Registra e-OP y solicita fondeo de Escrow
     Note over EOP,FDI: Timelock 48h / Aprobación MES
-    FDI->>Tal: Transfiere Hito Cero (30-40% directo a CVU taller)
+    FDI->>Tal: Transfiere Hito Cero (35% o 50% SBD directo a Cuenta Especial Taller)
     FDI-->>Tes: Notifica Clearing bancario ejecutado (Callback)
     Tes->>Tes: Registra Pasivo con FDI (Cancela deuda fasón taller)
     Tal->>OP: Declara avance de producción (PoPW GPS)
@@ -204,7 +204,7 @@ sequenceDiagram
 Enriquecer `apps/contactos/models.py` para transformar la libreta de direcciones en un **directorio de capacidades productivas auditables** mediante el modelo satélite `PerfilTallerista`:
 
 * **Encuadre Jurídico y Tributario FIMCA:**
-  * `figura_tributaria`: Clasificación del prestador (*Monotributo Productivo Automatizado*, *Puente SAS*, *Responsable Inscripto Humano*, *Cooperativa de Trabajo*).
+  * `figura_tributaria`: Clasificación del prestador (*Monotributo Productivo Art. 24° (2% SIPA)*, *Taller Empleador con CDD/CDD-P Art. 22° (15% en fuente)*, *SAS/SRL Voluntaria vía PFET Art. 24 bis*, *Cooperativa de Trabajo*).
   * `estado_fiscal_dinamico`: Monitoreo del ciclo (*Activo en Producción*, *Suspensión Activa de Oficio con carga fiscal cero*, *Irregular bajo tutoría PTF*).
 * **Capacidad Operativa y Especialidades:**
   * `capacidad_semanal_pares`: Capacidad nominal declarada para prevención de cuellos de botella.
@@ -340,4 +340,4 @@ El plan de trabajo del proyecto se estructura en 5 fases secuenciales de backend
 
 La incorporación de estos módulos transforma a **Indinopy** de un sistema ERP/MES tradicional en un **instrumento de política industrial aplicada**. 
 
-Al dotar a la Orden de Producción de valor contractual y crediticio, automatizar los anticipos de arranque (Hito Cero), proteger los insumos mediante el régimen de Maquila y transparentar los costos ante el consumidor, Indinopy demuestra que la tecnología de software libre no debe estar al servicio de la especulación o la exclusión, sino de la **organización comunitaria del trabajo y la defensa de la industria nacional**.
+Al dotar a la Orden de Producción de valor de título ejecutivo y crediticio (Art. 6° Ley de e-OP), automatizar los anticipos de arranque (Hito Cero del 35% o 50% SBD), blindar los insumos mediante la separación concursal (Art. 138 Ley 24.522) y la Póliza Colectiva Maestra de Stock (Art. 20 bis), y transparentar los costos ante el consumidor, Indinopy demuestra que la tecnología de software libre no debe estar al servicio de la especulación o la exclusión, sino de la **organización comunitaria del trabajo y la defensa de la industria nacional**.

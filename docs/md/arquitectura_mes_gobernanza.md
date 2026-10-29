@@ -14,7 +14,7 @@ La reconstrucción de la industria manufacturera no se logra mediante la imposic
 
 1. **La Comunidad Organizada frente a la Atomización:** La cadena de valor del calzado, el cuero y la indumentaria no puede operar como un campo de batalla de intereses individuales donde la gran marca comercial impone precios de miseria y el tallerista familiar sobrevive en la informalidad. Quienes diseñan, quienes producen, quienes financian y quienes fiscalizan se integran en una **institución paritaria de conducción estratégica**.
 2. **El Estado como Facilitador y Árbitro, no como Patrón Policial:** La burocracia estatal suele llegar al taller solo para fiscalizar, clausurar o cobrar tasas. En la MES, el Estado asume roles técnicos específicos: el **INTI** garantiza la soberanía tecnológica neutral y el **Municipio** actúa como garante del arraigo territorial y árbitro imparcial ante conflictos territoriales.
-3. **Subordinación del Capital a la Producción Real:** La banca usurera y los algoritmos de scoring patrimonial quedan desplazados. El corazón del sistema financiero es el **Fideicomiso de Desarrollo Industrial (FDI)**, donde la Orden de Producción digital ("e-OP") es el activo colateral y la MES es el tribunal técnico que valida la liberación de fondos contra hitos físicos de trabajo.
+3. **Subordinación del Capital a la Producción Real:** La banca usurera y los algoritmos de scoring patrimonial quedan desplazados. El corazón del sistema financiero es el **Fideicomiso de Desarrollo Industrial (FDI)**, donde la Orden de Producción digital ("e-OP") es el título ejecutivo y activo colateral (Art. 6° Ley de e-OP) y la MES —constituida jurídicamente como los **Comités Técnicos, de Fomento y de Auditoría Territorial dentro del Reglamento de Gestión del FDI** y el órgano consultivo permanente de actualización paritaria coordinado por el INTI (Arts. 1°, 15° y 27° Ley de e-OP)— es el cuerpo técnico que valida la liberación de fondos contra hitos físicos de trabajo.
 
 ---
 ## 2. Topología Federal Multinivel
@@ -49,8 +49,8 @@ flowchart TD
 
 ### 2.1. Competencias Exclusivas de la MES Federal
 - Dictar las **Tablas Federales de Tecnología Conveniente** con asistencia técnica vinculante del INTI (ningún municipio puede inventar criterios de maquinaria por su cuenta).
-- Establecer y actualizar trimestralmente los **Pisos Mínimos de Mano de Obra por Proceso** (corte, rebajado, aparado, armado) indexados al IPIM del INDEC y paritarias de rama.
-- Administrar el sistema de puntaje digital de **Unidades de Crédito Productivo (UCP) / Score Solidario** para acceso prioritario al Mercado Libre de Cambios (MLC) y cupos de importación.
+- Establecer y actualizar semestralmente (o ante variaciones >10%) los **Pisos Mínimos y Matrices de Costos y Tiempos de Mano de Obra por Proceso** (corte, rebajado, aparado, armado) junto al INTI, cámaras y sindicatos (Art. 27° Ley de e-OP), indexados al IPIM del INDEC en Unidades de Cuenta Industrial (UCI).
+- Administrar el **Sistema de Evaluación de Trayectoria Productiva (SETP, Ley 25.326 — Art. 2° inc. 12 Ley de e-OP)** y el puntaje de **Unidades de Crédito Productivo (UCP)** para acceso a beneficios del Régimen FIMCA y cupos de importación.
 - Actuar como **Tribunal de Alzada** definitivo ante rebeldía institucional o parálisis política de un nodo local.
 
 ### 2.2. Competencias Exclusivas de la MES Municipal (Distrital)
@@ -76,8 +76,8 @@ pie title Distribución del Poder en la MES Municipal (7 Miembros)
 
 ### 3.1. Detalle de las 7 Sillas
 1. **Silla 1 — Talleristas de Base (Monotributo Productivo):** Representante titular electo por voto directo del sub-padrón de trabajadores manuales individuales (aparadores, cortadores, costureros a destajo). Defiende la tarifa por par y la agilidad de los cobros en cuenta.
-2. **Silla 2 — Unidades Productivas Consolidadas (Puente SAS):** Representante titular electo por los talleres estructurados bajo figuras asociativas o SAS con dotación de hasta 30 trabajadores registrados. Defiende la amortización de capital, la provisión de insumos y los costos de convenio.
-3. **Sillas 3 y 4 — Marcas Comitentes y Comercializadores:** Dos representantes titulares designados por la cámara empresaria sectorial adherida al régimen. Aportan el volumen de demanda comercial y la reserva de capital obligatoria (2%) al FDI.
+2. **Silla 2 — Unidades Productivas Consolidadas (Talleres Empleadores con CDD / SAS / Cooperativas):** Representante titular electo por los talleres empleadores con trabajadores registrados (personas humanas, cooperativas, SRL o SAS de hasta 30 trabajadores). Defiende la amortización de capital, la provisión de insumos y los costos de convenio.
+3. **Sillas 3 y 4 — Marcas Comitentes y Comercializadores:** Dos representantes titulares designados por la cámara empresaria sectorial adherida al régimen. Aportan el volumen de demanda comercial y la Reserva Líquida de Garantía obligatoria (5%) sobre su cartera activa en el FDI (Art. 16° inc. 3 Ley de e-OP).
 4. **Silla 5 — Soberanía Técnica (INTI):** Un perito industrial de designación institucional directa. Aporta el criterio técnico objetivo, homologa maquinarias y audita tolerancias de mermas.
 5. **Silla 6 — Tutela de la Dignidad Laboral (Sindicato):** Representante designado por el gremio de rama con personería gremial vigente (SETIA y afines). Ejerce la auditoría ex-post en territorio y certifica las condiciones de trabajo digno.
 6. **Silla 7 — Árbitro Jurisdiccional (Secretaría de Producción Municipal):** Funcionario designado por el Municipio adherente. **Preside la Mesa y la Comisión de Crédito**, ejerciendo el voto de desempate en caso de paridad para garantizar la paz social y el empleo territorial.
@@ -102,7 +102,7 @@ flowchart TD
         CT_M["Integrantes: INTI + Sindicato"]
         CT_1["Dictamen de Tecnología Conveniente (15 días)"]
         CT_2["Certificación física de Hitos de Avance (24h)"]
-        CT_3["Pre-calificación del Score Solidario (UCP)"]
+        CT_3["Calificación en el SETP (Ley 25.326) y UCP"]
         CT_4["Determinación de tablas de descarte de cuero"]
     end
 
@@ -132,10 +132,10 @@ La Comisión de Homologación Técnica ejerce el filtro soberano para la importa
 ### 4.2. Gobernanza de la Red CIFO y Administración del Banco Comunitario de Maquinarias
 La MES articula el capital humano y los bienes de capital del territorio:
 - **Red CIFO (Financiada con el 3% inembargable del FDI):** Co-gestionada por el Gremio, Cámaras de Diseño y el Municipio/INTI. Brinda acceso popular irrestricto sin secundario previo, becas de formación técnica y reparte el 50% de la renta neta de los lotes escuela a los alumnos. Sus egresados ingresan con Prioridad 1 a la Bolsa de Trabajo.
-- **Área de Asesoría Contable y Administrativa Comunitaria:** Cada CIFO dispone de una consultoría técnica gratuita para talleres en transición. Gestiona altas de SAS en 48h, facturación de e-OP por API de ARCA, administración del IVA diferido, armado de carpetas para el cómputo del Crédito Fiscal Presunto del 25% por costos no documentados y liquidación de sueldos de convenio con subsidio patronal del 27% del FDI.
+- **Área de Asesoría Contable y Administrativa Comunitaria (Articulada con el PFET — Art. 24 bis Ley de e-OP):** Cada CIFO dispone de una consultoría técnica gratuita para talleres en formalización. Gestiona la adhesión al Monotributo Productivo (retención del 2% SIPA y confirmación en un clic del Borrador Asistido de Factura C), el alta en el Régimen Permanente de Regularización Laboral (retención del 15% con Certificado de Desempeño Digno CDD/CDD-P y respaldo del FAEL), la administración del IVA diferido al cierre del lote (Art. 5° inc. b Ley de IVA), el cómputo del **Crédito Fiscal Presunto de IVA del 10%** sobre $c_{\text{MOD}}$ (Art. 23° inc. 1) y la migración **voluntaria** a SAS o SRL en 48h para talleres de más de 5 empleados conservando su historial en el SETP y su CDD.
 - **Banco Comunitario de Maquinarias:** Releva maquinaria parada y otorga la condonación total de pasivos preexistentes de ARCA a quienes la cedan en comodato por 36 meses.
 - **Asignación con Opción a Transferencia Definitiva:** Se entregan en comodato a egresados de los CIFO y talleres que completen con éxito 3 e-OP.
-- **Muletto Técnico en 24 Horas:** Ante rotura fortuita de máquinas que paralice la producción, el Banco provee una máquina de auxilio en 24h y el FDI liquida compensación por lucro cesante.
+- **Muletto Técnico en 24 Horas y Compensación por Parada de Planta:** Ante rotura fortuita de máquinas que paralice la producción, el Banco provee una máquina de auxilio en 24h; y ante demoras mayores a 48h hábiles de la marca comitente en el despacho escalonado Just-in-Time de insumos, se devenga automáticamente a favor del taller una compensación por parada de planta (*standby*) de **un (1) jornal diario del SMVM por cada puesto afectado** (con tope de 0,5 SMVM mensual, Art. 5° bis inc. 5 Ley de e-OP).
 
 ### 4.3. Supervisión Ética de la IA Algorética
 El Consejo Superior de la MES ejerce la conducción de los algoritmos de la plataforma según la doctrina de la Encíclica *Magnifica Humanitas* y el magisterio social de Francisco:
@@ -149,8 +149,8 @@ La ejecución financiera de las decisiones de la MES no ocurre por arte de magia
 
 - **Modalidades Operativas del ERP:** La plataforma Indinopy diferencia estrictamente entre una *OP de Gestión Interna* (donde la producción y liquidación se gestionan de forma directa en el ámbito técnico-mercantil privado, utilizando comprobantes de control interno clase "X" conforme a RG AFIP 1415 o facturación directa) y una *e-OP Federada* del régimen FIMCA, donde el flujo financiero queda garantizado de antemano en el Escrow del FDI.
 - **Acceso del Oficial Bancario:** El Nodo MES cuenta con un endpoint y panel de control (`/mes/banco/`) exclusivo para usuarios con rol `FIDUCIARIO`.
-- **Operatoria Batch o Open Banking:** Cuando la Comisión de Crédito (o el Silencio Administrativo) aprueba un hito, el Oficial Bancario descarga el **Lote de Liquidación** (archivo TXT compatible con Interbanking/BAPRO Empresas) y ejecuta la transferencia masiva. Alternativamente, si el banco dispone de APIs B2B, el ERP Indinopy le dispara la orden de pago (webhook) atomizando los fondos instantáneamente: 98% al CBU personal del trabajador y 2% al fondo fiduciario territorial.
-- **Facturación Diferida Automática:** Inmediatamente después de que el BAPRO informa que la transferencia fue exitosa, el sistema invoca los webservices de AFIP, emite la factura electrónica correspondiente y cancela la posición de IVA diferido del tallerista, completando el circuito de blanqueo sin ninguna intervención burocrática del operario.
+- **Operatoria Batch o Open Banking sobre Cuentas Especiales (Art. 14° Ley de e-OP):** Cuando la Comisión de Crédito (o el Silencio Administrativo) aprueba un hito, el Oficial Bancario descarga el **Lote de Liquidación** (archivo TXT compatible con Interbanking/BAPRO Empresas) o dispara el webhook B2B sobre las **Cuentas Especiales de Compensación y Liquidación Manufacturera** (100% exentas del Impuesto al Cheque Ley 25.413), atomizando los fondos instantáneamente: acreditación neta al CBU/CVU del tallerista, micro-retención del 2% (Monotributo Productivo) o hasta 15% (cargas sociales SUSS en talleres empleadores con CDD) y canon operativo del FDI ($c_{\text{FDI}} \le 1,5\%$: 0,5% FAEL, 0,2% INTI/PFET, 0,8% Mora).
+- **Cierre Fiscal con Factura Electrónica y Bloqueo de FCE (Arts. 9°, 12° y 24° Ley de e-OP):** Al entregarse el lote terminado, el tallerista confirma con un solo clic el **Borrador Asistido de Factura C** precargado por ARCA (o emite su factura ordinaria del régimen general, la cual queda bloqueada de oficio para generar FCE bajo el Art. 9°), perfeccionando en ese acto el hecho imponible diferido de IVA (Art. 5° inc. b Ley de IVA) y liberando el 20% final de la Retención de Cierre Fiscal (RCF).
 
 ---
 ## 5. Protocolos Operativos y Plazos Duros con Silencio Administrativo Positivo
@@ -193,7 +193,7 @@ sequenceDiagram
 | **e-OP Espejo (Fast-Track)** | **2 horas** | Aprobación algorítmica inmediata supeditada solo al cruce de stock y capacidad ociosa en la Bolsa de Trabajo. |
 | **Certificación de Hito Productivo** | **24 horas hábiles** | Liberación automática de la cuota correspondiente del Escrow digital hacia la cuenta de clearing del tallerista. |
 | **Dictamen de Tecnología Conveniente** | **15 días hábiles** | Concesión automática de pleno derecho del beneficio de arancel cero aduanero por Silencio Positivo. |
-| **Audiencia de Arbitraje de Conflictos** | **10 días hábiles** | Elevación obligatoria y directa de la causa al Consejo Superior de la MES Federal para resolución inmediata. |
+| **Peritaje Prejudicial INTI / Arbitraje Territorial** | **5 días hábiles (INTI) / 72 horas (Tribunal)** | Peritaje técnico vinculante del INTI en 5 días hábiles (Art. 13° Ley de e-OP) y laudo del Tribunal Arbitral Territorial en 72 horas hábiles; vencido el plazo, elevación directa al Consejo Superior Federal. |
 
 ---
 ## 6. Procedimientos Especiales de Tutela y Arbitraje
@@ -207,7 +207,7 @@ Para no burocratizar el arranque de la producción, el sindicato no frena la ord
 Órgano local de mediación de conflictos rápidos integrado por:
 * **Presidencia:** El perito del INTI (neutralidad técnica).
 * **Vocales:** 2 representantes del sector privado desinsaculados por sorteo trimestral del padrón de la Bolsa (un tallerista y una marca ajenos al conflicto).
-* **Plazo de Laudo:** 72 horas para dictar resolución de conciliación obligatoria.
+* **Plazo de Laudo y Peritaje INTI:** **5 días hábiles** para el peritaje técnico prejudicial vinculante del INTI (Art. 13° Ley de e-OP) y **72 horas hábiles** para dictar laudo de conciliación obligatoria en el Tribunal Arbitral.
 
 ### 6.3. Canal de Denuncias y "Perimetral Administrativa"
 Ante pedidos de coimas o extorsiones por parte de inspectores fiscales o municipales:
@@ -215,14 +215,14 @@ Ante pedidos de coimas o extorsiones por parte de inspectores fiscales o municip
 * Se emite una **Orden de Restricción Administrativa de Emergencia**: se notifica a la justicia penal, se bloquea el usuario informático del inspector denunciado y se le prohíbe el ingreso al cuadrante productivo del taller denunciante ("perimetral administrativa").
 * Si una seccional fiscal acumula más de 3 denuncias firmes en un año, se suspenden los plus salariales por recaudación ("cuenta de jerarquización") de toda esa delegación hasta su saneamiento interno.
 
-### 6.4. El Dictamen de Transición Asistida y el Puente SAS
+### 6.4. El Dictamen de Formalización Asistida, Regularización Laboral (CDD) y PFET (SAS Voluntaria)
 Para erradicar el "purgatorio fiscal" y el préstamo de identidades (CUITs ajenos):
 1. **Relevamiento Activo del PTF:** El Promotor Territorial constata en territorio la capacidad real del taller, maquinaria y dotación de oficio.
-2. **Elevación del Dictamen:** El PTF eleva ante la Comisión de Crédito y Riesgo de la MES el *Dictamen de Transición Asistida*, proponiendo el salto a la figura de Sociedad por Acciones Simplificada (SAS).
+2. **Adhesión Directa según Escala (Arts. 22° y 24° Ley de e-OP y PFET Art. 24 bis):** El tallerista individual ingresa de oficio al **Monotributo Productivo** (retención del 2% computable a SIPA y cero deuda por inactividad); el taller empleador ingresa al **Régimen Permanente de Regularización Laboral** (condonación del 100% de deuda histórica SUSS, retención del 15% en la fuente con **Certificado de Desempeño Digno CDD/CDD-P** y cobertura del **FAEL**). Para talleres de más de 5 trabajadores que deseen limitar su responsabilidad patrimonial, el PTF y el **PFET** acompañan su migración **estrictamente voluntaria** hacia una SAS o SRL.
 3. **Efectos Jurídicos Cautelares Inmediatos:** La homologación institucional de la MES gatilla por sistema:
-   - **Alta de Oficio de la SAS** en la Ventanilla Única Municipal con vinculación a la Cuenta de IVA Sectorial Diferida (el IVA solo se devenga contra clearing efectivo del FDI).
+   - **Constitución Voluntaria de la SAS/SRL en 48h (vía PFET)** en la Ventanilla Única Municipal con diferimiento de IVA al cierre del lote (Art. 5° inc. b Ley de IVA) y transferencia de pleno derecho de su calificación en el **SETP** y su **CDD**.
    - **Suspensión Preventiva de Ejecuciones por 180 Días:** Orden obligatoria a ARCA de frenar cualquier pedido de quiebra, traba de cuentas o embargo fundado en deudas tributarias de la etapa informal previa.
-   - **Crédito Fiscal Presunto del 25%:** Cómputo de costos presuntos de producción para amortiguar el escalamiento hacia la plena formalidad.
+   - **Crédito Fiscal Presunto de IVA del 10% (Art. 23° inc. 1):** Cómputo automático sobre el valor neto de mano de obra ($c_{\text{MOD}}$) a favor de las marcas comitentes que contraten talleres en Monotributo Productivo o CDD-P, sumado a la deducción del 100% del gasto documentado en Ganancias al liberarse el RCF (20%).
    - **Derivación Obligatoria al Área Contable del CIFO:** El tallerista es asignado a la asesoría técnica y contable del CIFO local, que asume de oficio el tutelaje administrativo gratuito durante los 180 días y el seguimiento de sus primeras 3 e-OP.
    - **Secreto Tuitivo:** Prohibición absoluta de utilizar los datos relevados para iniciar fiscalizaciones retroactivas o juicios de apremio.
 

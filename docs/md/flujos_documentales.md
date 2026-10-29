@@ -11,7 +11,7 @@ Este documento detalla la estructura administrativa, los módulos operativos y l
 * **Inventario (`apps.inventario`):** Gestión de existencias por partida doble (`StockQuant`). Administra Remitos de Recepción, Remitos de Traslado a Producción (custodia en talleres/fasón) y Remitos de Entrega comercial.
 * **Ventas (`apps.ventas` e `apps.integraciones`):** Presupuestos comerciales, Notas de Pedido, Órdenes de Venta mayoristas B2B y canal omnicanal desacoplado (WooCommerce, MercadoLibre).
 * **Contabilidad y Fiscal (`apps.contabilidad` y `apps.afip`):** Libro Diario por partida doble, facturación electrónica A/B/C/X con QR oficial ARCA, cuentas corrientes y reportes de Convenio Multilateral (CM05/CM03).
-* **Tesorería y Custodia (`apps.tesoreria`):** Gestión de cajas, clearing bancario, administración fiduciaria de Escrow y Títulos de Crédito FCE (Ley 27.440).
+* **Tesorería y Custodia (`apps.tesoreria`):** Gestión de cajas, clearing bancario sobre Cuentas Especiales exentas del Impuesto al Cheque (Ley 25.413 — Art. 14° Ley de e-OP), administración fiduciaria de Escrow y Títulos de Crédito FCE (Ley 27.440, con bloqueo automático de FCE en facturas de cierre de e-OP conforme al Art. 9° Ley de e-OP).
 * **Nómina y RRHH (`apps.nomina`):** Legajos de personal, novedades mensuales, liquidación de haberes, recibos de sueldo (Ley 20.744), exportación a Libro de Sueldos Digital (LSD ARCA) y segregación estricta SoD (`usuario_preparador != aprobador_tesoreria`).
 
 ---
@@ -24,7 +24,7 @@ Este documento detalla la estructura administrativa, los módulos operativos y l
 | **Orden de Compra (PO)** | `compras` | Compromiso formal de compra de insumos/servicios. | Al confirmarse, genera remito de recepción en Almacén. |
 | **Presupuesto / Cotización** | `ventas` | Propuesta económica estimada a prospectos o clientes. | No vinculante. **No reserva stock físico**. |
 | **Nota de Pedido / OV** | `ventas` | Pedido formal de venta (B2B mayorista o e-commerce). | Al confirmarse, genera remito y **reserva stock en `StockQuant`**. |
-| **Remito Traslado a Producción** | `inventario` | Envío de materias primas y semielaborados a taller/fasón. | Mueve stock a ubicación `fason` bajo custodia (Arts. 1251/1356 CCCN). |
+| **Remito Traslado a Producción** | `inventario` | Envío de materias primas y semielaborados a taller/fasón. | Mueve stock a ubicación `fason` bajo custodia (Arts. 1251/1356 CCyC, separación concursal Art. 138 LCQ y Póliza Stock Art. 20 bis). |
 | **Remito de Recepción** | `inventario` | Ingreso físico de materias primas o productos terminados. | Incrementa stock disponible y actualiza cantidades en OC/OP. |
 | **Remito de Entrega** | `inventario` | Despacho logístico de mercadería al cliente final. | Descuenta existencias físicas y cancela reservas. |
 | **e-OP (Orden Producción Electrónica)** | `produccion` / `eop` | Título de colateral fiduciario inmutable sellado (SHA-256 / Ed25519). | Compromete insumos y activa el contrato Escrow / Timelock 48h. |
@@ -79,7 +79,7 @@ sequenceDiagram
     
     opt Modo Federado e-OP (Fasón Externo con Colateral)
         M->>F: Emite e-OP (Payload canónico sellado Ed25519)
-        F->>T: Desembolsa Hito Cero (35-40% directo al Taller)
+        F->>T: Desembolsa Hito Cero (35% o 50% SBD directo a Cuenta Especial Taller)
         M->>K: Asienta extinción deuda taller y registra Pasivo Fiduciario FDI
     end
     
@@ -89,10 +89,10 @@ sequenceDiagram
     T->>M: Registra avance PoPW (Pares terminados + Mermas)
     
     alt En Modo Federado e-OP
-        F->>T: Desembolsa Hitos de Avance según certificación física
+        F->>T: Desembolsa Hitos de Avance (45% o 30% SBD) según certificación física
     end
 
-    T->>M: Entrega producto terminado (Remito de Recepción ING-<OP>)
+    T->>M: Entrega producto terminado (Remito de Recepción ING-<OP>) y confirma Factura con CAE en ARCA (libera RCF 20%)
     M->>M: Control de calidad (1ra y 2da selección) y reingreso a Almacén
     
     opt En Modo Federado e-OP

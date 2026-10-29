@@ -82,7 +82,7 @@ El protocolo e-OP sintetiza cinco tradiciones teóricas de la economía, la cien
 
 **Relación con sistemas previos:** El protocolo se diferencia de soluciones blockchain públicas y sistemas de contratos inteligentes descentralizados (Szabo, 1997; Buterin, 2014) en que no requiere cómputo distribuido no permisionado ni máquinas virtuales en cadena: su modelo de ejecución y custodia descansa en **auditoría criptográfica con anclaje institucional**, donde la autoridad de registro es colegiada y paritaria (la MES junto a ARCA e INTI). Asimismo, mientras que los esquemas fundacionales de consenso descentralizado consumen recursos en pruebas computacionales abstractas (Proof-of-Work; Nakamoto, 2008), el presente protocolo orienta la verificación a la física tangible del taller mediante la Prueba de Trabajo Productivo (PoPW; ver nota [^1]). Finalmente, respecto de instrumentos normativos existentes como la Factura de Crédito Electrónica (Ley 27.440), la e-OP innova al situar el hecho generador del colateral en el *registro y avance del proceso fabril*, y no en la entrega final del bien terminado. La trazabilidad de materiales a nivel de componente se alinea conceptualmente con estándares GS1 EPCIS (ISO/IEC 19987), aunque el sistema no implementa dicho protocolo en su versión actual (ver §9.1 Limitaciones).[^2]
 
-> **Nota sobre el régimen de maquila vigente:** La Ley 25.113 rige actualmente de forma exclusiva para el sector agropecuario. La manufacturera no agropecuaria (façón de calzado e indumentaria) carece de ley específica y se ampara en los Arts. 1251 y 1356 del CCCN. El presente protocolo opera bajo ese marco vigente y propone la reforma de la Ley 25.113 para extender la figura de Maquila Industrial a la manufactura, otorgando rango legal explícito a la inembargabilidad de insumos en el taller.
+> **Nota sobre el encuadre patrimonial y concursal de los insumos:** La manufactura por encargo (façón de calzado e indumentaria) se rige directamente bajo las figuras de **locación de obra con provisión de materiales** (Arts. 1251 y 1256 inc. a del Código Civil y Comercial de la Nación) y **depósito regular para transformación productiva** (Art. 1356 CCyC). En el marco de la Ley de e-OP (Arts. 20°, 20 bis y 21°), el protocolo consolida de pleno derecho: (a) la **separación concursal inmediata** (Art. 138 de la Ley N° 24.522 de Concursos y Quiebras) a favor del comitente mediante la sola exhibición del certificado digital del Registro Público de e-OP; (b) el **Privilegio Especial** del tallerista sobre los bienes transformados en su poder (Art. 241 inc. 1 y Art. 242 inc. 1 LCQ) y el derecho de retención (Art. 2587 CCyC) por el saldo de mano de obra ($c_{\text{MOD}}$); y (c) la cobertura obligatoria de la **Póliza Colectiva Maestra de Stock en Custodia** (Art. 20 bis) contratada por el FDI (financiada mediante el recargo paramétrico $c_{\text{STK}} \le 0.5\%$ sobre $c_{\text{BOM}}$) frente a incendio, robo o destrucción total en planta.
 
 ---
 
@@ -97,9 +97,9 @@ Donde:
 * $\mathcal{K}_C, \mathcal{K}_T \in \mathcal{G}$: Claves públicas Ed25519 del comitente (marca) y del tallerista, bajo infraestructura de clave pública (PKI) administrada por ARCA/MES.
 * $\mathcal{M}_{\text{BOM}} = \text{MerkleRoot}(\{m_1, m_2, \dots, m_k\})$: Raíz del árbol de Merkle (Merkle, 1987) que resume de forma determinista la receta técnica (Bill of Materials): consumos unitarios teóricos de cuero, suela, adhesivos y tolerancias de merma técnica homologadas por el INTI.
 * $\mathcal{Q} = \{(v_j, q_j)\}_{j=1}^n$: Vector de demanda física que desglosa cantidades requeridas por cada variante (curva de talles y colores).
-* $\vec{\mathcal{C}} = \langle c_{\text{MOD}}, c_{\text{BOM}}, c_{\text{FDI}} \rangle \in \mathbb{R}_+^3$: Vector de Colateralización Federada e-OP consolidado en tres vectores auditables: (1) Mano de Obra Directa / Servicios de Façón ($c_{\text{MOD}}$), representativo de la locación de obra del taller; (2) Insumos físicos en custodia de depósito ($c_{\text{BOM}}$); y (3) Recargo Institucional de Red MES y Fondo de Riesgo FDI ($c_{\text{FDI}} = 0.015 \cdot c_{\text{MOD}}$: 1.0% canon operativo MES + 0.5% reserva fiduciaria de contingencia). Los costos internos de cargas sociales ($c_{\text{CS}}$) e impuestos quedan absorbidos por el subsidio de aportes patronales del FDI (Art. 6.4 FIMCA / Addenda I) y la nómina CCT UTICRA propia del taller. El valor colateralizado nominal total es $\mathcal{P} = \|\vec{\mathcal{C}}\|_1 = c_{\text{MOD}} + c_{\text{BOM}} + c_{\text{FDI}}$ en Unidades de Cuenta Industrial ($\text{UCI}$).
+* $\vec{\mathcal{C}} = \langle c_{\text{MOD}}, c_{\text{BOM}}, c_{\text{FDI}}, c_{\text{STK}} \rangle \in \mathbb{R}_+^4$: Vector de Colateralización Federada e-OP consolidado en cuatro componentes auditables (Art. 5° bis Ley de e-OP): (1) Mano de Obra Directa / Servicios de Façón ($c_{\text{MOD}}$), representativo de la locación de obra del taller; (2) Insumos físicos en custodia de depósito ($c_{\text{BOM}}$); (3) Canon Operativo y de Garantía del FDI ($c_{\text{FDI}} \le 0.015 \cdot c_{\text{MOD}}$: integrado por 0.5% al Fondo de Afectación Específica Laboral —FAEL—, 0.2% para auditoría técnica INTI y Programa Federal de Extensión Tecnológica —PFET—, y hasta 0.8% para gastos fiduciarios y Reserva por Mora Operativa); y (4) Prima de la Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{STK}} \le 0.005 \cdot c_{\text{BOM}}$, Art. 20 bis). En los talleres empleadores adheridos al régimen permanente de regularización laboral (Art. 22°), los costos internos de cargas sociales se integran automáticamente mediante una retención en la fuente de hasta el 15% sobre cada hito de $c_{\text{MOD}}$ imputada al F.931/LSD. El valor colateralizado nominal total es $\mathcal{P} = \|\vec{\mathcal{C}}\|_1 = c_{\text{MOD}} + c_{\text{BOM}} + c_{\text{FDI}} + c_{\text{STK}}$ en Unidades de Cuenta Industrial ($\text{UCI}$).
 * $\mathcal{H} = \{h_0, h_1, \dots, h_m\}$: Conjunto ordenado de hitos de ejecución y desembolso financiero en Escrow.
-* $\mathcal{R}_L$: Régimen legal de afectación (Locación de Obra Arts. 1251 y 1356 CCCN / Maquila Industrial — propuesta de reforma Ley 25.113).
+* $\mathcal{R}_L$: Régimen legal de afectación (Locación de Obra con provisión de materiales Arts. 1251 y 1256 inc. a CCyC, Depósito Regular Art. 1356 CCyC y Separación Concursal Art. 138 Ley 24.522 — Arts. 20° a 21° Ley de e-OP).
 * $\Sigma = \{\sigma_C, \sigma_T, \sigma_M\}$: Esquema multifirma asimétrico donde la emisión inicial exige la co-autoría bilateral obligatoria de Comitente ($\sigma_C$) y Tallerista Gestor ($\sigma_T$). La tercera firma de convalidación institucional ($\sigma_M$) emitida por la autoridad de la MES o el PTF en campo **gatilla la validación y liberación del Hito Cero en ese instante exacto** si se produce antes de las 48 horas ($\Delta t < 48\text{ h}$); de lo contrario, la falta de veto expreso opera la convalidación automática por Silencio Administrativo Positivo al cumplirse dicho plazo.
 
 
@@ -113,7 +113,7 @@ classDiagram
         +Hash256 merkle_root_BOM
         +VectorCurva cantidades_talles
         +Decimal valor_mano_obra_UCI
-        +RegimenLegal fason_CCCN_o_maquila_industrial
+        +RegimenLegal fason_CCCN_1251_1356_LCQ_138
         +Multisig2of3 firmas_digitales
     }
     class MerkleTreeBOM {
@@ -139,11 +139,11 @@ El protocolo formaliza la disociación legal de activos bajo el CCCN vigente:
 
 $$\text{Propiedad}(\text{Insumos}) = \mathcal{K}_C \quad \land \quad \text{Tenencia}(\text{Insumos}) = \mathcal{K}_T$$
 
-Al ingresar al sistema, los insumos y productos semielaborados quedan documentados como bienes en depósito y custodia del comitente. En virtud de los artículos 1251 (Locación de Obra) y 1356 (Depósito) del CCCN (República Argentina, 2014), el tallerista actúa estrictamente como *depositario y transformador*. Queda prohibida su ejecución judicial o embargo por acreedores particulares del tallerista o del comitente. Ante la reforma de la Ley 25.113, esta protección adquiriría rango legal explícito para la manufactura no agropecuaria.
+Al ingresar al sistema, los insumos y productos semielaborados quedan documentados como bienes entregados bajo locación de obra con provisión de materiales (Arts. 1251 y 1256 inc. a CCyC) y depósito regular para transformación (Art. 1356 CCyC), actuando el tallerista estrictamente como *depositario y transformador*. La inscripción en el Registro Público de e-OP (ARCA) otorga oponibilidad *erga omnes*, habilitando la restitución inmediata por separación concursal (Art. 138 Ley 24.522) ante quiebra o embargo de terceros sobre el taller, el Privilegio Especial del tallerista sobre el lote en su poder (Art. 241 inc. 1 LCQ) ante quiebra de la marca, y la cobertura automática de la Póliza Colectiva Maestra de Stock (Art. 20 bis) sobre el 100% de $c_{\text{BOM}}$.
 
 ### 3.2. Puente de Transición Fiscal (Propuesta Normativa)
 
-> **⚠️ Nota:** Los mecanismos descritos en esta sección —el Crédito Fiscal Presunto y la Cuenta de IVA Sectorial Diferida— son **propuestas legislativas** incluidas en el Dossier Proyecto FIMCA (2026) como extensión al proyecto de Ley de Salvataje Nacional. No están vigentes en el derecho tributario argentino actual. La versión operativa del sistema bajo la ley vigente utiliza la deducción presunta transitoria del 25% sobre costos de mano de obra informal prevista en la propuesta como medida puente.
+> **⚠️ Nota:** Los mecanismos descritos en esta sección —el Crédito Fiscal Presunto de IVA del 10%, el Diferimiento de IVA al cierre del lote (Art. 5° inc. b Ley de IVA), el Monotributo Productivo con micro-retención del 2% y el Régimen Permanente de Regularización Laboral con CDD/CDD-P— corresponden al articulado del **Proyecto de Ley Nacional de Orden de Producción Electrónica (e-OP)** (Arts. 22° a 24 bis) y del **Régimen FIMCA**.
 
 Para modelar la absorción formal del eslabón manual sin fricción tributaria punitiva, el protocolo desacopla la liquidación fiscal en dos funciones complementarias procesadas en el clearing del FDI:
 
@@ -155,14 +155,14 @@ Para modelar la absorción formal del eslabón manual sin fricción tributaria p
    \text{IVA}_{\text{Diferido}}(\text{Clearing}) & \text{si Unidad Productiva SAS (Tope MiPyME)}
    \end{cases}$$
 
-   Donde $\mu_{\text{Mono}} \in [0.01, 0.02]$ formaliza la micro-retención automática por API, mientras que la **Cuenta de IVA Sectorial Diferida** supedita la exigibilidad fiscal de la SAS a la acreditación monetaria efectiva del clearing del FDI, eliminando el devengamiento sobre facturas impagas y evitando la asfixia financiera del taller.
+   Donde $\mu_{\text{Mono}} = 0.02$ (2%) formaliza la micro-retención automática por API computable íntegramente a meses de aportes previsionales SIPA y obra social (con devengamiento cero en períodos sin órdenes activas y emisión de Factura C mediante **Borrador Asistido de confirmación en un clic** precargado por ARCA, Art. 24° inc. 5). Para talleres empleadores, $\rho_{\text{SUSS}} \le 0.15$ (hasta 15%) retiene en la fuente sobre cada hito las cargas de seguridad social (F.931/LSD) emitiendo el **Certificado de Desempeño Digno (CDD / CDD-P)** que otorga *Safe Harbor* probatorio *iuris tantum* sobre el deber de control del Art. 30 LCT y el respaldo del **Fondo de Afectación Específica Laboral (FAEL — 0.5% de $c_{\text{MOD}}$)**. A su vez, la incorporación de un párrafo especial al **Art. 5° inc. b) de la Ley de IVA** (Art. 23° inc. 2) difiere el perfeccionamiento del hecho imponible de los anticipos (Hito Cero y Avances) hasta la entrega definitiva y liberación de la Retención de Cierre Fiscal (RCF, 20%). Adicionalmente, los talleres de más de 5 trabajadores pueden optar voluntariamente por constituir una SAS o SRL a través del **Programa Federal de Extensión Tecnológica (PFET, Art. 24 bis)** conservando intacto su historial reputacional (SETP) y su CDD.
 
 2. **Crédito Fiscal Presunto y Deducibilidad para la Marca Comitente ($\mathcal{CF}_M$):**  
    Para subsanar el "purgatorio fiscal" en el que la marca formal no puede deducir la mano de obra contratada a prestadores no inscriptos o monotributistas, el sistema computa a favor de la comitente:
 
-   $$\mathcal{CF}_M(\mathcal{OP}) = 0.25 \cdot \mathcal{V}(\text{e-OP})$$
+   $$\mathcal{CF}_M(\mathcal{OP}) = 0.10 \cdot c_{\text{MOD}}$$
 
-   Este valor opera como **Crédito Fiscal Presunto del 25%** reconocible por ARCA contra el Débito Fiscal del IVA y como gasto computable en el Impuesto a las Ganancias, neutralizando la tributación sobre utilidades ficticias al vender el bien terminado.
+   Este valor opera como **Crédito Fiscal Presunto de IVA del 10%** sobre el valor neto de mano de obra ($c_{\text{MOD}}$) cuando la marca Responsable Inscripta contrata talleres adheridos al Monotributo Productivo o en transición con CDD-P (Art. 23° inc. 1 Ley de e-OP), compensable electrónicamente contra su Débito Fiscal de IVA al liberarse el Hito Final (RCF). En el Impuesto a las Ganancias, dado que toda e-OP exige la emisión de factura electrónica oficial (con CAE) para liberar el 20% final (RCF), la marca deduce por derecho propio el **100% de la erogación documentada** como gasto necesario del giro comercial, eliminando las "utilidades ficticias". Asimismo, conforme al Art. 9° de la Ley de e-OP (Art. 7° bis Ley 27.440), la factura emitida al cierre queda **bloqueada de oficio para generar una Factura de Crédito Electrónica MiPyME (FCE) negociable**, previniendo el fraude de doble colateralización.
 
 ### 3.3. Modelo de Confianza y Auditoría Criptográfica
 
@@ -186,7 +186,7 @@ El ciclo de vida del colateral productivo opera mediante una **Máquina de Estad
 ```mermaid
 stateDiagram-v2
     [*] --> CREATED: Emisión por Comitente
-    CREATED --> COLLATERALIZED: Integración Reserva FDI (2%)
+    CREATED --> COLLATERALIZED: Integración Reserva Líquida FDI (5%)
     COLLATERALIZED --> HITO0_UNLOCKED: Timelock 48h sin veto o Validación Express (2h)
     HITO0_UNLOCKED --> IN_PROCESS: Despacho Insumos (Remito Traslado)
     
@@ -270,7 +270,7 @@ A diferencia de los protocolos de consenso computacional (PoW) que consumen ener
   Si la marca comitente remitiera el 100% de la materia prima al inicio junto al desembolso del 35% del Hito Cero, un tallerista defector podría apropiarse de ambos activos antes de la primera auditoría. Para mitigar esta asimetría, el protocolo establece el **Despacho Escalonado Just-in-Time**: al desbloquearse el Hito Cero solo se despachan los insumos de la primera fase (corte de cuero); las bases, forros y avíos correspondientes al aparado y armado se remiten únicamente contra la certificación $\pi_{\text{PoPW}}$ del corte completado. De este modo, la exposición neta combinada en todo momento está acotada al valor residual del lote en curso.
 
 * **Retención de Cierre Fiscal (`FISCAL_PENDING`):**  
-  Para proteger el incentivo impositivo de la marca (cómputo del Crédito Fiscal Presunto del 25% y deducción de Ganancias), el Hito Final de Escrow (20%) y la adjudicación de puntos UCP no se liberan tras la mera entrega física, sino al transicionar por `FISCAL_PENDING`. En esta etapa, el sistema verifica por API con ARCA que el taller haya emitido la factura oficial (Monotributo Productivo o régimen general). Si la registración fiscal se demora, el saldo permanece retenido en la cuenta de custodia sin devengar mora comercial.
+  Para proteger el incentivo impositivo de la marca (cómputo del Crédito Fiscal Presunto de IVA del 10% sobre $c_{\text{MOD}}$ y deducción plena del 100% en Ganancias), el Hito Final de Escrow (20% — Retención de Cierre Fiscal, RCF) y la adjudicación de puntos UCP / actualización del SETP no se liberan tras la mera entrega física, sino al transicionar por `FISCAL_PENDING`. En esta etapa, el sistema verifica por API con ARCA que el taller haya emitido la factura electrónica oficial (mediante el Borrador Asistido de Factura C en un clic para Monotributo Productivo o factura ordinaria con bloqueo de FCE bajo el Art. 9° Ley de e-OP). Si la registración fiscal se demora, el saldo permanece retenido en la cuenta de custodia sin devengar mora comercial. Asimismo, si durante el despacho escalonado Just-in-Time la marca comitente demora más de 48 horas hábiles la entrega de insumos de la siguiente etapa, se devenga automáticamente a favor del taller una compensación por lucro cesante (*standby*) equivalente a **un (1) jornal diario del SMVM (8 horas / $1/25$ del SMVM mensual) por cada puesto de trabajo afectado**, con tope de $0,5$ SMVM mensual (Art. 5° bis inc. 5 Ley de e-OP).
 
 > **Limitación conocida — Oráculo Físico y GPS Spoofing:** La coordenada GPS puede ser falsificada mediante software en terminales móviles. La mitigación de primera línea es el cruce contra el domicilio catastral registrado; la de segunda línea es la **inspección física del Promotor Territorial de Formalización (PTF)** como capa de verificación obligatoria cuando la coordenada reportada difiere en más de 500m del domicilio catastral o cuando el sistema detecta patrones anómalos (ver §4.3). La inspección física y el pesaje aleatorio de retazos de cuero por el INTI constituyen la última instancia de verdad física del sistema.
 
@@ -310,9 +310,9 @@ El **Fideicomiso de Desarrollo Industrial (FDI)** opera como una bóveda de comp
 flowchart TD
     subgraph INFLOWS["Cañerías de Capitalización Recurrente (Inflows)"]
         F1["0.5% Derechos Exportación (Litio e Hidrocarburos)"]
-        F2["1.5% Recargo Institucional de Red MES / Fondo de Riesgo FDI"]
+        F2["Reserva Líquida Comitente (5%) + Canon FDI (1.5% c_MOD: 0.5% FAEL, 0.2% INTI/PFET, 0.8% Mora) + 0.5% c_BOM Póliza Stock"]
         F3["Ahorro Comunitario / Cajas Profesionales Locales"]
-        F4["Bonos de Infraestructura Productiva (BIP Indexados)"]
+        F4["Bonos de Inversión Productiva (BIP 60-180d, Sello SVS CNV y Cupo LFIP BCRA)"]
     end
 
 
@@ -362,7 +362,7 @@ $$\phi_{\text{exógena}} \ge \mu_{\text{mora}} \cdot K \cdot \Omega_{\text{total
 - **(H1) $\mu_{\text{mora}} \le 0.08$:** El Fondo de Garantía para la Micro, Pequeña y Mediana Empresa (FOGAPYME) de Argentina registró una tasa de mora promedio inferior al 5% anual en el período 2019-2023 (SEPYME, 2023). El umbral de 8% incorpora un margen de seguridad del 60% sobre ese referente histórico para contextos de crisis.
 - **(H2) Ciclo de 30 días:** Consistente con el ciclo de temporada del sector calzado (tiempo medio entre despacho de insumos y cobro de venta minorista), parámetro de diseño del protocolo coherente con el comportamiento sectorial documentado (INDEC, 2026).[^3]
 
-**Esbozo:** Dado que el Hito Cero desembolsa solo el $35\%$ del presupuesto del servicio y el $65\%$ restante permanece bloqueado en Escrow condicionado a entregas físicas, la exposición líquida directa al riesgo no diversificable está acotada superiormente a $\omega_{\text{riesgo}} \le 0.35 \cdot \mathcal{P}$, mientras que el riesgo sobre insumos físicos queda acotado por el despacho escalonado (§4.2). Ante una parálisis total del taller, el mecanismo de *Fragmentación Solidaria* reasigna el remanente de materiales a un taller lindero con capacidad ociosa, limitando la pérdida neta al valor del anticipo inicial. Con un rendimiento de canon de marca del $2\%$ y una inyección contracíclica del $0.5\%$ de derechos exportadores —ambos **supuestos de diseño de la propuesta normativa del proyecto**, no cifras observadas; véase §3.2 y nota [^2]— la tasa de reposición supera el límite crítico $\mu_{\text{mora}} = 0.08$. Las hipótesis (H1) y (H2) que condicionan la validez de la Proposición sí se apoyan en fuentes externas (SEPYME, 2023; INDEC, 2026). $\square$ *(esbozo)*
+**Esbozo:** Dado que el Hito Cero desembolsa solo el $35\%$ del presupuesto del servicio (o $50\%$ con SBD) y el remanente permanece bloqueado en Escrow condicionado a entregas físicas (45%/30%) y cierre fiscal ARCA (20%), la exposición líquida directa al riesgo no diversificable está acotada superiormente a $\omega_{\text{riesgo}} \le 0.35 \cdot \mathcal{P}$, mientras que el riesgo sobre insumos físicos ($c_{\text{BOM}}$) queda acotado por el despacho escalonado (§4.2) y cubierto al 100% ante siniestros por la Póliza Colectiva Maestra de Stock (Art. 20 bis). Ante una parálisis operativa del taller, el mecanismo de *Fragmentación Solidaria* reasigna el remanente de materiales a un taller lindero con capacidad ociosa, limitando la pérdida neta al valor del anticipo inicial. Con la Reserva Líquida de Garantía del comitente del $5\%$ sobre su cartera activa (Art. 16° inc. 3), el canon operativo del $1.5\%$ ($0.8\%$ destinado a administración y Reserva por Mora Operativa), la Línea de Liquidez Contingente del $5\%$ y la inyección contracíclica del $0.5\%$ de derechos exportadores prevista en la ley sectorial FIMCA —todos **supuestos de diseño de la arquitectura normativa del proyecto**; véase §3.2 y nota [^2]— la tasa de reposición supera el límite crítico $\mu_{\text{mora}} = 0.08$. Las hipótesis (H1) y (H2) que condicionan la validez de la Proposición sí se apoyan en fuentes externas (SEPYME, 2023; INDEC, 2026). $\square$ *(esbozo)*
 
 ### 5.3. Neutralización de Descalce Inflacionario (Unidad de Cuenta Industrial)
 
@@ -397,7 +397,7 @@ Donde $\pi_i > 0$ es el beneficio de cooperación mutua, $g_i$ es la ganancia un
 graph TD
     subgraph JUEGO["Interacción Estratégica en el Protocolo e-OP"]
         direction TB
-        E1["(Cooperar Marca, Cooperar Taller)\nPago: (π_M, π_T) > 0\nResultado: Acumula Score Solidario + Historial de Crédito"]
+        E1["(Cooperar Marca, Cooperar Taller)\nPago: (π_M, π_T) > 0\nResultado: Acumula Historial SETP / UCP + Acceso Crédito FDI"]
         E2["(Defectar Marca, Cooperar Taller)\nAcción: Retención indebida de pago\nCastigo: Quita UCP (inmediata) + Activación Fianza (tras laudo 72h)"]
         E3["(Cooperar Marca, Defectar Taller)\nAcción: Desvío de insumos o impericia grave\nCastigo: Retención 30% en próximas OPs + Pérdida insignia Bolsa"]
         E4["(Defectar Marca, Defectar Taller)\nPago: (-L, -L)\nResultado: Exclusión bilateral del sistema"]
@@ -416,7 +416,7 @@ En el régimen tradicional informal, la defección patronal ($D_M$) era frecuent
 **Penalizaciones post-laudo (tras resolución del Tribunal Arbitral en 72h hábiles):**
 - Ejecución de la **Cláusula de Garantía Líquida por Continuidad Operativa**. **Nota de diseño:** Al no existir un depósito previo de capital inmovilizado, si la marca comitente entra en disputa y pretende retirar su stock del taller para no perder la temporada comercial, está obligada a depositar en el FDI el $100\%$ del monto reclamado como fianza de urgencia. La ejecución post-laudo recae sobre este depósito ad-hoc, sumado al bloqueo de fondeo para futuras e-OPs.
 - Retención automática del $30\%$ sobre flujos futuros del taller hasta resarcir el daño patrimonial. La asimetría punitiva (exigencia de depósito en efectivo a la marca para liberar stock vs. descuento de ingresos futuros al taller) balancea la asimetría patrimonial intrínseca entre ambos actores.
-- Publicación de la infracción en el Boletín Oficial Sectorial y degradación del score solidario.
+- Publicación de la infracción en el Boletín Oficial Sectorial y degradación en el **Sistema de Evaluación de Trayectoria Productiva (SETP, Ley 25.326)** y en el registro de UCP.
 
 Esta secuencia resuelve la aparente contradicción entre la ejecución "inmediata" y el proceso de arbitraje: el slashing de reputación (UCP) es instantáneo, mientras la ejecución patrimonial requiere el debido proceso del Tribunal.
 
@@ -464,7 +464,7 @@ Un planteo idéntico rige para el tallerista respecto a la tentación de desviar
 
 ## 7. Gobernanza Policéntrica: La MES bajo el Modelo Ostrom
 
-La **Mesa de Enlace Sectorial (MES)** materializa los ocho principios de diseño institucional de Elinor Ostrom (1990) para la gestión exitosa y duradera de bienes comunes:
+La **Mesa de Enlace Sectorial (MES)** y sus comisiones operativas —estructuradas legalmente como los **Comités Técnicos, de Fomento y de Auditoría Territorial dentro del Reglamento de Gestión del Fideicomiso de Desarrollo Industrial (FDI)** y el órgano consultivo permanente de actualización paritaria coordinado por el INTI (Arts. 1°, 15° y 27° Ley de e-OP)— materializan los ocho principios de diseño institucional de Elinor Ostrom (1990) para la gestión exitosa y duradera de bienes comunes:
 
 | Principio de Elinor Ostrom | Implementación en el Protocolo e-OP / MES | Mecánica operativa |
 | :--- | :--- | :--- |
@@ -568,7 +568,7 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 
 2. **Modelo de juego bilateral:** El análisis de teoría de juegos en §6 simplifica el juego real (multilateral con ARCA, sindicato y otros talleristas) a dos jugadores. La extensión al juego multilateral con mecanismos de puntuación reputacional (UCP) es una línea de trabajo abierta.
 
-3. **Dependencia de reformas normativas:** El funcionamiento pleno del protocolo requiere: (a) reglamentación de la e-OP como instrumento de descuento por el BCRA; (b) extensión de la Ley 25.113 a la manufactura no agropecuaria; (c) implementación de la deducción presunta transitoria y la Cuenta de IVA Sectorial Diferida. El sistema opera en modo degradado (sin estos instrumentos) usando el CCCN vigente.
+3. **Dependencia de reformas normativas:** El funcionamiento pleno del protocolo se articula sobre los tres cuerpos normativos autónomos del proyecto: (a) la **Ley Nacional de Orden de Producción Electrónica (e-OP)** (título ejecutivo Art. 6° y Art. 523 CPCCN, bloqueo de FCE Art. 9°, Cuentas Especiales exentas de Ley 25.413 Art. 14°, Bonos BIP con sello SVS y cupo LFIP del BCRA Arts. 15°-19°, separación concursal Art. 138 LCQ y Póliza Colectiva de Stock Arts. 20°-21°, regularización laboral con CDD/FAEL Art. 22°, Crédito Fiscal Presunto de IVA del 10% y diferimiento de IVA Art. 23°, y Monotributo Productivo del 2% Art. 24°); (b) la **Ley Sectorial FIMCA**; y (c) el **Pacto Fiscal Productivo Provincial y Municipal**. Sin la sanción de estas normas, el software opera en modo contractual privado básico apoyado en los Arts. 1251 y 1356 del CCyC vigente.
 
 4. **Problema del oracle físico-digital:** El árbol de Merkle garantiza la integridad de la BOM declarada, no que los insumos físicos entregados correspondan a esa BOM. La inspección física del INTI es la única fuente de verdad para el mundo físico. La integración de tecnologías IoT (etiquetas NFC en materiales, básculas conectadas) podría reducir la dependencia de la inspección humana en fases futuras.
 
@@ -608,7 +608,7 @@ El presente trabajo tiene las siguientes limitaciones explícitas que deben tene
 * Ostrom, E. (1990). *Governing the Commons: The Evolution of Institutions for Collective Action*. Cambridge University Press. https://doi.org/10.1017/CBO9780511807763
 * Ostrom, E. (2010). Beyond Markets and States: Polycentric Governance of Complex Economic Systems. *American Economic Review*, 100(3), 641–672. https://doi.org/10.1257/aer.100.3.641
 * Piore, M. J., & Sabel, C. F. (1984). *The Second Industrial Divide: Possibilities for Prosperity*. Basic Books.
-* República Argentina. (1999). *Ley 25.113: Régimen de Contrato de Maquila*. Honorable Congreso de la Nación Argentina. Boletín Oficial N° 29.176.
+* República Argentina. (1995). *Ley 24.522: Ley de Concursos y Quiebras*. Honorable Congreso de la Nación Argentina. Boletín Oficial N° 28.203.
 * República Argentina. (2014). *Código Civil y Comercial de la Nación* (Ley 26.994). Honorable Congreso de la Nación Argentina. Boletín Oficial N° 32.985.
 * República Argentina. (2018). *Ley 27.440: Financiamiento Productivo (Factura de Crédito Electrónica MiPyME)*. Honorable Congreso de la Nación Argentina. Boletín Oficial N° 33.890.
 * Royal Swedish Academy of Sciences. (2016). *Contract Theory: Oliver Hart and Bengt Holmström*. Scientific Background, Sveriges Riksbank Prize 2016. Nobel Prize Foundation.

@@ -373,8 +373,8 @@ Cuando la marca emite o el tallerista confirma su primera e-OP, si el tallerista
 #### 2. Capa de Servicios: `AltaOficioService` (`apps.federacion.services`)
 Al recibir el payload canónico, el Nodo MES ejecuta el pipeline transaccional de formalización:
 1. **Validación Biométrica RENAPER:** Valida la identidad y prueba de vida del titular contra el servicio nacional del RENAPER usando el token biométrico capturado en la app/portal.
-2. **Alta Automática en ARCA (ex-AFIP):** Invoca el webservice de Monotributo Productivo de Oficio. El tallerista queda formalizado sin cuota fija mensual que lo endeude cuando no tiene trabajo; en su lugar, se activa la micro-retención del 1.5% en clearing.
-3. **Apertura de Cuenta de Clearing Técnica Inembargable (BAPRO):** Vía Open Banking del Banco Provincia, se genera o vincula la cuenta de clearing (Cuenta DNI / CVU) con el flag legal de inembargabilidad absoluta de primer orden amparado en CCCN 1356.
+2. **Alta Automática en ARCA (ex-AFIP):** Invoca el webservice de Monotributo Productivo de Oficio (Art. 24° Ley de e-OP). El tallerista queda formalizado sin cuota fija mensual que lo endeude cuando no tiene trabajo; en su lugar, se activa la micro-retención del **2%** en clearing computable a aportes SIPA y obra social.
+3. **Apertura de Cuenta Especial de Compensación y Liquidación Manufacturera (BAPRO — Art. 14° Ley de e-OP):** Vía Open Banking del Banco Provincia, se genera o vincula la cuenta de clearing (Cuenta DNI / CVU) 100% exenta del Impuesto al Cheque (Ley 25.413) y con resguardo concursal (Arts. 1251/1356 CCyC y Art. 138 Ley 24.522).
 4. **Emisión de Par de Claves Ed25519:** La MES firma digitalmente el certificado público del tallerista y lo incorpora al padrón activo de la federación.
 
 ### Especificación del Contrato API: Sobre de Red y Payload Canónico Completo
@@ -430,14 +430,14 @@ Es el contrato fiduciario inmutable que se firma digitalmente con Ed25519 y cuyo
       "monotributo_retencion": 59.25,
       "margen_taller": 421.75
     },
-    "es_sello_buen_diseno": true,
+    "es_sello_buen_diseno": false,
     "timelock_horas": 48
   },
   "cronograma_escrow_hitos": [
     {
       "id_hito": "H0",
       "nombre": "Adelanto Operativo / Hito Cero",
-      "porcentaje_tramo": 40.0,
+      "porcentaje_tramo": 35.0,
       "condicion_disparo": "Aprobacion_MES_o_Silencio_48h",
       "destinatario": "taller_gestor"
     },
@@ -450,16 +450,16 @@ Es el contrato fiduciario inmutable que se firma digitalmente con Ed25519 y cuyo
     },
     {
       "id_hito": "H2",
-      "nombre": "Aparado Terminado",
-      "porcentaje_tramo": 25.0,
+      "nombre": "Aparado Terminado (25% de avance total 45%)",
+      "porcentaje_tramo": 20.0,
       "condicion_disparo": "PoPW_Remito_Traslado_Aparado",
       "destinatario": "taller_gestor"
     },
     {
       "id_hito": "H3",
-      "nombre": "Liquidación Cierre de Lote",
-      "porcentaje_tramo": 15.0,
-      "condicion_disparo": "Recepcion_Conforme_Sin_Veto_48h",
+      "nombre": "Retención de Cierre Fiscal (RCF)",
+      "porcentaje_tramo": 20.0,
+      "condicion_disparo": "Recepcion_Conforme_Mas_Factura_CAE_ARCA",
       "destinatario": "taller_gestor"
     }
   ],
@@ -523,7 +523,7 @@ La liberación de fondos del Escrow no ocurre mágicamente; requiere que la enti
 1. **El Dashboard Fiduciario:** En `/mes/fiduciaria/` (o vía API), los oficiales de cuenta de la administradora del Fideicomiso acceden con el rol `FIDUCIARIO`.
 2. **Bandeja de Entrada (Inbox) y Tablero de Fondeo:** Visualizan las e-OPs aprobadas por la Comisión de Crédito (o por Silencio Positivo) junto con el saldo disponible en la cuenta custodia del FDI.
 3. **Generación de Lotes (El "Botón de Pago"):** Cuando autorizan, generan un "Lote de Liquidación" exportando un archivo batch estandarizado (`.txt` Interbanking/BAPRO Empresas) o disparando un Webhook corporativo hacia la API B2B del Banco.
-4. **Endpoint de Retorno (Callback):** Tras el clearing exitoso del banco, Indinopy recibe la confirmación, dispara la Factura Electrónica de AFIP por el milisegundo exacto y cancela la posición de IVA diferido.
+4. **Endpoint de Retorno (Callback) y Cierre Fiscal:** Tras el clearing exitoso del banco, Indinopy recibe la confirmación. Al finalizar el lote, mediante la constatación de la Factura Electrónica con CAE en ARCA (o la confirmación en un clic del Borrador Asistido de Factura C bajo el Art. 24° inc. 5 Ley de e-OP), el sistema perfecciona el hecho imponible diferido de IVA (Art. 5° inc. b Ley de IVA) y libera el 20% final de la Retención de Cierre Fiscal (RCF).
 
 ### Endpoints de Federación del Nodo MES (Pendiente de Desarrollar)
 

@@ -40,15 +40,15 @@ La arquitectura segrega los permisos de forma estricta según el actor que inter
 
 ### Actores Externos (Nodos en la Red)
 *   **Comitente (Marca):** Nodo emisor. Diseña el producto, genera la e-OP y envía la materia prima. Tras finalizar la producción, cancela el crédito al FDI en un plazo de 30 a 60 días.
-*   **Tallerista (Fasón/Maquila):** Nodo receptor. Ejecuta la producción. Firma criptográficamente el inicio (aceptación) y los fines de lote (hitos).
+*   **Tallerista (Locación de Obra / Façón):** Nodo receptor. Ejecuta la producción bajo locación de obra con provisión de materiales (Arts. 1251 y 1256 inc. a CCyC) y depósito regular (Art. 1356 CCyC). Firma criptográficamente el inicio (aceptación) y los fines de lote (hitos).
 *   **PTF (Promotor Territorial):** Auditor físico en el terreno. Posee una App Móvil con enclave seguro. Firma validando que las condiciones laborales y productivas son éticas.
 *   **MES (Mesa de Enlace Sectorial):** El Nodo Root/CA (Autoridad Certificante). Homologa tarifas, gobierna las reglas y ejecuta los *Timelocks* de 48h.
 *   **Fiduciaria (FDI / Banco):** Fondo de desarrollo que **anticipa y financia** el dinero al tallerista (Hito Cero e hitos de avance) tomando la e-OP como garantía. Luego recauda el pago del Comitente a plazo.
 
 ### Gobernanza de la MES (Mesa de Enlace Sectorial)
-La arquitectura institucional neutraliza la atomización del sector mediante un equilibrio de poderes en el Nodo Local estructurado en **7 sillas representativas**:
+La arquitectura institucional neutraliza la atomización del sector mediante un equilibrio de poderes en el Nodo Local estructurado en **7 sillas representativas** (que en el plano jurídico-operativo de los Arts. 1°, 15° y 27° de la Ley de e-OP y la Ley FIMCA conforman los **Comités Técnicos, de Fomento y de Auditoría Territorial dentro del Reglamento de Gestión del Fideicomiso FDI** y el órgano consultivo permanente de actualización paritaria):
 *   **Silla 1 (Talleristas de Base):** Representante del sub-padrón de Monotributo Productivo.
-*   **Silla 2 (Talleres Consolidados):** Representante de unidades productivas estructuradas (SAS).
+*   **Silla 2 (Talleres Consolidados):** Representante de unidades productivas empleadoras (con CDD / SAS / SRL / Cooperativas).
 *   **Sillas 3 y 4 (Marcas Comitentes):** Representantes del capital comercial y volumen de demanda.
 *   **Silla 5 (INTI):** Soberanía Técnica. Audita mermas y homologa tecnología conveniente.
 *   **Silla 6 (Sindicato):** Tutela Laboral. Ejerce la auditoría ex-post en territorio.
@@ -65,7 +65,7 @@ El sistema no confía en un campo `estado = 'aprobado'`. Utiliza primitivas para
 1. **SHA-256 (Payload Canónico):** Toda e-OP genera un JSON determinista que se hashea. Si alguien altera un precio a posteriori, el hash cambia y la OP se invalida.
 2. **Árboles de Merkle (BOM):** La receta técnica (insumos) se hashea en un Merkle Tree, permitiendo auditar mermas sin revelar secretos industriales completos.
 3. **Ed25519 (Firmas Digitales):** Cada actor tiene una clave en el Secure Enclave de su dispositivo. Firman el hash de la e-OP para aprobar avances.
-4. **Resguardo Legal Automático:** La arquitectura inyecta en los remitos de traslado las cláusulas de Locación de Obra (Art. 1251 CCCN) y Depósito en Custodia (Art. 1356 CCCN) (y eventualmente Maquila Industrial), blindando la **inembargabilidad de los insumos** ante quiebras.
+4. **Resguardo Legal Automático:** La arquitectura inyecta en los remitos de traslado las cláusulas de Locación de Obra con provisión de materiales (Arts. 1251 y 1256 inc. a CCyC), Depósito Regular (Art. 1356 CCyC), Separación Concursal (Art. 138 Ley 24.522), Privilegio Especial (Art. 241 inc. 1 LCQ) y Póliza Colectiva Maestra de Stock (Art. 20 bis Ley de e-OP), blindando la **inembargabilidad e indemnidad de los insumos** ante quiebras o siniestros.
 
 ### Generación de Payload Canónico y Recepción en el Nodo MES
 
@@ -148,7 +148,7 @@ flowchart TD
 ### A. Modalidades de Producción: OP de Gestión Interna vs e-OP Federada
 Para no burocratizar la planta ni forzar fricciones administrativas en los procesos habituales de fabricación, Indinopy distingue dos modalidades operativas:
 1. **OP de Gestión Interna (Modo Fabril Directo):** Hoja de ruta técnica de planta para la coordinación física de la manufactura (curvas de talles, consumos BOM, ruteo de etapas de corte/aparado/armado y partes de producción). Al constituir una directiva operativa de ingeniería fabril interna y no una enajenación comercial entre terceros, no genera hecho imponible tributario ni requiere validación electrónica ante AFIP/ARCA (sin CAE). En el plano administrativo-contable (`DocumentoDeuda`), permite la registración de comprobantes de control interno clase "X" (RG AFIP 1415) para reflejar el devengado operativo de fábrica antes de la facturación comercial definitiva.
-2. **e-OP Federada (Protocolo Institucional FIMCA):** Eleva la orden técnica a título de afectación productiva y colateral financiero ante el Fideicomiso FDI, activando el ecosistema institucional (Escrow bancario, anticipo Hito Cero, Timelock 48h con silencio positivo, auditoría territorial PTF y beneficios promocionales de IVA diferido y crédito fiscal presunto del 25%).
+2. **e-OP Federada (Protocolo Institucional FIMCA):** Eleva la orden técnica a título ejecutivo de afectación productiva y colateral financiero ante el Fideicomiso FDI (Art. 6° Ley de e-OP), activando el ecosistema institucional (Escrow bancario sobre Cuentas Especiales exentas de Ley 25.413, anticipo Hito Cero del 35% o 50% SBD, Timelock 48h con silencio positivo, auditoría territorial PTF y beneficios promocionales de IVA diferido al cierre bajo Art. 5° inc. b Ley de IVA y Crédito Fiscal Presunto de IVA del 10% sobre $c_{\text{MOD}}$ bajo Art. 23° inc. 1).
 
 ### B. Ciclo de Vida de una e-OP Federada: Hito Cero y Financiamiento FDI
 
@@ -182,7 +182,7 @@ sequenceDiagram
         Note right of Marca: HITO CERO (Financiado por FDI)
         Marca->>Taller: Despacha Insumos Fase 1 - Corte (Remito Custodia)
         Marca->>MES: Confirma Entrega de Insumos
-        FDI->>Banco: Instrucción de Anticipo (30-40%)
+        FDI->>Banco: Instrucción de Anticipo (35% o 50% SBD)
         Banco-->>Taller: Transfiere directo a CVU/CBU Taller
         Banco-->>Marca: Callback Clearing Ejecutado
         Note over Marca: Tesorería reconoce Pasivo con FDI (Cancela deuda Taller)
@@ -236,7 +236,7 @@ flowchart TD
 El trabajador periférico entra al sistema de forma invisible:
 *   Al aceptar su primera e-OP (vía App), el sistema llama a **RENAPER (Biometría)** y a **ARCA** para darle el *Alta de Oficio* en el Monotributo Productivo.
 *   **Binding Biométrico Anti-Sybil:** El cotejo facial en RENAPER vincula la persona física del artesano a su historial en el sistema. Si una unidad incurre en desvío doloso de insumos, la inhabilitación se asocia al vector biométrico de la persona, impidiendo el "reciclaje de reputación" mediante CUITs prestados de terceros o familiares.
-*   En paralelo, abre una **cuenta inembargable BAPRO** de <i>Clearing</i>.
+*   En paralelo, abre o vincula una **Cuenta Especial de Compensación y Liquidación Manufacturera (Art. 14° Ley de e-OP)** 100% exenta del Impuesto al Cheque (Ley 25.413), con retención automática del **2%** computable a aportes SIPA (o del **15%** para cargas sociales en talleres empleadores con CDD/CDD-P).
 *   **Suspensión Activa:** Si el taller no recibe e-OPs por 15 días, el sistema notifica la inactividad, frenando el devengo de impuestos fijos.
 
 ### E. Trazabilidad Pública y Transparencia
@@ -268,7 +268,7 @@ sequenceDiagram
 ```
 *Figura 5: Orquestación desacoplada Omnicanal. La capa adaptadora normaliza eventos y aísla al Core de Ventas de dependencias externas, asegurando reservas atómicas en el inventario y retorno de sincronización.*
 
-### G. Circuito de Inventario (Traslados de Maquila)
+### G. Circuito de Inventario (Traslados en Locación de Obra y Custodia)
 La materia prima viaja al taller sin transferir su dominio comercial, protegiendo a ambas partes de embargos.
 
 ```mermaid
@@ -278,14 +278,14 @@ sequenceDiagram
     participant T as Inventario Taller
     
     P->>C: e-OP Aprobada -> Demanda Insumos
-    C->>C: Remito de Maquila (CCCN 1251)
+    C->>C: Remito de Locación de Obra y Custodia (CCyC 1251/1356 + Art. 138 LCQ)
     C->>T: Despacha Insumos
     Note over T: Stock en "Custodia" (Inembargable)
     T->>T: Producción (Transformación)
     T->>C: Devuelve Producto Terminado
     C->>C: Ingresa Activo Final
 ```
-*Figura 6: Trazabilidad de activos y blindaje legal. El stock enviado al taller se rige bajo contrato de Locación de Obra/Maquila, protegiendo a los insumos físicos de cualquier medida cautelar o embargo sobre el tallerista.*
+*Figura 6: Trazabilidad de activos y blindaje legal. El stock enviado al taller se rige bajo contrato de Locación de Obra con provisión de materiales (Arts. 1251 y 1256 inc. a CCyC), Depósito Regular (Art. 1356 CCyC), Separación Concursal (Art. 138 Ley 24.522) y Póliza Colectiva Maestra de Stock (Art. 20 bis Ley de e-OP), protegiendo a los insumos físicos de cualquier medida cautelar, quiebra o siniestro.*
 
 ### H. Circuito de Nómina y Liquidación de Sueldos (Segregación SoD)
 La Marca administra su personal directo (corte, diseño, matricería, supervisión y administración) bajo un circuito estricto de **aprobación dual**:
@@ -386,7 +386,8 @@ El intercambio de información entre nodos no transfiere tablas SQL, sino un **P
     "monto_total": 1500000.00,
     "cronograma_hitos": [
       {"id": "H0", "porcentaje": 35.0, "tipo": "anticipo"},
-      {"id": "H1", "porcentaje": 65.0, "tipo": "cierre_lote"}
+      {"id": "H1", "porcentaje": 45.0, "tipo": "avance_popw"},
+      {"id": "H2", "porcentaje": 20.0, "tipo": "cierre_rcf_arca"}
     ]
   },
   "merkle_root_bom": "e3b0c442...",
@@ -563,6 +564,6 @@ Cuando ocurre un diferendo de calidad o faltante de materiales entre el Comitent
 ### B. Veto de Auditoría Ex-Post (Tutela Sindical)
 A diferencia de los regímenes burocráticos donde el Sindicato sella permisos antes de empezar (frenando la agilidad), en FIMCA la auditoría gremial ocurre *durante o después* del proceso productivo, garantizando que no se bloquee el Hito Cero.
 1. **Inspección In-Situ o Algorítmica:** Si el Sindicato (Silla 6) detecta operarios no registrados o una tarifa base inferior al Convenio Colectivo, dispara el Veto Ex-Post desde su nodo.
-2. **Bloqueo del Hito Final:** El sistema no frena las máquinas. Lo que hace es interceptar y congelar exclusivamente el **Hito de Cierre (15% final)** y suspender la autorización de remito de salida de los zapatos.
+2. **Bloqueo del Hito Final:** El sistema no frena las máquinas. Lo que hace es interceptar y congelar exclusivamente el **Hito de Cierre (RCF del 20% final)** y suspender la autorización de remito de salida de los zapatos.
 3. **Fianza Líquida de Continuidad:** Para evitar que la Marca pierda la temporada comercial y los zapatos queden de rehenes, el sistema le permite transferir al FDI una "Fianza Líquida" por el valor en litigio. Al impactar la transferencia, el sistema libera inmediatamente la mercadería.
 4. **Resolución:** El conflicto se eleva automáticamente al Tribunal de Arbitraje para que decida el destino de la fianza depositada.
