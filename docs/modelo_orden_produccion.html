@@ -7,6 +7,8 @@
     <meta name="description"
         content="Modelo e-OP: Instrumento legal-financiero y título de crédito digital para la industria manufacturera.">
     <title>Orden de Producción Electrónica (e-OP N° 2026-00842) - Original y Duplicado</title>
+    <link rel="icon" type="image/svg+xml" href="src/logo.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #1a365d;
@@ -501,7 +503,8 @@
 
         @media print {
             @page {
-                size: legal;
+                size: A4 portrait;
+                margin: 6mm 8mm;
                 margin: 10mm;
             }
 
@@ -553,6 +556,40 @@
             color: #fff;
         }
 
+        .system-badge {
+            background-color: #070a10 !important;
+            border: 1px solid #1e293b !important;
+            color: #f8fafc !important;
+            padding: 5px 10px 5px 6px !important;
+            border-radius: 7px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            text-align: left !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .membrete-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .membrete-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .system-badge small {
+            color: #34d399 !important;
+            font-weight: 700 !important;
+            margin-top: 2px;
+        }
+
         .tab-btn.active {
             background: #3b82f6;
             color: #fff;
@@ -562,9 +599,261 @@
 </head>
 
 <body>
-    <a href="index.html" class="btn-back-home">← Volver al Inicio</a>
+    <style>
+        body {
+            padding: 0 0 40px 0 !important;
+            background-color: #070a10 !important;
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(16, 185, 129, 0.07), transparent 35%),
+                radial-gradient(circle at 85% 15%, rgba(6, 182, 212, 0.07), transparent 35%),
+                linear-gradient(to bottom, rgba(17, 24, 39, 0.3) 1px, transparent 1px),
+                linear-gradient(to right, rgba(17, 24, 39, 0.3) 1px, transparent 1px) !important;
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px !important;
+        }
 
-    <div class="tabs" style="justify-content: center; margin-top: 60px; border-bottom: none;">
+        .viewer-nav {
+            padding: 14px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+            background-color: rgba(7, 10, 16, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #f8fafc;
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.22);
+            transition: transform 0.2s ease;
+        }
+
+        .brand:hover .brand-logo {
+            transform: scale(1.05);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-tag {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(6, 182, 212, 0.18));
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .brand-subtitle {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #34d399;
+        }
+
+        .nav-links a.nav-back {
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.28);
+            padding: 6px 12px;
+            border-radius: 7px;
+        }
+
+        .nav-links a.nav-back:hover {
+            background: rgba(16, 185, 129, 0.18);
+            color: #fff;
+        }
+
+        .btn-print {
+            top: 84px !important;
+            right: 28px !important;
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%) !important;
+            color: #04130e !important;
+            font-weight: 700 !important;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3) !important;
+        }
+
+        .btn-print:hover {
+            filter: brightness(1.06);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4) !important;
+        }
+
+        .tab-btn {
+            background: #0d131f !important;
+            color: #94a3b8 !important;
+            border: 1px solid #1e293b !important;
+            padding: 9px 18px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+        }
+
+        .tab-btn:hover {
+            background: #162032 !important;
+            color: #fff !important;
+            border-color: rgba(16, 185, 129, 0.35) !important;
+        }
+
+        .system-badge {
+            background-color: #070a10 !important;
+            border: 1px solid #1e293b !important;
+            color: #f8fafc !important;
+            padding: 5px 10px 5px 6px !important;
+            border-radius: 7px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            text-align: left !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .membrete-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .membrete-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .system-badge small {
+            color: #34d399 !important;
+            font-weight: 700 !important;
+            margin-top: 2px;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2)) !important;
+            color: #34d399 !important;
+            border-color: #10b981 !important;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15) !important;
+        }
+
+        @media screen and (max-width: 768px) {
+            .viewer-nav {
+                padding: 14px 16px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .nav-links {
+                gap: 12px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @page {
+            size: auto;
+            margin: 6mm 8mm;
+        }
+
+        @media print {
+            @page {
+                size: auto;
+                margin: 6mm 8mm;
+            }
+
+            html, body {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                background-image: none !important;
+            }
+
+            .container {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 6px 8px !important;
+                box-shadow: none !important;
+                border: 1px solid #cbd5e0 !important;
+            }
+
+            .viewer-nav,
+            .btn-back-home,
+            .btn-print,
+            .tabs {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <nav class="viewer-nav">
+        <a href="index.html" class="brand">
+            <img src="src/logo.svg" alt="Indinopy Logo" class="brand-logo">
+            <div class="brand-text">
+                <div class="brand-title">
+                    INDINOPY <span class="brand-tag">ERP / MES</span>
+                </div>
+                <span class="brand-subtitle">Protocolo e-OP &middot; Red Federada FIMCA</span>
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="index.html#documentacion" class="nav-back">← Biblioteca</a>
+            <a href="visor.html?doc=proyecto_ley_eop">Anteproyecto e-OP</a>
+            <a href="visor.html?doc=dossier_fimca">Dossier FIMCA</a>
+            <a href="visor.html?doc=paper_protocolo_eop_gobernanza_industrial">Paper PoPW</a>
+            <a href="visor.html?doc=arquitectura_funcional">Arquitectura</a>
+        </div>
+    </nav>
+
+    <div class="tabs" style="justify-content: center; margin-top: 28px; border-bottom: none;">
         <button class="tab-btn active" onclick="switchEjemplar('ejemplar1', this)">Ejemplar 1 (Original)</button>
         <button class="tab-btn" onclick="switchEjemplar('ejemplar2', this)">Ejemplar 2 (Duplicado)</button>
     </div>
@@ -590,9 +879,9 @@
         <!-- HEADER INSTITUCIONAL -->
         <div class="institutional-header">
             <div class="header-brand">
-                <div class="system-badge">
+                <div class="system-badge"><img src="src/logo.svg" alt="Indinopy Logo" class="membrete-logo"><div class="membrete-text">
                     INDINOPY
-                    <small>SISTEMA ERP/MES</small>
+                    <small>SISTEMA ERP/MES</small></div>
                 </div>
                 <div class="header-titles">
                     <h1>Orden de Producción Electrónica (e-OP)</h1>
@@ -1438,9 +1727,9 @@
         <!-- HEADER INSTITUCIONAL -->
         <div class="institutional-header">
             <div class="header-brand">
-                <div class="system-badge" style="background-color: #4a5568;">
+                <div class="system-badge" style="background-color: #1e293b !important;"><img src="src/logo.svg" alt="Indinopy Logo" class="membrete-logo"><div class="membrete-text">
                     INDINOPY
-                    <small>DOCUMENTO CIEGO</small>
+                    <small style="color: #22d3ee !important;">DOCUMENTO CIEGO</small></div>
                 </div>
                 <div class="header-titles">
                     <h1 style="color: #2d3748;">Orden de Producción Electrónica (e-OP)</h1>

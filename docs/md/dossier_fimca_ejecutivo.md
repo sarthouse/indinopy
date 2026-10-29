@@ -108,8 +108,19 @@ El anteproyecto incluye el texto proyectado de las normas reglamentarias de apli
 
 El esquema reemplaza la precariedad del trato verbal y el pago a 60 días posentrega por una custodia fiduciaria escalonada con desembolsos ciertos:
 
-```
-[1. e-OP Registrada] ➔ [2. Hito Cero: 35%/50%] ➔ [3. Hitos Avance: 45%/30%] ➔ [4. Entrega Lote] ➔ [5. Factura y RCF: 20%]
+```mermaid
+flowchart LR
+    P1["1. e-OP Registrada\nSuscripción + BOM + Canon FDI"] --> P2["2. Hito Cero (Arranque)\nDesembolso 35% (50% con SBD)"]
+    P2 --> P3["3. Hitos de Avance\nCertificación PoPW 45% (30% SBD)"]
+    P3 --> P4["4. Entrega del Lote\nInspección (5d) + RCF 20%"]
+    P4 --> P5["5. Cierre Fiscal ARCA\nFactura + CDD/FAEL + RCF Libre"]
+
+    classDef step fill:#0d131f,stroke:#10b981,stroke-width:2px,color:#f8fafc,font-weight:bold;
+    classDef highlight fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f8fafc,font-weight:bold;
+    classDef close fill:#083344,stroke:#22d3ee,stroke-width:2px,color:#f8fafc,font-weight:bold;
+    class P1,P3,P4 step;
+    class P2 highlight;
+    class P5 close;
 ```
 
 1. **Paso 1 — Registro y Perfeccionamiento de la e-OP:** La comitente y el ejecutor suscriben la orden en la plataforma oficial con autenticación fiscal Nivel 3. La orden estipula la receta técnica (BOM), el valor de mano de obra ($c_{\text{MOD}}$), el canon ($c_{\text{FDI}}$ de hasta 1,5%), la fecha de vencimiento comercial de pago y, de corresponder, el Sello Buen Diseño (SBD). La suscripción perfecciona el contrato y genera título ejecutivo autónomo.

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirigiendo... | Indinopy</title>
+    <link rel="icon" type="image/svg+xml" href="src/logo.svg">
+    <script>
+        (function () {
+            const LEGACY_WRAPPER_MAP = {
+                'proyecto_ley_eop': 'proyecto_ley_eop',
+                'dossier_proyecto_fimca_2026': 'dossier_fimca',
+                'dossier_fimca': 'dossier_fimca',
+                'paper_protocolo_eop_gobernanza_industrial': 'paper_protocolo_eop_gobernanza_industrial',
+                'arquitectura_funcional': 'arquitectura_funcional',
+                'glosario_conceptos_proyecto': 'glosario_conceptos_proyecto',
+                'explicacion_tecnica_proyecto': 'explicacion_tecnica_proyecto',
+                'analisis_fimca_implementacion': 'analisis_fimca_implementacion',
+                'plan_implementacion': 'plan_implementacion',
+                'arquitectura_mes_gobernanza': 'arquitectura_mes_gobernanza',
+                'flujos_documentales': 'flujos_documentales',
+                'roles': 'roles',
+                'manifiesto_de_la_manufactura_soberana': 'manifiesto_de_la_manufactura_soberana'
+            };
+
+            const pathParts = window.location.pathname.split('/');
+            const lastSegment = pathParts.pop() || '';
+            const cleanName = lastSegment.replace(/\.(html|md)$/i, '');
+
+            if (cleanName && (LEGACY_WRAPPER_MAP[cleanName] || lastSegment.endsWith('.html') || lastSegment.endsWith('.md'))) {
+                const targetDoc = LEGACY_WRAPPER_MAP[cleanName] || cleanName;
+                const basePath = pathParts.join('/') + '/';
+                const hash = window.location.hash || '';
+                window.location.replace(basePath + 'visor.html?doc=' + encodeURIComponent(targetDoc) + hash);
+            }
+        })();
+    </script>
+    <style>
+        body {
+            background-color: #070a10;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        a {
+            color: #34d399;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <p>Redirigiendo al visor documental de Indinopy...</p>
+        <p><a href="index.html">← Ir a la Biblioteca Documental</a></p>
+    </div>
+</body>
+
+</html>

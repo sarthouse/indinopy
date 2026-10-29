@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Visor Documental Nativo de Indinopy ERP/MES — Especificaciones Técnicas, Protocolo Criptográfico e-OP y Proyecto FIMCA.">
+    <title>Indinopy | Biblioteca Documental</title>
+    <link rel="icon" type="image/svg+xml" href="src/logo.svg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <!-- Marked.js & Footnote Extension -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js"></script>
+
+    <!-- Highlight.js -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark-reasonable.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
+    <!-- Estilos del Visor (Sistema de Diseño Indinopy) -->
+    <link rel="stylesheet" href="src/viewer.css">
+</head>
+
+<body>
+
+    <nav class="viewer-nav no-print">
+        <a href="index.html" class="brand">
+            <img src="src/logo.svg" alt="Indinopy Logo" class="brand-logo">
+            <div class="brand-text">
+                <div class="brand-title">
+                    INDINOPY <span class="brand-tag">ERP / MES</span>
+                </div>
+                <span class="brand-subtitle">Protocolo e-OP &middot; Red Federada FIMCA</span>
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="index.html#documentacion" class="nav-back">← Biblioteca</a>
+            <a href="visor.html?doc=proyecto_ley_eop">Anteproyecto e-OP</a>
+            <a href="visor.html?doc=dossier_fimca">Dossier FIMCA</a>
+            <a href="visor.html?doc=paper_protocolo_eop_gobernanza_industrial">Paper PoPW</a>
+            <a href="visor.html?doc=arquitectura_funcional">Arquitectura</a>
+        </div>
+    </nav>
+
+    <main class="viewer-main">
+        <div class="doc-container">
+            <div class="doc-header-bar no-print">
+                <div class="doc-header-left">
+                    <a href="index.html#documentacion" class="btn-back-home">← Volver al Inicio</a>
+                    <span id="doc-badge" class="doc-header-badge">📚 Documentación Indinopy</span>
+                </div>
+                <div id="doc-actions" class="doc-header-actions"></div>
+            </div>
+
+            <div id="doc-tabs" class="tabs no-print" style="display: none;"></div>
+
+            <div id="content">
+                <div class="loading">Cargando documento...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="viewer-footer no-print">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <img src="src/logo.svg" alt="Indinopy Logo">
+                <div>
+                    <strong style="color: #f8fafc;">INDINOPY ERP / MES</strong> &middot; Protocolo e-OP &amp; Proyecto
+                    FIMCA
+                    <div style="font-size: 0.8rem; color: #64748b;">Infraestructura de Software Libre para la Soberanía
+                        Manufacturera Argentina</div>
+                </div>
+            </div>
+            <div>
+                2026 &copy; Indinopy &middot; <a href="index.html"
+                    style="color: #34d399; text-decoration: none;">Inicio</a> &middot; <a
+                    href="https://github.com/sarthouse/indinopy" target="_blank"
+                    style="color: #22d3ee; text-decoration: none;">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Motor del Visor y Renderizador de Impresión -->
+    <script src="src/viewer.js"></script>
+    <script src="src/pdf_renderer.js"></script>
+</body>
+
+</html>
