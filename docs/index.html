@@ -5,165 +5,246 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Indinopy ERP/MES - Landing Page oficial y acceso a la documentación del Proyecto FIMCA">
-    <title>Indinopy | Proyecto FIMCA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+        content="Indinopy ERP/MES - Plataforma de Soberanía Industrial, Protocolo e-OP y Documentación del Proyecto FIMCA">
+    <title>Indinopy | Protocolo e-OP &amp; Proyecto FIMCA</title>
+    <link rel="icon" type="image/svg+xml" href="src/logo.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="src/landing.css">
 </head>
 
 <body>
 
     <nav>
-        <div class="brand">
-            <span>INDINOPY</span> ERP / MES
-        </div>
+        <a href="index.html" class="brand">
+            <img src="src/logo.svg" alt="Indinopy Logo" class="brand-logo">
+            <div class="brand-text">
+                <div class="brand-title">
+                    INDINOPY <span class="brand-tag">ERP / MES</span>
+                </div>
+                <span class="brand-subtitle">Protocolo e-OP &middot; Red Federada FIMCA</span>
+            </div>
+        </a>
         <div class="nav-links">
+            <a href="#documentacion">Biblioteca</a>
+            <a href="proyecto_ley_eop.html">Anteproyecto e-OP</a>
+            <a href="dossier_proyecto_fimca_2026.html">Dossier FIMCA</a>
             <a href="manifiesto_de_la_manufactura_soberana.html">Manifiesto</a>
-            <a href="dossier_proyecto_fimca_2026.html">Dossier</a>
-            <a href="https://github.com/sarthouse/indinopy" target="_blank">Repositorio público</a>
+            <a href="https://github.com/sarthouse/indinopy" target="_blank" class="nav-repo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+                    <path d="M9 18c-4.51 2-5-2-7-2" />
+                </svg>
+                GitHub
+            </a>
         </div>
     </nav>
 
     <section class="hero">
-        <h1>Soberanía Industrial y Trabajo Organizado</h1>
-        <p>Indinopy es el motor tecnológico (ERP/MES) detrás del <strong>Proyecto FIMCA</strong>. Un sistema de
-            gestión que desintermedia el crédito, protege al tallerista y certifica la manufactura mediante Órdenes de
-            Producción (e-OP) inmutables y gobernanza federada.</p>
-        <div class="cta-buttons">
-            <a href="#documentacion" class="btn btn-primary">Explorar Documentación</a>
-            <a href="manifiesto_de_la_manufactura_soberana.html" class="btn btn-secondary">Leer Manifiesto</a>
+        <div class="hero-content">
+            <div class="hero-pill">
+                <span class="hero-pill-dot"></span>
+                SOFTWARE LIBRE INDUSTRIAL &middot; ARQUITECTURA FEDERADA ERP / MES
+            </div>
+            <h1>Soberanía Industrial y <span class="text-gradient">Trabajo Organizado</span></h1>
+            <p><strong>Indinopy</strong> es un sistema de gestión industrial de código abierto (ERP/MES) diseñado para la
+                manufactura textil y de calzado: control de planta (MRP), stock por partida doble, contabilidad y
+                auditoría criptográfica. Sirve además como motor tecnológico de referencia para las propuestas del
+                <strong>Proyecto FIMCA</strong> y el <strong>Anteproyecto de Ley de e-OP</strong>.</p>
+            <div class="cta-buttons">
+                <a href="#documentacion" class="btn btn-primary">Explorar Biblioteca Documental</a>
+                <a href="proyecto_ley_eop.html" class="btn btn-secondary">Ver Anteproyecto de Ley e-OP</a>
+                <a href="manifiesto_de_la_manufactura_soberana.html" class="btn btn-secondary">Leer Manifiesto</a>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="emblem-card">
+                <div class="emblem-img-wrapper">
+                    <img src="src/indinopy_emblem.jpg" alt="Emblema Monograma Bauhaus Indinopy" class="emblem-img">
+                </div>
+                <div class="emblem-caption">
+                    <span>Monograma Industrial <strong>IN</strong></span>
+                    <strong>Ed25519 &middot; SHA-256 &middot; Merkle BOM</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="metrics-strip">
+        <div class="metrics-grid">
+            <div class="metric-item">
+                <div class="metric-value">MRP &amp; Planta</div>
+                <div class="metric-label">Ingeniería de Producto</div>
+                <div class="metric-desc">Recetas dinámicas (BOM), curvas de talles, etapas de taller y control de mermas en tiempo real.</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value">WMS Doble Entrada</div>
+                <div class="metric-label">Trazabilidad de Stock</div>
+                <div class="metric-desc">Seguimiento exacto por lote y rollo entre almacén propio y talleres externos a fasón con QR.</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value">Ed25519 + Merkle</div>
+                <div class="metric-label">Protocolo Federado e-OP</div>
+                <div class="metric-desc">Órdenes de producción selladas criptográficamente, con árbol de insumos inmutable y nodos DNS.</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value">ERP Integral</div>
+                <div class="metric-label">Contabilidad, ARCA y Nómina</div>
+                <div class="metric-desc">Partida doble contable, facturación electrónica, Libro de Sueldos Digital (SoD) y WooCommerce.</div>
+            </div>
         </div>
     </section>
 
     <section id="documentacion" class="docs-section">
-        <h2 class="section-title">Biblioteca Documental</h2>
+        <div class="section-header">
+            <h2 class="section-title">Biblioteca Documental y Propuestas Normativas</h2>
+            <p class="section-subtitle">Especificaciones de ingeniería de software del ERP/MES Indinopy, junto con los
+                anteproyectos legislativos y el marco teórico del ecosistema FIMCA.</p>
+        </div>
         <div class="grid">
-            <a href="pdf/proyecto_ley_salvataje_pyme.pdf" class="card" target="_blank">
+            <a href="proyecto_ley_eop.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-blue">Ley Nacional</span>
+                    <span class="card-badge badge-green">Anteproyecto de Ley</span>
                 </div>
-                <h3>Proyecto Ley de Salvataje MiPyME</h3>
-                <p>Texto original de la ley de emergencia (tarifaria, impositiva y de ejecuciones) que funciona como escudo de resistencia y base de FIMCA.</p>
-                <div class="card-footer">Ver PDF</div>
+                <h3>Anteproyecto de Ley de e-OP</h3>
+                <p>Propuesta legislativa de la Orden de Producción Electrónica como título ejecutivo, Bonos BIP,
+                    separación concursal de insumos, Póliza de Stock, CDD/FAEL y Monotributo Productivo.</p>
+                <div class="card-footer">Leer anteproyecto articulado</div>
             </a>
             <a href="dossier_proyecto_fimca_2026.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-blue">Matriz</span>
+                    <span class="card-badge badge-blue">Dossier Integral</span>
                 </div>
                 <h3>Dossier del Proyecto FIMCA</h3>
-                <p>El marco político-industrial completo. Legislación, Mesa de Enlace Sectorial, Fideicomiso FDI y Hito
-                    Cero.</p>
-                <div class="card-footer">Leer documento</div>
+                <p>Propuesta de marco político-industrial en 3 cuerpos autónomos: Anteproyecto e-OP, Régimen Sectorial
+                    FIMCA y Pacto Fiscal Productivo, con minutas regulatorias y análisis de impacto.</p>
+                <div class="card-footer">Leer dossier completo</div>
+            </a>
+            <a href="pdf/proyecto_ley_salvataje_pyme.pdf" class="card" target="_blank">
+                <div class="card-header">
+                    <span class="card-badge badge-blue">Antecedente Legal</span>
+                </div>
+                <h3>Proyecto Ley de Salvataje MiPyME</h3>
+                <p>Texto antecedente de la ley de emergencia productiva (tarifaria, impositiva y de suspensión de
+                    ejecuciones) que dio origen a la arquitectura sectorial de FIMCA.</p>
+                <div class="card-footer">Ver documento PDF</div>
             </a>
             <a href="modelo_orden_produccion.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-green">Título de Crédito</span>
+                    <span class="card-badge badge-green">Título Ejecutivo</span>
                 </div>
-                <h3>Modelo e-OP</h3>
-                <p>Instrumento legal-financiero homologado por la MES, con partes, escrow y desglose factorial ítem por
-                    ítem.</p>
-                <div class="card-footer">Ver modelo</div>
+                <h3>Modelo Interactivo de e-OP</h3>
+                <p>Instrumento legal-financiero homologado con firmas Ed25519, árbol de Merkle BOM, cronograma de
+                    Escrow (35/45/20) y desglose factorial ítem por ítem en UCI.</p>
+                <div class="card-footer">Ver modelo en vivo</div>
             </a>
             <a href="paper_protocolo_eop_gobernanza_industrial.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-purple">Académico</span>
+                    <span class="card-badge badge-purple">Paper Académico</span>
                 </div>
-                <h3>Paper e-OP y PoPW</h3>
-                <p>Artículo técnico sobre el consenso de Proof-of-Productive-Work, Timelocks y equilibrio de Nash.</p>
-                <div class="card-footer">Leer documento</div>
+                <h3>Paper Protocolo e-OP y PoPW</h3>
+                <p>Modelización matemática del protocolo: consenso Proof-of-Productive-Work, Timelocks, solvencia del
+                    FDI, gobernanza policéntrica de Ostrom y equilibrio de Nash.</p>
+                <div class="card-footer">Leer artículo científico</div>
             </a>
-            <a href="proyecto_ley_eop.html" class="card">
-                <div class="card-header">
-                    <span class="card-badge badge-blue">Legislativo</span>
-                </div>
-                <h3>Proyecto de Ley e-OP</h3>
-                <p>Régimen de la e-OP como título de deuda comercial, financiamiento de proceso, Bonos BIP y minutas regulatorias (BCRA, CNV, ARCA).</p>
-                <div class="card-footer">Leer proyecto</div>
-            </a>
-
             <a href="arquitectura_funcional.html" class="card">
                 <div class="card-header">
                     <span class="card-badge badge-purple">Especificación</span>
                 </div>
-                <h3>Arquitectura Funcional</h3>
-                <p>Topología de red, actores del sistema, criptografía de confianza y flujos core de negocio.</p>
-                <div class="card-footer">Leer documento</div>
+                <h3>Arquitectura Funcional ERP/MES</h3>
+                <p>Topología de red federada DNS (.ar), actores del sistema, primitivas criptográficas, máquina de
+                    estados de la e-OP y flujos core de negocio.</p>
+                <div class="card-footer">Leer especificación</div>
             </a>
             <a href="glosario_conceptos_proyecto.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-purple">Diccionario</span>
+                    <span class="card-badge badge-purple">Taxonomía</span>
                 </div>
                 <h3>Glosario de Conceptos del Proyecto</h3>
-                <p>Diccionario oficial: Escrow, Merkle Root, UBO, PTF, IA Algorética, Silencio Positivo y CCCN 1251/1356.</p>
-                <div class="card-footer">Leer documento</div>
+                <p>Diccionario taxonómico completo: Escrow, RCF, SETP, Bonos BIP, CDD/FAEL, Merkle Root, PTF, Póliza de
+                    Stock y encuadre CCyC 1251/1356.</p>
+                <div class="card-footer">Consultar glosario</div>
             </a>
             <a href="explicacion_tecnica_proyecto.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-orange">Visión & Solución</span>
+                    <span class="card-badge badge-orange">Visión &amp; Solución</span>
                 </div>
-                <h3>Explicación Técnica</h3>
-                <p>Diagnóstico de la informalidad, módulos Django core y la arquitectura de DNS Federado / Headless API.
-                </p>
+                <h3>Explicación Técnica del Proyecto</h3>
+                <p>Diagnóstico de la informalidad manufacturera, los 5 dispositivos territoriales (CIFO, PFET, Banco de
+                    Maquinarias) y modelos de despliegue SaaS / On-Premise.</p>
                 <div class="card-footer">Leer documento</div>
             </a>
             <a href="analisis_fimca_implementacion.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-purple">Especificación</span>
+                    <span class="card-badge badge-purple">Ingeniería</span>
                 </div>
                 <h3>Análisis de Implementación</h3>
-                <p>Cruce directo entre el Proyecto FIMCA y los módulos de Django. Hoja de ruta, lobbys y plan contable.
-                </p>
-                <div class="card-footer">Leer documento</div>
+                <p>Matriz de correspondencia entre el Anteproyecto e-OP / FIMCA y los módulos de Django: desacople
+                    fiduciario, remitos con separación concursal y contabilidad.</p>
+                <div class="card-footer">Leer análisis técnico</div>
             </a>
             <a href="plan_implementacion.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-orange">Desarrollo</span>
+                    <span class="card-badge badge-orange">Roadmap</span>
                 </div>
                 <h3>Plan de Implementación</h3>
-                <p>Documentación viva y estado actual del código, roadmap, módulos implementados y diseño arquitectónico.
-                </p>
-                <div class="card-footer">Leer documento</div>
+                <p>Estado actual del código en Django 5, contratos JSON de la API federada, política de costos
+                    congelados en UCI y hoja de ruta de desarrollo.</p>
+                <div class="card-footer">Ver plan y estado</div>
             </a>
             <a href="arquitectura_mes_gobernanza.html" class="card">
                 <div class="card-header">
                     <span class="card-badge badge-blue">Gobernanza</span>
                 </div>
-                <h3>Arquitectura MES</h3>
-                <p>Estructura de las 7 sillas institucionales, resoluciones, tribunales arbitrales y protección ante
-                    extorsiones.</p>
-                <div class="card-footer">Leer documento</div>
+                <h3>Arquitectura MES y Comités FDI</h3>
+                <p>Estructura paritaria de las 7 sillas en los Comités del FDI, peritaje vinculante INTI (5 días),
+                    Tribunal Arbitral (72h) y Boletín Oficial Sectorial.</p>
+                <div class="card-footer">Leer arquitectura</div>
             </a>
             <a href="flujos_documentales.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-green">Workflow</span>
+                    <span class="card-badge badge-green">Workflows</span>
                 </div>
                 <h3>Flujos Documentales</h3>
-                <p>Circuitos y máquinas de estados: Compras (3-Way Matching), Ventas, Producción/Fasón, Nómina (LSD) y Tesorería/FDI.</p>
-                <div class="card-footer">Leer documento</div>
+                <p>Diagramas de secuencia: Compras (3-Way Matching), Producción/Fasón con custodia, Ventas Omnicanal,
+                    Nómina (LSD ARCA con SoD) y Tesorería/FDI.</p>
+                <div class="card-footer">Ver circuitos</div>
             </a>
             <a href="roles.html" class="card">
                 <div class="card-header">
-                    <span class="card-badge badge-red">Seguridad</span>
+                    <span class="card-badge badge-red">Seguridad &amp; SoD</span>
                 </div>
-                <h3>Roles y Permisos</h3>
-                <p>Matriz de accesos separada por Gobernanza (Nodos), Infraestructura interna y Empleados del ERP.</p>
-                <div class="card-footer">Leer documento</div>
+                <h3>Matriz de Roles y Permisos</h3>
+                <p>Segregación de funciones (SoD) por capa: Nodos de la Red Federada, perfiles internos del ERP de la
+                    Marca, Talleres y Comités del FDI, más Modo Headless.</p>
+                <div class="card-footer">Ver matriz de permisos</div>
             </a>
             <a href="manifiesto_de_la_manufactura_soberana.html" class="card">
                 <div class="card-header">
                     <span class="card-badge badge-blue">Doctrina</span>
                 </div>
-                <h3>Manifiesto Soberano</h3>
-                <p>Proclama fundacional. El rol de las OLP, las universidades y la rebelión de los talleres frente a la
-                    asfixia especulativa.</p>
-                <div class="card-footer">Leer documento</div>
+                <h3>Manifiesto de la Manufactura Soberana</h3>
+                <p>Proclama fundacional del trabajo real, el Decálogo Productivo de la Comunidad Organizada, las
+                    universidades públicas y el software libre en el taller.</p>
+                <div class="card-footer">Leer manifiesto</div>
             </a>
         </div>
     </section>
 
     <footer>
-        <p>2026 &copy; Indinopy. Desarrollado para las PyMEs Argentinas.</p>
-        <p style="margin-top: 10px;"><small>Sistema ERP/MES de Código Abierto y Descentralizado.</small></p>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <img src="src/logo.svg" alt="Indinopy Logo">
+                <div>
+                    <strong style="color: #f8fafc;">INDINOPY ERP / MES</strong> &middot; Protocolo e-OP &amp; Proyecto FIMCA
+                    <div style="font-size: 0.8rem; color: #64748b;">Infraestructura de Software Libre para la Soberanía Manufacturera Argentina</div>
+                </div>
+            </div>
+            <div>
+                2026 &copy; Indinopy &middot; <a href="https://github.com/sarthouse/indinopy" target="_blank" style="color: #34d399; text-decoration: none;">Repositorio Open Source</a>
+            </div>
+        </div>
     </footer>
 
 </body>
