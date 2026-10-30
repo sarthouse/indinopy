@@ -38,10 +38,10 @@ El régimen vigente de la Ley N° 27.440 de Financiamiento Productivo creó la F
 
 A diferencia de intentos previos fragmentados, el ecosistema normativo articula tres proyectos con identidad, ámbito y objeto diferenciados:
 1. **El Proyecto de Ley de Salvataje Nacional de las MiPyMEs (preexistente, mayo 2026):** Provee el paquete de alivio de emergencia coyuntural para todo el universo MiPyME (reducción del 50% en tarifas, amnistía fiscal y suspensión preventiva de ejecuciones sobre maquinaria).
-2. **El Anteproyecto de Ley de e-OP (`proyecto_ley_eop.md`):** Ley cambiaria, comercial y financiera de alcance federal con inicio en la Honorable Cámara de Diputados de la Nación (Art. 52 CN por contener materia tributaria): el **"Régimen de la Orden de Producción Electrónica (e-OP) como Título Valor Causal y su Titulización en el Mercado de Capitales"**, que crea e instrumenta el título ejecutivo, su descuento bancario, la custodia fiduciaria en el FDI y los Bonos BIP.
+2. **El Anteproyecto de Ley de e-OP:** Ley cambiaria, comercial y financiera de alcance federal con inicio en la Honorable Cámara de Diputados de la Nación (Art. 52 CN por contener materia tributaria): el **"Régimen de la Orden de Producción Electrónica (e-OP) como Título Valor Causal y su Titulización en el Mercado de Capitales"**, que crea e instrumenta el título ejecutivo, su descuento bancario, la custodia fiduciaria en el FDI y los Bonos BIP.
 3. **El Proyecto y Régimen FIMCA:** Régimen autónomo y específico de formalización, inclusión socioproductiva e incentivo industrial territorial (enfocado en calzado, cuero y confección), dotado de su propia gobernanza (Mesa de Enlace Sectorial - MES), estabilidad fiscal por 10 años, filtro de Tecnología Conveniente, Promotores Territoriales (PTF), Bolsa de Trabajo, Red CIFO y Banco de Maquinaria.
 
-### 🔴 Núcleo de Fondo — Estructura del Proyecto de Ley
+### Núcleo de Fondo — Estructura del Proyecto de Ley
 
 La norma consta de 31 artículos ordenados en 5 títulos y 3 anexos regulatorios que resuelven los obstáculos jurídicos y operativos:
 
@@ -57,12 +57,12 @@ La norma consta de 31 artículos ordenados en 5 títulos y 3 anexos regulatorios
 
 **2. Arquitectura Financiera: FDI, Cuentas Especiales y Bonos BIP (Título III, Arts. 14° a 19°)**
 - **Fideicomiso de Desarrollo Industrial (FDI):** Fideicomiso financiero (Ley 26.831 / Art. 1666 CCyC) con patrimonio separado e inembargable (Art. 1685 CCyC) que custodia fondos, liquida tramos y descuenta órdenes.
-- **Bonos de Inversión Productiva (BIP):** Valores de deuda fiduciaria colocados en el mercado de capitales (plazos de 60 a 180 días calzados con las e-OPs) y con calificación **Social, Verde y Sustentable (SVS)** bajo dictamen vinculante de un Revisor Externo Independiente (RG CNV 917/2021).
+- **Bonos de Inversión Productiva (BIP):** Valores de deuda fiduciaria colocados en el mercado de capitales (plazos de 60 a 120 días calzados con las e-OPs) y con calificación **Social, Verde y Sustentable (SVS)** bajo dictamen vinculante de un Revisor Externo Independiente (RG CNV 917/2021).
 - **Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14°):** Habilitadas en bancos oficiales sin costo, con CBU/CVU, pagos QR y Echeqs, inembargables ante débitos bancarios unilaterales y **100% exentas del Impuesto al Cheque (Ley 25.413)**.
 - **Fuentes de Liquidez y Gestión de Riesgo (Art. 16°):**
   - Colocación de Bonos BIP y cupos de la Línea de Financiamiento para la Inversión Productiva (LFIP del BCRA).
   - **Reserva de Garantía Líquida del 5%:** Aportada por cada comitente para responder en forma irrevocable por su propio riesgo crediticio de impago.
-  - **Canon Fiduciario Total ($c_{\text{FDI}}$):** A cargo exclusivo de la comitente al registrar la orden, compuesto por la alícuota operativa general de hasta el **1,5%** sobre la mano de obra ($c_{\text{MOD}}$: 0,5% fondo laboral FAEL, 0,2% INTI/PFET y 0,8% administración/mora) más la alícuota de cobertura de stock ($c_{\text{STK}}$) de hasta el **0,5%** sobre insumos ($c_{\text{BOM}}$) para la Póliza Colectiva Maestra.
+  - **Canon Fiduciario Total:** A cargo exclusivo de la comitente al registrar la orden, compuesto por la alícuota operativa general de hasta el **1,5%** sobre el valor de mano de obra (0,5% fondo laboral FAEL, 0,2% INTI/PFET y 0,8% administración/mora) más la alícuota de cobertura de stock de hasta el **0,5%** sobre el valor de insumos para la Póliza Colectiva Maestra.
   - **Facilidad de Liquidez Contingente (Línea Revolvente del 5%):** Tesorería para amortiguar descalces temporales por logística o peritajes.
 
 ---
@@ -71,27 +71,27 @@ La norma consta de 31 artículos ordenados en 5 títulos y 3 anexos regulatorios
 - La locación de obra y los cobros bancarios acreditan autonomía técnica y presunción de no relación de dependencia conforme al nuevo **Art. 23 de la LCT (modificado por Ley 27.742 - Ley Bases)**.
 - La comitente conserva el deber de control del Art. 30 LCT, el cual se formaliza de modo reglado con el **Certificado de Diligencia Debida Laboral (CDD)** mensual.
 - **Rampa de Regularización Laboral (CDD-P, meses 1 a 12):** Con la primera e-OP se habilita el Alta Temprana de la dotación con amnistía laboral plena (extinción de multas, condonación de hasta el 100% de deudas patronales pretéritas, exclusión de REPSAL y reconocimiento de hasta 60 meses de aportes al SIPA para los trabajadores). El FDI retiene hasta un 15% del hito para cargas sociales en origen.
-- **Fondo de Afectación Específica Laboral (FAEL - Art. 22° inc. 22.6):** Ante mora salarial del tallerista, el trabajador cobra de inmediato del FAEL y su seguro de caución, garantizando **pago sin dilación de previa excusión patrimonial**. En su defecto, opera la responsabilidad subsidiaria directa de la comitente.
+- **Fondo de Afectación Específica Laboral (FAEL - Art. 22° inc. 6):** Ante mora salarial del tallerista, el trabajador cobra de inmediato del FAEL y su seguro de caución, garantizando **pago sin dilación de previa excusión patrimonial**. En su defecto, opera la responsabilidad subsidiaria directa de la comitente.
 - **Régimen Diferenciado:** Trabajo a Domicilio bajo **Libreta Digital de Trabajo a Domicilio (Ley 12.713)** con solidaridad legal de la comitente, distinguiéndolo nítidamente de los prestadores autónomos en Monotributo Productivo.
 
 ---
 
 **4. Régimen Tributario y Monotributo Productivo (Título IV, Arts. 23° y 24°)**
-- **Crédito Fiscal Presunto de IVA del 10%:** Beneficio fiscal para la empresa comitente sobre el valor neto de mano de obra ($c_{\text{MOD}}$) contratada con monotributistas o talleres con CDD-P que no trasladan IVA.
+- **Crédito Fiscal Presunto de IVA del 10%:** Beneficio fiscal para la empresa comitente sobre el valor neto de mano de obra contratada con monotributistas o talleres con CDD-P que no trasladan IVA.
 - **Diferimiento del Hecho Imponible del IVA:** Modifica el Art. 5° inc. b de la Ley de IVA, difiriendo el devengamiento impositivo de todos los anticipos hasta la entrega final y liberación de la RCF.
 - **Monotributo Productivo:** Alta ágil ante ARCA/RENAPER, sustitución de la cuota fija por una **micro-retención del 2% sobre cobranzas netas** que computa meses con aportes al SIPA, sin generar deudas en meses sin producción.
 - **Facturación Asistida:** ARCA genera de oficio el **borrador precargado de Factura C** en la plataforma; el prestador solo confirma con un clic para emitir CAE y liberar su cobro final.
 
 ---
 
-**5. Régimen de Insumos y Tutela Concursal (Título IV, Arts. 20°, 20 bis y 21°)**
+**5. Régimen de Insumos y Tutela Concursal (Título IV, Arts. 20° y 21°)**
 - Provisión de materiales en locación de obra (Arts. 1251 y 1256 inc. a CCyC) con depósito regular (Art. 1356 CCyC). Tránsito documentado por remito con UUID de la e-OP.
-- **Concurso del tallerista:** Restitución directa y separación de materias primas a favor de la marca vía **Art. 138 de la Ley N° 24.522 (LCQ)**. Cobertura automática mediante la **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$)** administrada por el FDI (Art. 20 bis).
+- **Concurso del tallerista:** Restitución directa y separación de materias primas a favor de la marca vía **Art. 138 de la Ley N° 24.522 (LCQ)**. Cobertura automática mediante la **Póliza Colectiva Maestra de Stock en Custodia** administrada por el FDI (Art. 20 inc. 4).
 - **Concurso de la comitente:** Presunción de acto ordinario a título oneroso frente al período de sospecha (Art. 119 *in fine* LCQ). Los talleristas y el FDI gozan de **Privilegio Especial sobre el lote físico (Art. 241 inc. 1 y Art. 242 LCQ)** y **derecho de retención preferencial (Art. 2587 CCyC)**.
 
 ---
 
-### 🟡 Articulación Institucional Inmediata (Anexos Regulatorios)
+### Articulación Institucional Inmediata (Anexos Regulatorios)
 
 El anteproyecto incluye el texto proyectado de las normas reglamentarias de aplicación inmediata a ser emitidas por los organismos competentes:
 
@@ -115,16 +115,15 @@ flowchart LR
     P3 --> P4["4. Entrega del Lote\nInspección (5d) + RCF 20%"]
     P4 --> P5["5. Cierre Fiscal ARCA\nFactura + CDD/FAEL + RCF Libre"]
 
-    classDef step fill:#0d131f,stroke:#10b981,stroke-width:2px,color:#f8fafc,font-weight:bold;
-    classDef highlight fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f8fafc,font-weight:bold;
-    classDef close fill:#083344,stroke:#22d3ee,stroke-width:2px,color:#f8fafc,font-weight:bold;
-    class P1,P3,P4 step;
+    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
+    classDef highlight fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
+    classDef close fill:#EBF8FF,stroke:#3182CE,stroke-width:2px,color:#2B6CB0,font-weight:bold;
     class P2 highlight;
     class P5 close;
 ```
 
-1. **Paso 1 — Registro y Perfeccionamiento de la e-OP:** La comitente y el ejecutor suscriben la orden en la plataforma oficial con autenticación fiscal Nivel 3. La orden estipula la receta técnica (BOM), el valor de mano de obra ($c_{\text{MOD}}$), el canon ($c_{\text{FDI}}$ de hasta 1,5%), la fecha de vencimiento comercial de pago y, de corresponder, el Sello Buen Diseño (SBD). La suscripción perfecciona el contrato y genera título ejecutivo autónomo.
-2. **Paso 2 — Desembolso de Hito Cero (Anticipo de Arranque):** Una vez acreditado el ingreso físico de insumos al taller (remito con UUID) y la vigencia automática de la cobertura de stock del FDI, el fondo desembolsa automáticamente a la Cuenta Especial del tallerista el **35% del valor neto de mano de obra ($c_{\text{MOD}}$)** como capital de trabajo inicial, **sin scoring patrimonial tradicional, sin balances ni avales**. Si la orden cuenta con Sello Buen Diseño (SBD), el anticipo asciende al **50%**.
+1. **Paso 1 — Registro y Perfeccionamiento de la e-OP:** La comitente y el ejecutor suscriben la orden en la plataforma oficial con autenticación fiscal Nivel 3. La orden estipula la receta técnica (BOM), el valor de mano de obra, el canon fiduciario (de hasta 1,5%), la fecha de vencimiento comercial de pago y, de corresponder, el Sello Buen Diseño (SBD). La suscripción perfecciona el contrato y genera título ejecutivo autónomo.
+2. **Paso 2 — Desembolso de Hito Cero (Anticipo de Arranque):** Una vez acreditado el ingreso físico de insumos al taller (remito con UUID) y la vigencia automática de la cobertura de stock del FDI, el fondo desembolsa automáticamente a la Cuenta Especial del tallerista el **35% del valor neto de mano de obra** como capital de trabajo inicial, **sin scoring patrimonial tradicional, sin balances ni avales**. Si la orden cuenta con Sello Buen Diseño (SBD), el anticipo asciende al **50%**.
 3. **Paso 3 — Hitos de Avance (Certificación PoPW):** Durante la confección, se liquidan los tramos intermedios (**45% ordinario o 30% con SBD**) contra la acreditación de la Prueba de Trabajo Productivo (declaración jurada en plataforma, georreferenciación satelital y constancia de avance o remito). En logística justo a tiempo, las demoras de insumos imputables a la comitente prorrogan los plazos del taller, generan compensación por parada de planta y facultan la resolución tras 15 días hábiles.
 4. **Paso 4 — Entrega del Lote y Retención de Cierre Fiscal (RCF):** El tallerista entrega el lote conforme. El comitente dispone de 5 días hábiles para plantear observaciones técnicas de calidad. El **20% restante** queda preventivamente inmovilizado en la cuenta de custodia del FDI bajo el estado de Retención de Cierre Fiscal (RCF).
 5. **Paso 5 — Emisión de Comprobante Fiscal y Liquidación:** El tallerista emite su factura ordinaria de liquidación (en monotributistas, mediante la aceptación del borrador asistido precargado por ARCA). El sistema valida el CAE en tiempo real, bloquea la emisión de FCE y libera inmediatamente el 20% final de la RCF. La comitente computa el Crédito Fiscal Presunto de IVA del 10% y abona al vencimiento comercial convenido.
@@ -151,9 +150,9 @@ FIMCA no apela a la persuasión moral ni al aumento de multas punitivas: **recon
 
 El sistema descentraliza el control en el territorio y asegura equilibrio técnico entre los sectores público y privado:
 
-- **Mesa de Enlace Sectorial (MES — Comités Técnicos y Territoriales del FDI):** Constituida dentro del Régimen FIMCA y del Reglamento de Gestión del Fideicomiso (FDI) como su estructura de comisiones especializadas (Comisión de Homologación Técnica y Comisión de Crédito, Riesgo y Fomento Territorial), además de oficiar como el órgano consultivo paritario permanente previsto en los Arts. 1° y 27° de la Ley de e-OP. Integra a cámaras empresariales, sindicatos de rama, el INTI y municipios para administrar los cupos de arranque en frío del SETP, el filtro de Tecnología Conveniente, la Bolsa de Trabajo, la Red CIFO y el Banco de Maquinaria.
+- **Mesa de Enlace Sectorial (MES — Comités Técnicos y Territoriales del FDI):** Constituida dentro del Régimen FIMCA y del Reglamento de Gestión del Fideicomiso (FDI) como su estructura de comisiones especializadas (Comisión de Homologación Técnica y Comisión de Crédito, Riesgo y Fomento Territorial), además de oficiar como el órgano consultivo paritario permanente previsto en los Arts. 1° y 27° de la Ley de e-OP. Integra a cámaras empresariales, sindicatos de rama, el INTI y municipios para administrar los cupos de arranque operativo del SETP, el filtro de Tecnología Conveniente, la Bolsa de Trabajo, la Red CIFO y el Banco de Maquinaria.
 - **Instituto Nacional de Tecnología Industrial (INTI):** Fija semestralmente las matrices de costos y tiempos estándar de confección (Art. 27°). Si una e-OP pacta tarifas por debajo de paritarias, dispara una Alerta de Inconsistencia que despoja a la marca del crédito fiscal y del puerto seguro, sin penalizar al taller. Brinda además el peritaje técnico en 5 días hábiles ante divergencias de calidad.
-- **Programa de Formalización Empresaria Tutelada (PFET):** Brinda acompañamiento contable y legal optativo (Art. 24 bis) a talleres empleadores consolidados (>5 dependientes) para su migración voluntaria a Responsable Inscripto o constitución de SAS/SRL, manteniendo intacto su historial en el SETP y su CDD.
+- **Programa de Formalización Empresaria Tutelada (PFET):** Brinda acompañamiento contable y legal optativo (Art. 24) a talleres empleadores consolidados (>5 dependientes) para su migración voluntaria a Responsable Inscripto o constitución de SAS/SRL, manteniendo intacto su historial en el SETP y su CDD.
 - **Promotor Territorial de Formalización (PTF):** Operador de base que vincula la plataforma con las unidades productivas en los barrios mediante operativos territoriales integrales.
 
 ---
@@ -173,8 +172,8 @@ La implementación contempla un protocolo específico (desarrollado en la Addend
 | Documento | Enfoque y Contenido | Destinatarios Principales |
 |---|---|---|
 | **Este Documento Ejecutivo** | Síntesis directiva: problema, anteproyecto articulado, finanzas y circuito operativo. | Diputados, Senadores, Asesores de Comisión, Periodismo. |
-| **Anteproyecto de Ley de e-OP** (`proyecto_ley_eop.md`) | Texto articulado completo (31 artículos, 5 títulos y 3 anexos regulatorios BCRA, CNV y ARCA). | Comisiones de Presupuesto e Impuestos, Legislación General, Industria y Trabajo. |
-| **Dossier FIMCA Base** (`dossier_fimca_base.md`) | Marco político-industrial, fundamentos sociológicos y gobernanza de la manufactura. | Gabinetes ministeriales, Cámaras empresariales, Dirigencia sindical. |
+| **Anteproyecto de Ley de e-OP** | Texto articulado completo (31 artículos, 5 títulos y 3 anexos regulatorios BCRA, CNV y ARCA). | Comisiones de Presupuesto e Impuestos, Legislación General, Industria y Trabajo. |
+| **Dossier FIMCA Base** | Marco político-industrial, fundamentos sociológicos y gobernanza de la manufactura. | Gabinetes ministeriales, Cámaras empresariales, Dirigencia sindical. |
 | **Addenda I** | Arquitectura jurídica detallada de la e-OP, Monotributo Productivo e interoperabilidad ARCA. | Secretarías Legales y Técnicas, Equipos de Tributación y Finanzas. |
 | **Addenda II** | Análisis de resistencias corporativas, matrices de costos y teoría del cambio institucional. | Mesas paritarias, Diseñadores de política industrial y laboral. |
 | **Addenda III** | Protocolo de intervención territorial, infraestructura eléctrica, dominial y hábitat productivo. | Secretarías de Producción locales, Municipios del Conurbano e interior. |
@@ -184,4 +183,4 @@ La implementación contempla un protocolo específico (desarrollado en la Addend
 ---
 
 *Proyecto FIMCA — Formalización e Incentivo a la Manufactura del Calzado Argentino.*
-*Autor: Tiago Gabriel Sarthou — tiagosarthou@gmail.com — Septiembre 2026.*
+*Autor: Tiago Gabriel Sarthou — tiagosarthou@gmail.com — Octubre 2026.*

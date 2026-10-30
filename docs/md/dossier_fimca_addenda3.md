@@ -37,9 +37,9 @@ El taller de barrio en zonas de vulnerabilidad social frecuentemente opera bajo 
 * **Conexión eléctrica clandestina ("enganche"):** el suministro se toma de la red sin medidor propio, con alto riesgo de corte, multa y exposición a accidentes eléctricos. La demanda de una máquina de aparado industrial o una desbastadora puede generar una sobrecarga que deja sin luz al taller y a los vecinos.
 * **Tensión inestable:** aun con medidor propio, la infraestructura de distribución en zonas de alta densidad residencial presenta caídas de tensión frecuentes que dañan motores, generan tiempos muertos y elevan el costo de mantenimiento.
 * **Sin gas de red:** el calefaccionamiento, la plancha de vapor industrial y ciertos procesos de pegado y secado de adhesivos requieren calor. Sin gas de red, el tallerista usa garrafa de 10 kg cuyo costo por BTU es hasta cuatro veces superior al del gas de red, destruyendo su margen operativo.
-* **Almacenamiento precario de materiales sin seguro individual:** en la casa-taller, los rollos de tela, cueros y avíos provistos por la marca comitente ($c_{\text{BOM}}$) conviven con el ámbito doméstico. Ninguna compañía de seguros tradicional emite pólizas individuales accesibles para casas-taller barriales sin exigir habilitaciones industriales previas o inspecciones edilicias que excluirían al 90% del sector.
+* **Almacenamiento precario de materiales sin seguro individual:** en la casa-taller, los rollos de tela, cueros y avíos provistos por la marca comitente (insumos y materias primas) conviven con el ámbito doméstico. Ninguna compañía de seguros tradicional emite pólizas individuales accesibles para casas-taller barriales sin exigir habilitaciones industriales previas o inspecciones edilicias que excluirían al 90% del sector.
 
-Un tallerista con suministro eléctrico irregular jamás se registraría si ello implicara que la distribuidora le reclame o descuente deudas retroactivas de su trabajo; del mismo modo, no podría destrabar el anticipo del Hito Cero (35% / 50% SBD) si se le exigiera contratar por su cuenta un seguro individual de mercadería. Conforme se detalla en esta Addenda y en el **Artículo 20 bis de la Ley de e-OP**, el régimen resuelve ambos cuellos de botella de plano: (1) **principio de "Pizarrón Limpio" eléctrico** con amnistía total del pasivo retroactivo; y (2) **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$)** administrada centralizadamente por el FDI y financiada mediante la alícuota fiduciaria de stock ($c_{\text{STK}}$ de hasta el 0,5% del $c_{\text{BOM}}$) a cargo exclusivo de la comitente, otorgando **vigencia asegurativa automática e inmediata al lote con el solo registro de la e-OP**, sin burocracia ni inspecciones previas al taller.
+Un tallerista con suministro eléctrico irregular jamás se registraría si ello implicara que la distribuidora le reclame o descuente deudas retroactivas de su trabajo; del mismo modo, no podría destrabar el anticipo del Hito Cero (35% / 50% SBD) si se le exigiera contratar por su cuenta un seguro individual de mercadería. Conforme se detalla en esta Addenda y en el **Artículo 20 bis de la Ley de e-OP**, el régimen resuelve ambos cuellos de botella de plano: (1) **principio de "Pizarrón Limpio" eléctrico** con amnistía total del pasivo retroactivo; y (2) **Póliza Colectiva Maestra de Stock en Custodia de Insumos** administrada centralizadamente por el FDI y financiada mediante la alícuota fiduciaria de cobertura de stock (de hasta el 0,5% del valor de insumos) a cargo exclusivo de la comitente, otorgando **vigencia asegurativa automática e inmediata al lote con el solo registro de la e-OP**, sin burocracia ni inspecciones previas al taller.
 
 #### Brecha 2: Conectividad Digital Inexistente y Barrera de Facturación
 
@@ -82,7 +82,7 @@ El despliegue territorial se articula mediante cuatro actores con roles diferenc
 Ya definido en la Addenda II (Sección VIII.E), el PTF es la figura central. En el marco de esta intervención, su rol se amplía con tres funciones de primera entrada:
 
 * **Relevamiento domiciliario previo:** antes de la campaña de formalización, el PTF —asignado a cada cuadrante por el nodo comunitario de la MES local, que es quien conoce el territorio y distribuye las zonas de intervención— recorre el cuadrante con una ficha de campo simple (dirección, oficio, capacidad estimada de producción mensual, condición de suministro eléctrico, tenencia del celular y cobertura de señal). Esta ficha no tiene carácter fiscal ni tributario: es un instrumento de planificación territorial con secreto profesional absoluto.
-* **Generación del Mapa Productivo Local:** el PTF carga los datos de campo en la plataforma, generando el primer mapa georeferenciado del universo productivo informal de cada cuadrante. Este mapa es de uso exclusivo de la MES local y el municipio para planificar las intervenciones de infraestructura.
+* **Generación del Mapa Productivo Local:** el PTF carga los datos de campo en la plataforma, generando el primer mapa georreferenciado del universo productivo informal de cada cuadrante. Este mapa es de uso exclusivo de la MES local y el municipio para planificar las intervenciones de infraestructura.
 * **Primer contacto y acompañamiento:** el PTF es quien explica el régimen en el idioma del taller, con la legitimidad de haber pasado por el mismo proceso.
 
 #### 2. La Secretaría de Producción Municipal — *El Articulador Institucional*
@@ -130,21 +130,15 @@ El despliegue opera en un ciclo de cinco semanas por cuadrante territorial:
 
 ```mermaid
 flowchart TD
-    S1[Semana 1 - Mapeo Silencioso\nPTF recorre el cuadrante\nFicha de campo confidencial\nSin contacto con Estado recaudador] --> S2
+    S1["Semana 1 — Mapeo Silencioso\nPTF recorre el cuadrante fabril\nFicha de campo confidencial sin fines recaudatorios"] --> S2
+    S2["Semana 2 — Convocatoria Comunitaria\nAsamblea barrial con organizaciones del territorio\nExplicación horizontal entre pares y evacuación de dudas"] --> S3
+    S3["Semana 3 — Timbreo Técnico-Social\nEquipo multidisciplinario en planta\nAlta asistida en FIMCA, cuenta bancaria y Pizarrón Limpio eléctrico"] --> S4
+    S4["Semana 4 — Primera e-OP y Arranque\nSuscripción digital bilateral con la marca elegida\nDesbloqueo inmediato del Hito Cero (35% o 50% SBD)"] --> S5
+    S5["Semana 5 — Consolidación de Trayectoria\nPrimer cobro acreditado y scoring iniciado en SETP\nTallerista visible en Bolsa de Trabajo; rotación al nuevo cuadrante"]
 
-    S2[Semana 2 - Convocatoria por OLP\nAsamblea barrial en espacio comunitario\nExplicación por pares del régimen\nPreguntas sin compromiso] --> S3
-
-    S3[Semana 3 - Timbreo Técnico-Social\nEquipo Multidisciplinario visita el taller\nAsistencia para el alta en FIMCA\nApertura cuenta BAPRO\nAcuerdo de regularización eléctrica] --> S4
-
-    S4[Semana 4 - Primera e-OP\nPTF asiste la primera firma digital\nTallerista elige con qué marca conectar\nHito Cero se desbloquea\nConectividad garantizada en espacio comunitario] --> S5
-
-    S5[Semana 5 - Consolidación\nPrimer clearing recibido\nHistorial comunitario iniciado\nTallerista visible en Bolsa de Trabajo\nPTF pasa al cuadrante siguiente]
-
-    style S1 fill:#f0f9ff,stroke:#0369a1
-    style S2 fill:#fef3c7,stroke:#d97706
-    style S3 fill:#f0fdf4,stroke:#16a34a
-    style S4 fill:#fdf4ff,stroke:#9333ea
-    style S5 fill:#ecfdf5,stroke:#059669
+    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
+    classDef start fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
+    class S4 start;
 ```
 
 > **Figura A3.1.** *Ciclo operativo de la Intervención Territorial.* La intervención no depende de una oficina fija, sino de un despliegue móvil que rota por cuadrantes. Cada ciclo de cinco semanas incorpora un nuevo grupo de talleristas al régimen, cubriendo gradualmente el universo productivo informal del municipio.
@@ -165,7 +159,7 @@ El nodo comunitario de la MES activa este mecanismo enviando los primeros códig
 
 #### Mecanismo 2 — Declaración de Capacidad por la Marca sin Identificación de Personas
 
-La marca comitente que quiere acceder al **Crédito Fiscal Presunto de IVA del 10%** sobre la mano de obra ($c_{\text{MOD}}$, Art. 23° inc. 1 Ley de e-OP) y al **Puerto Seguro laboral (CDD / CDD-P, Art. 22°)** declara en la plataforma un *compromiso de capacidad a formalizar*: indica la especialidad buscada (aparado, corte, costura), el volumen mensual estimado en pares, y el municipio o zona de operación. No nomina ningún individuo ni entrega ningún dato personal de sus proveedores informales actuales.
+La marca comitente que quiere acceder al **Crédito Fiscal Presunto de IVA del 10%** sobre la mano de obra (Art. 23 inc. 1 Ley de e-OP) y al **Puerto Seguro laboral (CDD / CDD-P, Art. 22°)** declara en la plataforma un *compromiso de capacidad a formalizar*: indica la especialidad buscada (aparado, corte, costura), el volumen mensual estimado en pares, y el municipio o zona de operación. No nomina ningún individuo ni entrega ningún dato personal de sus proveedores informales actuales.
 
 A partir de esa declaración, el nodo comunitario de la MES local recibe la demanda y coordina con el PTF del cuadrante la búsqueda de esa capacidad entre los talleristas relevados en el Mapa Productivo Local. El tallerista que decide adherirse elige si conectar su primera e-OP a esa marca o a otra disponible en la Bolsa. La marca no sabe quién se formalizó ni cuándo: solo recibe la e-OP firmada cuando el tallerista ya tomó la decisión por sí mismo.
 
@@ -286,7 +280,7 @@ El tallerista que entrega un lote y espera 45 días para cobrar no tiene ningún
 
 #### "Hoy ponés el capital vos. Con FIMCA, el capital lo pone el sistema antes de que empieces."
 
-El **Hito Cero es un anticipo automático del 35% del valor neto de mano de obra ($c_{\text{MOD}}$) —o del 50% si el producto tiene Sello Buen Diseño (SBD)—** que se libera una vez suscripta la e-OP bilateral, recibido el remito de insumos con UUID y activada de oficio la **Póliza Colectiva Maestra de Stock en Custodia (Art. 20 bis)**, antes de que cortes la primera pieza. Esa plata se acredita en tu **Cuenta Especial de Compensación y Liquidación Manufacturera (100% exenta del Impuesto al Cheque, Ley 25.413)** para comprar avíos menores, pagar adelantos a los ayudantes y cubrir la luz del mes. Es capital de trabajo inmediato sin scoring bancario tradicional ni exigencia de balances.
+El **Hito Cero es un anticipo automático del 35% del valor neto de mano de obra —o del 50% si el producto tiene Sello Buen Diseño (SBD)—** que se libera una vez suscripta la e-OP bilateral, recibido el remito de insumos con UUID y activada de oficio la **Póliza Colectiva Maestra de Stock en Custodia de Insumos (Art. 20 bis)**, antes de que cortes la primera pieza. Esa plata se acredita en tu **Cuenta Especial de Compensación y Liquidación Manufacturera (100% exenta del Impuesto al Cheque, Ley 25.413)** para comprar avíos menores, pagar adelantos a los ayudantes y cubrir la luz del mes. Es capital de trabajo inmediato sin scoring bancario tradicional ni exigencia de balances.
 
 #### "Hoy conseguís trabajo por el boca a boca. Con FIMCA, cualquier marca del país puede encontrarte."
 
@@ -320,7 +314,7 @@ A medida que el historial crece, el crédito crece con él: a los cuatro meses, 
 
 #### "Hoy si la marca se funde o hay un siniestro, perdés todo. Con FIMCA, el trabajo y los materiales están asegurados y con privilegio legal."
 
-Conforme a los Artículos 20°, 20 bis y 21° de la Ley de e-OP: (1) al registrarse la e-OP, el lote en tu casa-taller queda cubierto de forma inmediata y gratuita para vos por la **Póliza Colectiva Maestra de Stock en Custodia ($c_{\text{BOM}}$)** del FDI (pagada por la marca con el 0,5% de stock), de modo que ante un incendio, robo calificado o siniestro, el seguro repone los materiales a la marca y el FDI te paga la mano de obra devengada; (2) si la marca entra en concurso o quiebra, tus cobros tienen **Privilegio Especial sobre el lote físico elaborado (Art. 241 inc. 1 y Art. 242 de la Ley 24.522)** y **derecho de retención preferencial (Art. 2587 CCyC)**; y (3) a la inversa, la marca sabe que sus insumos en tu taller están protegidos como depósito regular en locación de obra con acción de restitución directa (Art. 138 Ley 24.522).
+Conforme a los Artículos 20°, 20 bis y 21° de la Ley de e-OP: (1) al registrarse la e-OP, el lote en tu casa-taller queda cubierto de forma inmediata y gratuita para vos por la **Póliza Colectiva Maestra de Stock en Custodia de Insumos** del FDI (pagada por la marca con la alícuota de cobertura de stock de hasta el 0,5%), de modo que ante un incendio, robo calificado o siniestro, el seguro repone los materiales a la marca y el FDI te paga la mano de obra devengada; (2) si la marca entra en concurso o quiebra, tus cobros tienen **Privilegio Especial sobre el lote físico elaborado (Art. 241 inc. 1 y Art. 242 de la Ley 24.522)** y **derecho de retención preferencial (Art. 2587 CCyC)**; y (3) a la inversa, la marca sabe que sus insumos en tu taller están protegidos como depósito regular en locación de obra con acción de restitución directa (Art. 138 Ley 24.522).
 
 #### "Hoy no existís para el sistema. Con FIMCA, empezás a tener trayectoria en el SETP."
 
@@ -328,7 +322,7 @@ No tener historial crediticio es una trampa de la que es casi imposible salir: s
 
 #### "Hoy si trabajás por tu cuenta no sumás jubilación. Con FIMCA, cada lote te suma aportes reales sin cuota fija mensual."
 
-El alta en el **Monotributo Productivo (Art. 24° Ley de e-OP)** sustituye la cuota fija mensual por una **micro-retención única del 2% sobre las cobranzas netas** que se imputa al cómputo de meses con aportes en el **SIPA** para tu jubilación (y si un mes no tenés órdenes activas, tu deuda es cero). A su vez, para los trabajadores de talleres empleadores, el régimen condona deudas pasadas, reconoce hasta 60 meses de aportes SIPA (Art. 22° inc. 22.2 bis) y crea el **Fondo FAEL (Art. 22° inc. 22.6)** para garantizar el cobro inmediato de salarios sin esperar juicios interminables.
+El alta en el **Monotributo Productivo (Art. 24° Ley de e-OP)** sustituye la cuota fija mensual por una **micro-retención única del 2% sobre las cobranzas netas** que se imputa al cómputo de meses con aportes en el **SIPA** para tu jubilación (y si un mes no tenés órdenes activas, tu deuda es cero). A su vez, para los trabajadores de talleres empleadores, el régimen condona deudas pasadas, reconoce hasta 60 meses de aportes SIPA (Art. 22 inc. 3) y crea el **Fondo FAEL (Art. 22 inc. 6)** para garantizar el cobro inmediato de salarios sin esperar juicios interminables.
 
 #### Las exenciones e incentivos fiscales (para cerrar la conversación, no para abrirla)
 
@@ -337,13 +331,11 @@ Una vez establecidos los beneficios concretos, las disposiciones impositivas con
 * **Exención del 100% del Impuesto al Cheque (Ley 25.413)** en las Cuentas Especiales de Compensación y Liquidación Manufacturera (Art. 14° inc. 5).
 * **Exención de Ingresos Brutos y Sellos** sobre las transferencias de e-OPs y anticipos del FDI en provincias adheridas (Art. 25°), con bloqueo de retenciones SIRCREB.
 * **Diferimiento del hecho imponible del IVA** hasta la entrega definitiva del lote y liberación de la RCF (Art. 23° inc. 2, mod. Art. 5° inc. b Ley de IVA).
-* **Crédito Fiscal Presunto de IVA del 10%** sobre la mano de obra ($c_{\text{MOD}}$, Art. 23° inc. 1) y **Puerto Seguro laboral (CDD / CDD-P, Art. 22°)** para la marca comitente, lo que incentiva directamente a las marcas a contratar talleristas formalizados en el régimen.
+* **Crédito Fiscal Presunto de IVA del 10%** sobre la mano de obra (Art. 23 inc. 1) y **Puerto Seguro laboral (CDD / CDD-P, Art. 22°)** para la marca comitente, lo que incentiva directamente a las marcas a contratar talleristas formalizados en el régimen.
 * **Facturación en un clic mediante Borrador Asistido de Factura C** precargado por ARCA (Art. 24° inc. 5) y **bloqueo automático de FCE** (Art. 7° bis Ley 27.440) para evitar doble titulación.
 * **Cláusula de no retroactividad y Pizarrón Limpio:** el régimen no persigue el pasado fiscal ni eléctrico. Quien se incorpora empieza de cero con respaldo productivo real.
 
 ---
-
-
 
 El Proyecto FIMCA construyó una autopista sofisticada: contratos inteligentes, fideicomiso de segundo piso, escrow digital, prueba de trabajo productivo, cierre fiscal automatizado con ARCA. Pero una autopista sin rampa de acceso sirve únicamente a quienes ya están sobre el asfalto.
 
