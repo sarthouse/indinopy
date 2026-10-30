@@ -15,7 +15,47 @@ Indinopy no es solo un ERP administrativo, sino una plataforma de **gobernanza c
 2. **Burocracia y Discrecionalidad:** Reemplaza el expediente analógico y la intermediación discrecional por **auditoría fiduciaria objetiva, contratos automatizados de custodia (Escrow y Timelocks en Celery/PostgreSQL)** y convalidación en territorio por los Promotores Territoriales (PTF).
 3. **Purgatorio Fiscal e Informalidad:** Conecta interfaces con ARCA para automatizar el alta tributaria (Monotributo Productivo con micro-retención del 2%), habilitar la facturación asistida en un clic y retener aportes únicamente al momento del cobro bancario real, evitando la acumulación de pasivos en períodos de inactividad.
 
-### 1.1. Encuadre Operativo: La Marca como Núcleo Integral (Producción Mixta, Nómina y Finanzas)
+### 1.1. Dualidad Arquitectónica del Ecosistema: `fimca-core` vs. `indinopy`
+
+El ecosistema tecnológico no es un monolito confuso, sino que se divide estrictamente en **dos aplicaciones autónomas e interconectadas**:
+
+```mermaid
+flowchart TD
+    GOV["RED FEDERADA FIMCA<br/><b>Gobernanza Sectorial & Marco Institucional</b>"]
+
+    subgraph FIMCA["1. fimca-core (Nodo Institucional del Fondo)"]
+        direction TB
+        FC_1["Administración Fiduciaria del Fondo (FDI)"]
+        FC_2["Emisión de Bonos BIP (60–120 días) y Liquidación BAPRO"]
+        FC_3["Mesa de Enlace Sectorial (MES: 7 Miembros Ad-Honorem del FDI)"]
+        FC_4["Registro Canónico de e-OPs, Timelock 48h y Silencio Positivo"]
+        FC_5["PKI Federada: CA Root, Padrón PTF (PostGIS) y CRL"]
+        FC_6["Comunicaciones Oficiales Inter-Nodo (GDE Sectorial)"]
+        FC_1 --> FC_2 --> FC_3 --> FC_4 --> FC_5 --> FC_6
+    end
+
+    subgraph INDINO["2. indinopy (Cliente ERP/MES para Usuarios Finales)"]
+        direction TB
+        IN_1["Gestión Integral para Marcas Comitentes y Talleres"]
+        IN_2["Manufactura Física de Planta (Recetas BOM, Mermas INTI 10%)"]
+        IN_3["Doble Entrada de Stock y Remitos de Custodia (Arts. 1251/1356 CCyC)"]
+        IN_4["Nómina Hermética con Aprobación Dual SoD y LSD ARCA"]
+        IN_5["Contabilidad Partida Doble, IVA Diferido y Facturación AFIP"]
+        IN_6["Tesorería Comercial y Cancelación Diferida (60–120 días al FDI)"]
+        IN_7["Gateway Headless para Integración ERPs Legacy (SAP / Tango)"]
+        IN_1 --> IN_2 --> IN_3 --> IN_4 --> IN_5 --> IN_6 --> IN_7
+    end
+
+    GOV ==>|Webhooks Ed25519 / Clearing REST| FIMCA
+    FIMCA ==>|Sobre de Transporte Criptográfico / Colateralización| INDINO
+```
+
+1. **`fimca-core` (La Autoridad y el Fondo):** Es el software de backend institucional que opera el Fideicomiso (FDI), el Banco agente de clearing y la Mesa de Enlace Sectorial (MES). No maneja el inventario privado ni la nómina de las fábricas. Su función es ser la **cámara de compensación, el oráculo de precios de convenio y el árbitro de la red**.
+2. **`indinopy` (El Cliente Fabril):** Es la suite de software que corre en cada empresa (SaaS o local). Gestiona la vida interna de la fábrica (insumos, corte, sueldos, ventas) y, cuando una orden es federada, la empaqueta y dialoga con `fimca-core` para obtener financiamiento y garantías.
+
+---
+
+### 1.2. Encuadre Operativo: La Marca como Núcleo Integral (Producción Mixta, Nómina y Finanzas)
 
 El sistema está concebido para dar soporte en primera instancia a la **Marca manufacturera** en toda su complejidad operativa, y en segunda instancia al **Tallerista satélite**:
 
@@ -278,10 +318,6 @@ flowchart LR
     GATEWAY -->|"Sella payload canónico y firma Ed25519"| FDI_NET
     FDI_NET -->|"Liquidación bancaria por hitos"| GATEWAY
     GATEWAY -->|"Webhook: Lote certificado y finalizado"| ERP_EXT
-
-    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
-    classDef highlight fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
-    class GATEWAY highlight;
 ```
 
 1. **Desactivación de Módulos Locales:** Mediante variables de configuración (`NODE_ROLE`), la empresa desactiva ventas, compras y contabilidad en su instancia de Indinopy.

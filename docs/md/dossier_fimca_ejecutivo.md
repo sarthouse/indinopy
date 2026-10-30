@@ -1,4 +1,4 @@
----
+﻿---
 title: "Proyecto FIMCA — Documento Ejecutivo para el Legislador"
 author: Tiago Gabriel Sarthou
 date: Octubre 2026
@@ -114,12 +114,7 @@ flowchart LR
     P2 --> P3["3. Hitos de Avance\nCertificación PoPW 45% (30% SBD)"]
     P3 --> P4["4. Entrega del Lote\nInspección (5d) + RCF 20%"]
     P4 --> P5["5. Cierre Fiscal ARCA\nFactura + CDD/FAEL + RCF Libre"]
-
-    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
-    classDef highlight fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
-    classDef close fill:#EBF8FF,stroke:#3182CE,stroke-width:2px,color:#2B6CB0,font-weight:bold;
-    class P2 highlight;
-    class P5 close;
+class P5 close;
 ```
 
 1. **Paso 1 — Registro y Perfeccionamiento de la e-OP:** La comitente y el ejecutor suscriben la orden en la plataforma oficial con autenticación fiscal Nivel 3. La orden estipula la receta técnica (BOM), el valor de mano de obra, el canon fiduciario (de hasta 1,5%), la fecha de vencimiento comercial de pago y, de corresponder, el Sello Buen Diseño (SBD). La suscripción perfecciona el contrato y genera título ejecutivo autónomo.

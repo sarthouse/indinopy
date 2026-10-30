@@ -128,20 +128,11 @@ La intervención no espera a que el tallerista se acerque a una carpa; va a busc
 
 El despliegue opera en un ciclo de cinco semanas por cuadrante territorial:
 
-```mermaid
-flowchart TD
-    S1["Semana 1 — Mapeo Silencioso\nPTF recorre el cuadrante fabril\nFicha de campo confidencial sin fines recaudatorios"] --> S2
-    S2["Semana 2 — Convocatoria Comunitaria\nAsamblea barrial con organizaciones del territorio\nExplicación horizontal entre pares y evacuación de dudas"] --> S3
-    S3["Semana 3 — Timbreo Técnico-Social\nEquipo multidisciplinario en planta\nAlta asistida en FIMCA, cuenta bancaria y Pizarrón Limpio eléctrico"] --> S4
-    S4["Semana 4 — Primera e-OP y Arranque\nSuscripción digital bilateral con la marca elegida\nDesbloqueo inmediato del Hito Cero (35% o 50% SBD)"] --> S5
-    S5["Semana 5 — Consolidación de Trayectoria\nPrimer cobro acreditado y scoring iniciado en SETP\nTallerista visible en Bolsa de Trabajo; rotación al nuevo cuadrante"]
-
-    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
-    classDef start fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
-    class S4 start;
-```
-
-> **Figura A3.1.** *Ciclo operativo de la Intervención Territorial.* La intervención no depende de una oficina fija, sino de un despliegue móvil que rota por cuadrantes. Cada ciclo de cinco semanas incorpora un nuevo grupo de talleristas al régimen, cubriendo gradualmente el universo productivo informal del municipio.
+1. **Semana 1 — Mapeo Silencioso:** El PTF recorre el cuadrante fabril relevando talleres y confecciona la ficha de campo confidencial sin fines recaudatorios ni punitivos.
+2. **Semana 2 — Convocatoria Comunitaria:** Asamblea barrial articulada con las organizaciones del territorio, donde se explica el régimen horizontalmente entre pares y se evacuan dudas.
+3. **Semana 3 — Timbreo Técnico-Social:** Desembarco del equipo multidisciplinario en planta para realizar el alta asistida en FIMCA, la apertura de la cuenta bancaria de clearing y el diagnóstico del *Pizarrón Limpio* eléctrico.
+4. **Semana 4 — Primera e-OP y Arranque:** Suscripción digital bilateral de la orden con la marca comitente elegida y acreditación inmediata del Hito Cero (35% o 50% con Sello Buen Diseño).
+5. **Semana 5 — Consolidación de Trayectoria:** Primer cobro acreditado, inicio del scoring reputacional en el SETP, visibilidad activa en la Bolsa de Trabajo y rotación del equipo operativo al siguiente cuadrante.
 
 ---
 

@@ -118,24 +118,6 @@ Dentro de la Bolsa de Trabajo Sectorial se crea una sección específica destina
 
 * **Mapa de Oficios del Conurbano:** la MES publica y actualiza trimestralmente un mapa georreferenciado de las especialidades disponibles en cada municipio, identificando los oficios con menor densidad de oferta y mayor riesgo de extinción.
 
-```mermaid
-flowchart LR
-    DEM["Marcas Comitentes<br/>(Publican requerimientos)"]
-    SETP_NODE["Bolsa de Trabajo y SETP<br/>• Matching transparente<br/>• Calificación bilateral"]
-    OFE["Talleres y Oficios<br/>(Registran capacidad y especialidad)"]
-
-    DEM -->|"Publica órdenes"| SETP_NODE
-    OFE -->|"Ofrece capacidad"| SETP_NODE
-    SETP_NODE -.->|"Asignación directa y scoring"| DEM
-    SETP_NODE -.->|"Asignación directa y scoring"| OFE
-
-    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
-    classDef center fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
-    class SETP_NODE center;
-```
-
-> **Figura 5: Ecosistema de la Bolsa de Trabajo Sectorial y el SETP.** Grafo que representa la interacción del mercado de la Comunidad Organizada. Oferta y demanda se cruzan mediadas por el **Sistema de Evaluación de Trayectoria Productiva (SETP, Art. 2° inc. 12 Ley de e-OP)**, regulado bajo la Ley 25.326 de Protección de Datos Personales, donde tanto las marcas como los talleristas son evaluados objetivamente en su cumplimiento recíproco.
-
 ### C. Articulación con las Organizaciones Libres del Pueblo
 
 #### Fundamento Doctrinario
@@ -198,7 +180,7 @@ sequenceDiagram
         M->>E: Reintegra fianza a la marca
     end
 ```
-> **Figura 6: Acción de Tutela de Urgencia y Veto Ex-Post.** Diagrama de secuencia que detalla la intervención sindical ante abusos. El mecanismo garantiza que el conflicto no frene la logística productiva de la marca, obligándola a inmovilizar una fianza líquida (Escrow) para poder retirar su mercadería mientras el Tribunal de Arbitraje resuelve la disputa de fondo.
+> **Figura 5: Acción de Tutela de Urgencia y Veto Ex-Post.** Diagrama de secuencia que detalla la intervención sindical ante abusos. El mecanismo garantiza que el conflicto no frene la logística productiva de la marca, obligándola a inmovilizar una fianza líquida (Escrow) para poder retirar su mercadería mientras el Tribunal de Arbitraje resuelve la disputa de fondo.
 
 **Como socios de la formalización:**
 
@@ -271,20 +253,6 @@ Durante las primeras tres (3) e-OP operadas por el tallerista novato, el PTF eje
 La entrega a término de los lotes de las primeras e-OP generará un récord positivo de cumplimiento dentro del **Sistema de Evaluación de Trayectoria Productiva (SETP, Art. 2° inc. 12)** y de la Bolsa de Trabajo. Este historial complementa y reemplaza al scoring financiero clásico para ampliar cupos operativos y habilitar al tallerista —a partir de la cuarta operación exitosa— a aplicar a las líneas de equipamiento del Banco de Maquinaria y del FDI.
 
 Una operación se considera **exitosa y completada** a todos los efectos del SETP —incluyendo la liberación del **Hito Final del 20%**— únicamente cuando se verifican de forma acumulativa: (1) la entrega física del lote conforme (transcurrido el plazo de 5 días hábiles de observación o resuelto el peritaje técnico del INTI en 5 días hábiles, Arts. 11° y 13°); y (2) la emisión del comprobante fiscal electrónico oficial con CAE ante ARCA (con **bloqueo automático de FCE** conforme al Art. 7° bis de la Ley 27.440). El FDI retiene el tramo final del pago (**20%**) bajo el estado de **Retención de Cierre Fiscal (RCF)** hasta que se valide el CAE (mediante la confirmación en un clic del borrador asistido de Factura C para monotributistas productivos, sin cargo de mora BADLAR). De este modo, **no hay cobro final ni puntaje en el SETP sin factura oficial**.
-
-```mermaid
-flowchart TD
-    P1["1. Visita Territorial del Promotor (PTF)\nRelevamiento confidencial y pedagogía del régimen"] --> P2["2. Alta Integrada ARCA / RENAPER\nMonotributo Productivo (micro-retención 2% sin deuda fija)"]
-    P2 --> P3["3. Cuenta Especial Bancaria\nSin costos, pagos QR y 100% exenta del Impuesto al Cheque"]
-    P3 --> P4["4. Suscripción de 1ra e-OP + Póliza de Stock\nRecepción de materias primas con remito oficial UUID"]
-    P4 --> P5["5. Desembolso del Hito Cero (FDI)\n35% (o 50% con Sello Buen Diseño) sin scoring patrimonial"]
-    P5 --> P6["6. Avance PoPW y Cierre Fiscal RCF (20%)\nFacturación asistida con 1 clic y construcción de scoring en SETP"]
-
-    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
-    classDef highlight fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
-    class P5 highlight;
-```
-> **Figura 7: El Camino de la Confianza (PTF, Hito Cero del 35%/50% y SETP).** Diagrama de flujo que ilustra la rampa de inclusión financiera y fiscal. El Promotor Territorial (PTF) actúa como puente humano para que el tallerista obtenga el alta automática en el Monotributo Productivo, la Cuenta Especial exenta del Impuesto al Cheque y el desembolso del Hito Cero (35% o 50% con SBD), construyendo su trayectoria verificable en el SETP.
 
 ### E. Idoneidad y Elección del Promotor Territorial de Formalización (PTF)
 

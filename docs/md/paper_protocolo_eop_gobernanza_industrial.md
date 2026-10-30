@@ -1,4 +1,4 @@
----
+﻿---
 title: Protocolo Orden de Producción Electrónica
 author: Tiago Gabriel Sarthou
 date: Septiembre 2026
@@ -106,7 +106,7 @@ Donde:
 
 ```mermaid
 classDiagram
-    class e_OP {
+{
         +UUID uuid
         +Ed25519PubKey comitente_key
         +Ed25519PubKey taller_key
@@ -116,14 +116,14 @@ classDiagram
         +RegimenLegal fason_CCCN_1251_1356_LCQ_138
         +Multisig2of3 firmas_digitales
     }
-    class MerkleTreeBOM {
+{
         +Leaf m1_cuero_m2_tolerancia
         +Leaf m2_suela_par
         +Leaf m3_adhesivo_litro
         +Leaf m4_avios_unidades
         +compute_root() Hash256
     }
-    class HitosEscrow {
+{
         +Hito0 anticipo_arranque_35_50pct
         +HitoAvance entrega_parcial_certificada
         +HitoFinal conformidad_calidad

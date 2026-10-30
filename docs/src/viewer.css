@@ -517,7 +517,7 @@ pre code {
 
 /* MERMAID INTERACTIVE WRAPPER */
 .mermaid-wrapper {
-    background-color: #05080d !important;
+    background-color: var(--bg-surface) !important;
     border: 1px solid var(--border-color);
     border-radius: 10px;
     margin: 24px 0;
@@ -596,9 +596,10 @@ pre code {
     overflow: hidden;
     display: block;
     text-align: center;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-color: var(--bg-surface);
+    background-image: radial-gradient(circle, rgba(56, 189, 248, 0.12) 1px, transparent 1px);
     background-size: 20px 20px;
-    padding: 20px;
+    padding: 24px;
     box-sizing: border-box;
     cursor: grab;
     touch-action: pan-y;
@@ -617,6 +618,50 @@ pre code {
     width: 100% !important;
     max-width: 900px !important;
     height: auto !important;
+}
+
+/* Subgrafos / Clusters con fondo armónico con el tema oscuro */
+.mermaid svg .cluster rect {
+    fill: #0d131f !important;
+    stroke: #334155 !important;
+    stroke-width: 1.5px !important;
+    rx: 6px !important;
+    ry: 6px !important;
+}
+
+.mermaid svg .cluster .nodeLabel,
+.mermaid svg .cluster text {
+    fill: #38bdf8 !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+}
+
+/* Nodos con fondo oscuro sutil y texto claro legible */
+.mermaid svg .node rect,
+.mermaid svg .node circle,
+.mermaid svg .node polygon {
+    fill: #162032 !important;
+    stroke: #38bdf8 !important;
+    stroke-width: 1.5px !important;
+}
+
+.mermaid svg .node .label,
+.mermaid svg .node text {
+    fill: #f1f5f9 !important;
+    font-size: 12px !important;
+}
+
+/* Flechas y enlaces */
+.mermaid svg .edgePath path {
+    stroke: #64748b !important;
+    stroke-width: 1.5px !important;
+}
+
+.mermaid svg .edgeLabel {
+    background-color: #0d131f !important;
+    color: #94a3b8 !important;
+    fill: #94a3b8 !important;
+    font-size: 11px !important;
 }
 
 .mermaid-viewport:active {

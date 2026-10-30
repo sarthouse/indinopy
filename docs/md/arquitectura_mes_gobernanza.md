@@ -1,4 +1,4 @@
-# Arquitectura Institucional y Tecnológica de la Mesa de Enlace Sectorial (MES)
+﻿# Arquitectura Institucional y Tecnológica de la Mesa de Enlace Sectorial (MES)
 ## Proyecto Programático de Gobernanza Industrial, Comunidad Organizada y Soberanía Productiva
 
 > **Documento rector:** Proyecto Programático de Política Industrial y Arquitectura de Sistemas  
@@ -22,29 +22,22 @@ La gobernanza se estructura en una jerarquía descentralizada de dos velocidades
 
 ```mermaid
 flowchart TD
-    subgraph FED["NIVEL FEDERAL: Consejo Superior de la MES Federal"]
-        direction TB
-        CS_DIR["Directorio Federal Tripartito\n(INTI, Federaciones Sindicales, Cámaras Nacionales, Sec. Comercio)"]
-        CS_NORM["Plenario Normativo: Resoluciones Generales Federales (RGF)\n(Pisos Salariales Nacionales, Aranceles e Índices IPIM)"]
-        CS_TECH["Comisión Federal de Tecnología Conveniente\n(Dictámenes y Tablas Únicas de Maquinaria con INTI)"]
-        CS_ALZ["Tribunal Superior de Alzada\n(Última Instancia de Mediación, Recurso de Apelación y Exclusiones)"]
-        CS_BOL["Boletín Oficial Sectorial Central y Tablero Macro"]
+    subgraph FED["NIVEL FEDERAL: Consejo Superior de la MES"]
+        CS_NORM["Plenario Normativo (RGF)<br/>Pisos salariales, convenios e IPIM"]
+        CS_TECH["Comisión Federal de Tecnología<br/>Tablas Únicas de Maquinaria INTI"]
+        CS_ALZ["Tribunal Superior de Alzada<br/>Apelaciones y exclusiones"]
     end
 
-    subgraph LOC["NIVEL LOCAL: Nodo MES Municipal (La Matanza, San Martín, Lanús, etc.)"]
-        direction TB
-        LM_MESA["Mesa Local de Conducción (7 Miembros Titulares)\nPresidida por la Secretaría de Producción Municipal"]
-        LM_TEC["Comisión de Homologación Técnica\n(Perito INTI Local + Delegado Sindical de Rama)"]
-        LM_CRE["Comisión de Crédito y Riesgo\n(Representantes de Talleristas + Marcas + Municipio)"]
-        LM_ARB["Tribunal Arbitral Territorial\n(Conciliación Obligatoria en 72 horas)"]
-        LM_BOL["Bolsa de Trabajo Distrital y Padrón de Talleres"]
+    subgraph LOC["NIVEL LOCAL: Nodo Municipal"]
+        LM_MESA["Mesa Local de Conducción (7 Sillas)<br/>Presidida por Sec. Producción Municipal"]
+        LM_TEC["Comisión de Homologación Técnica<br/>Perito INTI + Delegado Sindical"]
+        LM_CRE["Comisión de Crédito y Riesgo<br/>Talleres + Marcas + Municipio"]
     end
 
-    CS_NORM -->|Directivas Marco y Pisos de Precio| LM_MESA
-    CS_TECH -->|Tablas Federales de Tecnología Homologada| LM_TEC
-    LM_MESA -->|Recurso de Alzada ante Parálisis Local| CS_ALZ
-    LM_MESA -->|Reportes Semanales de Capacidad e Incobrabilidad| CS_BOL
-    LM_CRE -->|Disparo de Desembolsos| FDI_LOC["Cuentas de Clearing FDI / Banco Provincia"]
+    CS_NORM -->|Pisos y directivas marco| LM_MESA
+    CS_TECH -->|Tablas homologadas| LM_TEC
+    LM_MESA -->|Apelación por parálisis| CS_ALZ
+    LM_CRE -->|Validación e-OP y desembolsos| FDI_LOC["Cuentas Clearing FDI / BAPRO"]
 ```
 
 ### 2.1. Competencias Exclusivas de la MES Federal
@@ -64,15 +57,15 @@ flowchart TD
 ## 3. Composición de la Mesa Local y Equilibrio de Fuerzas
 Para neutralizar cualquier intento de cooptación por parte del gran capital comercial o de la burocracia de turno, el gobierno del Nodo Municipal se asienta sobre **7 sillas con representación equilibrada**:
 
-```mermaid
-pie title Distribución del Poder en la MES Municipal (7 Miembros)
-    "Talleristas Monotributo Productivo" : 1
-    "Talleristas Unidades SAS" : 1
-    "Marcas Comerciales / Cámaras" : 2
-    "Sindicato de Rama (Tutela Laboral)" : 1
-    "INTI (Soberanía Técnica)" : 1
-    "Municipio (Árbitro y Presidencia)" : 1
-```
+| Sector / Estamento | Sillas | Representación y Rol |
+| :--- | :---: | :--- |
+| **Talleristas de Base** | **1** | Electo por voto directo del sub-padrón de trabajadores manuales individuales (Monotributo Productivo). |
+| **Talleres Consolidados** | **1** | Electo por talleres empleadores registrados (cooperativas, personas humanas, SAS de hasta 30 operarios). |
+| **Marcas Comitentes** | **2** | Designados por la cámara empresaria sectorial. Aportan demanda comercial y el Fondo de Garantía (5%). |
+| **Sindicato de Rama** | **1** | Designado por gremio de rama con personería (SETIA y afines). Tutela laboral y auditoría ex-post. |
+| **INTI (Soberanía Técnica)** | **1** | Perito industrial designado por el instituto. Criterio técnico, homologación de maquinaria y mermas. |
+| **Municipio (Árbitro)** | **1** | Funcionario designado por Sec. de Producción. **Preside la Mesa y desempata** en paridad. |
+| **Total Plenario** | **7** | **Quórum:** 5 miembros. **Materias Reservadas:** 5 votos + voto concurrente de Silla 1 o Silla 2. |
 
 ### 3.1. Detalle de las 7 Sillas
 1. **Silla 1 — Talleristas de Base (Monotributo Productivo):** Representante titular electo por voto directo del sub-padrón de trabajadores manuales individuales (aparadores, cortadores, costureros a destajo). Defiende la tarifa por par y la agilidad de los cobros en cuenta.
@@ -96,26 +89,12 @@ pie title Distribución del Poder en la MES Municipal (7 Miembros)
 A fin de garantizar que el control de calidad no se mezcle con la conveniencia financiera, la MES opera mediante dos comisiones con mandatos separados e incompatibles:
 
 ```mermaid
-flowchart TD
-    subgraph COM_TEC["1. Comisión de Homologación Técnica"]
-        direction TB
-        CT_M["Integrantes: INTI + Sindicato"]
-        CT_1["Dictamen de Tecnología Conveniente (15 días)"]
-        CT_2["Certificación física de Hitos de Avance (24h)"]
-        CT_3["Calificación en el SETP (Ley 25.326) y UCP"]
-        CT_4["Determinación de tablas de descarte de cuero"]
-    end
+flowchart LR
+    CT["<b>1. Comisión Homologación Técnica</b><br/>• INTI + Sindicato<br/>• Dictamen tecnológico y descarte<br/>• Certificación física de avances (24h)<br/>• Calificación SETP / UCP"]
+    
+    CR["<b>2. Comisión de Crédito y Riesgo</b><br/>• Talleres + Marcas (Preside Municipio)<br/>• Viabilidad de e-OP (48h)<br/>• Liquidación Hito Cero<br/>• Fondo de Garantía y Clearing FDI"]
 
-    subgraph COM_CRE["2. Comisión de Crédito y Riesgo"]
-        direction TB
-        CR_M["Integrantes: Talleres + Marcas<br/>Preside: Municipio (Desempate)"]
-        CR_1["Validación de viabilidad de e-OP (48h)"]
-        CR_2["Autorización de liquidación de Hito Cero"]
-        CR_3["Gestión del Fondo de Garantía del FDI"]
-        CR_4["Auditoría del repago por clearing"]
-    end
-
-    COM_TEC ==>|Informe Técnico Vinculante| COM_CRE
+    CT ==>|Informe Técnico Vinculante| CR
 ```
 
 ### Incompatibilidad Absoluta:
@@ -160,29 +139,35 @@ El enemigo número uno del tallerista es la lentitud burocrática. Para que el s
 sequenceDiagram
     autonumber
     actor Marca as Marca Comitente
-    participant SIS as Plataforma Central e-OP (Indinopy/MES)
-    participant COM as Comisión de Crédito
-    participant BAN as Banco Provincia / Billetera FDI
-    actor Taller as Tallerista de Barrio
+    participant SIS as Plataforma e-OP (ARCA / Indinopy)
+    participant COM as MES / Comisión de Crédito
+    participant FDI as Fideicomiso FDI (BAPRO)
+    actor Taller as Tallerista Ejecutor
 
-    Marca->>SIS: Carga e-OP digital (Insumos, Tallerista, Precio pactado)
-    SIS->>SIS: ¿Es réplica idéntica de orden anterior?
-    alt Sí: Protocolo Fast-Track (Duplicación Express o Score Alto)
-        SIS->>SIS: Validación automática en 2 Horas
-        SIS->>BAN: Orden de liberación de Adelanto Operativo
-    else No: Circuito Ordinario (Hito Cero para Talleres sin Historial)
-        SIS->>COM: Notifica a la Comisión de Crédito (Plazo duro: 48h)
-        alt Comisión aprueba formalmente en <48h
-            COM->>SIS: Dictamen favorable registrado
-        else Comisión no se pronuncia en 48h
-            SIS->>SIS: GATILLO DE SILENCIO POSITIVO AUTOMÁTICO
+    Marca->>SIS: Suscribe e-OP digital (Mano de obra, Insumos, Plazo)
+    SIS->>SIS: Validación de historial en SETP y Reserva Líquida (5%)
+    alt Protocolo Fast-Track (Historial ejemplar o réplica)
+        SIS->>FDI: Validación automática (2 Horas)
+        FDI->>Taller: Desembolsa Hito Cero (35%) en Cuenta Especial
+    else Circuito Ordinario
+        SIS->>COM: Notifica a Comisión de Crédito (Plazo duro: 48h hábiles)
+        alt Aprobación formal en <48h
+            COM->>FDI: Dictamen favorable de liquidación
+        else Vencimiento de 48h sin objeción
+            SIS->>FDI: GATILLO DE SILENCIO POSITIVO AUTOMÁTICO
         end
-        SIS->>BAN: Autorización de clearing para Hito Cero
+        FDI->>Taller: Desembolsa Hito Cero (35%) en Cuenta Especial
     end
-    BAN->>Taller: Acreditación de Anticipo (Hito Cero o Adelanto Operativo)
-    Taller->>SIS: Notificación de Hito Cumplido vía App móvil
-    SIS->>COM: Plazo de certificación técnica: 24 Horas
-    COM->>BAN: Certificación OK -> Liberación del siguiente tramo Escrow
+
+    Taller->>SIS: Declaración de Avance físico vía App móvil (PoPW)
+    Note over COM: Convalidación PTF / Peritaje (Plazo: 24h hábiles)
+    COM->>FDI: Certificación OK -> Desembolsa Hito de Avance (45%)
+
+    Taller->>Marca: Entrega de lote terminado (5 días de control)
+    Taller->>SIS: Confirma Factura (Borrador Asistido / Factura ordinaria)
+    SIS->>FDI: Cierre Fiscal validado (Bloqueo FCE)
+    FDI->>Taller: Libera Retención de Cierre Fiscal RCF (20%)
+    Marca->>FDI: Cancela orden al vencimiento comercial pactado (60/90/120 días)
 ```
 
 ### Tabla de Plazos Perentorios:
@@ -202,6 +187,29 @@ Para no burocratizar el arranque de la producción, el sindicato no frena la ord
 1. **Detección:** Si el delegado gremial constata precios por debajo del convenio o condiciones insalubres, interpone una **Acción de Tutela de Urgencia** ante el sistema.
 2. **Efecto Inmediato (Alerta de Escrow):** Se congela preventivamente la liberación del último 20% del pago en la cuenta fiduciaria del FDI por un plazo máximo de 48 horas. **Bajo ningún concepto se interrumpe el trabajo físico del taller ni se anula su derecho al cobro de lo realizado**.
 3. **Fianza de Continuidad:** Para evitar que la mercadería quede trabada y la marca pierda la temporada comercial, la empresa puede depositar una fianza en garantía líquida por el monto salarial en litigio, permitiendo el retiro inmediato de los lotes terminados mientras el Tribunal de Arbitraje sustancia el fondo de la cuestión.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant S as Sindicato / Auditoría
+    participant M as Mesa de Enlace (Arbitraje Local)
+    participant E as Fideicomiso FDI (Escrow)
+    participant C as Marca Comitente
+
+    Note over S,C: 1. Alerta de Tutela Sindical y Retención Preventiva
+    S->>M: Acción de Tutela de Urgencia (Precarización o Subtarifa)
+    M->>E: Congelamiento preventivo de RCF (20%) por 48h hábiles
+    C->>E: Depósito de fianza líquida del 100% en litigio
+    E-->>C: Liberación de mercadería (continuidad logística)
+
+    Note over S,C: 2. Sustanciación y Laudo Arbitral (72h)
+    M->>C: Audiencia de conciliación territorial obligatoria
+    alt Laudo a favor de los trabajadores (Readecuación retroactiva)
+        M->>E: Ejecuta fianza y acredita directamente a operarios
+    else Laudo favorable a la empresa comitente
+        M->>E: Reintegra fianza en garantía líquida a la marca
+    end
+```
 
 ### 6.2. El Tribunal Arbitral Territorial
 Órgano local de mediación de conflictos rápidos integrado por:
@@ -230,44 +238,13 @@ Para erradicar el "purgatorio fiscal" y el préstamo de identidades (CUITs ajeno
 ## 7. La Fábrica Normativa: Instrumentos y Publicidad
 Los actos de gobierno de la MES se materializan a través de instrumentos jurídicos tipificados que componen la doctrina y jurisprudencia de la cadena:
 
-```mermaid
-classDiagram
-    class ResolucionGeneralFederal {
-        +String numero_rgf
-        +Date fecha_sancion
-        +String objeto (Tarifas marco, Normas técnicas)
-        +VotoAgravado quorum_calificado
-        +publicar_en_boletin()
-    }
-    class ResolucionGeneralLocal {
-        +String numero_rgl
-        +String municipio_jurisdiccion
-        +String adecuacion_distrital
-        +Boolean exencion_tasas_habilitada
-    }
-    class DictamenTecnicoHomologacion {
-        +String numero_dth
-        +PeritoINTI firma_tecnica
-        +String maquinaria_o_merma
-        +Boolean elegible_arancel_cero
-    }
-    class ActaConciliacionTerritorial {
-        +String numero_acta
-        +String op_referencia
-        +Decimal monto_acordado
-        +Boolean laudo_homologado
-    }
-    class AlertaTutelaSindical {
-        +String id_alerta
-        +String motivo_precarizacion
-        +Boolean retencion_escrow_activa
-        +DateTime vencimiento_48h
-    }
-
-    ResolucionGeneralFederal <|-- ResolucionGeneralLocal : Subordinada a
-    DictamenTecnicoHomologacion --> ResolucionGeneralFederal : Alimenta tablas de
-    ActaConciliacionTerritorial --> AlertaTutelaSindical : Resuelve conflicto de
-```
+| Instrumento | Emisor | Alcance / Función |
+| :--- | :--- | :--- |
+| **Resolución General Federal (RGF)** | Consejo Superior Federal | Fija tarifas mínimas, normativas técnicas marco e índices IPIM para todo el país. |
+| **Resolución General Local (RGL)** | MES Municipal | Adecuación distrital subordinada a las RGF y exenciones de tasas locales. |
+| **Dictamen Técnico de Homologación (DTH)** | Perito INTI | Homologa maquinaria (arancel cero) y tablas de mermas; alimenta normativas marco. |
+| **Acta de Conciliación Territorial (ACT)** | Tribunal Arbitral | Laudo vinculante en 72h que resuelve controversias y desbloquea o ejecuta fondos. |
+| **Alerta de Tutela Sindical (ATS)** | Sindicato de Rama | Medida cautelar ex-post ante precarización; congela el 20% final de escrow por máx. 48h. |
 
 ### 7.1. El Boletín Oficial Sectorial (Estructura Semanal)
 La MES publicará semanalmente su órgano de difusión público y digital, estructurado en 5 secciones obligatorias:
@@ -290,9 +267,7 @@ from apps.base.models import TimeStampedModel, DocumentoBase
 # ==========================================
 # 1. TOPOLOGÍA INSTITUCIONAL Y PADRÓN
 # ==========================================
-
-
-class JurisdiccionMES(TimeStampedModel):
+(TimeStampedModel):
     """Nodos territoriales: Federal (Nacional) o Municipal (Distritos)."""
 
     TIPO_CHOICES = [
@@ -308,9 +283,7 @@ class JurisdiccionMES(TimeStampedModel):
 
     def __str__(self):
         return f"{self.nombre} [{self.get_tipo_display()}]"
-
-
-class MiembroMesa(TimeStampedModel):
+(TimeStampedModel):
     """Integrantes con banca formal en el plenario de la MES."""
 
     NODO_CHOICES = [
@@ -335,8 +308,7 @@ class MiembroMesa(TimeStampedModel):
     fecha_inicio_mandato = models.DateField()
     fecha_fin_mandato = models.DateField()
     activo = models.BooleanField(default=True)
-
-    class Meta:
+:
         unique_together = ("jurisdiccion", "nodo", "es_titular")
 
     def __str__(self):
@@ -346,9 +318,7 @@ class MiembroMesa(TimeStampedModel):
 # ==========================================
 # 2. PROCESOS DELIBERATIVOS Y VOTACIONES
 # ==========================================
-
-
-class SesionPlenaria(TimeStampedModel):
+(TimeStampedModel):
     """Asambleas periódicas donde se debate normativa y aprueba el giro institucional."""
 
     jurisdiccion = models.ForeignKey(
@@ -365,9 +335,7 @@ class SesionPlenaria(TimeStampedModel):
 
     def __str__(self):
         return f"Acta {self.numero_acta} - {self.jurisdiccion.nombre} ({self.fecha.strftime('%d/%m/%Y')})"
-
-
-class ProyectoResolucion(TimeStampedModel):
+(TimeStampedModel):
     """Iniciativas normativas sometidas a votación en el plenario."""
 
     TIPO_MATERIA = [
@@ -409,9 +377,7 @@ class ProyectoResolucion(TimeStampedModel):
 # ==========================================
 # 3. CONTROL OPERATIVO, PLAZOS Y ARBITRAJE
 # ==========================================
-
-
-class ValidacionOrdenProduccion(TimeStampedModel):
+(TimeStampedModel):
     """Bitácora de validación de 48 horas para la e-OP con disparador de Silencio Positivo."""
 
     op = models.OneToOneField(
@@ -439,9 +405,7 @@ class ValidacionOrdenProduccion(TimeStampedModel):
                 self.save()
                 return True
         return False
-
-
-class DisputaArbitrajeTerritorial(TimeStampedModel):
+(TimeStampedModel):
     """Gestión de controversias de calidad o precios ante el Tribunal Local."""
 
     ESTADO = [
@@ -476,9 +440,7 @@ class DisputaArbitrajeTerritorial(TimeStampedModel):
 # ==========================================
 # 4. BOLETÍN OFICIAL SECTORIAL
 # ==========================================
-
-
-class EdicionBoletinSectorial(TimeStampedModel):
+(TimeStampedModel):
     """Publicación periódica oficial con resoluciones, tarifas y balances."""
 
     jurisdiccion = models.ForeignKey(JurisdiccionMES, on_delete=models.CASCADE)
@@ -486,8 +448,7 @@ class EdicionBoletinSectorial(TimeStampedModel):
     fecha_publicacion = models.DateField()
     pdf_compilado = models.FileField(upload_to="mes/boletines/")
     publicada = models.BooleanField(default=False)
-
-    class Meta:
+:
         unique_together = ("jurisdiccion", "numero_edicion")
 
     def __str__(self):

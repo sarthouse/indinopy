@@ -1,4 +1,4 @@
----
+﻿---
 title: Proyecto de Formalización e Incentivo a la Manufactura del Calzado Argentino
 author: Tiago Gabriel Sarthou
 date: Octubre 2026
@@ -49,10 +49,6 @@ flowchart TD
     F_CORE --> E1
     F_CORE --> E2
     F_CORE --> E3
-
-    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
-    classDef core fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
-    class F_CORE core;
 ```
 > **Figura 1.** Articulación de herramientas: la Ley de Salvataje aporta el escudo de supervivencia inmediata, la Ley de e-OP instrumenta el título valor causal y el financiamiento bursátil, y el Régimen FIMCA despliega la formalización, gobernanza territorial e incentivos sectoriales.
 

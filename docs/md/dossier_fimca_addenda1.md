@@ -1,4 +1,4 @@
----
+﻿---
 title: "Addenda I: Complemento Estratégico al Proyecto FIMCA y a la Ley de Salvataje Nacional"
 author: "Tiago Gabriel Sarthou"
 date: "Octubre 2026"
@@ -133,10 +133,6 @@ flowchart TD
     MES -->|"INTI + Sindicato"| A1
     MES -->|"Talleristas + Marcas (Preside Municipio)"| A2
     MES -->|"Mesa en pleno"| A3
-
-    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
-    classDef head fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
-    class MES head;
 ```
 > **Figura 3.** Gobernanza de la MES como Comité Fiduciario Territorial. Un único cuerpo paritario local de siete miembros ad-honorem articula las tres agendas de trabajo operativas bajo el Reglamento de Gestión del FDI, garantizando costo burocrático cero y agilidad por software.
 
@@ -423,10 +419,6 @@ flowchart TD
         BORRADOR -->|"Emite CAE instantáneo y bloquea FCE"| ARCA_VAL["Validación ARCA"]
         ARCA_VAL -->|"Instruye liberación del saldo"| FDI
     end
-
-    classDef default fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1px,color:#0F172A;
-    classDef target fill:#E6FFFA,stroke:#319795,stroke-width:2px,color:#1D4044,font-weight:bold;
-    class CUENTA target;
 ```
 > **Figura 4.** Arquitectura de Formalización del Monotributo Productivo (Art. 24° Ley de e-OP). La micro-retención del **2% sobre cobranzas netas** se descuenta de forma automatizada y se imputa al cómputo de meses con aportes en el SIPA, mientras que el cierre fiscal (RCF del 20%) se resuelve con un solo clic mediante el **Borrador Asistido de Factura C** precargado por ARCA.
 
