@@ -1,5 +1,7 @@
 from django.urls import path
 from apps.comunicaciones.views import (
+    ComunicacionListView,
+    ComunicacionDetailView,
     ComunicacionesOficialesBuzonAPIView,
     ComunicacionOficialEnviarAPIView,
     ComunicacionOficialAcuseAPIView,
@@ -12,6 +14,8 @@ from apps.comunicaciones.views import (
 app_name = "comunicaciones"
 
 urlpatterns = [
+    path("", ComunicacionListView.as_view(), name="comunicacion_list"),
+    path("<uuid:uuid>/", ComunicacionDetailView.as_view(), name="comunicacion_detail"),
     path("api/v1/buzon/", ComunicacionesOficialesBuzonAPIView.as_view(), name="buzon"),
     path("api/v1/enviar/", ComunicacionOficialEnviarAPIView.as_view(), name="enviar"),
     path("api/v1/<uuid:uuid>/", ComunicacionOficialDetalleDescargaAPIView.as_view(), name="detalle"),

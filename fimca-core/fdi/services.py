@@ -10,12 +10,18 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.utils import timezone
 
-from base.models import ConfiguracionNodo, ContratoEOP
+from base.models import ConfiguracionNodo
 
 class EOPService:
     @staticmethod
     def liberar_hito(hito_id):
-        pass
+        from fdi.models import EOPHitoEscrow
+        hito = EOPHitoEscrow.objects.filter(id=hito_id).first()
+        if hito and hito.estado == "bloqueado":
+            hito.estado = "liberado"
+            hito.save(update_fields=["estado"])
+            return True
+        return False
 
 
 from .models import (
@@ -602,15 +608,8 @@ class PTFService:
 
     @staticmethod
     def _liberar_escrow_por_eop(registro_eop):
-        """Busca el ContratoEOP asociado a la e-OP y libera el hito correspondiente."""
-        contrato = ContratoEOP.objects.filter(
-            uuid_identificador=registro_eop.uuid_identificador
-        ).first()
-
-        if not contrato:
-            return  # La e-OP puede no tener contrato si es externa o de prueba
-
-        hito = contrato.hitos.filter(estado="bloqueado").order_by("id").first()
+        """Busca los hitos asociados al RegistroEOP en el FDI y libera el tramo correspondiente."""
+        hito = registro_eop.hitos.filter(estado="bloqueado").order_by("numero_hito", "id").first()
         if hito:
             EOPService.liberar_hito(hito.id)
 
@@ -920,12 +919,12 @@ class ClearingBancarioService:
         Retorna los hitos de escrow que han sido liberados (o habilitados para liquidación)
         pero aún no cuentan con comprobante de liquidación bancaria emitida.
         """
-        from base.models import EOPHitoEscrow
+        from fdi.models import EOPHitoEscrow
 
         return EOPHitoEscrow.objects.filter(
             estado="liberado",
             comprobante_pago__isnull=True,
-        ).select_related("contrato")
+        ).select_related("registro_eop")
 
     @staticmethod
     def generar_lote_clearing_txt(hitos_qs=None, entidad_codigo="COELSAFDI"):
@@ -947,26 +946,23 @@ class ClearingBancarioService:
         total_centavos = 0
         cotizacion_actual = Decimal("1.00")
 
+        from base.models import Contacto
+
         for hito in hitos_qs:
-            contrato = hito.contrato
-            monto_fdi_uci = getattr(contrato, "monto_total", Decimal("0.00"))
-            porcentaje = getattr(hito, "porcentaje", Decimal("0.00"))
+            registro = hito.registro_eop
+            monto_fdi_uci = getattr(registro, "monto_total_uci", Decimal("0.00"))
+            porcentaje = getattr(hito, "porcentaje_tramo", Decimal("0.00"))
             monto_hito_uci = (monto_fdi_uci * porcentaje) / Decimal("100.00") if porcentaje else hito.monto_ars
             monto_hito_ars = monto_hito_uci * cotizacion_actual
             centavos = int(monto_hito_ars * 100)
             total_centavos += centavos
 
-            taller = getattr(contrato, "tallerista", None)
-            cbu = (
-                getattr(taller, "cbu", "")
-                or getattr(taller, "cuit", "")
-            ).replace("-", "").strip()[:22].zfill(22)
+            taller_cuit = registro.tallerista_cuit if registro else ""
+            taller = Contacto.objects.filter(cuit=taller_cuit).first() if taller_cuit else None
+            cbu = taller_cuit.replace("-", "").strip()[:22].zfill(22)
 
-            cuit = (
-                getattr(taller, "cuit", "")
-            ).replace("-", "").strip()[:11].zfill(11)
-
-            ref_eop = str(contrato.numero or contrato.id)[:20].ljust(20)
+            cuit = taller_cuit.replace("-", "").strip()[:11].zfill(11)
+            ref_eop = str(registro.uuid_identificador if registro else hito.id)[:20].ljust(20)
             concepto = "FAC"  # Factura / Servicio
 
             registro_linea = (
@@ -986,16 +982,16 @@ class ClearingBancarioService:
         Reconcilia el lote de pagos procesado por la entidad bancaria.
         Actualiza el estado fiduciario del hito y notifica a los nodos de la red.
         """
-        from base.models import EOPHitoEscrow
+        from fdi.models import EOPHitoEscrow
 
-        hitos = EOPHitoEscrow.objects.filter(id__in=hitos_ids, estado="liberado").select_related("contrato", "contrato__comitente", "contrato__tallerista")
+        hitos = EOPHitoEscrow.objects.filter(id__in=hitos_ids, estado="liberado").select_related("registro_eop")
         if not hitos.exists():
             return {"status": "sin_cambios", "procesados": 0}
 
         procesados = 0
 
         for hito in hitos:
-            contrato = hito.contrato
+            registro = hito.registro_eop
             if estado_pago == "EXITOSO":
                 referencia_comprobante = f"OP-CLEARING-{lote_referencia}-H{hito.id}"
                 hito.comprobante_pago = referencia_comprobante
@@ -1004,33 +1000,21 @@ class ClearingBancarioService:
 
                 # Notificar el clearing exitoso a los nodos ERP involucrados
                 payload_clearing = {
-                    "eop_numero": contrato.numero,
+                    "eop_uuid": str(registro.uuid_identificador) if registro else "",
                     "numero_hito": hito.numero_hito,
                     "monto_ars": str(hito.monto_ars),
                     "comprobante_fiduciario": referencia_comprobante,
                     "lote_bapro": lote_referencia,
                     "estado": "liquidado",
                 }
-                if contrato.comitente and contrato.comitente.cuit:
+                if registro and registro.comitente_cuit:
                     FederacionService._encolar_o_enviar(
-                        contrato.comitente.cuit, "clearing_hito_liquidado", payload_clearing
+                        registro.comitente_cuit, "clearing_hito_liquidado", payload_clearing
                     )
-                if contrato.tallerista and contrato.tallerista.cuit:
+                if registro and registro.tallerista_cuit:
                     FederacionService._encolar_o_enviar(
-                        contrato.tallerista.cuit, "clearing_hito_liquidado", payload_clearing
+                        registro.tallerista_cuit, "clearing_hito_liquidado", payload_clearing
                     )
-
-                # Verificar si todos los hitos del contrato fiduciario fueron liquidados
-                hitos_totales = contrato.hitos.count()
-                hitos_liquidados = contrato.hitos.filter(
-                    comprobante_pago__isnull=False
-                ).count()
-                if hitos_totales > 0 and hitos_liquidados == hitos_totales:
-                    contrato.estado = "liquidado_total"
-                    contrato.save(update_fields=["estado"])
-                else:
-                    contrato.estado = "liquidado_parcial"
-                    contrato.save(update_fields=["estado"])
 
                 procesados += 1
 
@@ -1303,8 +1287,8 @@ class PeritajeCalidadService:
         Suspende exclusivamente la liberación de la Retención de Cierre Fiscal (RCF).
         """
         # Suspender RCF en el contrato e-OP
-        from base.models import EOPHitoEscrow
-        hito_rcf = EOPHitoEscrow.objects.filter(contrato=eop, requiere_verificacion_arca=True).first()
+        from fdi.models import EOPHitoEscrow
+        hito_rcf = EOPHitoEscrow.objects.filter(registro_eop=eop, requiere_verificacion_arca=True).first()
         if hito_rcf and hito_rcf.estado != "liberado":
             hito_rcf.estado = "retencion_cierre_fiscal"
             hito_rcf.save(update_fields=["estado"])
@@ -1341,8 +1325,8 @@ class PeritajeCalidadService:
 
         # Si se rechaza la objeción técnica, se restituye la vía de liberación del RCF
         if not defecto_imputable_taller:
-            from base.models import EOPHitoEscrow
-            hito_rcf = EOPHitoEscrow.objects.filter(contrato=peritaje.eop, requiere_verificacion_arca=True).first()
+            from fdi.models import EOPHitoEscrow
+            hito_rcf = EOPHitoEscrow.objects.filter(registro_eop=peritaje.eop, requiere_verificacion_arca=True).first()
             if hito_rcf and hito_rcf.factura_asociada_arca:
                 hito_rcf.estado = "liberado"
                 hito_rcf.save(update_fields=["estado"])
@@ -1397,15 +1381,14 @@ class TitulizacionBIPService:
     @transaction.atomic
     def conformar_cartera_bip(cls, codigo_cartera, eop_uuids, descripcion=""):
         """
-        Empaqueta una nómina de contratos e-OP colateralizados en una CarteraTitulizableBIP.
-        Verifica que los contratos no pertenezcan ya a otra cartera activa.
+        Empaqueta una nómina de registros e-OP colateralizados en una CarteraTitulizableBIP.
+        Verifica que los registros no pertenezcan ya a otra cartera activa.
         """
-        from fdi.models import CarteraTitulizableBIP
-        from base.models import ContratoEOP
+        from fdi.models import CarteraTitulizableBIP, RegistroEOP
 
-        contratos = ContratoEOP.objects.filter(uuid_identificador__in=eop_uuids)
+        contratos = RegistroEOP.objects.filter(uuid_identificador__in=eop_uuids)
         if not contratos.exists():
-            raise ValueError("No se encontraron contratos válidos para conformar la cartera.")
+            raise ValueError("No se encontraron registros e-OP válidos para conformar la cartera.")
 
         cartera = CarteraTitulizableBIP.objects.create(
             codigo_cartera=codigo_cartera,
@@ -1431,8 +1414,12 @@ class TitulizacionBIPService:
         """
         Emite una Serie de Bonos BIP vinculada a una cartera aprobada por el Comité del Fondo.
         Calcula el vencimiento exacto y el hash SHA-256 del prospecto homologado.
+        Limita estrictamente el plazo a 60, 90 o 120 días conforme al Art. 17° del Anteproyecto de Ley.
         """
         from fdi.models import CarteraTitulizableBIP, SerieBonoBIP
+
+        if plazo_dias not in [60, 90, 120]:
+            raise ValueError("El plazo del bono BIP debe ser de 60, 90 o 120 días (Art. 17° Ley e-OP).")
 
         cartera = CarteraTitulizableBIP.objects.get(pk=cartera_id)
         hoy = timezone.now().date()

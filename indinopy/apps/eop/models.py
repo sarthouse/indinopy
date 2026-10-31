@@ -63,6 +63,8 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
         ("vetado_mes", _("Vetado por la MES")),
         ("hito_cero_liberado", _("Hito Cero Acreditado en Cuenta Taller")),
         ("en_disputa", _("En Disputa Arbitral (72h)")),
+        ("resuelto_por_mora_jit", _("Resuelto de Pleno Derecho por Mora JIT (Art. 5° bis inc. 6)")),
+        ("desistido_unilateralmente", _("Desistido Unilateralmente por Comitente (Art. 5° ter / 1261 CCyC)")),
         ("liquidado_total", _("Liquidación Final Completada")),
     ]
     
@@ -295,7 +297,7 @@ class ContratoEOP(DocumentoFirmableMixin, DocumentoBase):
 
 class IncidenciaLogisticaJIT(TimeStampedModel):
     """
-    Registro de contingencias y demoras en provisión de insumos Justo a Tiempo (Art. 5° bis).
+    Registro de contingencias y demoras en provisión de insumos Justo a Tiempo (Art. 5° bis y 5° ter).
     """
     contrato = models.ForeignKey(
         ContratoEOP, on_delete=models.CASCADE, related_name="incidencias_jit"
@@ -304,13 +306,20 @@ class IncidenciaLogisticaJIT(TimeStampedModel):
     fecha_entrega_esperada = models.DateField(verbose_name=_("Fecha de Entrega Esperada"))
     fecha_entrega_real = models.DateField(null=True, blank=True, verbose_name=_("Fecha de Entrega Real"))
     dias_demora = models.PositiveIntegerField(default=0, verbose_name=_("Días de Demora"))
+    operarios_afectados_linea = models.PositiveIntegerField(
+        default=1, verbose_name=_("Operarios Afectados en Línea"),
+        help_text=_("Dotación asignada a la orden en la receta técnica.")
+    )
     compensacion_standby_devengada = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0.00"),
         verbose_name=_("Compensación Standby (ARS)"),
-        help_text=_("0.5 SMVM por día hábil a partir del 6° día de mora.")
+        help_text=_("1 jornal diario del SMVM por día hábil por operario (a partir del día 6, máx 0.5 SMVM diario total).")
     )
     resolucion_ejercida_por_taller = models.BooleanField(
-        default=False, verbose_name=_("Resolución Contractual Ejercida por Taller")
+        default=False, verbose_name=_("Resolución Contractual Ejercida por Taller (Art. 5° bis inc. 6)")
+    )
+    desistimiento_comitente_ejercido = models.BooleanField(
+        default=False, verbose_name=_("Desistimiento Unilateral Comitente (Art. 5° ter / 1261 CCyC)")
     )
 
     class Meta:

@@ -27,21 +27,27 @@
                      x-transition:leave="transform transition ease-in-out duration-300"
                      x-transition:leave-start="translate-x-0"
                      x-transition:leave-end="-translate-x-full"
-                     class="pointer-events-auto w-screen max-w-xs sm:max-w-sm bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-r border-slate-200 dark:border-slate-800">
+                    <!-- Contenedor del Drawer estilo Dark Tech -->
+                    <div class="pointer-events-auto w-screen max-w-xs sm:max-w-sm bg-[#0d131f] shadow-2xl flex flex-col border-r border-[#1e293b]">
 
                     <!-- Header del Drawer -->
-                    <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-lg font-bold bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent">
-                                Indinopy ERP
-                            </span>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">
-                                Módulos
-                            </span>
+                    <div class="p-5 border-b border-[#1e293b] flex items-center justify-between bg-[#070a10]">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center p-0.5 bg-slate-900 border border-slate-700 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
+                                {% include "src/logo.svg" %}
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-base font-black tracking-tight text-white">
+                                    INDINOPY
+                                </span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                                    MÓDULOS
+                                </span>
+                            </div>
                         </div>
                         <button type="button" 
                                 @click="drawerOpen = false"
-                                class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition">
+                                class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
                             <span class="sr-only">Cerrar menú</span>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -55,149 +61,162 @@
                         <!-- 1. Inicio -->
                         <div>
                             <a href="{% url 'home' %}" 
-                               class="flex items-center px-3 py-2 rounded-xl text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                                <svg class="w-5 h-5 mr-3 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               class="flex items-center px-3 py-2 rounded-xl text-slate-200 font-semibold hover:bg-slate-800/70 hover:text-emerald-400 transition">
+                                <svg class="w-5 h-5 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
-                                Panel Principal (Home)
+                                Inicio
                             </a>
                         </div>
 
                         <!-- 2. Producción & e-OP -->
                         <div class="space-y-1">
-                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Producción & Protocolo e-OP
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Producción
                             </div>
                             <div class="space-y-0.5">
-                                <a href="{% url 'produccion:op_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-sky-500 mr-2.5"></span>
-                                    Órdenes de Producción (OPs)
+                                <a href="{% url 'produccion:op_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2.5"></span>
+                                    Órdenes de Producción
                                 </a>
-                                <a href="{% url 'eop:contrato_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-indigo-500 mr-2.5"></span>
-                                    Contratos e-OP Federados
+                                <a href="{% url 'eop:contrato_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-2.5"></span>
+                                    Contratos e-OP
                                 </a>
-                                <a href="{% url 'produccion:portal_tallerista' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-amber-500 mr-2.5"></span>
-                                    Portal Móvil del Tallerista
+                                <a href="{% url 'produccion:portal_tallerista' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2.5"></span>
+                                    Portal Tallerista
                                 </a>
                             </div>
                         </div>
 
                         <!-- 3. Inventario & Stock -->
                         <div class="space-y-1">
-                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Inventario & Stock
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Inventario
                             </div>
                             <div class="space-y-0.5">
-                                <a href="{% url 'inventario:quant_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2.5"></span>
-                                    Existencias Físicas (Stock)
+                                <a href="{% url 'inventario:quant_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2.5"></span>
+                                    Stock de Materiales
                                 </a>
-                                <a href="{% url 'inventario:movimiento_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2.5"></span>
-                                    Movimientos y Remitos
+                                <a href="{% url 'inventario:movimiento_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2.5"></span>
+                                    Remitos y Movimientos
                                 </a>
                             </div>
                         </div>
 
                         <!-- 4. Contabilidad & AFIP -->
                         <div class="space-y-1">
-                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Contabilidad & AFIP
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Contabilidad
                             </div>
                             <div class="space-y-0.5">
-                                <a href="{% url 'contabilidad:factura_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-teal-500 mr-2.5"></span>
-                                    Comprobantes Fiscales (CAE)
+                                <a href="{% url 'contabilidad:factura_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-2.5"></span>
+                                    Comprobantes y Facturas
                                 </a>
-                                <a href="{% url 'contabilidad:libro_iva_ventas_export' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-teal-400 mr-2.5"></span>
-                                    Exportar Libro IVA Digital
+                                <a href="{% url 'contabilidad:libro_iva_ventas_export' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 mr-2.5"></span>
+                                    Libro IVA Digital
                                 </a>
                             </div>
                         </div>
 
                         <!-- 5. Tesorería & Pagos -->
                         <div class="space-y-1">
-                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Tesorería & Finanzas
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Tesorería
                             </div>
                             <div class="space-y-0.5">
-                                <a href="{% url 'tesoreria:comprobante_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-blue-500 mr-2.5"></span>
-                                    Órdenes de Pago & Cobros
+                                <a href="{% url 'tesoreria:comprobante_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mr-2.5"></span>
+                                    Pagos y Cobros
                                 </a>
                             </div>
                         </div>
 
-                        <!-- 6. Compras & Abastecimiento -->
+                        <!-- 6. Compras -->
                         <div class="space-y-1">
-                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Compras & Abastecimiento
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Compras
                             </div>
                             <div class="space-y-0.5">
-                                <a href="{% url 'compras:oc_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-orange-500 mr-2.5"></span>
-                                    Órdenes de Compra (Insumos)
+                                <a href="{% url 'compras:oc_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-orange-400 mr-2.5"></span>
+                                    Órdenes de Compra
                                 </a>
                             </div>
                         </div>
 
-                        <!-- 7. Ventas & Comercial -->
+                        <!-- 7. Ventas -->
                         <div class="space-y-1">
-                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Ventas & Clientes
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Ventas
                             </div>
                             <div class="space-y-0.5">
-                                <a href="{% url 'ventas:ov_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-rose-500 mr-2.5"></span>
-                                    Pedidos y Ventas (OVs)
+                                <a href="{% url 'ventas:ov_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400 mr-2.5"></span>
+                                    Pedidos y Ventas
                                 </a>
                             </div>
                         </div>
 
-                        <!-- 8. Contactos & Directorio -->
+                        <!-- 8. Contactos -->
                         <div class="space-y-1">
-                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Directorio Comercial
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Directorio
                             </div>
                             <div class="space-y-0.5">
-                                <a href="{% url 'contactos:contacto_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-purple-500 mr-2.5"></span>
-                                    Directorio de Contactos
+                                <a href="{% url 'contactos:contacto_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mr-2.5"></span>
+                                    Contactos
                                 </a>
-                                <a href="{% url 'contactos:contacto_create' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-purple-400 mr-2.5"></span>
-                                    + Registrar Contacto / Taller
+                                <a href="{% url 'contactos:contacto_create' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2.5"></span>
+                                    Nuevo Contacto
                                 </a>
                             </div>
                         </div>
 
-                        <!-- 9. Nómina de Personal -->
+                        <!-- 9. Nómina -->
                         <div class="space-y-1">
-                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Nómina & RRHH
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Personal
                             </div>
                             <div class="space-y-0.5">
-                                <a href="{% url 'nomina:empleado_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
-                                    <span class="w-2 h-2 rounded-full bg-fuchsia-500 mr-2.5"></span>
+                                <a href="{% url 'nomina:empleado_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-fuchsia-400 mr-2.5"></span>
                                     Legajos de Empleados
                                 </a>
                             </div>
                         </div>
 
-                        <!-- 10. Django Admin -->
+                        <!-- 10. Comunicaciones Oficiales -->
+                        <div class="space-y-1">
+                            <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                Comunicaciones
+                            </div>
+                            <div class="space-y-0.5">
+                                <a href="{% url 'comunicaciones:comunicacion_list' %}" class="flex items-center px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition text-xs font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-2.5"></span>
+                                    Buzón Oficial
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 10. Admin -->
                         {% if user.is_staff %}
-                        <div class="pt-2 border-t border-slate-200 dark:border-slate-800">
+                        <div class="pt-2 border-t border-[#1e293b]">
                             <a href="/admin/" 
                                target="_blank"
-                               class="flex items-center px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-semibold">
-                                <svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               class="flex items-center px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition text-xs font-medium">
+                                <svg class="w-4 h-4 mr-2.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
-                                Django Administration
+                                Administración
                             </a>
                         </div>
                         {% endif %}
@@ -205,14 +224,14 @@
                     </div>
 
                     <!-- Footer del Drawer con Usuario y Logout -->
-                    <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
+                    <div class="p-4 border-t border-[#1e293b] bg-[#070a10] flex items-center justify-between">
                         <div class="text-xs">
-                            <div class="font-semibold text-slate-800 dark:text-slate-200">{{ user.username }}</div>
-                            <div class="text-slate-500 text-[10px]">{% if user.is_staff %}Staff / Administración{% else %}Tallerista Externo{% endif %}</div>
+                            <div class="font-semibold text-slate-200">{{ user.username }}</div>
+                            <div class="text-slate-400 text-[10px]">{% if user.is_staff %}Staff / Administración{% else %}Tallerista Externo{% endif %}</div>
                         </div>
                         <form method="post" action="{% url 'logout' %}">
                             {% csrf_token %}
-                            <button type="submit" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-200 text-xs text-rose-600 font-semibold transition">
+                            <button type="submit" class="px-2.5 py-1.5 rounded-lg border border-rose-900/60 bg-rose-950/30 hover:bg-rose-900/40 text-xs text-rose-300 font-semibold transition">
                                 Salir
                             </button>
                         </form>

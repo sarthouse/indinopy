@@ -1,10 +1,10 @@
 # Plan de Implementación Integral: Adecuación de Indinopy al Régimen Legal de la e-OP
 
 **Documento Técnico de Ingeniería de Software y Arquitectura Legal**  
-**Marco Normativo de Referencia:** [Anteproyecto de Ley e-OP (Septiembre 2026)](../docs/md/proyecto_ley_eop.md)  
+**Marco Normativo de Referencia:** [Anteproyecto de Ley e-OP (Octubre 2026)](../docs/md/proyecto_ley_eop.md)  
 **Ubicación:** `utils/plan_implementacion_ley_eop.md`  
 **Autor:** Antigravity (en colaboración con Tiago Gabriel Sarthou)  
-**Fecha:** Septiembre de 2026  
+**Fecha:** Octubre de 2026  
 **Estado:** Aprobado para Ejecución Técnica  
 
 ---
@@ -13,20 +13,23 @@
 
 1. [Resumen Ejecutivo y Objetivos](#1-resumen-ejecutivo-y-objetivos)
 2. [Matriz de Diagnóstico y Brechas Arquitectónicas (Gap Analysis)](#2-matriz-de-diagnóstico-y-brechas-arquitectónicas-gap-analysis)
+   - 2.1. [Topología de Interoperabilidad Tripartita: ARCA, Indinopy y FIMCA-Core](#21-topología-de-interoperabilidad-tripartita-arca-indinopy-y-fimca-core)
 3. [Fase 1: Refactorización del Núcleo Contractual y Escrow (`apps/eop`)](#3-fase-1-refactorización-del-núcleo-contractual-y-escrow-appseop)
    - 3.1. Reestructuración del Vector C y Desacople de $c_{\text{BOM}}$
    - 3.2. Desglose del Canon Fiduciario ($c_{\text{FDI}}$ y $c_{\text{STK}}$)
    - 3.3. Máquina de Estados para Logística Justo a Tiempo (JIT) (Art. 5° bis)
-   - 3.4. Confesión de Deuda Líquida de Hito Cero (Art. 6°)
-   - 3.5. Acreditación de Hitos: Remito Oficial, PoPW y Timelock RCF (Art. 12°)
-   - 3.6. Nuevo Payload Canónico Determinista
-4. [Fase 2: Gobernanza Productiva, SETP y Diligencia Laboral (`apps/mes`)](#4-fase-2-gobernanza-productiva-setp-y-diligencia-laboral-appsmes)
+   - 3.4. Desistimiento Unilateral del Comitente y Resolución (Arts. 5° bis y 5° ter)
+   - 3.5. Confesión de Deuda Líquida de Hito Cero y Vía Ejecutiva (Art. 6°)
+   - 3.6. Acreditación de Hitos: Remito Oficial, PoPW y Timelock RCF (Art. 12°)
+   - 3.7. Nuevo Payload Canónico Determinista
+4. [Fase 2: Gobernanza Productiva, MES, SETP y Diligencia Laboral (`apps/mes`)](#4-fase-2-gobernanza-productiva-mes-setp-y-diligencia-laboral-appsmes)
    - 4.1. Reubicación del Registro Oficial (ARCA vs. Nodo MES)
-   - 4.2. Sistema de Evaluación de Trayectoria Productiva (SETP) (Art. 2° inc. 12)
-   - 4.3. Certificado de Diligencia Debida Laboral (CDD / CDD-P) (Art. 22°)
-   - 4.4. Defensas de Calidad y Peritaje Técnico Prejudicial INTI (Arts. 11.2 y 13°)
-   - 4.5. Alerta Temprana de Inconsistencia de Costos (Art. 27°)
-   - 4.6. Módulo de Libreta Digital de Trabajo a Domicilio (Ley N° 12.713)
+   - 4.2. Marco Jurídico y Estatutario de la MES como Comité Fiduciario Territorial (Arts. 1°, 15° y 27°)
+   - 4.3. Sistema de Evaluación de Trayectoria Productiva (SETP) (Art. 2° inc. 12)
+   - 4.4. Certificado de Diligencia Debida Laboral (CDD / CDD-P) (Art. 22°)
+   - 4.5. Defensas de Calidad y Peritaje Técnico Prejudicial INTI (Arts. 11.2 y 13°)
+   - 4.6. Alerta Temprana de Inconsistencia de Costos (Art. 27°)
+   - 4.7. Módulo de Libreta Digital de Trabajo a Domicilio (Ley N° 12.713)
 5. [Fase 3: Orquestación, Serializadores y Tareas en `fimca-core/federacion` y `comunicaciones`](#5-fase-3-orquestación-serializadores-y-tareas-en-fimca-corefederacion-y-comunicaciones)
    - 5.1. Corrección de `EntradaEOPSerializer` y Validación de Alícuotas Desglosadas
    - 5.2. Desacople y Eliminación de Duplicación en `RecepcionEOPView`
@@ -72,17 +75,65 @@ El presente plan establece la hoja de ruta de ingeniería de software para trans
 | Dimensión | Estado Actual en Indinopy | Requisito Ley e-OP | Severidad / Impacto |
 | :--- | :--- | :--- | :--- | :---: |
 | **Arquitectura de Nodos** | Código de taller, marcas y gobernanza MES unificado. | **Separación en 2 proyectos:** `fimca-core` (red/MES) e `indinopy` (ERP local marcas/talleres). | **CRÍTICO (RESUELTO)** |
-| **Colateral Financiero** | `monto_total_uci` suma $c_{\text{MOD}} + c_{\text{BOM}} + c_{\text{FDI}}$. | $c_{\text{BOM}}$ **no integra la deuda exigible**. Solo colateraliza $c_{\text{MOD}} + c_{\text{FDI}} + \text{intereses}$. | **CRÍTICO** |
-| **Validación Federada** | `EntradaEOPSerializer` exige estrictamente $fdi = mod \times 0.015$. | Desdobla canon en operativo ($\le 1,5\%$ s/MOD) y stock ($\le 0,5\%$ s/BOM). | **CRÍTICO (RESUELTO)** |
+| **Marco Jurídico de Insumos** | Insumos tratados sin tipificación concursal o bajo maquila/consignación. | **Locación de obra con provisión de materiales (Arts. 1251 y 1256 inc. a CCyC)** y **depósito regular (Art. 1356 CCyC)**. Acción directa de restitución Art. 138 LCQ; Privilegio Especial Art. 241 inc. 1 LCQ y derecho de retención Art. 2587 CCyC. | **CRÍTICO (RESUELTO)** |
+| **Colateral Financiero** | `monto_total_uci` suma $c_{\text{MOD}} + c_{\text{BOM}} + c_{\text{FDI}}$. | $c_{\text{BOM}}$ **no integra la deuda exigible**. Solo colateraliza $c_{\text{MOD}} + c_{\text{FDI}} + \text{intereses}$. Base exclusiva para póliza de stock y privilegios. | **CRÍTICO (RESUELTO)** |
+| **Validación Federada** | `EntradaEOPSerializer` exige estrictamente $fdi = mod \times 0.015$. | Desdobla canon en operativo ($\le 1,5\%$ s/MOD) y stock ($\le 0,5\%$ s/BOM). Confesión de deuda H0 obligatoria. | **CRÍTICO (RESUELTO)** |
 | **Comunicaciones Legales** | Mezcladas en `federacion` con dependencias cruzadas. | App propia aislada `comunicaciones` en ambos nodos (cédulas Store-and-Forward de 48h). | **ALTO (RESUELTO)** |
-| **Instanciación en MES** | `RecepcionEOPView` clona contratos e hitos con lógica ORM duplicada. | Dictamen dinámico vía `mes.services.ComisionService` con Fast-Track para Scoring $\ge 90$. | **ALTO (RESUELTO)** |
-| **Registro Oficial** | Centralizado en el nodo MES (`RegistroEOP`). | El registro público oficial funciona en **ARCA** con datos abiertos no sensibles. | **ALTO** |
-| **Logística Justo a Tiempo** | Inexistente. El plazo es estático. | Régimen Art. 5° bis: prórrogas automáticas (tope 30d), compensación standby (0,5 SMVM/día) y rescisión (15d). | **MEDIO-ALTO** |
-| **Hito Cero** | Liberación por simple firma o aprobación. | Exige copulativamente: firma bilateral N3, remito oficial A/B/C/R con UUID (o Lote Crítico >=20%) y seguro activo. | **ALTO** |
-| **Hito Final (RCF)** | Estado `fiscal_pending` sin plazos perentorios. | Plazo de 10 días hábiles para factura fiscal; 5 días de gracia; luego mora a tasa BADLAR privada. | **MEDIO** |
-| **Titulización Bursátil** | Escrow local / Clearing informal. | Emisión de **Bonos BIP** (60-180 días), etiqueta SVS con Revisor Externo CNV y 4 fondos de reserva. | **ALTO** |
-| **Diligencia Laboral** | Control informal de PTF. | Módulo formal de **CDD y CDD-P** (F.931, ART, SIPA bancario) que otorga *Safe Harbor* Art. 30 LCT. | **ALTO** |
-| **Interoperabilidad Fiscal** | Facturación estándar AFIP (WSFE). | Bloqueo expreso de derivación a FCE (Ley 27.440 Art. 7 bis), facturación asistida y retención previsional del 2%. | **ALTO** |
+| **Instanciación en MES** | `RecepcionEOPView` clona contratos e hitos con lógica ORM duplicada. | Eliminación de `ContratoEOP` en `fimca-core`. Consolidación en `RegistroEOP` y `EOPHitoEscrow`. Fast-Track para Scoring $\ge 90$. | **ALTO (RESUELTO)** |
+| **Registro Oficial** | Centralizado en el nodo MES (`RegistroEOP`). | El registro público oficial funciona en **ARCA (Art. 10°)** con datos abiertos no sensibles bajo Ley 25.326. Interoperabilidad tripartita. | **ALTO** |
+| **Estatuto y Gobernanza MES** | Concebida como ente burocrático o estructura independiente. | **Comité de Conducción, Fomento y Seguimiento Territorial dentro del Reglamento de Gestión del FDI** (Arts. 1666-1700 CCyC, Arts. 1°, 15° y 27° Ley e-OP). Mesa única de 7 miembros ad-honorem y 3 agendas de trabajo sin costo fiscal. | **CRÍTICO** |
+| **Logística Justo a Tiempo** | Inexistente. El plazo es estático. | Régimen Art. 5° bis: prórrogas automáticas (tope 30d / máx 120d absoluto), standby (1 jornal SMVM/día por operario a partir del día 6) y rescisión (15d). | **ALTO (RESUELTO)** |
+| **Desistimiento Unilateral** | Sin contemplación de la rescisión de la marca comitente. | Art. 5° ter (en armonía con Art. 1261 CCyC): cancelación obligatoria de hitos devengados, pago proporcional de piezas en proceso y canon no repetible; retiro de insumos remanentes. | **ALTO (RESUELTO)** |
+| **Hito Cero** | Liberación por simple firma o aprobación. | Exige copulativamente: firma bilateral N3, remito oficial A/B/C/R con UUID (o Lote Crítico >=20%) y póliza colectiva de stock activa (Art. 20 bis). | **ALTO (RESUELTO)** |
+| **Hito Final (RCF)** | Estado `fiscal_pending` sin plazos perentorios. | Plazo de 10 días hábiles para factura fiscal; 5 días de gracia; luego mora a tasa BADLAR privada (exento monotributo asistido). | **MEDIO** |
+| **Titulización Bursátil** | Escrow local / Clearing informal. | Emisión de **Bonos BIP** (60-120 días), etiqueta SVS con Revisor Externo CNV (RG 917/2021) y 4 fondos de reserva fiduciarios. | **ALTO (RESUELTO)** |
+| **Diligencia Laboral** | Control informal de PTF. | Módulo formal de **CDD y CDD-P** (F.931, ART, SIPA) que otorga *Safe Harbor* Art. 30 LCT y autonomía Art. 23 LCT (Ley 27.742) + FAEL. | **ALTO** |
+| **Interoperabilidad Fiscal** | Facturación estándar AFIP (WSFE). | Bloqueo expreso de derivación a FCE (Ley 27.440 Art. 7 bis), facturación asistida en 1 clic (Art. 24.5) y micro-retención SIPA 2%. | **ALTO** |
+
+---
+
+### 2.1. Topología de Interoperabilidad Tripartita: ARCA, Indinopy y FIMCA-Core
+
+Conforme a los Artículos 3°, 4°, 7°, 8°, 10°, 11°, 12° y 14° de la Ley de e-OP, el sistema no opera como una cadena lineal de dependencias ni exige infraestructura redundante en cada eslabón productivo. Se articula bajo un esquema tripartito de responsabilidades diferenciadas donde **no es necesario que el tallerista o proveedor monte una instancia propia de Indinopy**: basta con que la **marca comitente** opere su propio ERP Indinopy y provea acceso a su **Portal Extranet de Talleristas y Proveedores**.
+
+#### Arquitectura y Roles de los Componentes:
+
+1. **Registro Público Oficial en ARCA (Art. 10° - Fe Pública Notarial y Fiscal):**
+   - **Competencia:** Es la autoridad de registro público del régimen. No administra procesos industriales ni cronogramas de confección.
+   - **Funciones Críticas:**
+     * Emite y certifica el **UUID Oficial** de la e-OP (Art. 4° inc. 1), otorgándole fecha cierta y oponibilidad *erga omnes* frente a terceros y masa concursal (Art. 138 LCQ).
+     * Toma razón de las firmas digitales bilaterales estampadas con Clave Fiscal Nivel 3.
+     * **Bloqueo Sistémico de FCE (Art. 9° / Ley 27.440):** Al registrarse la e-OP, ARCA inhabilita la emisión paralela de Facturas de Crédito Electrónicas MiPyME sobre la misma operación para evitar doble financiamiento o duplicación de títulos.
+     * Valida la autenticidad y el CAE de las facturas electrónicas emitidas en la instancia de Cierre Fiscal (RCF).
+     * Expone APIs públicas de consulta de estado para datos no sensibles (cumpliendo la Ley 25.326 de Protección de Datos Personales).
+
+2. **Instancia ERP Indinopy (En la Marca Comitente con Portal Extranet para Talleres y Proveedores):**
+   - **Despliegue Centralizado en la Marca:** La marca manufacturera corre su servidor/instancia de Indinopy, gestionando el núcleo operativo (diseño, curva de moldería, órdenes de producción, recetas técnicas BOM, control de inventario de rollos/avíos, compras y pagos).
+   - **Portal Web / Móvil (Extranet) de Talleristas y Proveedores:**
+     * **Acceso Ligero:** El taller o confeccionista externo no requiere instalar software, base de datos ni servidor; accede mediante navegador web o PWA móvil a la extranet expuesta por la marca.
+     * **Firma Bilateral de la e-OP:** El tallerista revisa las condiciones técnicas, el Vector C y el cronograma de hitos, estampando su firma digital (Clave Fiscal Nivel 3 o Ed25519) de manera remota e integrada.
+     * **Recepción y Conformidad de Insumos (BOM):** Valida la recepción física de rollos y avíos entregados bajo custodia de transformación ($c_{\text{BOM}}$) y reporta incidencias o demoras de logística Justo a Tiempo (JIT).
+     * **Acreditación PoPW:** Reporta avances de confección con declaración jurada de avance y georreferenciación satelital en un clic (`navigator.geolocation`).
+     * **Gestión Documental y de Facturación Unificada:** Permite al tallerista/proveedor no solo tramitar la e-OP, sino también cargar facturas vinculadas a Órdenes de Compra (OCs), comprobantes de servicios prestados, consultar órdenes de pago emitidas y seguir el estado de liberación de fondos en las cuentas de Escrow.
+
+3. **FIMCA-Core (Fideicomiso Financiero FDI y Comité MES Sectorial):**
+   - **Competencia:** Opera a nivel de infraestructura financiera y regulatoria de la red.
+   - **Funciones Críticas:**
+     * Recibe y custodia el **expediente canónico fiduciario** (`fdi.RegistroEOP`).
+     * Aplica la ventana de Timelock reglamentaria (48h ordinarias o 2h Fast-Track para actores con scoring $\ge 90$).
+     * Custodia e instruye los desembolsos de las subcuentas bancarias de Escrow abiertas en el Banco Central (BCRA) o bancos autorizados (Art. 14°).
+     * Valida de forma copulativa el desembolso del **Hito Cero** (remito oficial con UUID + póliza colectiva de stock en custodia Art. 20 bis).
+     * **Titulización Bursátil:** Agrupa carteras de órdenes y emite **Bonos BIP** calzados estrictamente a plazos de 60, 90 o 120 días en mercados regulados (BYMA/MAE).
+     * Monitorea el scoring SETP, administra el Puerto Seguro Laboral (CDD / CDD-P) e interviene en la resolución prejudicial de calidad a través del INTI (Arts. 11.2 y 13°).
+
+#### Flujo de Interoperabilidad Paso a Paso:
+
+* **Paso 1 (Creación y Firma Bilateral):** La marca parametriza la producción en su ERP Indinopy (generando el Vector C de costos, el árbol de Merkle del BOM y el cronograma de hitos). El tallerista accede al Portal de Proveedores, revisa los términos e inserta su firma digital con Clave Fiscal Nivel 3.
+* **Paso 2 (Registro y Sellado Fiscal en ARCA):** Indinopy transmite el sobre canónico multifirmado al Web Service del Registro Oficial de ARCA. ARCA verifica la autenticidad fiscal, inscribe la operación con efectos declarativos y oponibilidad frente a terceros, asigna el UUID oficial de la e-OP y activa el bloqueo sobre el régimen de Facturas de Crédito Electrónicas (FCE).
+* **Paso 3 (Apertura del Expediente Fiduciario en FIMCA-Core):** Con el UUID fiscal emitido, el sobre se comunica al nodo central de FIMCA-Core, el cual registra la e-OP en `fdi.RegistroEOP`, programa los hitos de escrow (`fdi.EOPHitoEscrow`) e inicia el cómputo del timelock de oposición (48h).
+* **Paso 4 (Hito Cero y Despacho JIT):** La marca entrega el lote inicial de insumos y emite el remito oficial. El tallerista acusa recibo conforme desde el Portal. Verificada la póliza de stock y el remito, FIMCA-Core libera el Hito Cero (anticipo de arranque del 35% o 50% con Sello de Buen Diseño) a la cuenta bancaria del tallerista.
+* **Paso 5 (Avance Productivo PoPW):** Conforme avanza la confección, el tallerista reporta las etapas en el Portal mediante PoPW georreferenciado. El comitente supervisa las alertas JIT y remitos parciales. Tras el silencio de 48h o conformidad expresa, FIMCA-Core libera los hitos de avance.
+* **Paso 6 (Entrega y Cierre Fiscal RCF):** Finalizado el lote, se entrega con remito de recepción definitiva. El tallerista confecciona la factura fiscal (Factura C asistida si es monotributista o carga su CAE en el Portal). ARCA valida el CAE y FIMCA-Core procede al desembolso final de la Retención de Cierre Fiscal (RCF), extinguiendo el escrow fiduciario.
 
 ---
 
@@ -169,9 +220,9 @@ En `apps/eop/services.py`, modificar `ParametrosFDIService` para calcular de for
 2. **Alícuota de Stock:** $\alpha_{\text{STK}} \le 0,5\%$ sobre $c_{\text{BOM}}$ para la prima colectiva de seguros.
 
 ### 3.3. Máquina de Estados para Logística Justo a Tiempo (JIT) (Art. 5° bis)
-
+ 
 Crear el modelo `IncidenciaLogisticaJIT` en `apps/eop/models.py`:
-
+ 
 ```python
 class IncidenciaLogisticaJIT(TimeStampedModel):
     contrato = models.ForeignKey(ContratoEOP, on_delete=models.CASCADE, related_name="incidencias_jit")
@@ -180,28 +231,42 @@ class IncidenciaLogisticaJIT(TimeStampedModel):
     fecha_entrega_real = models.DateField(null=True, blank=True)
     dias_demora = models.PositiveIntegerField(default=0)
     
-    # Efectos económicos
+    # Efectos económicos conforme a Art. 5° bis inc. 5
     compensacion_standby_devengada = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0.00"),
-        help_text=_("0.5 SMVM por día hábil a partir del 6° día de mora.")
+        help_text=_("1 jornal diario del SMVM por día hábil por operario afectado tras 5 días de mora (tope 0.5 SMVM mensual/día).")
     )
     resolucion_ejercida_por_taller = models.BooleanField(default=False)
 ```
-
+ 
 **Reglas de Servicio en `LogisticaJITService`:**
-* **Día 1 a 30:** Prórroga automática día a día de la fecha de entrega física del taller sin penalidad en SETP.
-* **Tope de postergación:** Máximo 30 días corridos de diferimiento del vencimiento comercial de la marca (límite absoluto: 180 días desde la emisión).
-* **Día 6 hábil:** Se gatilla el cálculo automático de standby: $\text{Días mora hábil} \times (0,5 \times \text{SMVM})$.
-* **Día 16 hábil (15 días continuos de mora):** La plataforma habilita en el panel del taller el botón de **"Declarar Resolución Contractual de Pleno Derecho"**, reconociendo el cobro del 100% de la mano de obra iniciada y emitiendo certificado para el derecho de retención (Art. 2587 CCyC).
+* **Día 1 a 30:** Prórroga automática día a día de la fecha de entrega física del taller sin penalidad ni demérito en SETP.
+* **Tope de postergación comercial:** Máximo 30 días corridos de diferimiento del vencimiento comercial de la marca (límite absoluto: 120 días desde la emisión de la e-OP, calzado con la serie de Bonos BIP). El diferimiento devenga intereses compensatorios a tasa BADLAR privada + spread fiduciario a cargo de la marca comitente.
+* **Demérito en SETP:** Cada día de demora no justificada de la marca en logística JIT se computa automáticamente como demérito en su score del SETP.
+* **Día 6 hábil (más de 5 días hábiles de mora):** Se gatilla el cálculo automático de standby por parada de planta:
+  $$\text{Compensación Diaria} = \text{Días mora hábiles} \times \text{Jornal Diario SMVM} \times \text{Operarios Afectados}$$
+  (con un tope máximo de $0,5 \text{ SMVM}$ mensual por día hábil de demora).
+* **Día 16 hábil (15 días continuos de mora):** La plataforma habilita en el panel del taller el botón de **"Declarar Resolución Contractual de Pleno Derecho"**, reconociendo el cobro del 100% de la mano de obra presupuestada para los hitos iniciados o ejecutados y habilitando el derecho de retención preferencial sobre las piezas físicas (Art. 2587 CCyC).
 
-### 3.4. Confesión de Deuda Líquida de Hito Cero (Art. 6°)
+### 3.4. Desistimiento Unilateral del Comitente (Art. 5° ter)
+
+En concordancia con el Artículo 1261 del Código Civil y Comercial de la Nación:
+* La empresa comitente puede desistir unilateralmente de la orden en cualquier momento previo a su conclusión definitiva mediante notificación fehaciente en la plataforma oficial.
+* **Obligaciones automáticas de liquidación:**
+  1. Cancelar el 100% de los anticipos e hitos desembolsados o devengados a favor del tallerista hasta la fecha de notificación.
+  2. Abonar el valor proporcional de la mano de obra de las piezas en proceso de elaboración.
+  3. El canon fiduciario ($c_{\text{FDI\_operativo}} + c_{\text{FDI\_stock}}$) devengado al inicio es **no repetible ni reintegrable**.
+* Cumplidas estas obligaciones, la marca ejerce la restitución inmediata de los insumos no transformados bajo custodia (Art. 20 inc. 4) y queda liberada de las etapas no iniciadas.
+
+### 3.5. Confesión de Deuda Líquida de Hito Cero y Vía Ejecutiva (Art. 6°)
 
 Agregar en `ContratoEOP`:
 * Campo `declaracion_confesion_deuda_hito_cero = models.BooleanField(default=False)`.
-* Al estampar la firma del tallerista en el contrato mediante Clave Fiscal o Ed25519, se inyecta en el payload la cláusula resolutoria:
-  > *"La suscripción de la presente e-OP constituye reconocimiento expreso, voluntario e incondicional de deuda líquida y exigible por los fondos percibidos en concepto de Anticipo de Arranque (Hito Cero), habilitando la vía ejecutiva directa del FDI ante abandono culpable o falta injustificada de inicio del proceso productivo."*
+* Al estampar la firma del tallerista en el contrato mediante Clave Fiscal Nivel 3 o Ed25519, se inyecta en el payload la cláusula resolutoria:
+  > *"La suscripción de la presente e-OP constituye reconocimiento expreso, voluntario e incondicional de deuda líquida y exigible por los fondos percibidos en concepto de Anticipo de Arranque (Hito Cero), habilitando la vía ejecutiva directa del FDI ante abandono culpable o falta injustificada de inicio del proceso productivo, previa intimación por 10 días hábiles."*
+* Respaldo por Reserva por Mora Operativa ($0,8\%$ de la MOD dentro del canon fiduciario) para absorber la contingencia transitoria de liquidez.
 
-### 3.5. Acreditación de Hitos: Remito Oficial, PoPW y Timelock RCF (Art. 12°)
+### 3.6. Acreditación de Hitos: Remito Oficial, PoPW y Timelock RCF (Art. 12°)
 
 En `apps/eop/models.py -> EOPHitoEscrow`:
 
@@ -230,7 +295,7 @@ class EOPHitoEscrow(DocumentoFirmableMixin, TimeStampedModel):
    * Si el taller es Monotributista Productivo: la plataforma genera el borrador de Factura C asistida.
    * Si es Responsable Inscripto: transcurridos los 10 días + 5 días hábiles de gracia sin carga de CAE, la cuenta fiduciaria retiene los fondos y comienza a devengar intereses a tasa BADLAR privada a favor del FDI.
 
-### 3.6. Nuevo Payload Canónico Determinista
+### 3.7. Nuevo Payload Canónico Determinista
 
 Modificar `ContratoEOP.generar_payload_canonico()`:
 * Protocolo versión: `"3.0-ley"`.
@@ -239,17 +304,33 @@ Modificar `ContratoEOP.generar_payload_canonico()`:
 
 ---
 
-## 4. Fase 2: Gobernanza Productiva, SETP y Diligencia Laboral (`apps/mes`)
-
+## 4. Fase 2: Gobernanza Productiva, MES, SETP y Diligencia Laboral (`apps/mes`)
+ 
 ### 4.1. Reubicación del Registro Oficial (ARCA vs. Nodo MES)
-
-* **ARCA:** Administra la base de datos registral de e-OPs mediante APIs seguras.
+ 
+* **ARCA:** Administra el Registro Público de Órdenes de Producción Electrónicas (Art. 10° Ley de e-OP) mediante APIs seguras de datos abiertos no sensibles (UUID, estado, partes y fechas). Los montos económicos, recetas y cronogramas se resguardan bajo secreto comercial conforme a la Ley N° 25.326.
 * **Nodo MES:** Actúa como centro de gobernanza y auditoría:
   * Procesa los eventos emitidos por ARCA.
-  * Administra el historial de cumplimiento y calificaciones.
+  * Administra el historial de cumplimiento y calificaciones en el SETP.
   * Conduce las instancias de arbitraje y peritaje con el INTI.
 
-### 4.2. Sistema de Evaluación de Trayectoria Productiva (SETP) (Art. 2° inc. 12)
+### 4.2. Marco Jurídico y Estatutario de la MES como Comité Fiduciario Territorial (Arts. 1°, 15° y 27°)
+
+Conforme al régimen fiduciario (Arts. 1666 a 1700 del CCyC y Ley N° 26.831) y la Sección II (bis) de la Addenda I al Dossier FIMCA:
+* **Naturaleza Estatutaria:** La Mesa de Enlace Sectorial (MES) no constituye un ente estatal autónomo ni una estructura burocrática presupuestaria. **Se constituye formalmente como el Comité de Conducción, Fomento y Seguimiento Territorial dentro del Contrato y Reglamento de Gestión del FDI**, y como órgano consultivo permanente de actualización paritaria coordinado por el INTI (Arts. 1° y 27° Ley de e-OP).
+* **Mesa Única Local de 7 Miembros Ad-Honorem:**
+  * 2 representantes de Talleristas (1 de Monotributo Productivo / 1 de Talleres Consolidados con CDD).
+  * 2 representantes de Marcas comitentes (cámaras del sector).
+  * 1 representante institucional del INTI (soberanía técnica).
+  * 1 representante del Sindicato de rama (tutela laboral).
+  * 1 representante de la Secretaría de Producción Municipal (Árbitro jurisdiccional y desempate).
+* **Tres Agendas de Trabajo Operativas (sin duplicación burocrática):**
+  1. *Agenda Técnica:* Homologación de tecnología conveniente (arancel cero aduanero) y matrices semestrales paritarias con el INTI.
+  2. *Agenda de Crédito, Riesgo y Fomento:* Cupos de arranque operativo en el SETP, Banco de Maquinaria y formación CIFO (presidida por el Municipio).
+  3. *Plenario Arbitral ad-hoc:* Tribunal territorial para controversias de calidad (Art. 13°) y tutela sindical de urgencia (congelamiento preventivo de 48h con fianza líquida del 100% para no frenar la logística de la marca).
+* **Quórum y Cláusula de Protección:** Quórum de 5 miembros. Decisiones reservadas (tarifas paritarias, sanciones de exclusión) exigen mayoría de 5 votos + voto concurrente obligatorio de al menos un representante del taller de base.
+
+### 4.3. Sistema de Evaluación de Trayectoria Productiva (SETP) (Art. 2° inc. 12)
 
 Crear el modelo `EvaluacionTrayectoriaSETP` en `apps/mes/models.py`:
 
@@ -279,10 +360,10 @@ class EvaluacionTrayectoriaSETP(TimeStampedModel):
 * **Arranque en Frío:** Otorga a empresas nuevas sin historial un cupo garantizado equivalente al valor de 2 e-OPs estándar o hasta 15 trabajadores declarados.
 * **Habeas Data:** Endpoints `/mes/api/v1/setp/mi-calificacion/` para visualización, rectificación y descargo fundado de calificaciones.
 
-### 4.3. Certificado de Diligencia Debida Laboral (CDD / CDD-P) (Art. 22°)
-
+### 4.4. Certificado de Diligencia Debida Laboral (CDD / CDD-P) (Art. 22°)
+ 
 Crear el modelo `CertificadoDiligenciaDebida` en `apps/mes/models.py`:
-
+ 
 ```python
 class CertificadoDiligenciaDebida(TimeStampedModel):
     tallerista = models.ForeignKey("contactos.Contacto", on_delete=models.CASCADE, related_name="certificados_cdd")
@@ -309,29 +390,29 @@ class CertificadoDiligenciaDebida(TimeStampedModel):
     )
     hash_verificacion_cdd = models.CharField(max_length=64, blank=True)
 ```
-
+ 
 **Flujo Operativo del Safe Harbor:**
 1. **Verificación Mensual:** Cruza F.931, constancia de ART y SIPA (dispensa de secreto fiscal Art. 23.4).
 2. **CDD-P (Rampa de Formalización):** El FDI retiene hasta un 15% del valor bruto de cada hito para cancelar aportes y contribuciones patronales a ARCA y ART directamente.
-3. **Protección a la Marca (Art. 22.3):** La posesión del CDD vigente constituye presunción legal *iuris tantum* del deber de control del Art. 30 LCT.
-4. **Subsidiaridad y FAEL:** Reclamos laborales firmes se cobran del FAEL. Si se agota, responde la marca comitente en forma subsidiaria directa, proporcional a su $c_{\text{MOD}}$ si el taller es multimarca (Art. 22.8), sin beneficio de excusión.
-
-### 4.4. Defensas de Calidad y Peritaje Técnico Prejudicial INTI (Arts. 11.2 y 13°)
-
+3. **Protección a la Marca (Art. 22.3 y Art. 22.4):** La posesión del CDD vigente constituye presunción legal *iuris tantum* del deber de control del Art. 30 segundo párrafo LCT. En relación al primer párrafo del Art. 30 LCT, la locación de obra instrumentada en la e-OP, la facturación oficial y los pagos por Cuentas Especiales desvirtúan la presunción de dependencia laboral directa conforme al Art. 23 LCT (modificado por Ley 27.742).
+4. **Subsidiaridad y FAEL:** Reclamos laborales firmes se cobran del FAEL. Si se agota, responde la marca comitente en forma subsidiaria directa, sin beneficio de excusión patrimonial previa, prorrateada según su cuota de mano de obra si el taller es multimarca (Art. 22.8).
+ 
+### 4.5. Defensas de Calidad y Peritaje Técnico Prejudicial INTI (Arts. 11.2 y 13°)
+ 
 * **Ventana de Objeción (Art. 11.2):** La comitente dispone de **5 días hábiles** desde la entrega física para objetar calidad, mermas o discordancias sustantivas con la receta técnica (BOM).
 * **Efecto de la Objeción:** Suspende exclusivamente la liberación de la Retención de Cierre Fiscal (RCF), manteniendo ejecutables los tramos previamente certificados.
 * **Instancia Prejudicial INTI (Art. 13°):** Emisión obligatoria del **Dictamen Técnico Pericial en 5 días hábiles**. Arancel: 2 Salarios Mínimos Vitales y Móviles distribuido por mitades (con exención a monotributistas productivos).
-
-### 4.5. Alerta Temprana de Inconsistencia de Costos (Art. 27°)
-
+ 
+### 4.6. Alerta Temprana de Inconsistencia de Costos (Art. 27°)
+ 
 Servicio `AuditoriaCostosINTIService`:
 * Cruza el valor horario o tarifa por unidad de la e-OP contra las matrices semestrales de costos del INTI y convenios paritarios de rama (UTICRA, SOIVA, UOM).
 * Si la tarifa pactada perfora el piso de convenio:
   * Emite **Alerta Temprana de Inconsistencia**.
   * Consecuencia exclusiva para la marca: pérdida automática del beneficio de Puerto Seguro Laboral y caducidad del Crédito Fiscal Presunto del 10%.
   * **Los desembolsos hacia el tallerista no se frenan**.
-
-### 4.6. Módulo de Libreta Digital de Trabajo a Domicilio (Ley N° 12.713)
+ 
+### 4.7. Módulo de Libreta Digital de Trabajo a Domicilio (Ley N° 12.713)
 
 * Habilitar un sub-régimen en `apps/mes` para costureros/as y artesanos domiciliarios sin estructura de taller:
   * Sustitución digital de la libreta física de la Ley 12.713.
@@ -356,14 +437,25 @@ En `fimca-core/federacion/serializers.py`, se refactoriza `EntradaEOPSerializer.
    * Alícuota de stock: $c_{\text{FDI\_stock}} \le c_{\text{BOM}} \times 0.005$ (tolerancia: $\$0.05$).
 3. **Validar cláusula de confesión de deuda Hito Cero:** Exigir `clausula_confesion_deuda_h0: True` en el payload firmado por el tallerista.
 
-### 5.2. Desacople y Eliminación de Duplicación en `RecepcionEOPView`
+### 5.2. Desacople, Eliminación de `ContratoEOP` y Consolidación Canónica en `RegistroEOP`
 
-En `fimca-core/federacion/views.py`:
-* Se centraliza la instanciación canónica del contrato fiduciario en la MES, asegurando que el Timelock (2h en Fast-Track para scoring $\ge 90$ o réplicas técnicas anuales; 48h ordinarias) se active únicamente tras verificar la multifirma obligatoria (Comitente + Tallerista).
-* Se dictamina la tríada de hitos vía `mes.services.ComisionService`:
-  - **Hito Cero:** Anticipo operativo de arranque (35% estándar o 50% con Sello de Buen Diseño).
-  - **Hitos de Avance:** Calzados con el cronograma o etapas de servicios MOD homologados.
-  - **Hito Final:** Retención de Cierre Fiscal (RCF) con verificación ARCA obligatoria.
+En `fimca-core`:
+* **Eliminación definitiva de `base.ContratoEOP` y `base.EOPHitoEscrow`:** Se removieron por completo estos modelos redundantes de `fimca-core/base/models.py`. La base queda reservada estrictamente a infraestructura transversal (`ConfiguracionNodo`, `Moneda`, `Secuencia`, `DocumentoAdjunto`, `Contacto`).
+* **Consolidación en `fdi.RegistroEOP` y `fdi.EOPHitoEscrow`:**
+  - `RegistroEOP` en `fimca-core/fdi/models.py` asume el rol del expediente fiduciario canónico completo: almacena el desglose del Vector C (`costo_mod`, `costo_bom`, `costo_fdi_operativo`, `costo_fdi_stock`), el `merkle_root_bom`, firmas Ed25519, `payload_canonico` determinista y plazos comerciales.
+  - `EOPHitoEscrow` se reubicó directamente en `fdi/models.py` vinculado a `RegistroEOP` mediante `registro_eop = models.ForeignKey(RegistroEOP, related_name="hitos", on_delete=models.CASCADE)`.
+  - Todas las referencias fiduciarias foráneas (`CarteraTitulizableBIP.contratos`, `CertificadoDiligenciaDebida.eop_asociada`, `PeritajeCalidadINTI.eop`, `LibretaTrabajoDomicilio.eop_asociada`) apuntan directamente a `fdi.RegistroEOP`.
+* **En `fimca-core/federacion/views.py` (`RecepcionEOPView`):**
+  - Se eliminó la instanciación de `ContratoEOP`. La vista ahora valida el payload con `EntradaEOPSerializer` y crea atómicamente el `RegistroEOP` junto con sus `EOPHitoEscrow` correspondientes.
+  - La ventana de Timelock (2h en Fast-Track para scoring $\ge 90$ o réplicas técnicas anuales; 48h ordinarias) se activa únicamente tras verificar la multifirma obligatoria (Comitente + Tallerista).
+  - La tríada de hitos se genera con sus montos y porcentajes normativos:
+    - **Hito Cero (Anticipo de Arranque):** 35% estándar o 50% con Sello de Buen Diseño.
+    - **Hitos de Avance:** Calzados con el cronograma o etapas de servicios MOD homologados.
+    - **Hito Final (RCF):** Retención de Cierre Fiscal (20%) con verificación ARCA obligatoria.
+* **En `fimca-core/fdi/services.py`:**
+  - `EOPService.liberar_hito` y `PTFService._liberar_escrow_por_eop` operan exclusivamente sobre `registro_eop.hitos`.
+  - `ClearingBancarioService` y `PeritajeCalidadService` operan de forma limpia con `RegistroEOP`.
+  - Se restringieron los plazos de emisión de Bonos BIP en `TitulizacionBIPService.emitir_serie_bono_bip` estrictamente a 60, 90 o 120 días.
 
 ### 5.3. Validación Copulativa y Despacho en `liberar_hito_escrow_async`
 
@@ -406,8 +498,9 @@ Implementada en `fimca-core/fdi` como el software central del **Fondo Fiduciario
 ### 6.1. Titulización Bursátil y Emisión de Bonos BIP (Arts. 17° y Anexo II)
 
 * **Modelos:** `CarteraTitulizableBIP` y `SerieBonoBIP`:
-  * Series de corto plazo: 60 a 180 días corridos, con amortización calzada con las e-OPs subyacentes.
-  * Denominación: UCI, UVA o ARS.
+  * Series de corto plazo: **60 a 120 días corridos** (tope fiduciario absoluto), con amortización calzada estrictamente con las e-OPs subyacentes y el ciclo de cobranza comercial de las comitentes.
+  * Denominación: UCI (indexada por IPIM/convenio paritario), UVA, ARS o moneda extranjera (Art. 765 CCyC mod. DNU 70/2023).
+  * Habilitación legislativa expresa de indexación para órdenes > 90 días (Art. 18°).
   * Dictamen de **Revisor Externo Independiente** registrado ante CNV para etiquetado de Bonos Sociales, Verdes y Sustentables (SVS) conforme a RG CNV N° 917/2021.
   * Módulo de integración para colocación de tramos minoristas en ALyC.
 
@@ -528,15 +621,16 @@ CELERY_BEAT_SCHEDULE = {
 3. **Paso 3:** Aplicar restricciones `NOT NULL` en nuevas columnas y crear índices sobre CUITs y estados de hitos.
 
 ### Batería de Pruebas Unitarias y de Integración (`apps/*/tests.py`)
-1. **`test_calculo_vector_costos_sin_bom`:** Verificar que el capital financiado sea estrictamente $c_{\text{MOD}} + c_{\text{FDI}}$ y que $c_{\text{BOM}}$ se registre de modo informativo sin generar acreencia contra la marca.
+1. **`test_calculo_vector_costos_sin_bom`:** Verificar que el capital financiado sea estrictamente $c_{\text{MOD}} + c_{\text{FDI}}$ y que $c_{\text{BOM}}$ se registre de modo puramente colateral/asegurativo sin generar acreencia exigible contra la marca.
 2. **`test_serializer_federacion_alicuota_desglosada`:** Verificar que `EntradaEOPSerializer` acepte el desglose de cánones ($c_{\text{FDI\_operativo}}$ y $c_{\text{STK}}$) y rechace firmas con alícuotas arbitrarias.
 3. **`test_recepcion_eop_delegacion_servicio`:** Verificar que `RecepcionEOPView` delegue la creación en `EOPService` sin duplicar la lógica de hitos.
-4. **`test_logistica_jit_prorroga_y_standby`:** Simular atraso de entrega de insumos de 8 días hábiles por la comitente; verificar prórroga de entrega del taller, recalificación en SETP a la marca y devengamiento de 3 días de standby (1,5 SMVM).
-5. **`test_rescisión_taller_15_dias_jit`:** Constatar que al día 15 hábil de mora de insumos, el tallerista pueda resolver el contrato, liquidar el 100% de la mano de obra iniciada y emitir certificado de retención.
-6. **`test_liberacion_hito_cero_concurrencia`:** Asegurar que el Hito Cero arroje excepción si falta el remito oficial con UUID, si el comprobante tipo "X" proviene de un CUIT externo o si la póliza de stock no está activa.
-7. **`test_rcf_timelock_badlar`:** Verificar que vencidos los 10 días hábiles + 5 de gracia sin CAE, el Hito Final comience a liquidar mora BADLAR privada.
-8. **`test_cdd_safe_harbor_revocacion`:** Simular falta de presentación de F.931 y constatar suspensión automática del CDD y de la presunción del Art. 30 LCT.
-9. **`test_bloqueo_fce`:** Verificar que el generador de comprobantes rechace la emisión de Facturas de Crédito Electrónicas asociadas a contratos de e-OP.
+4. **`test_logistica_jit_prorroga_y_standby`:** Simular atraso de entrega de insumos de 8 días hábiles por la comitente; verificar prórroga de entrega del taller, recalificación en SETP a la marca y devengamiento de compensación por operario (1 jornal diario SMVM).
+5. **`test_desistimiento_unilateral_comitente`:** Simular desistimiento unilateral bajo el Art. 5° ter (Art. 1261 CCyC); verificar liquidación automática de hitos devengados, proporción de piezas en proceso, retención de canon fiduciario y autorización de retiro de insumos remanentes.
+6. **`test_rescisión_taller_15_dias_jit`:** Constatar que al día 15 hábil de mora continua en insumos, el tallerista pueda resolver el contrato, liquidar el 100% de la mano de obra presupuestada de hitos iniciados y emitir certificado para derecho de retención (Art. 2587 CCyC).
+7. **`test_liberacion_hito_cero_concurrencia`:** Asegurar que el Hito Cero arroje excepción si falta el remito oficial con UUID, si el comprobante tipo "X" proviene de un CUIT externo o si la póliza de stock del Art. 20 bis no está activa.
+8. **`test_rcf_timelock_badlar`:** Verificar que vencidos los 10 días hábiles + 5 de gracia sin CAE, el Hito Final comience a liquidar mora BADLAR privada (con exención expresa al Monotributo Productivo asistido).
+9. **`test_cdd_safe_harbor_revocacion`:** Simular falta de presentación de F.931 y constatar suspensión automática del CDD y de la presunción del Art. 30 LCT.
+10. **`test_bloqueo_fce`:** Verificar que el generador de comprobantes rechace la emisión de Facturas de Crédito Electrónicas asociadas a contratos de e-OP (Ley 27.440 Art. 7° bis).
 
 ---
 

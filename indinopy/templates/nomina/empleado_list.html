@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Nómina de Empleados — Indinopy ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">
+                Nómina y Personal de Planta
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Legajos de empleados textiles, convenios colectivos y liquidaciones salariales
+            </p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-xs font-mono font-semibold px-3 py-1 rounded bg-[#111827] border border-[#1e293b] text-slate-300">
+                {{ empleados|length }} empleados activos
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-[#111827] rounded-xl border border-[#1e293b] overflow-hidden">
+        {% if empleados %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-[#1e293b] text-left text-sm">
+                <thead class="bg-[#070a10] text-[10px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3">Legajo / Nombre</th>
+                        <th class="px-6 py-3">CUIL</th>
+                        <th class="px-6 py-3">Convenio / Categoría</th>
+                        <th class="px-6 py-3">Ingreso</th>
+                        <th class="px-6 py-3">Estado</th>
+                        <th class="px-6 py-3 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#1e293b]/60">
+                    {% for e in empleados %}
+                    <tr class="hover:bg-[#151e2e] transition">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-white">{{ e.nombre_completo|default:e.nombre }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">Legajo #{{ e.legajo|default:e.id }}</div>
+                        </td>
+                        <td class="px-6 py-4 font-mono text-xs text-slate-300">
+                            {{ e.cuil }}
+                        </td>
+                        <td class="px-6 py-4 text-xs text-slate-300">
+                            {{ e.convenio.nombre|default:"Sin convenio" }}
+                        </td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-400">
+                            {{ e.fecha_ingreso|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold
+                                {% if e.activo %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                                {% else %}bg-slate-800 text-slate-400 border border-slate-700{% endif %}">
+                                {% if e.activo %}Activo{% else %}Inactivo / Baja{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <a href="{% url 'nomina:empleado_detail' pk=e.pk %}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#070a10] border border-[#1e293b] text-cyan-400 hover:border-cyan-500/50 font-semibold text-xs transition">
+                                Ver Legajo
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-12 text-center text-slate-500">
+            <h3 class="text-sm font-semibold text-slate-300">No hay empleados registrados</h3>
+            <p class="text-xs text-slate-500 mt-1">Registra personal en el módulo de nómina para liquidaciones.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

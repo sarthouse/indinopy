@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Buzón de Comunicaciones Oficiales — Indinopy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">
+                Comunicaciones Oficiales y Cédulas Fehacientes
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Domicilio Sectorial Electrónico, notificaciones fehacientes selladas y acuses criptográficos
+            </p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-xs font-mono font-semibold px-3 py-1 rounded bg-[#111827] border border-[#1e293b] text-slate-300">
+                {{ comunicaciones|length }} comunicaciones
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-[#111827] rounded-xl border border-[#1e293b] overflow-hidden">
+        {% if comunicaciones %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-[#1e293b] text-left text-sm">
+                <thead class="bg-[#070a10] text-[10px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3">Número Oficial</th>
+                        <th class="px-6 py-3">Fecha Emisión</th>
+                        <th class="px-6 py-3">Tipo</th>
+                        <th class="px-6 py-3">Asunto</th>
+                        <th class="px-6 py-3">Estado</th>
+                        <th class="px-6 py-3 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#1e293b]/60">
+                    {% for c in comunicaciones %}
+                    <tr class="hover:bg-[#151e2e] transition">
+                        <td class="px-6 py-4 font-mono font-bold text-white">
+                            {{ c.numero_oficial|default:c.uuid_identificador|slice:":8" }}
+                        </td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-300">
+                            {{ c.fecha_emision|date:"d/m/Y H:i"|default:"BORRADOR" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-xs bg-[#070a10] border border-[#1e293b] text-slate-300">
+                                {{ c.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-slate-200">{{ c.asunto }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">Emisor: {{ c.cuit_emisor }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold
+                                {% if c.estado == 'emitida' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                                {% elif c.estado == 'archivada' %}bg-slate-800 text-slate-400 border border-slate-700
+                                {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/30{% endif %}">
+                                {{ c.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <a href="{% url 'comunicaciones:comunicacion_detail' uuid=c.uuid_identificador %}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#070a10] border border-[#1e293b] text-cyan-400 hover:border-cyan-500/50 font-semibold text-xs transition">
+                                Ver Cédula
+                            </a>
+                            <a href="{% url 'comunicaciones:detalle' uuid=c.uuid_identificador %}?format=pdf" target="_blank" class="inline-flex items-center px-2 py-1.5 text-slate-400 hover:text-slate-200 text-xs">
+                                PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-12 text-center text-slate-500">
+            <h3 class="text-sm font-semibold text-slate-300">No hay comunicaciones oficiales registradas</h3>
+            <p class="text-xs text-slate-500 mt-1">El buzón oficial recibirá las notificaciones fehacientes y requerimientos del ecosistema.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Órdenes de Compra — Indinopy ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">
+                Gestión de Compras y Abastecimiento
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Órdenes de compra de insumos, hilados, tejidos y avíos con control de recepción comercial
+            </p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-xs font-mono font-semibold px-3 py-1 rounded bg-[#111827] border border-[#1e293b] text-slate-300">
+                {{ ordenes|length }} órdenes
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-[#111827] rounded-xl border border-[#1e293b] overflow-hidden">
+        {% if ordenes %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-[#1e293b] text-left text-sm">
+                <thead class="bg-[#070a10] text-[10px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3">Número</th>
+                        <th class="px-6 py-3">Fecha</th>
+                        <th class="px-6 py-3">Proveedor</th>
+                        <th class="px-6 py-3">Estado</th>
+                        <th class="px-6 py-3 text-right">Total ($)</th>
+                        <th class="px-6 py-3 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#1e293b]/60">
+                    {% for o in ordenes %}
+                    <tr class="hover:bg-[#151e2e] transition">
+                        <td class="px-6 py-4 font-mono font-bold text-white">
+                            #{{ o.numero }}
+                        </td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-300">
+                            {{ o.fecha|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-slate-200">{{ o.proveedor.nombre }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">CUIT: {{ o.proveedor.cuil|default:"-" }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold
+                                {% if o.estado == 'facturado' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                                {% elif o.estado == 'confirmado' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30
+                                {% elif o.estado == 'cancelado' %}bg-rose-500/10 text-rose-400 border border-rose-500/30
+                                {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/30{% endif %}">
+                                {{ o.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right font-mono font-bold text-white">
+                            $ {{ o.monto_total|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <a href="{% url 'compras:oc_detail' pk=o.pk %}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#070a10] border border-[#1e293b] text-cyan-400 hover:border-cyan-500/50 font-semibold text-xs transition">
+                                Detalle
+                            </a>
+                            <a href="{% url 'compras:oc_pdf' pk=o.pk %}" target="_blank" class="inline-flex items-center px-2 py-1.5 text-slate-400 hover:text-slate-200 text-xs">
+                                PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-12 text-center text-slate-500">
+            <h3 class="text-sm font-semibold text-slate-300">No hay órdenes de compra registradas</h3>
+            <p class="text-xs text-slate-500 mt-1">Crea una orden para registrar compras a proveedores de insumos.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

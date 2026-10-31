@@ -558,22 +558,26 @@ class EOPService:
 
 class LogisticaJITService:
     """
-    Gestión del régimen logístico Justo a Tiempo (JIT) - Art. 5° bis Ley e-OP.
+    Gestión del régimen logístico Justo a Tiempo (JIT) - Art. 5° bis y 5° ter Ley e-OP.
     Administra la extensión de plazos comerciales, devengamiento de compensación
-    por standby fabril y la facultad rescisoria unilateral del taller façonnier.
+    por standby fabril, resolución de pleno derecho por el taller y desistimiento unilateral comitente.
     """
     SMVM_DEFAULT = Decimal("300000.00")  # Salario Mínimo Vital y Móvil de referencia (ARS)
-    MAX_DIAS_PRORROGA = 30  # Límite máximo de postergación de vencimiento comercial
+    DIAS_HABILES_MES_SMVM = Decimal("25.00")  # Días hábiles estándar para el cálculo del jornal diario
+    MAX_DIAS_PRORROGA = 30  # Límite máximo de postergación de vencimiento comercial por mora JIT
+    TOPE_ABSOLUTO_DIAS_EOP = 120  # Tope legal improrrogable del título comercial (Art. 4° inc. 6 y Art. 5° bis inc. 2)
 
     @classmethod
     @transaction.atomic
     def registrar_demora_abastecimiento(
-        cls, contrato, etapa_nombre, fecha_esperada, fecha_real=None, smvm_vigente=None
+        cls, contrato, etapa_nombre, fecha_esperada, fecha_real=None, operarios_linea=1, smvm_vigente=None
     ):
         """
-        Registra una contingencia de abastecimiento JIT.
-        - Prorroga automáticamente la entrega física y el vencimiento comercial (tope 30 días corridos).
-        - A partir del 6° día hábil de mora (días_demora > 5), devenga standby a 0.5 SMVM diario.
+        Registra una contingencia de abastecimiento JIT (Art. 5° bis).
+        - Prorroga automáticamente la entrega física y el vencimiento comercial (tope 30 días corridos, máx 120 días totales).
+        - A partir del 6° día hábil de mora (días_demora > 5):
+          Compensación diaria = 1 jornal diario de SMVM por operario asignado,
+          con tope máximo de medio (0.5) SMVM mensual por día hábil.
         """
         smvm = smvm_vigente or cls.SMVM_DEFAULT
         fecha_eval = fecha_real or timezone.now().date()
@@ -584,10 +588,18 @@ class LogisticaJITService:
 
         from .models import IncidenciaLogisticaJIT
 
-        # Días de mora hábiles aproximados o directos (si > 5 días, standby a partir del día 6)
-        dias_standby = max(0, dias_demora - 5)
-        tarifa_diaria_standby = round(Decimal("0.5") * smvm / Decimal("30"), 2)
-        monto_standby = round(Decimal(dias_standby) * tarifa_diaria_standby, 2)
+        # Días de mora hábiles aproximados para cálculo de compensación (a partir del día 6)
+        dias_standby_habiles = max(0, dias_demora - 5)
+
+        # 1 jornal diario del SMVM por operario (SMVM / 25 días hábiles)
+        jornal_diario_unitario = (smvm / cls.DIAS_HABILES_MES_SMVM).quantize(Decimal("0.01"))
+        tarifa_diaria_calculada = jornal_diario_unitario * Decimal(str(max(1, operarios_linea)))
+
+        # Tope legal: medio (0.5) SMVM mensual por día hábil
+        tope_diario_maximo = (smvm * Decimal("0.50")).quantize(Decimal("0.01"))
+        tarifa_diaria_standby = min(tarifa_diaria_calculada, tope_diario_maximo)
+
+        monto_standby = (Decimal(str(dias_standby_habiles)) * tarifa_diaria_standby).quantize(Decimal("0.01"))
 
         incidencia = IncidenciaLogisticaJIT.objects.create(
             contrato=contrato,
@@ -595,6 +607,7 @@ class LogisticaJITService:
             fecha_entrega_esperada=fecha_esperada,
             fecha_entrega_real=fecha_real,
             dias_demora=dias_demora,
+            operarios_afectados_linea=max(1, operarios_linea),
             compensacion_standby_devengada=monto_standby,
         )
 
@@ -605,9 +618,12 @@ class LogisticaJITService:
         contrato.compensacion_standby_acumulada_ars += monto_standby
 
         if contrato.fecha_vencimiento_comercial:
-            contrato.fecha_vencimiento_recalculada = (
-                contrato.fecha_vencimiento_comercial + datetime.timedelta(days=dias_prorroga_aplicable)
-            )
+            nueva_fecha = contrato.fecha_vencimiento_comercial + datetime.timedelta(days=dias_prorroga_aplicable)
+
+            # Control de tope absoluto legal de 120 días desde emisión
+            fecha_emision = contrato.creado_en.date() if contrato.creado_en else timezone.now().date()
+            fecha_tope_absoluto = fecha_emision + datetime.timedelta(days=cls.TOPE_ABSOLUTO_DIAS_EOP)
+            contrato.fecha_vencimiento_recalculada = min(nueva_fecha, fecha_tope_absoluto)
 
         contrato.save(update_fields=[
             "es_justo_a_tiempo",
@@ -622,16 +638,17 @@ class LogisticaJITService:
     @transaction.atomic
     def resolver_contrato_por_mora_taller(cls, contrato, incidencia_id=None):
         """
-        Ejecuta la Resolución Contractual de Pleno Derecho por parte del taller (Art. 5° bis inc. 4).
+        Ejecuta la Resolución Contractual de Pleno Derecho por parte del taller (Art. 5° bis inc. 6).
         Exige al menos 15 días continuos de mora imputable a la marca en la entrega de insumos.
-        Establece el contrato en estado 'en_disputa' y marca la incidencia con resolución ejercida.
+        Establece el contrato en estado 'resuelto_por_mora_jit', consagra el derecho de retención
+        del Art. 2587 CCyC y cobra el 100% de la mano de obra devengada o iniciada.
         """
         if contrato.dias_mora_comitente_jit < 15:
             raise ValueError(
                 f"La resolución de pleno derecho exige al menos 15 días continuos de mora (actual: {contrato.dias_mora_comitente_jit} días)."
             )
 
-        contrato.estado_escrow = "en_disputa"
+        contrato.estado_escrow = "resuelto_por_mora_jit"
         contrato.save(update_fields=["estado_escrow"])
 
         if incidencia_id:
@@ -642,6 +659,38 @@ class LogisticaJITService:
                 incidencia.save(update_fields=["resolucion_ejercida_por_taller"])
 
         return True
+
+    @classmethod
+    @transaction.atomic
+    def desistir_orden_unilateralmente_comitente(cls, contrato, piezas_en_proceso_monto=Decimal("0.00")):
+        """
+        Ejecuta el Desistimiento Unilateral de la orden por parte del Comitente (Art. 5° ter Ley e-OP y Art. 1261 CCyC).
+        Efectos de pleno derecho:
+        1. Cancela la totalidad de anticipos e hitos devengados a favor del taller.
+        2. Añade el valor de mano de obra proporcional de piezas que estuvieren en proceso.
+        3. El canon fiduciario integrado (1.5% s/MOD + 0.5% s/BOM) no resulta repetible ni reintegrable.
+        4. Otorga derecho a la restitución inmediata de insumos no transformados en depósito (Art. 20 inc. 4).
+        5. Libera al comitente de tramos e hitos productivos futuros no iniciados.
+        """
+        if contrato.estado_escrow in ["liquidado_total", "resuelto_por_mora_jit", "desistido_unilateralmente"]:
+            raise ValueError(f"No es admisible desistir una orden en estado {contrato.estado_escrow}.")
+
+        contrato.estado_escrow = "desistido_unilateralmente"
+        contrato.save(update_fields=["estado_escrow"])
+
+        # Marcar incidencia si existe activa
+        incidencia_reciente = contrato.incidencias_jit.first()
+        if incidencia_reciente:
+            incidencia_reciente.desistimiento_comitente_ejercido = True
+            incidencia_reciente.save(update_fields=["desistimiento_comitente_ejercido"])
+
+        return {
+            "status": "desistimiento_conforme",
+            "eop_uuid": str(contrato.uuid_identificador),
+            "piezas_en_proceso_monto": str(piezas_en_proceso_monto),
+            "canon_fdi_irrepetible": str(contrato.costo_fdi),
+            "restitucion_insumos_deposito": True,
+        }
 
 
 class RCFService:

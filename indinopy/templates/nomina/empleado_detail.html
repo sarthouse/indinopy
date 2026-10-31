@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Legajo: {{ empleado.nombre_completo|default:empleado.nombre }} — Indinopy ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header del Empleado -->
+    <div class="bg-[#111827] rounded-xl p-6 border border-[#1e293b] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded
+                    {% if empleado.activo %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                    {% else %}bg-slate-800 text-slate-400 border border-slate-700{% endif %}">
+                    {% if empleado.activo %}Activo en Nómina{% else %}Baja / Egreso{% endif %}
+                </span>
+                <span class="text-xs font-mono text-slate-400">CUIL: {{ empleado.cuil }}</span>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white mt-2">
+                {{ empleado.nombre_completo|default:empleado.nombre }}
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Convenio: <span class="font-semibold text-slate-200">{{ empleado.convenio.nombre|default:"Sin convenio" }}</span> &nbsp;|&nbsp; 
+                Fecha de Ingreso: <span class="font-mono text-slate-300">{{ empleado.fecha_ingreso|date:"d/m/Y" }}</span>
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            {% if empleado.activo %}
+            <a href="{% url 'nomina:empleado_egreso' pk=empleado.pk %}" class="px-4 py-2 rounded-lg border border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition">
+                Dar de Baja / Liquidación Final
+            </a>
+            {% endif %}
+            <a href="{% url 'nomina:empleado_list' %}" class="px-3 py-2 rounded-lg border border-[#1e293b] text-slate-400 hover:text-white text-xs font-semibold transition">
+                Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Historial de Liquidaciones -->
+    <div class="bg-[#111827] rounded-xl border border-[#1e293b] overflow-hidden">
+        <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono">Recibos de Sueldo y Liquidaciones</h2>
+            <span class="text-xs text-slate-400 font-mono">{{ liquidaciones|length }} recibos</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-[#1e293b] text-left text-sm">
+                <thead class="bg-[#070a10] text-[10px] font-mono font-semibold text-slate-400 uppercase">
+                    <tr>
+                        <th class="px-6 py-3">Período</th>
+                        <th class="px-6 py-3">Tipo</th>
+                        <th class="px-6 py-3 text-right">Bruto ($)</th>
+                        <th class="px-6 py-3 text-right">Retenciones ($)</th>
+                        <th class="px-6 py-3 text-right">Neto a Cobrar ($)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#1e293b]/60">
+                    {% for l in liquidaciones %}
+                    <tr class="hover:bg-[#151e2e] transition">
+                        <td class="px-6 py-3.5 font-mono font-medium text-slate-200">{{ l.periodo_mes }}/{{ l.periodo_anio }}</td>
+                        <td class="px-6 py-3.5 text-xs text-slate-300">{{ l.get_tipo_display }}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-slate-300">$ {{ l.total_bruto|floatformat:2 }}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-rose-400">-$ {{ l.total_retenciones|floatformat:2 }}</td>
+                        <td class="px-6 py-3.5 text-right font-mono font-bold text-emerald-400">$ {{ l.total_neto|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="px-6 py-4 text-center text-xs text-slate-500">Sin liquidaciones salariales registradas.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -154,7 +154,30 @@ class RegistroEOP(TimeStampedModel):
 
     # Snapshot del Vector de Costos
     monto_total_uci = models.DecimalField(
-        max_digits=15, decimal_places=2, verbose_name=_("Monto Total (UCI)")
+        max_digits=15, decimal_places=4, verbose_name=_("Monto Total Exigible (UCI)")
+    )
+    costo_mod = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Costo MOD (UCI/ARS)")
+    )
+    costo_bom = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Costo Insumos BOM en Custodia")
+    )
+    costo_fdi_operativo = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Canon FDI Operativo s/MOD")
+    )
+    costo_fdi_stock = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Canon FDI Cobertura Stock s/BOM")
+    )
+
+    # Integridad criptográfica y trazabilidad
+    merkle_root_bom = models.CharField(
+        max_length=64, blank=True, default="", verbose_name=_("Merkle Root BOM")
+    )
+    firmas_digitales = models.JSONField(
+        default=dict, blank=True, verbose_name=_("Firmas Digitales Ed25519")
+    )
+    payload_canonico = models.JSONField(
+        default=dict, blank=True, verbose_name=_("Payload Canónico Sellado")
     )
 
     fecha_recepcion = models.DateTimeField(auto_now_add=True)
@@ -173,6 +196,7 @@ class RegistroEOP(TimeStampedModel):
             ("aprobado_expres", "Aprobación Exprés"),
             ("vetado", "Vetado / Observado"),
             ("en_disputa", "En Disputa (Tribunal)"),
+            ("inmovilizada_por_denuncia", "Inmovilizada por Denuncia"),
         ],
         default="en_revision",
     )
@@ -183,6 +207,64 @@ class RegistroEOP(TimeStampedModel):
 
     def __str__(self):
         return f"e-OP {self.uuid_identificador} [{self.get_estado_display()}]"
+
+
+class EOPHitoEscrow(TimeStampedModel):
+    """
+    Hito del contrato e-OP registrado en el FDI para liquidación y clearing.
+    """
+    registro_eop = models.ForeignKey(
+        RegistroEOP, on_delete=models.CASCADE, related_name="hitos", verbose_name=_("Registro e-OP MES")
+    )
+    uuid_identificador = models.UUIDField(
+        null=True, blank=True, unique=True, editable=False, verbose_name=_("UUID Hito Escrow")
+    )
+    nombre = models.CharField(max_length=200, blank=True, verbose_name=_("Nombre del Hito"))
+    numero_hito = models.PositiveSmallIntegerField(default=1, verbose_name=_("Número de Hito"))
+    descripcion = models.CharField(max_length=200, blank=True, verbose_name=_("Descripción"))
+    porcentaje_tramo = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Porcentaje del Tramo (%)")
+    )
+    monto_ars = models.DecimalField(
+        max_digits=14, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Monto ARS")
+    )
+    estado = models.CharField(
+        max_length=50,
+        choices=[
+            ("bloqueado", _("Bloqueado")),
+            ("retencion_cierre_fiscal", _("Retención de Cierre Fiscal (Esperando CAE ARCA)")),
+            ("liberado", _("Liberado")),
+            ("liquidado", _("Liquidado por Clearing Bancario")),
+        ],
+        default="bloqueado",
+        verbose_name=_("Estado")
+    )
+    requiere_auditoria_ptf = models.BooleanField(
+        default=True, verbose_name=_("Requiere Firma PTF")
+    )
+    requiere_verificacion_arca = models.BooleanField(
+        default=False, verbose_name=_("Requiere Factura ARCA (RCF)")
+    )
+    factura_asociada_arca = models.CharField(
+        max_length=50, blank=True, verbose_name=_("Factura / CAE ARCA")
+    )
+    remito_oficial_uuid = models.CharField(
+        max_length=64, blank=True, null=True, verbose_name=_("UUID Remito Oficial Insumos (Art. 6°)")
+    )
+    seguro_stock_verificado = models.BooleanField(
+        default=False, verbose_name=_("Seguro de Stock Verificado (Art. 20° bis)")
+    )
+    comprobante_pago = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name=_("Comprobante Pago Clearing")
+    )
+
+    class Meta:
+        verbose_name = _("Hito Escrow Federado")
+        verbose_name_plural = _("Hitos Escrow Federados")
+        ordering = ["numero_hito", "id"]
+
+    def __str__(self):
+        return f"Hito #{self.numero_hito} ({self.nombre}) e-OP {self.registro_eop.uuid_identificador} [{self.estado}]"
 
 
 class ResolucionOP(TimeStampedModel):
@@ -812,7 +894,7 @@ class CertificadoDiligenciaDebida(TimeStampedModel):
         verbose_name=_("Marca Comitente"),
     )
     eop_asociada = models.ForeignKey(
-        "base.ContratoEOP", on_delete=models.CASCADE, related_name="certificados_cdd",
+        RegistroEOP, on_delete=models.CASCADE, related_name="certificados_cdd",
         verbose_name=_("e-OP Colateralizada"),
     )
 
@@ -865,7 +947,7 @@ class PeritajeCalidadINTI(TimeStampedModel):
     Suspende exclusivamente la liberación del tramo RCF.
     """
     eop = models.ForeignKey(
-        "base.ContratoEOP", on_delete=models.CASCADE, related_name="peritajes_inti",
+        RegistroEOP, on_delete=models.CASCADE, related_name="peritajes_inti",
         verbose_name=_("e-OP Auditada"),
     )
     comitente = models.ForeignKey(
@@ -903,7 +985,7 @@ class PeritajeCalidadINTI(TimeStampedModel):
         ordering = ["-fecha_objecion"]
 
     def __str__(self):
-        return f"Peritaje INTI e-OP {self.eop.numero or self.eop.id} [{self.get_estado_display()}]"
+        return f"Peritaje INTI e-OP {self.eop.uuid_identificador} [{self.get_estado_display()}]"
 
 
 class LibretaTrabajoDomicilio(TimeStampedModel):
@@ -918,7 +1000,7 @@ class LibretaTrabajoDomicilio(TimeStampedModel):
         "base.Contacto", on_delete=models.CASCADE, related_name="libretas_domicilio_marca"
     )
     eop_asociada = models.ForeignKey(
-        "base.ContratoEOP", on_delete=models.CASCADE, related_name="libretas_domicilio"
+        RegistroEOP, on_delete=models.CASCADE, related_name="libretas_domicilio"
     )
     tarifa_paritaria_garantizada_ars = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name=_("Tarifa de Convenio Garantizada")
@@ -939,7 +1021,7 @@ class LibretaTrabajoDomicilio(TimeStampedModel):
         verbose_name_plural = _("Libretas Digitales Trabajo a Domicilio")
 
     def __str__(self):
-        return f"Libreta 12.713: {self.costurero} - e-OP {self.eop_asociada.numero or self.eop_asociada.id}"
+        return f"Libreta 12.713: {self.costurero} - e-OP {self.eop_asociada.uuid_identificador}"
 
 
 # =====================================================================
@@ -957,7 +1039,7 @@ class CarteraTitulizableBIP(TimeStampedModel):
     )
     descripcion = models.CharField(max_length=200, blank=True, verbose_name=_("Descripción de la Cartera"))
     contratos = models.ManyToManyField(
-        "base.ContratoEOP", related_name="carteras_bip", verbose_name=_("Contratos e-OP Asignados")
+        RegistroEOP, related_name="carteras_bip", verbose_name=_("Registros e-OP Asignados")
     )
     monto_nominal_total_ars = models.DecimalField(
         max_digits=18, decimal_places=2, default=Decimal("0.00"), verbose_name=_("Monto Nominal Total (ARS)")

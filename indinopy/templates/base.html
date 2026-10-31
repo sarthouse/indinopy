@@ -1,25 +1,43 @@
 <!-- Plantilla Base Maestra: indinopy/templates/base.html -->
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-50 dark:bg-slate-900">
+<html lang="es" class="h-full bg-[#070a10]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Indinopy ERP — Red Federada e-OP{% endblock %}</title>
 
-    <!-- Tailwind CSS (Play CDN para entorno ágil sin build tool externa) -->
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS (Play CDN configurado con tokens de docs/src/landing.css) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
                     colors: {
-                        brand: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            500: '#0284c7',
-                            600: '#0369a1',
-                            700: '#075985',
+                        dark: {
+                            base: '#070a10',
+                            surface: '#0d131f',
+                            card: '#111827',
+                            hover: '#162032',
+                            border: '#1e293b',
+                        },
+                        emerald: {
+                            DEFAULT: '#10b981',
+                            light: '#34d399',
+                            dark: '#059669',
+                        },
+                        cyan: {
+                            DEFAULT: '#06b6d4',
+                            light: '#22d3ee',
+                            dark: '#0284c7',
                         }
                     }
                 }
@@ -27,36 +45,46 @@
         }
     </script>
 
-    <!-- HTMX (Para interacciones asincrónicas sin recargas completas) -->
+    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-    <!-- Alpine.js (Para componentes UI interactivos ligeros como dropdowns y auto-dismiss de toasts) -->
+    <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js"></script>
 
     <style>
         [x-cloak] { display: none !important; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #070a10;
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(16, 185, 129, 0.08), transparent 35%),
+                radial-gradient(circle at 85% 15%, rgba(6, 182, 212, 0.08), transparent 35%),
+                linear-gradient(to bottom, rgba(17, 24, 39, 0.35) 1px, transparent 1px),
+                linear-gradient(to right, rgba(17, 24, 39, 0.35) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full flex flex-col text-slate-800 dark:text-slate-100 antialiased"
+<body class="h-full flex flex-col text-slate-100 antialiased"
       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
       x-data="{ drawerOpen: false }"
       @keydown.escape.window="drawerOpen = false">
 
-    <!-- Contenedor de Notificaciones / Flash Messages (Muestra mensajes de django.contrib.messages y de HTMX) -->
+    <!-- Notificaciones / Flash Toasts -->
     {% include "includes/messages.html" %}
 
-    <!-- Drawer Lateral Desplegable por Aplicación -->
+    <!-- Drawer Lateral Desplegable -->
     {% include "includes/drawer.html" %}
 
-    <!-- Barra de Navegación Principal -->
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
+    <!-- Barra de Navegación Principal (Docs Landing Style) -->
+    <header class="bg-[#070a10]/85 border-b border-[#1e293b] backdrop-blur-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center space-x-3 sm:space-x-4">
-                    <!-- Botón Hamburguesa para desplegar Drawer Lateral -->
+                <div class="flex items-center space-x-3 sm:space-x-5">
+                    <!-- Botón Hamburguesa -->
                     <button type="button" 
                             @click="drawerOpen = true"
-                            class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none transition"
+                            class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent hover:border-slate-700 focus:outline-none transition"
                             title="Abrir menú de aplicaciones">
                         <span class="sr-only">Abrir menú</span>
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,38 +92,52 @@
                         </svg>
                     </button>
 
-                    <a href="{% url 'home' %}" class="flex items-center space-x-2">
-                        <span class="text-xl font-bold bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent">
-                            Indinopy ERP
-                        </span>
-                        <span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">
-                            e-OP
-                        </span>
+                    <!-- Marca & Logo SVG Bauhaus -->
+                    <a href="{% url 'home' %}" class="flex items-center space-x-3 group">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center p-0.5 bg-slate-900 border border-slate-700/60 shadow-[0_0_15px_rgba(16,185,129,0.2)] group-hover:shadow-[0_0_20px_rgba(6,182,212,0.35)] transition">
+                            {% include "src/logo.svg" %}
+                        </div>
+                        <div class="flex flex-col">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-base sm:text-lg font-black tracking-tight text-white">
+                                    INDINOPY
+                                </span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 border border-emerald-500/40 tracking-wider">
+                                    ERP / MES
+                                </span>
+                            </div>
+                            <span class="text-[10px] text-slate-400 hidden sm:inline tracking-tight font-medium">
+                                Protocolo e-OP &middot; Red Federada FIMCA
+                            </span>
+                        </div>
                     </a>
                     
-                    <nav class="hidden lg:flex space-x-2 text-sm font-medium text-slate-600 dark:text-slate-300">
-                        <a href="{% url 'produccion:op_list' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Producción</a>
-                        <a href="{% url 'eop:contrato_list' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Contratos</a>
-                        <a href="{% url 'produccion:portal_tallerista' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sky-600 dark:text-sky-400 font-semibold">Portal Taller</a>
-                        <a href="{% url 'contabilidad:factura_list' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Contabilidad</a>
-                        <a href="{% url 'inventario:quant_list' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Stock</a>
+                    <!-- Menú Superior Directo -->
+                    <nav class="hidden lg:flex space-x-1.5 text-xs font-semibold text-slate-300 ml-4">
+                        <a href="{% url 'produccion:op_list' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-800/60 hover:text-emerald-400 transition">Producción</a>
+                        <a href="{% url 'eop:contrato_list' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-800/60 hover:text-cyan-400 transition">Contratos e-OP</a>
+                        <a href="{% url 'produccion:portal_tallerista' %}" class="px-3 py-1.5 rounded-lg bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/40 transition">Portal Tallerista</a>
+                        <a href="{% url 'contabilidad:factura_list' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-800/60 hover:text-slate-100 transition">Contabilidad</a>
+                        <a href="{% url 'inventario:quant_list' %}" class="px-3 py-1.5 rounded-lg hover:bg-slate-800/60 hover:text-slate-100 transition">Stock</a>
                     </nav>
                 </div>
 
                 <div class="flex items-center space-x-3">
                     {% if user.is_authenticated %}
-                        <div class="text-xs text-right">
-                            <div class="font-semibold text-slate-800 dark:text-slate-200">{{ user.username }}</div>
-                            <div class="text-slate-500 text-[10px]">{% if user.is_staff %}Administrador{% else %}Taller / Operador{% endif %}</div>
+                        <div class="text-xs text-right hidden sm:block">
+                            <div class="font-semibold text-slate-200">{{ user.first_name|default:user.username }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">{% if user.is_staff %}Administrador / Staff{% else %}Taller / Operador{% endif %}</div>
                         </div>
                         <form method="post" action="{% url 'logout' %}" class="inline">
                             {% csrf_token %}
-                            <button type="submit" class="text-xs px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-rose-600 transition">
+                            <button type="submit" class="text-xs px-2.5 py-1.5 rounded-lg border border-slate-700/80 bg-slate-900/60 hover:bg-rose-950/40 hover:border-rose-800 text-slate-400 hover:text-rose-300 transition">
                                 Salir
                             </button>
                         </form>
                     {% else %}
-                        <a href="{% url 'login' %}" class="text-xs px-3 py-1.5 rounded-lg bg-sky-600 text-white font-medium hover:bg-sky-700">Iniciar Sesión</a>
+                        <a href="{% url 'login' %}" class="text-xs px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-semibold shadow-[0_0_15px_rgba(16,185,129,0.25)] transition">
+                            Iniciar Sesión
+                        </a>
                     {% endif %}
                 </div>
             </div>
@@ -108,9 +150,14 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-4 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-            Indinopy ERP — Sistema Conforme a la Ley de Fortalecimiento a la Producción y Empleo Formal Textil (Ley e-OP).
+    <footer class="bg-[#070a10] border-t border-[#1e293b] py-5 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+            <div>
+                <strong>Indinopy ERP/MES</strong> &middot; Soberanía Industrial &middot; Anteproyecto de Ley de e-OP.
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-slate-500">Ed25519 &middot; SHA-256 &middot; Merkle BOM</span>
+            </div>
         </div>
     </footer>
 

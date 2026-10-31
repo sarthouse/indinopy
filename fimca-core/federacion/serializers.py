@@ -64,22 +64,33 @@ class EntradaEOPSerializer(serializers.Serializer, VerificacionFirmaMixin):
                 _("La e-OP no puede ser aceptada en la Red Federada sin la firma digital del tallerista gestor.")
             )
         
-        # 2. Validar que la e-OP no exista ya registrada
+        # 3. Validar que la e-OP no exista ya registrada en la MES
         try:
-            from base.models import ContratoEOP
-            if ContratoEOP.objects.filter(uuid_identificador=data['uuid_identificador']).exists():
-                raise serializers.ValidationError(_("Ya existe una e-OP con este UUID en la Red Federada."))
+            from fdi.models import RegistroEOP
+            if RegistroEOP.objects.filter(uuid_identificador=data['uuid_identificador']).exists():
+                raise serializers.ValidationError(_("Ya existe una e-OP con este UUID registrada en el Nodo MES."))
         except (ImportError, RuntimeError):
             pass
 
-        # 3. Validar consistencia del cronograma de hitos si viene especificado
+        # 4. Validar cláusula obligatoria de confesión de deuda Hito Cero (Art. 6° Ley e-OP)
+        clausula_h0 = data['payload_canonico'].get('clausula_confesion_deuda_h0')
+        if clausula_h0 is not True:
+            raise serializers.ValidationError({
+                "error": "CLAUSULA_CONFESION_H0_REQUERIDA",
+                "detalle": _(
+                    "La e-OP debe contener expresamente la cláusula de confesión irrevocable de deuda líquida y exigible "
+                    "para el Hito Cero conforme al Art. 6° del Anteproyecto de Ley e-OP."
+                )
+            })
+
+        # 5. Validar consistencia del cronograma de hitos si viene especificado
         hitos = data.get('cronograma_escrow_hitos') or data['payload_canonico'].get('cronograma_escrow_hitos')
         if hitos:
             total_porcentaje = sum(Decimal(str(h.get('porcentaje_tramo', 0))) for h in hitos)
             if abs(total_porcentaje - Decimal('100.00')) > Decimal('0.01'):
                 raise serializers.ValidationError(_("La suma de porcentajes del cronograma de hitos debe ser exactamente 100%."))
 
-        # 5. Validar consistencia matemática de la alícuota del canon FDI/MES (Art. 4° inc. 4 Ley e-OP)
+        # 6. Validar consistencia matemática de la alícuota del canon FDI/MES y monto exigible (Art. 4° inc. 4 Ley e-OP)
         vector_costos = data['payload_canonico'].get('vector_costos', {})
         mod_val = Decimal(str(vector_costos.get('mod_servicios', vector_costos.get('mod', data['monto_total_uci']))))
         bom_val = Decimal(str(vector_costos.get('insumos_bom', vector_costos.get('bom', '0.00'))))
@@ -115,6 +126,21 @@ class EntradaEOPSerializer(serializers.Serializer, VerificacionFirmaMixin):
                 "detalle": _(
                     "El canon FDI/MES declarado no coincide con los parámetros arancelarios vigentes (máx 1.5% s/MOD). "
                     "Actualice los aranceles en el nodo emisor y regenere la e-OP con las firmas correspondientes."
+                )
+            })
+
+        # 7. Validar que el monto exigible excluya los insumos provistos (BOM s/Art. 4° inc 4.b)
+        canon_total = canon_operativo + canon_stock
+        monto_esperado_uci = mod_val + canon_total
+        if abs(data['monto_total_uci'] - monto_esperado_uci) > Decimal("0.05"):
+            raise serializers.ValidationError({
+                "error": "MONTO_EXIGIBLE_INVALIDO",
+                "monto_total_uci": str(data['monto_total_uci']),
+                "monto_esperado_uci": str(monto_esperado_uci),
+                "detalle": _(
+                    "El monto total exigible de la e-OP debe ser exactamente igual a MOD + Canones FDI. "
+                    "El valor de insumos provistos (BOM) se encuentra bajo régimen de custodia/depósito "
+                    "y no puede integrar la deuda exigible (Art. 4° inc 4.b Ley e-OP)."
                 )
             })
 

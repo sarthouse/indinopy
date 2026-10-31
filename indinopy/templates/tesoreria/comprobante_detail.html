@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Comprobante #{{ comprobante.numero }} — Indinopy ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header del Comprobante -->
+    <div class="bg-[#111827] rounded-xl p-6 border border-[#1e293b] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded
+                    {% if comprobante.estado == 'confirmado' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                    {% elif comprobante.estado == 'cancelado' %}bg-rose-500/10 text-rose-400 border border-rose-500/30
+                    {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/30{% endif %}">
+                    {{ comprobante.get_estado_display|upper }}
+                </span>
+                <span class="text-xs font-mono text-slate-400">Emisión: {{ comprobante.fecha_emision|date:"d/m/Y" }}</span>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white mt-2">
+                {{ comprobante.get_tipo_display }} #{{ comprobante.numero }}
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Contacto / Beneficiario: <span class="font-semibold text-slate-200">{{ comprobante.contacto.nombre|default:"Sin asignar" }}</span>
+                {% if comprobante.escrow_asociado %} &nbsp;|&nbsp; <span class="text-slate-300 font-mono">Contrato e-OP #{{ comprobante.escrow_asociado.numero }}</span>{% endif %}
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            {% if comprobante.estado == 'borrador' %}
+            <form method="post" action="{% url 'tesoreria:comprobante_confirmar' pk=comprobante.pk %}">
+                {% csrf_token %}
+                <button type="submit" 
+                        onclick="return confirm('¿Confirmar este comprobante? Se registrará la salida/entrada de fondos en caja/banco.');"
+                        class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition">
+                    Confirmar Comprobante
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'tesoreria:comprobante_list' %}" class="px-3 py-2 rounded-lg border border-[#1e293b] text-slate-400 hover:text-white text-xs font-semibold transition">
+                Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Resumen de Importes -->
+    <div class="bg-[#111827] rounded-xl p-5 border border-[#1e293b] grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <div class="text-[10px] uppercase font-mono font-bold text-slate-400">Tipo de Comprobante</div>
+            <div class="text-base font-semibold text-white mt-0.5">
+                {{ comprobante.get_tipo_display }}
+            </div>
+        </div>
+        <div>
+            <div class="text-[10px] uppercase font-mono font-bold text-slate-400">Monto Total Imputado</div>
+            <div class="text-xl font-mono font-bold text-emerald-400 mt-0.5">
+                $ {{ comprobante.monto_total|floatformat:2 }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Movimientos de Caja y Banco Vinculados -->
+    <div class="bg-[#111827] rounded-xl border border-[#1e293b] overflow-hidden">
+        <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono">Movimientos de Caja y Banco</h2>
+            <span class="text-xs text-slate-400 font-mono">{{ movimientos|length }} movimientos</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-[#1e293b] text-left text-sm">
+                <thead class="bg-[#070a10] text-[10px] font-mono font-semibold text-slate-400 uppercase">
+                    <tr>
+                        <th class="px-6 py-3">Caja / Cuenta</th>
+                        <th class="px-6 py-3">Tipo Movimiento</th>
+                        <th class="px-6 py-3 text-right">Importe ($)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#1e293b]/60">
+                    {% for mov in movimientos %}
+                    <tr class="hover:bg-[#151e2e] transition">
+                        <td class="px-6 py-3.5 font-medium text-slate-200">{{ mov.caja.nombre }}</td>
+                        <td class="px-6 py-3.5 text-xs text-slate-300">{{ mov.get_tipo_display }}</td>
+                        <td class="px-6 py-3.5 text-right font-mono font-bold text-emerald-400">$ {{ mov.importe|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="px-6 py-4 text-center text-xs text-slate-500">Sin movimientos de caja vinculados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

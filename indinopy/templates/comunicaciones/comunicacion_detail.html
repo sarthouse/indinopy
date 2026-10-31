@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Cédula #{{ comunicacion.numero_oficial|default:comunicacion.uuid_identificador|slice:":8" }} — Indinopy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header técnico de la Comunicación -->
+    <div class="bg-[#111827] rounded-xl p-6 border border-[#1e293b] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded
+                    {% if comunicacion.estado == 'emitida' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                    {% elif comunicacion.estado == 'archivada' %}bg-slate-800 text-slate-400 border border-slate-700
+                    {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/30{% endif %}">
+                    {{ comunicacion.get_estado_display|upper }}
+                </span>
+                <span class="text-xs font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                    {{ comunicacion.get_tipo_display }}
+                </span>
+                <span class="text-xs font-mono text-slate-400">Emisión: {{ comunicacion.fecha_emision|date:"d/m/Y H:i"|default:"BORRADOR" }}</span>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white mt-2">
+                {{ comunicacion.asunto }}
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Número Oficial: <span class="font-mono font-bold text-slate-200">{{ comunicacion.numero_oficial|default:"Sin número (Borrador)" }}</span> &nbsp;|&nbsp;
+                Emisor CUIT: <span class="font-mono text-cyan-400">{{ comunicacion.cuit_emisor }}</span>
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'comunicaciones:detalle' uuid=comunicacion.uuid_identificador %}?format=pdf" target="_blank" class="px-3 py-2 rounded-lg border border-[#1e293b] bg-[#070a10] text-xs font-semibold text-slate-300 hover:text-white transition">
+                Descargar Cédula PDF
+            </a>
+            <a href="{% url 'comunicaciones:comunicacion_list' %}" class="px-3 py-2 rounded-lg border border-[#1e293b] text-slate-400 hover:text-white text-xs font-semibold transition">
+                Volver al Buzón
+            </a>
+        </div>
+    </div>
+
+    <!-- Metadatos de Seguridad Criptográfica -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-[#111827] rounded-xl border border-[#1e293b] p-4 font-mono text-xs">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Hash SHA-256 del Contenido</div>
+            <div class="text-slate-300 break-all select-all">{{ comunicacion.hash_seguridad_payload|default:"Pendiente de sellado" }}</div>
+        </div>
+        <div class="bg-[#111827] rounded-xl border border-[#1e293b] p-4 font-mono text-xs">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Firma Digital Ed25519 Emisor</div>
+            <div class="text-emerald-400 break-all select-all">{{ comunicacion.firma_emisor_ed25519|default:"Sin firma" }}</div>
+        </div>
+    </div>
+
+    <!-- Cuerpo del Contenido Fehaciente -->
+    <div class="bg-[#111827] rounded-xl border border-[#1e293b] p-6">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono mb-3">
+            Texto Notificado
+        </h2>
+        <div class="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap bg-[#070a10] p-5 rounded-lg border border-[#1e293b]">
+            {{ comunicacion.cuerpo_contenido }}
+        </div>
+    </div>
+
+    <!-- Destinatarios y Estado del Acuse -->
+    <div class="bg-[#111827] rounded-xl border border-[#1e293b] overflow-hidden">
+        <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono">Destinatarios y Diligenciamiento</h2>
+            <span class="text-xs text-slate-400 font-mono">{{ destinatarios|length }} partes</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-[#1e293b] text-left text-sm">
+                <thead class="bg-[#070a10] text-[10px] font-mono font-semibold text-slate-400 uppercase">
+                    <tr>
+                        <th class="px-6 py-3">Destinatario</th>
+                        <th class="px-6 py-3">Modo</th>
+                        <th class="px-6 py-3">Puesto a Disposición</th>
+                        <th class="px-6 py-3">Límite Tácito</th>
+                        <th class="px-6 py-3">Acuse Fehaciente</th>
+                        <th class="px-6 py-3">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#1e293b]/60 text-xs">
+                    {% for d in destinatarios %}
+                    <tr class="hover:bg-[#151e2e] transition">
+                        <td class="px-6 py-3.5">
+                            <div class="font-medium text-slate-200">{{ d.contacto_destino.nombre|default:d.cuit_destino }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">CUIT: {{ d.cuit_destino }}</div>
+                        </td>
+                        <td class="px-6 py-3.5">
+                            <span class="font-mono text-slate-300">{{ d.get_modo_recepcion_display }}</span>
+                        </td>
+                        <td class="px-6 py-3.5 font-mono text-slate-400">
+                            {{ d.fecha_puesta_disposicion|date:"d/m/Y H:i"|default:"-" }}
+                        </td>
+                        <td class="px-6 py-3.5 font-mono text-slate-400">
+                            {{ d.fecha_limite_tacita|date:"d/m/Y H:i"|default:"-" }}
+                        </td>
+                        <td class="px-6 py-3.5 font-mono text-emerald-400">
+                            {{ d.fecha_notificacion_fehaciente|date:"d/m/Y H:i"|default:"Pendiente" }}
+                        </td>
+                        <td class="px-6 py-3.5">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold
+                                {% if d.estado_notificacion == 'notificada' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                                {% elif d.estado_notificacion == 'entregada' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30
+                                {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/30{% endif %}">
+                                {{ d.get_estado_notificacion_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="px-6 py-4 text-center text-xs text-slate-500">Sin destinatarios asignados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

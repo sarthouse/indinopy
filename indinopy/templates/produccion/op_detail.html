@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}OP #{{ op.numero }} — Indinopy MES{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet.js para trazabilidad soberana de georreferenciación PoPW -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    .leaflet-container {
+        background: #070a10 !important;
+    }
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+        background: #111827 !important;
+        color: #f1f5f9 !important;
+        border: 1px solid #1e293b;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header técnico de la Orden de Producción -->
+    <div class="bg-[#111827] rounded-xl p-6 border border-[#1e293b] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded
+                    {% if op.estado == 'finalizado' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                    {% elif op.estado == 'confirmado' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30
+                    {% elif op.estado == 'cancelado' %}bg-rose-500/10 text-rose-400 border border-rose-500/30
+                    {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/30{% endif %}">
+                    {{ op.get_estado_display|upper }}
+                </span>
+                {% if op.es_eop_federada %}
+                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                        Protocolo e-OP
+                    </span>
+                {% endif %}
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white mt-2">
+                Orden de Producción #{{ op.numero }}
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Artículo: <span class="font-semibold text-slate-200">{{ op.articulo.nombre }}</span> &nbsp;|&nbsp; 
+                Cantidad Total: <span class="font-mono font-bold text-white">{{ op.cantidad_total }} u.</span> &nbsp;|&nbsp;
+                Fecha de Emisión: <span class="font-mono text-slate-300">{{ op.fecha|date:"d/m/Y" }}</span>
+            </p>
+        </div>
+
+        <!-- Acciones operativas de la OP -->
+        <div class="flex flex-wrap items-center gap-2">
+            {% if op.estado == 'borrador' %}
+            <form method="post" action="{% url 'produccion:op_confirmar' pk=op.pk %}">
+                {% csrf_token %}
+                <button type="submit" 
+                        onclick="return confirm('¿Confirmar e-OP? Se sellará el hash y se reservará el stock de insumos.');"
+                        class="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-sm transition">
+                    Confirmar e-OP
+                </button>
+            </form>
+            {% elif op.estado == 'confirmado' %}
+            <form method="post" action="{% url 'produccion:op_finalizar' pk=op.pk %}">
+                {% csrf_token %}
+                <button type="submit" 
+                        onclick="return confirm('¿Finalizar orden? Se ingresarán los productos terminados al stock.');"
+                        class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition">
+                    Finalizar Producción
+                </button>
+            </form>
+            <form method="post" action="{% url 'produccion:op_cancelar' pk=op.pk %}">
+                {% csrf_token %}
+                <button type="submit" 
+                        onclick="return confirm('¿Cancelar orden? Se liberarán las reservas de stock.');"
+                        class="px-3 py-2 rounded-lg border border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition">
+                    Cancelar
+                </button>
+            </form>
+            {% endif %}
+
+            {% if op.contrato_eop %}
+            <a href="{% url 'eop:contrato_detail' pk=op.contrato_eop.pk %}" class="px-4 py-2 rounded-lg bg-[#070a10] border border-[#1e293b] text-cyan-400 hover:border-cyan-500/50 text-xs font-semibold transition">
+                Ver Contrato e-OP
+            </a>
+            {% endif %}
+            <a href="{% url 'produccion:op_list' %}" class="px-3 py-2 rounded-lg border border-[#1e293b] text-slate-400 hover:text-white text-xs font-semibold transition">
+                Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- PANELES DE SEGUIMIENTO: ETAPAS DE MANUFACTURA Y MAPA PoPW -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna Izquierda: Etapas de Tracking (2 cols) -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-[#111827] rounded-xl border border-[#1e293b] overflow-hidden">
+                <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono">
+                        Etapas de Manufactura y Talleres Asignados
+                    </h2>
+                    <span class="text-xs text-slate-400 font-mono">{{ etapas|length }} etapas</span>
+                </div>
+                <div class="divide-y divide-[#1e293b]">
+                    {% for etapa in etapas %}
+                    <div class="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-[#151e2e] transition">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-semibold text-white text-sm">
+                                    {{ etapa.etapa_origen.servicio.nombre|default:"Etapa de Producción" }}
+                                </span>
+                                <span class="text-[11px] font-mono px-2 py-0.5 rounded font-semibold
+                                    {% if etapa.estado == 'completado' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+                                    {% elif etapa.estado == 'en_curso' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30
+                                    {% else %}bg-slate-800 text-slate-400 border border-slate-700{% endif %}">
+                                    {{ etapa.get_estado_display }}
+                                </span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1">
+                                Taller Asignado: <span class="font-semibold text-slate-200">{{ etapa.tallerista_asignado.nombre|default:"Sin asignar" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4 text-xs font-mono">
+                            <div class="bg-[#070a10] px-3 py-1.5 rounded border border-[#1e293b]">
+                                <span class="text-slate-400 text-[10px] block uppercase">Habilitadas</span>
+                                <span class="font-bold text-white text-sm">{{ etapa.unidades_habilitadas_para_declarar }}</span>
+                            </div>
+                            <div class="bg-[#070a10] px-3 py-1.5 rounded border border-[#1e293b]">
+                                <span class="text-slate-400 text-[10px] block uppercase">Procesadas</span>
+                                <span class="font-bold text-emerald-400 text-sm">{{ etapa.unidades_ya_declaradas }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-6 text-center text-xs text-slate-500">No hay etapas asignadas a esta orden.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Insumos Requeridos (BOM) -->
+            <div class="bg-[#111827] rounded-xl border border-[#1e293b] p-6">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono mb-4">
+                    Insumos Requeridos y Custodia de Transformación (BOM)
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-[#1e293b] text-left text-xs">
+                        <thead class="text-slate-400 uppercase font-mono text-[10px]">
+                            <tr>
+                                <th class="pb-3">Insumo</th>
+                                <th class="pb-3 text-right">Cantidad Teórica</th>
+                                <th class="pb-3 text-right">Origen</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#1e293b]/60">
+                            {% for insumo in insumos %}
+                            <tr>
+                                <td class="py-3 font-medium text-slate-200">{{ insumo.insumo.nombre }}</td>
+                                <td class="py-3 text-right font-mono text-cyan-300">{{ insumo.cantidad_teorica }} {{ insumo.insumo.unidad_medida }}</td>
+                                <td class="py-3 text-right text-slate-400">{{ insumo.get_origen_display }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="py-4 text-center text-slate-500">Sin insumos requeridos especificados en la ficha técnica.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Mapa de Trazabilidad Territorial PoPW (1 col) -->
+        <div class="space-y-6">
+            <div class="bg-[#111827] rounded-xl border border-[#1e293b] p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
+                        Trazabilidad Territorial (PoPW)
+                    </h3>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">GPS Catastral</span>
+                </div>
+                <div id="map-popw" class="h-64 w-full rounded-lg border border-[#1e293b] z-10"></div>
+                <p class="text-[11px] text-slate-400 mt-3 leading-relaxed">
+                    Verificación de ubicación geográfica de talleres autorizados y coordenadas de sellado de avance físico.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const map = L.map('map-popw').setView([-34.6037, -58.3816], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    {% for etapa in etapas %}
+        {% if etapa.tallerista_asignado and etapa.tallerista_asignado.ubicacion_catastral %}
+            L.marker([{{ etapa.tallerista_asignado.ubicacion_catastral.y }}, {{ etapa.tallerista_asignado.ubicacion_catastral.x }}])
+                .addTo(map)
+                .bindPopup("<b>{{ etapa.tallerista_asignado.nombre }}</b><br>Taller Habilitado");
+        {% endif %}
+    {% endfor %}
+});
+</script>
+{% endblock %}

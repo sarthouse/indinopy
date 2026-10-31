@@ -6,12 +6,42 @@ from django.http import FileResponse
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 
+from django.views.generic import ListView, DetailView
 from apps.base.models import ConfiguracionEmpresa
 from apps.documentos.models import DocumentoAdjunto
 from apps.contactos.models import Contacto
 from apps.comunicaciones.models import ComunicacionOficial, CedulaDestinatario
 from apps.comunicaciones.services import ComunicacionOficialService
 from apps.comunicaciones.reports import ComunicacionOficialPDFReport
+
+
+class ComunicacionListView(ListView):
+    """
+    Bandeja de entrada / Buzón de Cédulas y Comunicaciones Oficiales en la interfaz web.
+    """
+    model = ComunicacionOficial
+    template_name = "comunicaciones/comunicacion_list.html"
+    context_object_name = "comunicaciones"
+    ordering = ["-fecha_emision", "-id"]
+
+    def get_queryset(self):
+        return ComunicacionOficial.objects.all().prefetch_related("destinatarios")
+
+
+class ComunicacionDetailView(DetailView):
+    """
+    Vista de detalle de una Comunicación Oficial / Cédula fehaciente.
+    """
+    model = ComunicacionOficial
+    template_name = "comunicaciones/comunicacion_detail.html"
+    context_object_name = "comunicacion"
+    slug_field = "uuid_identificador"
+    slug_url_kwarg = "uuid"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["destinatarios"] = self.object.destinatarios.select_related("contacto_destino").all()
+        return ctx
 
 
 class ComunicacionesOficialesBuzonAPIView(APIView):

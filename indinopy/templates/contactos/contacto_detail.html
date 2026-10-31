@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ contacto.nombre }} — Indinopy ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header del Contacto -->
+    <div class="bg-[#111827] rounded-xl p-6 border border-[#1e293b] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded bg-[#070a10] border border-[#1e293b] text-slate-300">
+                    {{ contacto.get_tipo_display }}
+                </span>
+                <span class="text-xs font-mono text-cyan-400">Código: {{ contacto.codigo }}</span>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white mt-2">
+                {{ contacto.nombre }}
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                CUIT/CUIL: <span class="font-mono font-semibold text-slate-200">{{ contacto.cuil|default:"-" }}</span> &nbsp;|&nbsp; 
+                Condición IVA: <span class="text-slate-300">{{ contacto.get_condicion_iva_display }}</span>
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <a href="{% url 'contactos:contacto_update' pk=contacto.pk %}" class="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-sm transition">
+                Editar Datos
+            </a>
+            <a href="{% url 'contactos:contacto_list' %}" class="px-3 py-2 rounded-lg border border-[#1e293b] text-slate-400 hover:text-white text-xs font-semibold transition">
+                Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Ficha de Datos Comerciales y Logísticos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-[#111827] rounded-xl p-6 border border-[#1e293b] space-y-4">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono border-b border-[#1e293b] pb-3">
+                Datos de Contacto
+            </h2>
+            <div class="text-xs space-y-2.5 text-slate-400">
+                <div><span class="text-slate-300 font-medium">Persona de contacto:</span> <span class="text-slate-200">{{ contacto.contacto_principal|default:"-" }}</span></div>
+                <div><span class="text-slate-300 font-medium">Teléfono / WhatsApp:</span> <span class="text-slate-200">{{ contacto.telefono|default:"-" }}</span></div>
+                <div><span class="text-slate-300 font-medium">Email:</span> <span class="text-slate-200">{{ contacto.email|default:"-" }}</span></div>
+                <div><span class="text-slate-300 font-medium">Usuario de Portal:</span> <span class="text-cyan-400 font-mono">{{ contacto.usuario_asociado.username|default:"Sin usuario asignado" }}</span></div>
+            </div>
+        </div>
+
+        <div class="bg-[#111827] rounded-xl p-6 border border-[#1e293b] space-y-4">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono border-b border-[#1e293b] pb-3">
+                Ubicación & Régimen e-OP
+            </h2>
+            <div class="text-xs space-y-2.5 text-slate-400">
+                <div><span class="text-slate-300 font-medium">Dirección del Taller:</span> <span class="text-slate-200">{{ contacto.direccion|default:"-" }}</span></div>
+                <div><span class="text-slate-300 font-medium">Ciudad / Provincia:</span> <span class="text-slate-200">{{ contacto.ciudad|default:"" }} {{ contacto.provincia|default:"" }}</span></div>
+                <div><span class="text-slate-300 font-medium">Taller Homologado:</span> {% if contacto.es_taller_homologado %}<span class="text-emerald-400 font-semibold">Sí (INTI/Sindicato)</span>{% else %}<span class="text-slate-400">No</span>{% endif %}</div>
+                <div><span class="text-slate-300 font-medium">Georreferenciación:</span> {% if contacto.ubicacion_catastral %}<span class="text-cyan-400 font-mono">Registrada en GPS (PostGIS)</span>{% else %}<span class="text-slate-500">Sin coordenadas fijadas</span>{% endif %}</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

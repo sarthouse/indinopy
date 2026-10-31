@@ -7,9 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from base.models import Contacto
 from decimal import Decimal
-from fdi.models import RegistroEOP, ScoringTallerista
+from fdi.models import EOPHitoEscrow, RegistroEOP, ScoringTallerista
 from fdi.services import PTFService
-from base.models import ContratoEOP, EOPHitoEscrow
 
 from .models import NodoFederado, NovedadFederada, WebhookLog
 from .serializers import (
@@ -96,14 +95,15 @@ class RecepcionEOPView(APIView):
             hace_un_ano = timezone.now() - datetime.timedelta(days=365)
             es_replica_tecnica = False
             if merkle_root_bom:
-                uuids_aprobados = ContratoEOP.objects.filter(
-                    firmas_digitales__comitente__cuit=data["comitente_cuit"],
-                    firmas_digitales__tallerista__cuit=tallerista_cuit,
-                    created_at__gte=hace_un_ano,
+                uuids_aprobados = RegistroEOP.objects.filter(
+                    comitente_cuit=data["comitente_cuit"],
+                    tallerista_cuit=tallerista_cuit,
+                    creado_en__gte=hace_un_ano,
+                    estado__in=["aprobado_silencio", "aprobado_expres"],
                 ).values_list("uuid_identificador", flat=True)
 
                 if uuids_aprobados:
-                    es_replica_tecnica = ContratoEOP.objects.filter(
+                    es_replica_tecnica = RegistroEOP.objects.filter(
                         uuid_identificador__in=uuids_aprobados,
                         merkle_root_bom=merkle_root_bom,
                     ).exists()
@@ -118,20 +118,6 @@ class RecepcionEOPView(APIView):
                 estado_inicial = "en_revision"
                 timelock = timezone.now() + datetime.timedelta(hours=48)  # Plazo ordinario 48 horas
 
-            # 3. Crear el Registro de Auditoría en la Gobernanza (MES)
-            registro, _ = RegistroEOP.objects.get_or_create(
-                uuid_identificador=data["uuid_identificador"],
-                defaults={
-                    "hash_seguridad": data["hash_seguridad"],
-                    "comitente_cuit": data["comitente_cuit"],
-                    "tallerista_cuit": tallerista_cuit,
-                    "monto_total_uci": data["monto_total_uci"],
-                    "timelock_vencimiento": timelock,
-                    "estado": estado_inicial,
-                }
-            )
-
-            # 4. Crear Contrato Escrow en el FDI (Nodo MES/EOP)
             # Extraer y estructurar la multifirma obligatoria (Comitente + Tallerista)
             firmas_escrow = {
                 "comitente": {
@@ -153,31 +139,27 @@ class RecepcionEOPView(APIView):
             costo_fdi_op_val = Decimal(str(vector_costos.get("canon_fdi_operativo", round(costo_mod_val * Decimal("0.015"), 2))))
             costo_fdi_stk_val = Decimal(str(vector_costos.get("canon_fdi_stock", round(costo_bom_val * Decimal("0.005"), 2))))
 
-            plazo_dias = int(payload_canonico.get("plazo_comercial_dias", 60))
-            hoy = timezone.now().date()
-            fecha_vto = hoy + datetime.timedelta(days=plazo_dias)
-
-            escrow, _ = ContratoEOP.objects.get_or_create(
+            # 3. Crear el Registro Canónico de Auditoría en la Gobernanza (MES)
+            registro, _ = RegistroEOP.objects.get_or_create(
                 uuid_identificador=data["uuid_identificador"],
                 defaults={
+                    "hash_seguridad": data["hash_seguridad"],
+                    "comitente_cuit": data["comitente_cuit"],
+                    "tallerista_cuit": tallerista_cuit,
+                    "monto_total_uci": data["monto_total_uci"],
                     "costo_mod": costo_mod_val,
                     "costo_bom": costo_bom_val,
                     "costo_fdi_operativo": costo_fdi_op_val,
                     "costo_fdi_stock": costo_fdi_stk_val,
-                    "moneda_denominacion": payload_canonico.get("moneda_denominacion", "uci"),
-                    "plazo_comercial_dias": plazo_dias,
-                    "fecha_vencimiento_comercial": fecha_vto,
-                    "fecha_vencimiento_recalculada": fecha_vto,
-                    "es_sello_buen_diseno": bool(payload_canonico.get("es_sello_buen_diseno", posee_sbd)),
-                    "es_justo_a_tiempo": bool(payload_canonico.get("es_justo_a_tiempo", False)),
-                    "declaracion_confesion_deuda_hito_cero": bool(payload_canonico.get("clausula_confesion_deuda_h0", True)),
-                    "merkle_root_bom": payload_canonico.get("merkle_root_bom", ""),
+                    "merkle_root_bom": merkle_root_bom,
                     "firmas_digitales": firmas_escrow,
-                    "estado_escrow": "solicitado",
+                    "payload_canonico": payload_canonico,
+                    "timelock_vencimiento": timelock,
+                    "estado": estado_inicial,
                 }
             )
 
-            # Generación Dinámica de Hitos Escrow a partir del payload
+            # 4. Generación Dinámica de Hitos Escrow a partir del payload vinculados a RegistroEOP
             hitos_payload = data.get("cronograma_escrow_hitos") or payload_canonico.get("cronograma_escrow_hitos")
             if hitos_payload:
                 for idx, hito_info in enumerate(hitos_payload):
@@ -188,8 +170,9 @@ class RecepcionEOPView(APIView):
                     uuid_hito = hito_info.get("uuid")
 
                     h_kwargs = {
-                        "contrato": escrow,
+                        "registro_eop": registro,
                         "nombre": nombre,
+                        "numero_hito": idx + 1,
                         "porcentaje_tramo": porc,
                         "estado": "bloqueado",
                         "requiere_auditoria_ptf": req_ptf,
@@ -218,8 +201,9 @@ class RecepcionEOPView(APIView):
 
                 # 1. Hito Cero (dictaminado por la MES)
                 EOPHitoEscrow.objects.create(
-                    contrato=escrow,
+                    registro_eop=registro,
                     nombre=nombre_cero,
+                    numero_hito=1,
                     porcentaje_tramo=porcentaje_hito_cero,
                     estado="bloqueado",
                     requiere_auditoria_ptf=False,
@@ -234,7 +218,7 @@ class RecepcionEOPView(APIView):
                     for idx, et in enumerate(etapas_in):
                         es_ultima = (idx == len(etapas_in) - 1)
                         nombre_et = et.get("servicio") or f"Etapa {idx + 1}"
-                        orden = et.get("orden", idx + 1)
+                        orden = et.get("orden", idx + 2)
 
                         if es_ultima:
                             porc_e = porcentaje_avance_total - porcentaje_acumulado
@@ -247,8 +231,9 @@ class RecepcionEOPView(APIView):
                             porcentaje_acumulado += porc_e
 
                         EOPHitoEscrow.objects.create(
-                            contrato=escrow,
+                            registro_eop=registro,
                             nombre=f"Hito {orden} - Avance: {nombre_et}",
+                            numero_hito=orden,
                             porcentaje_tramo=porc_e,
                             estado="bloqueado",
                             requiere_auditoria_ptf=True,
@@ -256,9 +241,11 @@ class RecepcionEOPView(APIView):
                         )
 
                 # 3. Hito Final de Entrega y Cierre Fiscal
+                total_hitos_creados = registro.hitos.count()
                 EOPHitoEscrow.objects.create(
-                    contrato=escrow,
+                    registro_eop=registro,
                     nombre="Hito Final - Entrega Conformada y Cierre Fiscal",
+                    numero_hito=total_hitos_creados + 1,
                     porcentaje_tramo=porcentaje_final,
                     estado="bloqueado",
                     requiere_auditoria_ptf=True,
@@ -523,16 +510,17 @@ class ClearingPendientesAPIView(APIView):
 
         data = []
         for hito in hitos_pendientes:
-            contrato = hito.contrato
-            taller = getattr(contrato, "tallerista", None)
+            registro = hito.registro_eop
+            taller_cuit = registro.tallerista_cuit if registro else ""
+            taller = Contacto.objects.filter(cuit=taller_cuit).first() if taller_cuit else None
 
             data.append({
                 "hito_id": hito.id,
                 "numero_hito": hito.numero_hito,
                 "monto_ars": str(hito.monto_ars),
-                "eop_numero": contrato.numero,
+                "eop_numero": str(registro.uuid_identificador) if registro else "",
                 "taller_nombre": taller.nombre if taller else "",
-                "taller_cuit": taller.cuit if taller else "",
+                "taller_cuit": taller_cuit,
             })
 
         return Response(data, status=status.HTTP_200_OK)
