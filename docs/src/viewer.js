@@ -699,10 +699,17 @@ async function loadMarkdown(explicitFile) {
             throwOnError: false
         });
 
-        // Renderizar diagramas Mermaid
+        // Renderizar diagramas Mermaid (aislado por diagrama para no abortar todo el documento si uno falla)
         const mermaidElements = document.querySelectorAll('.mermaid');
         if (mermaidElements.length > 0) {
-            await mermaid.run({ nodes: mermaidElements });
+            for (const el of mermaidElements) {
+                try {
+                    await mermaid.run({ nodes: [el] });
+                } catch (mermaidErr) {
+                    console.warn('Error renderizando diagrama Mermaid:', mermaidErr);
+                    el.innerHTML = `<div class="error" style="margin-top:0;text-align:left;font-size:12px;"><strong>Error en diagrama Mermaid:</strong> ${mermaidErr.message || mermaidErr}</div>`;
+                }
+            }
             initMermaidInteractivity();
         }
 
@@ -729,6 +736,42 @@ async function loadMarkdown(explicitFile) {
     }
 }
 
+function initMobileNavbar() {
+    const toggleBtn = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+    if (!toggleBtn || !navLinks) return;
+
+    const closeMenu = () => {
+        navLinks.classList.remove('open');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+    };
+
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = navLinks.classList.toggle('open');
+        toggleBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    navLinks.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', closeMenu);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.viewer-nav')) {
+            closeMenu();
+        }
+    });
+
+    const currentDoc = new URLSearchParams(window.location.search).get('doc');
+    if (currentDoc) {
+        navLinks.querySelectorAll('a[href*="doc="]').forEach((link) => {
+            if (link.getAttribute('href').includes(`doc=${currentDoc}`)) {
+                link.classList.add('active');
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.doc-container');
     if (container && !document.querySelector('.btn-back-home')) {
@@ -739,5 +782,6 @@ document.addEventListener('DOMContentLoaded', () => {
         container.insertBefore(backBtn, container.firstChild);
     }
 
+    initMobileNavbar();
     loadMarkdown();
 });

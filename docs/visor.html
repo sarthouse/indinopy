@@ -46,7 +46,21 @@
                 <span class="brand-subtitle">Protocolo e-OP &middot; Red Federada FIMCA</span>
             </div>
         </a>
-        <div class="nav-links">
+        <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Abrir menú de navegación"
+            aria-expanded="false" aria-controls="nav-links">
+            <svg class="icon-menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+            <svg class="icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+        <div class="nav-links" id="nav-links">
             <a href="index.html#documentacion" class="nav-back">← Biblioteca</a>
             <a href="visor.html?doc=proyecto_ley_eop">Anteproyecto e-OP</a>
             <a href="visor.html?doc=dossier_fimca">Dossier FIMCA</a>
